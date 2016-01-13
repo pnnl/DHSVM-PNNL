@@ -1,0 +1,91 @@
+/*A------------------------------AUTHOR---------------------------------
+/* 
+/*Original Coding:     ESRI 
+/*
+/*N-------------------------------NAME----------------------------------
+/* 
+/*BUILDPAL.AML 
+/*Copyright 1995, Environmental Systems Research Institute, Inc.  
+/*
+/*P-----------------------------PURPOSE---------------------------------
+/* 
+/*This AML will create two info files, a PAL (Polygon Arc List) and a
+/*PFL (Polygon Frequency List).  As their names imply, the PAL contains
+/*which arcs "belong" to which polygons and the PFL contains the the 
+/*polygon internal record number and the number of arcs which make up
+/*each one. 
+/*
+/*U------------------------------USAGE----------------------------------
+/* 
+/*BUILDPAL <cover> 
+/*
+/*V----------------------------VARIABLES--------------------------------
+/*
+/* cover - the name of the polygon coverage to be processed.
+/* file - used in a loop so each resultant info file can be
+/*        created and populated.
+/*
+/*============================DISCLAIMER================================
+/*You may use, copy, modify, merge, distribute, alter, reproduce and/or
+/*create derivative works of this AML for your own internal use.  All
+/*rights not specifically granted herein are reserved to ESRI.  
+/*
+/*THIS AML IS PROVIDED "AS-IS" WITHOUT WARRANTY OF ANY KIND, EITHER
+/*EXPRESS OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+/*WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE,
+/*WITH RESPECT TO THE AML.  
+/*
+/*ESRI shall not be liable for any damages under any theory of law
+/*related to your use of this AML, even if ESRI is advised of the
+/*possibilites of such damage.  This AML is not supported by ESRI.
+/*======================================================================
+
+&args cover
+
+&if [null %cover%] &then &do
+  &type Usage: BUILDPAL.AML <coverage>
+  &return
+&end
+
+&set cover [translate %cover%]
+
+&if ^ [exists %cover% -cover] &then &do
+  &type %cover% does not exist.  Exiting...
+  &return
+&end
+
+&data arc info
+arc
+&do file &list %cover%.PAL %cover%.PFL
+  &if [exists %file% -INFO] &then &do
+SEL %file%
+DELETE %file%
+Y
+  &end
+&end
+DEFINE %cover%.PAL
+POLY#,4,5,B
+[unquote ' ']
+REDEFINE
+1,LPOLY#,4,5,B
+1,RPOLY#,4,5,B
+[unquote ' ']
+DEFINE %cover%.PFL
+POLY#,4,5,B
+FREQ,4,5,B
+[unquote ' ']
+SEL %cover%.AAT
+REL %cover%.PAL 1 BY LPOLY# APPEND
+CALC $NUM1 = $NUM1 + 1
+REL %cover%.PAL 1 BY RPOLY# APPEND
+CALC $NUM1 = $NUM1 + 1
+SEL %cover%.PAL
+SORT POLY#
+REL %cover%.PFL 1 BY POLY# SUMMARY
+CALC $1FREQ = 0
+CALC $1FREQ = $1FREQ + 1
+Q STOP
+&end
+
+&return
+

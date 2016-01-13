@@ -1,0 +1,110 @@
+/*A----------------------------AUTHOR-----------------------------------
+/*
+/*Original Coding:  ESRI
+/*
+/*N----------------------------NAME-------------------------------------
+/* 
+/*NODESFROMPOINTS.AML
+/*Copyright 1995, Environmental Systems Research Institute, Inc.  
+/*
+/*P---------------------------PURPOSE-----------------------------------
+/* 
+/*This AML will take an ascii file consisting of intersection points 
+/*(x,y coordinates) and split each corresponding arc at the listed 
+/*location...
+/*
+/*U---------------------------USAGE-------------------------------------
+/* 
+/*NODESFROMPOINTS <splitcov> <pointcov> <search_radius>
+/*
+/*V--------------------------VARIABLES----------------------------------
+/*
+/*cover - the cover (network or otherwise) that will be split.
+/*pointcov - the point coverage that should be NODEs on the network
+/*tmpfile - a temporary ascii file containing the x,y coordinates for the 
+/*       "to-be-nodes."
+/*radius - a search radius in coverage units to aid in establishing an
+/*         edit_distance
+/*fileunit1 - set to establish the [OPENing] and [READing] of tmpfile.
+/*read$stat - status variable to control the reading of tmpfile.
+/*open$stat - set to establish tmpfile as being OPENed.
+/*newpt - the UPPERCASE version of %pointcov%
+/*eoa - a varible for the status of the tmpfile, either 0 or 100 
+/*      depending upon whether or not it was deleted at the End Of 
+/*      the Aml.
+/*
+/*============================DISCLAIMER================================
+/*You may use, copy, modify, merge, distribute, alter, reproduce and/or
+/*create derivative works of this AML for your own internal use.  All
+/*rights not specifically granted herein are reserved to ESRI.  
+/*
+/*THIS AML IS PROVIDED "AS-IS" WITHOUT WARRANTY OF ANY KIND, EITHER
+/*EXPRESS OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+/*WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE,
+/*WITH RESPECT TO THE AML.  
+/*
+/*ESRI shall not be liable for any damages under any theory of law
+/*related to your use of this AML, even if ESRI is advised of the
+/*possibilites of such damage.  This AML is not supported by ESRI.
+/*======================================================================
+/*
+&args splitcov pointcov radius
+&if [NULL %splitcov%] &then &return ~
+  Usage:  NODESFROMPOINTS <splitcov> <pointcov> <search_dist> 
+&if [EXISTS tmpfile -FILE] &then
+  &type [DELETE tmpfile -FILE]
+&if [EXISTS %pointcov%.frq -INFO] &then
+  &type [DELETE %pointcov%.frq -INFO]
+&s newpt = [TRANSLATE %pointcov%]
+near %pointcov% %splitcov% line %radius% # location
+
+&type here I am
+
+&data ARC INFO
+ARC
+SEL %newpt%.PAT
+CALC $COMMA-SWITCH = -1
+OUTPUT ../tmpfile INIT
+DISPLAY X-COORD,',',Y-COORD PRINT
+Q STOP
+&end 
+
+statistics %pointcov%.PAt %pointcov%.frq
+max distance
+end
+&s sev [EXTRACT 1 [SHOW &severity]]  
+&s mess [SHOW &mess]                                     
+&severity &error &ignore
+&mess &off
+&s curvar [show cursor cur1]
+&mess %mess%
+&severity &error %sev%
+&if ^ [NULL %curvar%] &then
+ CURSOR cur1 REMOVE
+CURSOR cur1 DECLARE %pointcov%.frq INFO
+CURSOR cur1 OPEN
+&s .dist = %:cur1.max-distance%
+CURSOR cur1 CLOSE
+&s fileunit1 = [OPEN tmpfile open$stat -READ]
+&s xy  = [READ %fileunit1% read$stat]
+ae
+ec %splitcov%;de arc node
+bc %pointcov% 6;be label
+ef arc;draw
+/*ed %.dist%
+coo key
+&do &while %read$stat% = 0
+  select 
+  [UNQUOTE %xy%]
+  split 
+  [UNQUOTE %xy%]
+  &s xy = [READ %fileunit1% read$stat]
+&end
+draw
+coo mouse
+&pause
+q y
+build %splitcov% (!line node!)
+&if [EXISTS tmpfile -FILE] &then
+  &s eoa [DELETE tmpfile -FILE]
+&return

@@ -1,0 +1,217 @@
+/* -------------------------------------------------------------
+/* file: roadcut.aml
+/*
+/* This is an ARC command.  It requires that an arc coverage which has
+/* been produced by ROADMAP, and further processed by ROADASPECT, a
+/* roads coverage intersected with the slope and aspect grids.
+/*
+/* -------------------------------------------------------------
+/* -------------------------------------------------------------
+/* Battelle Memorial Institute
+/* Pacific Northwest Laboratory
+/* -------------------------------------------------------------
+/* -------------------------------------------------------------
+/* Created March 21, 1996 by  William A Perkins
+/* Last Change: Wed Sep 25 10:55:23 1996 by  William A Perkins <perk@mnemosyne.pnl.gov>
+/* -------------------------------------------------------------
+
+/* RCS ID: $Id: roadcut.aml,v 1.5 1996/09/25 22:14:14 perk Exp $
+
+&severity &error &routine hndlerr
+&severity &warning &ignore
+
+&args roadmap rwidth dwidth ddepth cutslp effdepth
+
+&if %:program% ne ARC &then
+  &do
+    &type Sorry, this should be run in ARC not %:program%
+    &return &error
+  &end
+
+/* -------------------------------------------------------------
+/* variable initialization
+/* -------------------------------------------------------------
+&setvar omessages = [show &messages]
+&messages &on /* &off &info
+&setvar odisplay = [show display]
+display 0
+
+&setvar program = ROADCUT
+&setvar usage = usage: %program% <cover> <rwidth/item> <dwidth/item> <ddepth/item> <cutslp/item> <effdepth/item>
+
+&setvar DEG = [calc 3.14159 / 180.0]
+
+/* -------------------------------------------------------------
+/* check command line
+/* -------------------------------------------------------------
+&if [null %roadmap%] or [null %rwidth%] or [null %dwidth%] or ~
+  [null %ddepth%] or [null %cutslp%] or [null %effdepth%] &then 
+    &do
+      &call recover
+      &return &error %usage%
+    &end
+&setvar roadmap = [translate %roadmap%]
+
+                                /* check to see if the necessary items
+                                /* from ROWCOLMAP and ROADASPECT are
+                                /* in the roadmap coverage
+
+
+&do v &list ASPECT SLOPE RDASPECT
+  &if not [iteminfo %roadmap% -arc %v% -exists] &then
+    &do
+      &type %program%: error: item %v% not in %roadmap%.AAT
+      &type Were ROWCOLMAP and ROADASPECT used?
+      &call recover
+      &return &error %usage%
+    &end
+&end
+                                /* check the necessary item/values.
+                                /* When done there should be one
+                                /* variable defined for each.  The
+                                /* variable name will be different
+                                /* depending on whether it is a value
+                                /* or an item: e.g. rwidthvalue or
+                                /* rwidthitem
+
+&do v &list rwidth dwidth ddepth cutslp effdepth
+  &if [type [value %v%]] lt 0 &then
+    &do
+      &setvar %v%value = [value %v%]
+    &end
+  &else
+    &do
+      &setvar %v%item = [translate [value %v%]]
+      &if not [iteminfo %roadmap% -line [value %v%item] -exists] &then
+        &do
+          &type %program%: error: unable to locate item [value %v%item] in %roadmap%.AAT
+          &call recover
+          &return &error %usage%
+        &end
+    &end
+&end
+
+/* -------------------------------------------------------------
+/* do the work
+/* -------------------------------------------------------------
+
+                                /* two items will be added to the AAT:
+                                /* dcut, ewidthcut.  If they exist
+                                /* their values will be overwritten
+
+&do v &list CUTDEPTH EFFCUTWIDTH
+  &type %roadmap%: %v%
+  &if [iteminfo %roadmap% -line %v% -exists] &then
+    &do
+      &type %program%: warning: existing values of %v% in %roadmap%.AAT will be overwritten
+    &end
+  &else
+    &do
+      additem %roadmap%.aat %roadmap%.aat %v% 4 12 F 3
+    &end
+&end
+
+                                /* open cursor to arc table; ASPECT,
+                                /* RDASPECT, SLOPE items should be
+                                /* available
+
+cursor arc declare %roadmap% arc rw
+cursor arc open
+&do &while %:arc.AML$NEXT%
+  &do v &list rwidth dwidth ddepth cutslp effdepth
+    &if [variable %v%item] &then
+      &do
+        &setvar %v%value = [value :arc.[value %v%item]]
+      &end
+  &end
+  &setvar slope = %:arc.slope%
+  &setvar aspect = %:arc.aspect%
+  &setvar rdaspect = [round [abs [calc %:arc.rdaspect% - %:arc.aspect%]]]
+
+  &setvar slopep = [calc %slope% * [abs [cos [calc %rdaspect% * %DEG%]]]]
+  &setvar alpha = [atan %slopep%]
+  &setvar beta = [atan [calc 1 / %cutslpvalue%]]
+
+  &if %alpha% eq 0.0 or %cutslpvalue% < %slopep% &then
+    &do
+      &setvar :arc.cutdepth = %ddepthvalue%
+      &setvar :arc.effcutwidth = %dwidthvalue%
+    &end
+  &else
+    &do
+      &setvar dprime = [calc ( 0.5 * %rwidthvalue% + %dwidthvalue% ) * [sin %alpha%] ]
+      &setvar w = [calc %ddepthvalue% / [tan %alpha%]]
+      &setvar dcut = [calc ( 0.5 * %rwidthvalue% ) + ( 0.5 * %dwidthvalue% ) + %w%]
+      &setvar dcut = [calc %dprime% * %dcut%]
+      &setvar dcut = [calc %dcut% / ( 0.5 * %rwidthvalue% + %dwidthvalue% ) ]
+  
+      &setvar x = [calc [cos %alpha%] / [tan %beta%] ]
+      &setvar x = [calc %x% - %dprime% / ( 0.5 * %rwidthvalue% + %dwidthvalue% ) ]
+      &setvar x = [calc %dprime% / %x%]
+
+      /* if the cut slope is too shallow for the current cell,
+      /* effective widths can be very large.  To avoid this situation,
+      /* limit x to be no greater than the road width.  This is an
+      /* arbitrary comparison.
+      
+      &if %x% gt %rwidthvalue% &then
+        &setvar x = %rwidthvalue%
+      
+      &setvar wcut = [calc ( %x% + 0.5 * %rwidthvalue% + %dwidthvalue% ) / [cos %alpha%] ]
+
+      /* don't allow the cutdepth to exceed the minimum soil depth for the reach */
+
+      &if %dcut% gt %effdepthvalue% &then
+        &setvar :arc.cutdepth = %effdepthvalue%
+      &else	
+        &setvar :arc.cutdepth = %dcut%
+      
+	&setvar :arc.effcutwidth = ~
+        [calc 0.5 * ( %wcut% * %dprime% + %dwidthvalue% * %ddepthvalue% ) / %dcut% ]
+    &end
+
+  cursor arc next
+&end
+cursor arc remove
+  
+&call recover
+&return
+
+/* -------------------------------------------------------------
+/* recover
+/* -------------------------------------------------------------
+&routine recover
+&do &while %:program% ne ARC
+  &select %:program% 
+    &when ARCEDIT
+      quit no
+    &when ARCPLOT
+      quit
+    &when GRID
+      quit
+  &end 
+&end 
+
+                                /* get rid of cursors used
+
+&do i &list [translate [show cursors]]
+  &select %i%
+    &when ARC
+      cursor %i% remove
+  &end
+&end
+
+display %odisplay%
+&messages %omessages%
+
+&return
+
+
+/* -------------------------------------------------------------
+/* hndlerr
+/* -------------------------------------------------------------
+&routine hndlerr
+&severity &error &fail
+&call recover
+&type %program%: unrecoverable error 
+&return &error Aborting...

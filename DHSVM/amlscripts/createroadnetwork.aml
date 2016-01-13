@@ -1,0 +1,434 @@
+/* -------------------------------------------------------------
+/* file: roadnetwork.aml 
+/* 
+/* usage: network.aml <dem> <soildepth> <road network> 
+/*
+/* dem (grid) must be in meters
+/* soil depth (grid) 
+/* road network (coverage)
+/*
+/* This aml creates the road network files for DHSVM. It requires a 
+/* dem with all the sinks filled in, a grid of soil depth and a 
+/* road network that has been broken at sink and divide locations 
+/* and contains a class attribute in the aat.
+
+/* Note this script assigns channel hydraulic classes automatically 
+/* based on a hard-wired look-up table.  If you have additional 
+/* channel hydraulic inforamtion this will have to be edited.
+/* -------------------------------------------------------------
+
+/* -------------------------------------------------------------
+/* Created by: Laura Bowling 1/10/2003
+/* -------------------------------------------------------------
+
+&severity &error &routine hndlerr
+&severity &warning &ignore
+
+&args elev soildepth roadnet 
+
+/* -------------------------------------------------------------
+/* variable initialization
+/* -------------------------------------------------------------
+&setvar omessages = [show &messages]
+&messages &on /* &off &info
+&setvar odisplay = [show display]
+display 0
+
+&setvar program = ROADNETWORK
+&setvar usage = usage: %program% <dem> <soildepth> <road network> 
+
+/* -------------------------------------------------------------
+/* check command line options
+/* -------------------------------------------------------------
+
+&if [null %elev%] or [null %roadnet%] or [null %soildepth%] &then
+  &do
+    &call recover
+    &return &error %usage%
+  &end
+
+&if not [exists %elev% -grid] &then
+    &do
+      &type %program%: error: the elevation grid does not exist
+      &call recover
+      &return &error %usage%
+    &end
+
+&if not [exists %soildepth% -grid] &then
+    &do
+      &type %program%: error: the soil depth grid does not exist
+      &call recover
+      &return &error %usage%
+    &end
+
+&if not [exists %roadnet% -cover] &then
+    &do
+      &type %program%: error: the road network coverage does not exist
+      &call recover
+      &return &error %usage%
+    &end
+
+/* -------------------------------------------------------------
+/* check program
+/* -------------------------------------------------------------
+
+&if %:program% ne ARC &then
+  &do
+    &type Sorry, this should be run in ARC not %:program%
+    &return &error
+  &end
+
+/* -------------------------------------------------------------
+/* check validity of inputs
+/* -------------------------------------------------------------
+grid
+&describe %elev%
+&if %grd$type% = 1 &then
+  &do
+    &type grid %elev% is integer
+    &type please convert to correct
+    &type floating point in meters
+    &stop
+  &end
+
+setwindow %elev%
+setcell %elev%
+&type computing flowdir
+&if [exists flowdir -grid] &then
+  kill flowdir
+flowdir = flowdirection(%elev%)
+&if [exists sinks -grid] &then kill sinks
+sinks = sink(flowdir)
+
+&describe sinks
+&if %GRD$ZMIN% > 0 &then 
+  &do
+    &type DEM %elev% has sinks, stopping
+    &stop
+  &end
+
+&type no sinks encountered
+quit
+
+build %roadnet% line
+renode %roadnet%
+intersecterr %roadnet%
+
+/* -------------------------------------------------------------
+/* Create stream coverage attribute table
+/* -------------------------------------------------------------
+
+&type calling TABLES to configure %roadnet%.aat
+TABLES
+&if not [iteminfo %roadnet% -arc from -exists] &then	
+  additem %roadnet%.aat from 4 12 F 3
+&if not [iteminfo %roadnet% -arc to -exists] &then	
+  additem %roadnet%.aat to 4 12 F 3
+&if not [iteminfo %roadnet% -arc dz -exists] &then	
+  additem %roadnet%.aat dz 4 12 F 3
+&if not [iteminfo %roadnet% -arc slope -exists] &then	
+  additem %roadnet%.aat slope 4 12 F 5
+&if not [iteminfo %roadnet% -arc segorder -exists] &then	
+  additem %roadnet%.aat segorder 4 4 b
+&if not [iteminfo %roadnet% -arc downarc -exists] &then	
+  additem %roadnet%.aat downarc 4 8 b
+&if not [iteminfo %roadnet% -arc uparc -exists] &then	
+  additem %roadnet%.aat uparc 4 8 b
+&if not [iteminfo %roadnet% -arc class -exists] &then	
+  additem %roadnet%.aat class 4 4 b
+&if not [iteminfo %roadnet% -arc hyddepth -exists] &then	
+  additem %roadnet%.aat hyddepth 4 8 F 2
+&if not [iteminfo %roadnet% -arc hydwidth -exists] &then	
+  additem %roadnet%.aat hydwidth 4 8 F 2
+&if not [iteminfo %roadnet% -arc effwidth -exists] &then	
+  additem %roadnet%.aat effwidth 4 8 F 2
+&if not [iteminfo %roadnet% -arc effdepth -exists] &then	
+  additem %roadnet%.aat effdepth 4 8 F 2
+&if not [iteminfo %roadnet% -arc cutslope -exists] &then	
+  additem %roadnet%.aat cutslope 4 12 F 5
+
+sel %roadnet%.aat
+calc %roadnet%-id = %roadnet%#
+quit
+
+/* -------------------------------------------------------------
+/* Renumber nodes, create node point coverage and find elevations
+/* -------------------------------------------------------------
+&type renoding %roadnet% and running latticespot
+&if [exists nodes -cover] &then
+  kill nodes all
+renode %roadnet%
+nodepoint %roadnet% nodes
+latticespot %elev% nodes
+
+/* -------------------------------------------------------------
+/* Relate to TNODE and FNODE in %roadnet%.aat, to the NODES# 
+/* attribute in the node point coverage
+/* -------------------------------------------------------------
+relate add
+too
+nodes.pat
+INFO
+TNODE#
+NODES#
+linear
+RO
+fro
+nodes.pat
+INFO
+FNODE#
+NODES#
+linear
+RO
+[unquote '']
+
+/* -------------------------------------------------------------
+/* Calculate segment slope using the node elevations
+/* -------------------------------------------------------------
+
+&type calculating slopes
+indexitem %roadnet%.aat FNODE#
+indexitem %roadnet%.aat TNODE#
+indexitem nodes.pat NODES#
+tables
+sel %roadnet%.aat
+calc from = fro//spot
+calc to = too//spot
+calc dz = from - to
+resel dz lt 0
+&s bad = [show number select]
+calc dz = dz * -1
+asel
+calc slope = dz / length
+resel slope lt 0.00001
+calc slope = 0.00001
+QUIT
+
+&type there are %bad% segments with negative slope...flipping
+&if %bad% gt 0 &then ;&do
+  &type flipping %bad% arcs
+  ARCEDIT
+  ec %roadnet%
+  ef arc
+  sel to gt from
+  flip
+  QUIT
+  yes
+  yes
+&end
+
+/* -------------------------------------------------------------
+/* Assign channel hydraulic classes
+/* -------------------------------------------------------------
+&type renoding
+renode %roadnet%
+
+&type configuring channel classes, hydraulic depths and widths
+tables
+sel %roadnet%.aat
+asel
+resel class eq 1
+calc hyddepth = .5
+calc hydwidth = .5
+calc effwidth = 10.0
+calc cutslope = 1
+asel
+resel class eq 2
+calc hyddepth = .5
+calc hydwidth = .5
+calc effwidth = 8.0
+calc cutslope = 1.5
+asel
+resel class eq 3
+calc hyddepth = .25 
+calc hydwidth = .25
+calc effwidth = 8.0
+calc cutslope = 1.5
+asel
+resel class eq 4
+calc hyddepth = .25 
+calc hydwidth = .25
+calc effwidth = 6.0
+calc cutslope = 2
+asel
+resel class eq 5
+calc hyddepth = .25
+calc hydwidth = .25
+calc effwidth = 5.0
+calc cutslope = 2
+asel
+resel class eq 6
+calc hyddepth = .25
+calc hydwidth = .25
+calc effwidth = 5.0
+calc cutslope = 2.5
+asel
+resel class eq 7
+calc hyddepth = .25
+calc hydwidth = .25
+calc effwidth = 4.0
+calc cutslope = 2.5
+asel
+resel class eq 8
+calc hyddepth = .25
+calc hydwidth = .25
+calc effwidth = 4.0
+calc cutslope = 3
+asel
+resel class eq 9
+calc hyddepth = .25
+calc hydwidth = .25
+calc effwidth = 3.0
+calc cutslope = 3
+asel
+calc segorder = 1
+quit
+
+/* -------------------------------------------------------------
+/* Define the 'shallowest' soil depth for each stream segment as 
+/* the effective channel depth.  (This step ensures that the cut 
+/* depth will not exceed the channel depth, will causes DHSVM to crash. 
+/* -------------------------------------------------------------
+
+/* make the %roadnet% into a point coverage
+
+&if [exists roadpt -cover] &then
+  kill roadpt all
+
+&type running arcpoint to make roadpt
+
+arcpoint %roadnet% roadpt line %roadnet%#
+build roadpt point
+
+/* get the soildepth at each of the points and put the spot elevation in the point coverage
+latticespot %soildepth% roadpt 
+
+&type determining the minimum soil depth for each segment
+
+&if [delete %soildepth% -INFO] = 0 &then
+  &type %soildepth% info file successfully deleted
+&else &type unable to delete %soildepth% info file 
+
+Arcplot
+statistics ROADPT point %ROADNET%# %soildepth%
+min spot
+end
+q
+
+joinitem %roadnet%.aat %soildepth% %roadnet%.aat %ROADNET%#
+tables
+&if [iteminfo %roadnet% -arc seg-depth -exists] &then	
+ dropitem %roadnet%.aat seg-depth
+
+sel %roadnet%.aat
+alter min-spot,seg-depth,,,,,
+calc effdepth = 0.95 * seg-depth
+quit
+
+/* -------------------------------------------------------------
+/* Create road network file for DHSVM
+/* -------------------------------------------------------------
+
+&if [exists road.network.dat -FILE] &then
+  &if [delete road.network.dat -FILE] = 0 &then
+    &type road.network.dat file successfully deleted
+  &else &type unable to delete road.network.dat file 
+&else &type old road.network.dat file doesn't exist
+
+tables
+sel %roadnet%.aat
+unload road.network.dat %ROADNET%-ID SEGORDER SLOPE LENGTH CLASS DOWNARC COLUMNAR #
+q
+
+&type Road network file has been output.
+
+/* -------------------------------------------------------------
+/* Create road map file for DHSVM
+/* -------------------------------------------------------------
+
+&type running wshdslope
+
+grid
+&run wshdslope %elev% slope aspect
+q
+
+&type running rowcolmap, this may take awhile
+&if [exists rowcolout -cover] &then
+  kill rowcolout all
+&run rowcolmap aspect slope rowcolout
+
+&type running roadmap
+&if [exists outcover -cover] &then
+  kill outcover all
+&run roadmap %roadnet% rowcolout outcover %roadnet%-id
+
+&type running roadaspect
+&run roadaspect outcover %elev%
+
+&type running roadelevation
+&run roadelevation %roadnet% %elev%
+
+&if [exists temp.road.map -FILE] &then
+  &if [delete temp.road.map -FILE] = 0 &then
+    &type temp.road.map file successfully deleted
+  &else &type unable to delete temp.road.map file 
+&else &type old temp.road.map file doesn't exist
+
+&run roadcut outcover EFFWIDTH HYDWIDTH HYDDEPTH CUTSLOPE EFFDEPTH
+&type running roadmapfile
+&run streammapfile outcover %roadnet% temp.road.map EFFWIDTH CUTDEPTH RDASPECT
+
+
+/* -------------------------------------------------------------
+/* Force all segments to drain correctly
+/* -------------------------------------------------------------
+
+gridascii %elev% dem.txt
+
+&sys ../programs/fixroads dem.txt stream.map.dat temp.road.map road.map.dat 9 9 
+
+&type cleaning up
+&if [exists aspect -grid] &then
+  kill aspect all
+&if [exists slope -grid] &then
+  kill slope all
+&if [exists flowdir -grid] &then
+  kill flowdir all
+&if [exists sinks -grid] &then
+  kill sinks all
+&if [exists local -grid] &then
+  kill local all
+&if [exists roadpt -cover] &then
+  kill roadpt all
+&if [exists nodes -cover] &then
+  kill nodes all
+&if [exists rowcolout -cover] &then
+  kill rowcolout all
+&return 
+/* -------------------------------------------------------------
+/* recover
+/* -------------------------------------------------------------
+&routine recover
+
+&if [variable tmpws] &then
+    &if [exists %tmpws% -workspace] &then
+      &setvar junk = [delete %tmpws% -workspace]
+
+&if [variable oldwin] &then 
+  setwindow %oldwin%
+&if [variable oldcell] &then 
+  setcell %oldcell%
+  
+&messages %omessages%
+
+&return
+
+
+/* -------------------------------------------------------------
+/* hndlerr
+/* -------------------------------------------------------------
+&routine hndlerr
+&severity &error &fail
+&call recover
+&type %program%: unrecoverable error 
+&return &error Aborting...

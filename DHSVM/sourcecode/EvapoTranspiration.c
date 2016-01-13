@@ -191,11 +191,3 @@ void EvapoTranspiration(int Layer, int Dt, PIXMET * Met, float NetRad,
   free(Rc);
 }
 
-/*------------Define Function cbrt: cubic root--------------*/
-/*  double cbrt(double x)  */
-/*  { */
-
-/*   if (fabs(x) < DBL_EPSILON) return 0.0; */
-/*   if (x > 0.0) return pow(x, 1.0/3.0); */
-/*   return -pow(-x, 1.0/3.0); */
-/*  } */

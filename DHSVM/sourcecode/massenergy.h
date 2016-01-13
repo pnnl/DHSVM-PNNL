@@ -26,33 +26,32 @@ float CanopyResistance(float LAI, float RsMin, float RsMax, float Rpc,
 		       float VpdThres, float MoistThres, float WP,
 		       float TSoil, float SoilMoisture, float Vpd, float Rp);
 
-float Desorption(int Dt, float Moisture, float Porosity, float Ks, float Press,
-		 float m);
+float Desorption(int Dt, float Moisture, float Porosity, float Ks, 
+			   float Press, float m);
 
 void EvapoTranspiration(int Layer, int Dt, PIXMET * Met, float NetRad,
-			float Rp, VEGTABLE * VType, SOILTABLE * SType,
-			float MoistureFlux, SOILPIX * LocalSoil, float *Int,
-			EVAPPIX * LocalEvap, float *Adjust, float Ra);
+			   float Rp, VEGTABLE * VType, SOILTABLE * SType,
+			   float MoistureFlux, SOILPIX * LocalSoil, float *Int,
+			   EVAPPIX * LocalEvap, float *Adjust, float Ra);
 
 void InitLocalRad(int HeatFluxOption, float Rs, float Ld,
-		  float Tair, float Tcanopy, float Tsoil,
-		  VEGTABLE * VType, SNOWPIX * LocalSnow, PIXRAD * LocalRad);
+		       float Tair, float Tcanopy, float Tsoil,
+		       VEGTABLE * VType, SNOWPIX * LocalSnow, PIXRAD * LocalRad);
 
 void InterceptionStorage(int NMax, int NAct, float *MaxInt, float *Fract,
-			 float *Int, float *Precip, float *MomentSq, float *Height, 
-			 unsigned char Understory, float Dt,
-			 float MS_Rainfall, float LD_FallVelocity);
+			   float *Int, float *Precip, float *MomentSq, float *Height, 
+			   unsigned char Understory, float Dt,
+			   float MS_Rainfall, float LD_FallVelocity);
 
-void LongwaveBalance(unsigned char OverStory, float F, float Ld,
-		     float Tcanopy, float Tsurf, PIXRAD * LocalRad);
+void LongwaveBalance(OPTIONSTRUCT *Options, unsigned char OverStory, 
+			   float F, float Ld, float Tcanopy, float Tsurf, PIXRAD * LocalRad);
 
 void NoEvap(int Layer, int NSoilLayers, EVAPPIX * LocalEvap);
 
-void NoSensibleHeatFlux(int Dt, PIXMET * LocalMet, float ETot,
-			SOILPIX * LocalSoil);
+void NoSensibleHeatFlux(int Dt, PIXMET * LocalMet, float ETot, SOILPIX * LocalSoil);
 
-void RadiationBalance(int HeatFluxOption, int CanopyRadAttOption, 
-		      float SineSolarAltitude, float Rs,
+void RadiationBalance(OPTIONSTRUCT *Options, int HeatFluxOption, int CanopyRadAttOption, 
+		      float SineSolarAltitude, float VICRs, float Rs,
 		      float Rsd, float Rsb, float Ld, float Tair,
 		      float Tcanopy, float Tsoil, float SoilAlbedo,
 		      VEGTABLE *VType, SNOWPIX *LocalSnow, PIXRAD *LocalRad);
@@ -63,8 +62,9 @@ void SensibleHeatFlux(int y, int x, int Dt, float Ra, float ZRef,
 		      int NSoilLayers, float *SoilDepth, SOILTABLE * SoilType,
 		      float MeltEnergy, SOILPIX * LocalSoil);
 
-void ShortwaveBalance(unsigned char OverStory, float F, float Rs, float Tau,
-		      float *Albedo, PIXRAD * LocalRad);
+void ShortwaveBalance(OPTIONSTRUCT *Options, unsigned char OverStory, 
+					  float F, float Rs, float Rsb,
+					  float Rsd, float Tau, float *Albedo, PIXRAD * LocalRad);
 
 float SoilEvaporation(int Dt, float Temp, float Slope, float Gamma, float Lv,
 		      float AirDens, float Vpd, float NetRad, float RaSoil,

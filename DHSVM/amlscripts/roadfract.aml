@@ -1,0 +1,241 @@
+/* -------------------------------------------------------------
+/* file: roadfract.aml
+/* -------------------------------------------------------------
+/* -------------------------------------------------------------
+/* Battelle Memorial Institute
+/* Pacific Northwest Laboratory
+/* -------------------------------------------------------------
+/* -------------------------------------------------------------
+/* Created May 15, 1996 by  William A Perkins
+/* Last Change: Thu May 30 10:12:24 1996 by  William A Perkins <perk@owl.pnl.gov>
+/* -------------------------------------------------------------
+
+/* RCS ID: $Id: roadfract.aml,v 1.1 1996/06/10 18:40:53 perk Exp $
+
+&severity &error &routine hndlerr
+&severity &warning &ignore
+
+&args roadmap map dem outfile
+
+&if %:program% ne ARC &then
+  &do
+    &type Sorry, this should be run in ARC not %:program%
+    &return &error
+  &end
+
+/* -------------------------------------------------------------
+/* variable initialization
+/* -------------------------------------------------------------
+&setvar omessages = [show &messages]
+&messages &on /* &off &info
+&setvar odisplay = [show display]
+display 0
+
+&setvar program = ROADFRACT
+&setvar usage = usage: %program% <cover> <map> <dem> <outfile>
+
+/* -------------------------------------------------------------
+/* check command line
+/* -------------------------------------------------------------
+&if [null %roadmap%] or [null %map%] or [null %dem%] or [null %outfile%] &then
+  &do
+    &call recover
+    &return &error %usage%
+  &end
+&setvar roadmap = [translate %roadmap%]
+&setvar map = [translate %map%]
+
+&if not [exists %roadmap% -arc] &then
+  &do
+    &type %program%: error: arc coverage %roadmap% does not exist
+    &call recover
+    &return &error %usage%
+  &end
+
+&if not [exists %map% -polygon] &then
+  &do
+    &type %program%: error: polygon coverage %map% does not exist
+    &call recover
+    &return &error %usage%
+  &end
+
+&if not [exists %dem% -grid] &then
+  &do
+    &type %program%: error: grid %dem% does not exist
+    &call recover
+    &return &error %usage%
+  &end
+&describe %dem%
+&setvar deltax = %GRD$DX%
+&setvar deltay = %GRD$DY%
+
+
+                                /* check items in the roads coverage
+                                /* to be sure road aspect and roadcut
+                                /* have be run on it
+
+&do v &list ST-LEN EFF-LEN CUTDEPTH EFFCUTWIDTH
+  &if not [iteminfo %roadmap% -arc %v% -exists] &then
+    &do
+      &type %program%: error: Item %v% does not exist in %roadmap%.AAT
+      &type Were ROADASPECT and ROADCUT run?
+      &call recover
+      &return &error %usage%
+    &end
+&end
+                                /* check items in the row/column map
+                                /* to make sure it was produced by
+                                /* ROWCOLMAP
+
+&do v &list ROW COLUMN ASPECT SLOPE
+  &if not [iteminfo %map% -polygon %v% -exist] &then
+    &do
+      &type %program%: error: item %v% does not exist in %map%.pat
+      &type Was %map% produced by ROWCOLMAP
+      &call recover
+      &return &error %usage%
+    &end
+&end
+  
+/* -------------------------------------------------------------
+/* do the work
+/* -------------------------------------------------------------
+
+                                /* create a temporary INFO file to
+                                /* hold a running total of effective
+                                /* length
+
+&setvar fractinfo = [scratchname -info]
+&data arc arcedit
+  create %fractinfo% info; ~
+    cell# 4 5 B; ~
+    totlen 4 12 F 2; ~
+    efflen 4 12 F 2; ~
+    fract 5 5 I;;
+  quit y
+&end
+relate add; cell; %fractinfo%; info; %map%#; cell#; linear; rw;;
+
+                                /* loop through the road arcs and sum
+                                /* up effective lengths
+
+&setvar DEG = [calc 3.14159 / 180.0]
+cursor arc declare %roadmap% arc
+cursor arc open 
+&do &while %:arc.AML$NEXT%
+  &if [value :arc.%map%#] ne [value :arc.cell//cell#] &then
+    &do
+      cursor arc relate cell insert
+      &setvar len = 0.0
+    &end
+  &else
+    &do
+      cursor arc relate cell first
+      &setvar len = %:arc.cell//efflen%
+    &end
+  &setvar len = [calc %len% + %:arc.eff-len%]
+  &setvar aspect = [calc %:arc.aspect% * %DEG%]
+  &setvar cellflowwidth = ~
+    [calc ( [abs [cos %aspect%]] * %deltax% ) + ( [abs [sin %aspect%]] * %deltay% )]
+  &setvar :arc.cell//totlen = %cellflowwidth%
+  &setvar :arc.cell//efflen = %len%
+  &setvar fract = [round [calc [calc %len% / %cellflowwidth%] * 255.0]]
+  &if %fract% gt 255 &then
+    &do
+      &setvar fract = 255
+    &end
+  &setvar :arc.cell//fract = %fract%
+  cursor arc next
+&end
+cursor arc remove
+relate drop; cell;;
+
+                                /* create a temporary grid from the
+                                /* fraction values
+
+relate add; fract; %fractinfo%; info; %map%#; cell#; linear; ro;;
+&setvar tmpgrid = [scratchname -directory]
+
+grid
+setcell %dem%
+setwindow %dem%
+%tmpgrid% = polygrid(%map%, fract//fract)
+quit
+relate drop; fract;;
+
+                                /* output the grid to an ascii file
+
+&if [exists %outfile% -file] &then
+  &do
+    &type %program%: warning: overwriting existing file %outfile%
+    &setvar junk = [delete %outfile% -file]
+  &end
+gridascii %tmpgrid% %outfile% 
+
+
+&call recover
+&return
+
+/* -------------------------------------------------------------
+/* recover
+/* -------------------------------------------------------------
+&routine recover
+&do &while %:program% ne ARC
+  &select %:program% 
+    &when ARCEDIT
+      quit no
+    &when ARCPLOT
+      quit
+    &when GRID
+      quit
+  &end 
+&end 
+
+                                /* get rid of cursors used
+
+&do i &list [translate [show cursors]]
+  &select %i%
+    &when ARC
+      cursor %i% remove
+  &end
+&end
+
+                                /* get rid of relates used
+
+&do i &list [translate [show relates]]
+  &select %i%
+    &when FRACT,CELL
+      &do 
+        relate drop; %i% ;;
+      &end
+  &end
+&end
+
+                                /* remove temporary coverages
+
+&if [variable fractinfo] &then
+  &do
+    &if [exists %fractinfo% -info] &then
+      &setvar junk = [delete %fractinfo% -info]
+  &end
+
+&if [variable tmpgrid] &then
+  &do
+    &if [exists %tmpgrid% -grid] &then
+      kill %tmpgrid% all
+  &end    
+
+display %odisplay%
+&messages %omessages%
+
+&return
+
+
+/* -------------------------------------------------------------
+/* hndlerr
+/* -------------------------------------------------------------
+&routine hndlerr
+&severity &error &fail
+&call recover
+&type %program%: unrecoverable error 
+&return &error Aborting...

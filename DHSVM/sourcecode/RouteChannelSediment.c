@@ -31,7 +31,7 @@
   Assign initial colluvium mass to each unique channel ID (amount
   of storage, kg)
 *****************************************************************************/
-int InitChannelSediment(Channel * Head, AGGREGATED * Total)
+int InitChannelSediment(Channel *Head, AGGREGATED *Total)
 {
   if (Head != NULL){ 
     Channel *Current = NULL;

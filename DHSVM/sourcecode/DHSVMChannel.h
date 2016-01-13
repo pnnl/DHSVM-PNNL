@@ -7,7 +7,7 @@
    ------------------------------------------------------------- */
 /* -------------------------------------------------------------
    Created August 30, 1996 by  William A Perkins
-   $Id: DHSVMChannel.h,v 1.11 2004/05/03 03:28:43 colleen Exp $
+   $Id: DHSVMChannel.h,v3.1.2 2013/10/03  Ning Exp $
    ------------------------------------------------------------- */
 
 #ifndef _DHSVMChannel_h_
@@ -39,6 +39,19 @@ typedef struct {
   FILE *sedroadflowout;
   FILE *sedstreaminflow;
   FILE *sedroadinflow;
+  /* new output files for John's RBM model */
+  FILE *streaminflow;
+  FILE *streamoutflow;
+  FILE *streamISW;
+  FILE *streamNSW;
+  FILE *streamILW;
+  FILE *streamNLW;
+  FILE *streamVP;
+  FILE *streamWND;
+  FILE *streamATP;
+  FILE *streamBeam;
+  FILE *streamDiffuse;
+  FILE *streamSkyView;
 } CHANNEL;
 
 /* -------------------------------------------------------------
@@ -46,7 +59,7 @@ typedef struct {
    ------------------------------------------------------------- */
 void InitChannel(LISTPTR Input, MAPSIZE *Map, int deltat, CHANNEL *channel,
 		 SOILPIX **SoilMap, int *MaxStreamID, int *MaxRoadID, OPTIONSTRUCT *Options);
-void InitChannelDump(CHANNEL *channel, char *DumpPath);
+void InitChannelDump(OPTIONSTRUCT *Options, CHANNEL *channel, char *DumpPath);
 void InitChannelSedimentDump(CHANNEL *channel, char *DumpPath, int ChannelRouting);
 double ChannelCulvertFlow(int y, int x, CHANNEL *ChannelData);
 void RouteChannel(CHANNEL * ChannelData, TIMESTRUCT * Time, MAPSIZE * Map,

@@ -10,7 +10,7 @@
  * DESCRIP-END.
  * FUNCTIONS:    
  * COMMENTS:
- * $Id: settings.h,v 1.18 2004/08/18 01:01:34 colleen Exp $     
+ * $Id: settings.h,v 3.1.2 2013/10/18 ning Exp $     
  */
 
 #ifndef SETTINGS_H
@@ -94,7 +94,7 @@ typedef unsigned int unint;
 #define NAMESIZE     127
 
 #define NDIRS          4	/* Number of directions in which water can flow, must equal 4 */
-#define NNEIGHBORS      8 /* Number of directions in which water and  sediment can flow based on fine grid, must equal 8 */
+#define NNEIGHBORS     8    /* Number of directions in which water and  sediment can flow based on fine grid, must equal 8 */
 
 #define NA          -9999	/* Not applicable */
 
@@ -106,11 +106,11 @@ typedef unsigned int unint;
 enum KEYS {
 /* Options *//* list order must match order in InitConstants.c */
   format = 0, extent, gradient, flow_routing, sensible_heat_flux, sediment,
-  sed_input_file, routing, infiltration, interpolation, 
-  mm5, qpf, prism, canopy_radatt, 
+  sed_input_file, routing, infiltration, interpolation, mm5, qpf, prism, canopy_radatt, 
   shading, snotel, outside, rhoverride, precipitation_source, wind_source, 
   temp_lapse, precip_lapse, cressman_radius, cressman_stations, prism_data_path, 
   prism_data_ext, shading_data_path, shading_data_ext, skyview_data_path, 
+  stream_temp, canopy_shading,
   /* Area */
   coordinate_system, extreme_north, extreme_west, center_latitude,
   center_longitude, time_zone_meridian, number_of_rows,
@@ -121,7 +121,7 @@ enum KEYS {
   ground_roughness, snow_roughness, rain_threshold, snow_threshold,
   snow_water_capacity, reference_height, rain_lai_multiplier,
   snow_lai_multiplier, min_intercepted_snow, outside_basin,
-  temp_lapse_rate, precip_lapse_rate, 
+  temp_lapse_rate, precip_lapse_rate, precip_multiplier,
   /* Station information */
   station_name = 0, station_north, station_east, station_elev, station_file,
   /* RADAR information */
@@ -156,7 +156,7 @@ enum KEYS {
   demfile = 0, maskfile,
   soiltype_file = 0, soildepth_file,
   /* DHSVM channel keys */
-  stream_network = 0, stream_map, stream_class,
+  stream_network = 0, stream_map, stream_class, riparian_veg,
   road_network, road_map, road_class,
   /* number of each type of output */
   output_path =
@@ -177,8 +177,8 @@ enum KEYS {
   mass_wasting = 0, surface_erosion, road_erosion, channel_routing,
   /* Parameters */
   mass_spacing, max_iterations,
-// Channel Parent parameters not currently used
-//  channeld50, channeld90,
+  // Channel Parent parameters not currently used
+  //  channeld50, channeld90,
   debrisd50, debrisd90,
   /* Sedtime*/
   mass_wasting_date = 0, erosion_start = 0, erosion_end,

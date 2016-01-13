@@ -1,0 +1,302 @@
+/* -------------------------------------------------------------
+/* file: wshdflowfract.aml
+/*
+/* usage: WSHDFLOWFRACT <lattice> <outname> {pad} {slope} {aspect} {checkaspect}
+/*
+/* This is an ARC command.  This routine prepares several ASCII GRID
+/* files for use in the PNL watershed model.  It uses a single DEM
+/* (<lattice>), which must be masked properly to the watershed
+/* boundary and produces several ASCII GRID files in whose names are
+/* prefixed with <outname> and have an extension of '.grd.'  The ASCII
+/* GRID's produced are as follows:
+/* 
+/*   <outname>-gamma.grd: The product of DEM slope and total effective
+/*   flow width.
+/*
+/*   <outname>-0.grd: Subsurface flow fraction to the north (0 to 255
+/*   represents 0.0 to 1.0)
+/*
+/*   <outname>-1.grd: Subsurface flow fraction to the east (0 to 255
+/*   represents 0.0 to 1.0)
+/*
+/*   <outname>-2.grd: Subsurface flow fraction to the south (0 to 255
+/*   represents 0.0 to 1.0)
+/*
+/*   <outname>-3.grd: Subsurface flow fraction to the west (0 to 255
+/*   represents 0.0 to 1.0)
+/*
+/* -------------------------------------------------------------
+/* -------------------------------------------------------------
+/* Battelle Memorial Institute
+/* Pacific Northwest Laboratory
+/* -------------------------------------------------------------
+/* -------------------------------------------------------------
+/* Created October 12, 1995 by  William A Perkins
+/* Last Change: Wed May 22 13:33:59 1996 by  William A Perkins <perk@clio.muse.pnl.gov>
+/* -------------------------------------------------------------
+
+/* RCS ID: $Id: wshdflowfract.aml,v 1.5 1996/05/29 18:22:16 perk Exp $
+
+&severity &error &routine hndlerr
+&severity &warning &ignore
+
+&args dem outname pad outslope outaspect outcheck
+
+&if %:program% ne ARC &then
+  &do
+    &type Sorry, this should be run in ARC not %:program%
+    &return &error
+  &end
+
+/* -------------------------------------------------------------
+/* variable initialization
+/* -------------------------------------------------------------
+&setvar omessages = [show &messages]
+&messages &on /* &off &info
+&setvar odisplay = [show display]
+display 0
+
+&setvar program = WSHDFLOWFRACT
+&setvar usage = usage: %program% <lattice> <outname> {pad} {outslope} {outaspect} {outcheck}
+
+&setvar tmpwspace = [scratchname -directory]
+
+                                /* temporary grid names
+
+&setvar slope = %tmpwspace%/slope
+&setvar aspect = %tmpwspace%/aspect
+&setvar sine = %tmpwspace%/sine
+&setvar cosine = %tmpwspace%/cosine
+&setvar fract = %tmpwspace%/fract
+&setvar gamma = %tmpwspace%/gamma
+&setvar newaspect = %tmpwspace%/checkaspect
+&setvar outlet = %tmpwspace%/outlet
+
+/* -------------------------------------------------------------
+/* check command line options
+/* -------------------------------------------------------------
+&if [null %dem%] or [null %outname%] &then
+  &do
+    &call recover
+    &return &error %usage%
+  &end
+
+&setvar dem = [translate %dem%]
+
+&if not [exists %dem% -grid] &then
+  &do
+    &type %program%: error: DEM lattice %dem% does not exists
+    &call recover
+    &return &error %usage%
+  &end
+
+&if [null %pad%] &then
+  &setvar pad = 0
+&if [type %pad%] ge 0 &then
+  &do
+    &type %program%: error: pad value must be numeric
+    &call recover
+    &return &error %usage%
+  &end
+
+&setvar outslope = [translate %outslope%]
+&setvar outcheck = [translate %outcheck%]
+&setvar outaspect = [translate %outaspect%]
+
+&if not [null %outslope%] &then
+  &do
+    &setvar slope = %outslope%
+  &end
+&if not [null %outaspect%] &then
+  &do
+    &setvar aspect = %outaspect%
+  &end
+&if not [null %outcheck%] &then
+  &do
+    &type %program%: info: saving flow aspect as grid %outcheck%
+    &setvar newaspect = %outcheck%
+  &end
+
+/* -------------------------------------------------------------
+/* do the work
+/* -------------------------------------------------------------
+
+createworkspace %tmpwspace%
+
+grid                            /* GRID
+setcell %dem%
+setwindow %dem%
+&describe %dem%
+&setvar deltax = %GRD$DX%
+&setvar deltay = %GRD$DY%
+
+                                /* compute dem slope and aspect
+
+&if not [exist %slope% -grid] or not [exist %aspect% -grid] &then
+  &do
+    &type %program%: info: saving %dem% slope as grid %outslope%
+    &type %program%: info: saving %dem% aspect as grid %outaspect%
+    &run wshdslope %dem% %slope% %aspect%
+  &end
+&else 
+  &do
+    &type %program%: info: using %dem% slope in existing grid %outslope%
+    &type %program%: info: using %dem% aspect in existing grid %outaspect%
+  &end
+
+
+                                /* compute sine and cosine of aspect
+                                /* for later use
+
+DOCELL
+costmp := cos(%aspect% / DEG)
+sintmp := sin(%aspect% / DEG)
+
+if ((costmp > 0 and isnull(%dem%(0,-1)) ) or (costmp < 0 and isnull(%dem%(0,1)))) {
+  costmp := - costmp
+} 
+if ((sintmp > 0 and isnull(%dem%(1,0)) or (sintmp < 0 and isnull(%dem%(-1,0))))) {
+  sintmp := - sintmp
+}
+
+%cosine% = costmp
+%sine% = sintmp
+END
+
+
+                                /* save gamma values
+
+&setvar totwidth = ( abs(%cosine%) * %deltax% ) + ( abs(%sine%) * %deltay% )
+%gamma% = %slope% * %totwidth%
+
+                                /* compute individual cell fractions
+
+&do i := 0 &to 3
+  &setvar g = %fract%-%i% 
+  &if [exists %g% -grid] &then
+    &do 
+      &type %program%: warrning: removing existing temporary grid %g%
+      kill %g% all
+    &end
+  &select %i% 
+    &when 0
+      &do
+        &setvar effwidth = con(%cosine% > 0, %cosine% * %deltax%, 0.0)
+      &end
+    &when 2
+      &do
+        &setvar effwidth = con(%cosine% < 0, - %cosine% * %deltax%, 0.0)
+      &end
+    &when 1
+      &do
+        &setvar effwidth = con(%sine% > 0, %sine% * %deltay%, 0.0)
+      &end
+    &when 3
+      &do
+        &setvar effwidth = con(%sine% < 0, - %sine% * %deltay%, 0.0)
+      &end
+  &end
+  %fract%-%i% = int ( ( %effwidth% ) / ( %totwidth% ) * 255.0 + 0.5 )
+&end
+
+                                /* build a new aspect grid to check
+                                /* computed flow directions
+
+&if [exists %newaspect% -grid] &then
+  &do
+    &type %program%: warning: removing existing grid %newaspect%
+    kill %newaspect% all
+  &end
+DOCELL  
+  if (%fract%-0 gt 0) {
+    if (%fract%-1 gt 0) {
+      %newaspect% = atan2(%fract%-1, %fract%-0) * DEG
+    } else if (%fract%-3 gt 0) {
+      %newaspect% = atan2(- %fract%-3, %fract%-0) * DEG + 360.0
+    } else %newaspect% = 0.0
+  } else if (%fract%-2 gt 0) {  
+    if (%fract%-1 gt 0) {
+      %newaspect% = atan2(%fract%-1, - %fract%-2) * DEG
+    } else if (%fract%-3 gt 0) {
+      %newaspect% = atan2(- %fract%-3, - %fract%-2) * DEG + 360.0
+    } else %newaspect% = 180.0
+  } else if (%fract%-1 gt 0) { 
+    %newaspect% = 90.0
+  } else if (%fract%-3 gt 0) {
+    %newaspect% =  270.0
+  } else {
+    %newaspect% = -1
+  }
+END
+
+
+quit                            /* GRID
+
+                                /* create the ASCII grid files
+
+&if [exists %outname%-elev.grd -file] &then
+  &do
+    &type %program%: warning: overwriting existing file %outname%-elev.grd
+    &setvar junk = [delete %outname%-elev.grd -file]
+  &end
+&run grid2floatbin %dem% %outname%-elev.bin %pad%
+&if [exists %outname%-gamma.grd -file] &then
+  &do
+    &type %program%: warning: overwriting existing file %outname%-gamma.grd
+    &setvar junk = [delete %outname%-gamma.grd -file]
+  &end
+&run grid2floatbin %gamma% %outname%-gamma.bin %pad% 0.0
+&if [exists %outname%-slope.grd -file] &then
+  &do
+    &type %program%: warning: overwriting existing file %outname%-slope.grd
+    &setvar junk = [delete %outname%-slope.grd -file]
+  &end
+&run grid2floatbin %slope% %outname%-slope.bin %pad% 0.0
+  
+&do i := 0 &to 3
+&if [exists %outname%-%i%.grd -file] &then
+  &do
+    &type %program%: warning: overwriting existing file %outname%-%i%.grd
+    &setvar junk = [delete %outname%-%i%.grd -file]
+  &end
+  gridascii %fract%-%i% %outname%-%i%.grd
+&end
+
+&call recover
+&return
+
+/* -------------------------------------------------------------
+/* recover
+/* -------------------------------------------------------------
+&routine recover
+
+&do &while %:program% ne ARC
+  &select %:program% 
+    &when ARCEDIT
+      quit no
+    &when ARCPLOT
+      quit
+    &when GRID
+      quit
+  &end 
+&end 
+
+                                /* remove temporary grids
+
+&if [variable tmpwspace] &then
+  &if [exists %tmpwspace% -workspace] &then
+    &setvar junk = [delete %tmpwspace% -workspace]
+
+display %odisplay%
+&messages %omessages%
+
+&return
+
+/* -------------------------------------------------------------
+/* hndlerr
+/* -------------------------------------------------------------
+&routine hndlerr
+&severity &error &fail
+&call recover
+&type %program%: unrecoverable error 
+&return &error Aborting...

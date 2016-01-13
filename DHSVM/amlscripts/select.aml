@@ -1,0 +1,15 @@
+/** Selects roads to assign class
+
+reselect roads07 arcs road_width ge 2 and road_width lt 4
+
+reselect roads07 arcs cutbank_height ge 0 and cutbank_height lt 2.5
+
+reselect roads07 arcs cutbank_slope ge 0 and cutbank_slope lt 5
+
+reselect roads07 arcs drainage_ditch_d ge 0 and drainage_ditch_d lt 12.5
+
+reselect roads07 arcs drainage_ditch_w ge 0 and drainage_ditch_w lt 50
+
+calculate roads07 arcs class = 1
+
+clearselect

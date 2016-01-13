@@ -1,0 +1,208 @@
+/*A------------------------------AUTHOR---------------------------------
+/* 
+/*Original Coding:     ESRI 
+/*
+/*N-------------------------------NAME----------------------------------
+/* 
+/*TRANSFER.AML 
+/*Copyright 1995, Environmental Systems Research Institute, Inc.  
+/*
+/*P-----------------------------PURPOSE---------------------------------
+/*
+/*This aml moves an attribute from the input coverage AAT to the output 
+/*coverage AAT.  It copies the output coverage to a temporary working 
+/*coverage.  It uses matchcover to transfer the attribute from the input 
+/*coverage to the temporary coverage.  INFO is used to move the 
+/*attribute from the temporary coverage to the output coverage.  
+/*
+/*U------------------------------USAGE----------------------------------
+/* 
+/*Usage: &R TRANSFER <in cov> <out cov> <source item> <target item> ~
+/*                   <match tolerance> 
+/*
+/*V----------------------------VARIABLES--------------------------------
+/*
+/* incov  - The input coverage.
+/* outcov - The output coverage contains the attribute from incov that 
+/*          matched
+/*          the arc from incov
+/* item   - The item from incov which will be transferred to outcov.
+/*
+/*
+/*C------------------------------CALLS----------------------------------
+/*
+/*NONE 
+/*
+/*============================DISCLAIMER================================
+/*You may use, copy, modify, merge, distribute, alter, reproduce and/or
+/*create derivative works of this AML for your own internal use.  All
+/*rights not specifically granted herein are reserved to ESRI.  
+/*
+/*THIS AML IS PROVIDED "AS-IS" WITHOUT WARRANTY OF ANY KIND, EITHER
+/*EXPRESS OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+/*WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE,
+/*WITH RESPECT TO THE AML.  
+/*
+/*ESRI shall not be liable for any damages under any theory of law
+/*related to your use of this AML, even if ESRI is advised of the
+/*possibilites of such damage.  This AML is not supported by ESRI.
+/*======================================================================
+&severity &error &routine bailout 
+
+&args incov outcov source_item target_item match_tol
+
+&if [null %incov%] or [null %outcov%] or ~
+    [null %source_item%] or [null %target_item%] or [null %match_tol%] &then
+  &return Usage: &r transfer <in_cov> <out_cov> <source_item> <target_item> ~ 
+<match_tolerance>    
+
+/* Check that both coverages exist.
+
+&do i &list %incov% %outcov%
+ &if ^ [exists %i% -coverage] &then
+ &return Coverage %i% does not exist.
+&end
+
+/* Determine if %source_item% in %incov%.aat matches %target_item% in %outcov%.aat
+
+&call check_items
+
+&if %item_mismatch% &then &do
+  &type
+  &type Source item definition does not match target item definition.
+  &type
+  &type Source item definition  %sourceitem_def%
+  &type Target item definition  %targetitem_def%
+  &type 
+  &return
+&end
+
+/* Inform the user.
+
+&type Transferring attributes from [translate %incov%].AAT in [translate %source_item%] ~
+to [translate %target_item%] in [translate %outcov%].AAT...
+
+/* Shut off the messages
+
+&s old$messages = [show &messages]
+&messages &off &all
+
+copy %outcov% xxtempcov
+
+/* The attribute that will get populated by matchcover in xxtempcov needs to
+/* be initialized to 0 or ' ' before running matchcover.  Call the appropriate
+/* routine based on item definition.
+
+&s process = proc1 /* proc1 - intialize %source_item% in xxtempcov
+
+&if %sourceitem_type% = 'C' &then
+  &call blankchar 
+&else 
+  &call blankreal 
+
+/* Run the matchcover.
+
+matchcover %incov% xxtempcov %match_tol%
+
+/* Move the attribute in xxtempcov to %outcov%.
+
+&s process = proc2 /* proc2 - move %source_item% in xxtempcov to %outcov%
+
+&if %sourceitem_type% = 'C' &then
+  &call blankchar   
+&else 
+  &call blankreal 
+
+&call exit
+&type TRANSFER.AML complete.
+&return /* To calling aml
+/*
+/* ---------------------------- Routine blankchar ----------------------------
+/*
+&routine blankchar
+&if %process% = 'proc1' &then &do
+  &data arc info
+    arc
+    SEL XXTEMPCOV.AAT
+    MOVE ' ' TO [translate %source_item%]
+    Q STOP
+  &end /* &data
+&end /* &if 
+&else &do
+  &data arc info
+    arc
+    SEL [translate %outcov%.aat]
+    REL XXTEMPCOV.AAT 1 BY $RECNO LINK RO
+    MOVE $1[translate %source_item%] TO [translate %target_item%]
+    Q STOP
+  &end /* &data
+&end /* &if
+&return
+/*
+/* ---------------------------- Routine blankreal ----------------------------
+/*
+&routine blankreal
+&if %process% = 'proc1' &then &do 
+  &data arc info 
+    arc 
+    SEL XXTEMPCOV.AAT
+    CALC [translate %source_item%] = 0
+    Q STOP 
+  &end /* &data 
+&end /* &if   
+&else &do 
+  &data arc info
+    arc 
+    SEL [translate %outcov%.aat] 
+    REL XXTEMPCOV.AAT 1 BY $RECNO LINK RO 
+    CALC [translate %target_item%] = $1[translate %source_item%]
+    Q STOP 
+  &end /* &data 
+&end /* &if
+&return
+/*
+/* ---------------------------- Routine check_items ----------------------------
+/*
+&routine check_items
+
+&do i &list %incov% %outcov%
+
+  /* Get the input widths and the item types for the source item and the target items.
+
+  &if %i% = %incov% &then &do
+    &s sourceitem_def = [iteminfo %i% -line %source_item% -definition]
+    &s sourceitem_width = [extract 1 [iteminfo %i% -line %source_item% -definition]]
+    &s sourceitem_type = [extract 3 [iteminfo %i% -line %source_item% -definition]]
+  &end
+  &else &do
+    &s targetitem_def = [iteminfo %i% -line %source_item% -definition]
+    &s targetitem_width = [extract 1 [iteminfo %i% -line %target_item% -definition]]
+    &s targetitem_type = [extract 3 [iteminfo %i% -line %target_item% -definition]]
+  &end /* &else &do
+&end /* &do i &list
+
+&if ( %sourceitem_width% <> %targetitem_width% )  or ~
+    ( %sourceitem_type% <> %targetitem_type% ) &then 
+  &s item_mismatch = .TRUE.
+&else
+  &s item_mismatch = .FALSE.
+    
+
+&return
+/*
+/* ---------------------------- Routine Exit ---------------------------------
+/*
+&routine exit
+&if [exists xxtempcov -cover] &then
+  kill xxtempcov all
+&if [variable old$messages] &then
+  &if %old$messages%  <> [show &messages] &then
+    &messages %old$messages%
+&return
+/*
+/* --------------------------- Routine Bailout -------------------------------
+/*
+&routine bailout
+&severity &error &ignore
+&call exit
+&return; &return &error Bailing out of transfer.aml

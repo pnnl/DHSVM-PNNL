@@ -1,0 +1,252 @@
+/* -------------------------------------------------------------
+/* file: roadmapfile.aml
+/* -------------------------------------------------------------
+/* -------------------------------------------------------------
+/* Battelle Memorial Institute
+/* Pacific Northwest Laboratory
+/* -------------------------------------------------------------
+/* -------------------------------------------------------------
+/* Created May 23, 1996 by  William A Perkins
+/* Last Change: Wed Sep 25 14:53:40 1996 by  William A Perkins <perk@mnemosyne.pnl.gov>
+/* -------------------------------------------------------------
+
+/* RCS ID: $Id: roadmapfile.aml,v 1.3 1996/09/25 22:16:18 perk Exp $
+
+&severity &error &routine hndlerr
+&severity &warning &ignore
+
+&args roadmap roads outfile cutwidth cutdepth rdaspect elevrte
+
+&if %:program% ne ARC &then
+  &do
+    &type Sorry, this should be run in ARC not %:program%
+    &return &error
+  &end
+
+/* -------------------------------------------------------------
+/* variable initialization
+/* -------------------------------------------------------------
+&setvar omessages = [show &messages]
+&messages &on /* &off &info
+&setvar odisplay = [show display]
+display 0
+
+&setvar program = ROADMAPFILE
+&setvar usage = usage: %program% <roadsmap> <roads> <outfile> {cutwidth/item} {cutdepth/item} {aspect/item} {route}
+
+&setvar defaultcutdepth = CUTDEPTH
+&setvar defaultcutwidth = EFFCUTWIDTH
+&setvar defaultrdaspect = RDASPECT
+/* -------------------------------------------------------------
+/* check command line
+/* -------------------------------------------------------------
+&if [null %roadmap%] or [null %roads%] or [null %outfile%] &then
+  &do
+    &call recover
+    &return &error %usage%
+  &end
+&setvar roadmap = [translate %roadmap%]
+&setvar roads = [translate %roads%]
+&setvar outfile = [translate %outfile%]
+
+
+
+&if [null %elevrte%] &then
+  &do
+    &setvar elevrte = ELEVATION
+  &end
+&setvar elevrte = [translate %elevrte%]
+
+&if not [exist %roadmap% -arc]  &then
+  &do
+    &type %program%: error: arc coverage %roadmap% not found
+    &call recover
+    &return &error
+  &end
+&if not [exist %roads% -arc] &then
+  &do
+    &type %program%: error: arc coverage %roads% not found
+    &call recover
+    &return &error
+  &end
+&if not [exist %roads% -section.%elevrte%] &then
+  &do
+    &type %program%: error: arc coverage %roads% does not have section.%elevrte% feaature
+    &call recover
+    &return &error
+  &end
+
+                                /* check to make sure the %roadmap%
+                                /* came from ROADMAP
+
+&do item &list ROW COLUMN SEG-ID [entryname %roads%]#
+  &if not [iteminfo %roadmap% -arc %item% -exists] &then
+    &do
+      &type %program%: error: Item %item% not found in %roadmap%.AAT
+      &type Was %roadmap% produced by ROADMAP?
+      &call recover
+      &return &error %usage%
+    &end
+&end
+
+                                /* check for cut height and width
+                                /* arguments
+
+&do v &list cutwidth cutdepth rdaspect
+  &if [null [value %v%]] &then
+    &setvar %v%item = [value default%v%]
+  &else
+    &select [type [value %v%]] 
+      &when 1
+        &setvar %v%item = [value %v%]
+      &when -1, -2
+        &setvar %v%value = [value %v%]
+      &otherwise 
+        &do
+          &type %program%: error: argument "[value %v%]" not understood
+          &call recover
+          &return &error %usage%
+        &end
+    &end
+  &if [variable %v%item] &then
+    &do
+      &if not [iteminfo %roadmap% -arc [value %v%item] -exists]  &then
+        &do
+          &type %program%: error: item [value %v%item] not found in %roadmap%.aat
+          &call recover
+          &return &error %usage%
+        &end
+    &end
+&end
+
+                                /* check output file
+
+&if [exists %outfile% -file] &then
+  &do
+    &type %program%: warning: overwriting existing file %outfile%
+    &setvar junk = [delete %outfile% -file]
+  &end
+
+
+/* -------------------------------------------------------------
+/* do the work
+/* -------------------------------------------------------------
+
+&setvar out = [open [unquote %outfile%] stat -write]
+&if %stat% ne 0 &then
+  &do
+    &type %program%: error: unable to write to file %outfile%
+    &return &error %usage%
+  &end
+
+&setvar stat = [write %out% '###### This file has been automatically generated #####']
+&setvar stat = [write %out% '######             EDIT WITH CARE!!!              #####']
+&setvar stat = [write %out% [quote # Generated: [date -cal] [date -ampm]]]
+&setvar stat = [write %out% [quote # Command: %program% %roadmap% %outfile% %cutwidth% %cutdepth%]]
+&setvar stat = [write %out% [quote # Workspace: [show workspace]]]
+&setvar stat = [write %out% '#                   Segment  Cut/Bank     Cut     Segment']
+&setvar stat = [write %out% '#  Col  Row  ID      Length   Height     Width     Aspect   SINK?']
+&setvar stat = [write %out% '#                     (m)      (m)        (m)       (d)    (optional)']
+&setvar stat = [write %out% '#']
+
+&format 4
+&setvar fmtstr = '%1,-5%%2,-5%%3,-5%%4,-12% %5,-10% %6,-9% %7,-10% %8%'
+
+relate add; fnode; %roadmap%.nat; info; fnode#; %roadmap%#; linear; ro;;
+relate add; tnode; %roadmap%.nat; info; tnode#; %roadmap%#; linear; ro;;
+relate add; sec; %roads%.sec%elevrte%; info; [entryname %roads%]#; arclink#; linear; ro;;
+
+cursor arc declare %roadmap% arc 
+cursor arc open
+&do &while %:arc.AML$NEXT%
+  &do v &list cutwidth cutdepth rdaspect
+    &if [variable %v%value] &then
+      &setvar %v% = [value %v%value]
+    &else &if [variable %v%item] &then
+        &setvar %v% = [value :arc.[value %v%item]]
+      &else
+        &do
+          &type %program%: error: neither %v%value or %v%item defined!
+          &call recover
+          &return &error
+        &end
+  &end
+
+                                /* find out if the segment drains to a sink
+
+  &if [quote %:arc.fnode//type%] eq 'S' &then
+    &setvar sink = [calc %:arc.sec//sign% lt 0]
+  &else &if [quote %:arc.tnode//type%] eq 'S' &then
+      &setvar sink = [calc %:arc.sec//sign% gt 0]
+    &else
+      &setvar sink = .false.
+  &if %sink% &then
+    &setvar sink = 'SINK'
+  &else
+    &setvar sink = ' '
+
+                                /* write out the record
+
+  &setvar stat [write %out% [format %fmtstr% %:arc.column% %:arc.row% ~
+    [value :arc.[entryname %roads%]#] %:arc.length% %cutdepth% %cutwidth% %rdaspect% %sink%]]
+
+  cursor arc next
+&end
+cursor arc remove
+
+
+&call recover
+&return
+
+/* -------------------------------------------------------------
+/* recover
+/* -------------------------------------------------------------
+&routine recover
+&do &while %:program% ne ARC
+  &select %:program% 
+    &when ARCEDIT
+      quit no
+    &when ARCPLOT
+      quit
+    &when GRID
+      quit
+  &end 
+&end 
+
+&if [variable out] &then
+  &setvar junk = [close %out%]
+
+                                /* remove used cursors
+
+&do i &list [translate [show cursors]]
+  &select %i%
+    &when ARC
+      cursor %i% remove
+  &end
+&end
+
+                                /* remove used relates
+
+&do i &list [translate [show relates]]
+  &select %i%
+    &when  FNODE, TNODE, SEC
+      &do
+        relate drop; %i%;;
+      &end
+  &end
+&end
+
+display %odisplay%
+&messages %omessages%
+
+&return
+
+
+/* -------------------------------------------------------------
+/* hndlerr
+/* -------------------------------------------------------------
+&routine hndlerr
+&severity &error &fail
+&call recover
+&type %program%: unrecoverable error 
+&return &error Aborting...

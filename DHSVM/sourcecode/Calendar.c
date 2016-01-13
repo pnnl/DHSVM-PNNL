@@ -222,6 +222,25 @@ void PrintDate(DATE * Day, FILE * OutFile)
 	  Day->Year, Day->Hour, Day->Min, Day->Sec);
 }
 
+/*****************************************************************************
+  PrintRBMStartDate()
+*****************************************************************************/
+void PrintRBMStartDate(int Dt, DATE *Day, FILE * OutFile)
+{
+  double rbmday;
+  double sec;
+  DATE *RBM_DAY;
+
+  RBM_DAY = (DATE *) calloc(1, sizeof(DATE));
+
+  rbmday = Day->Julian + 1;
+  JulianDayToGregorian(rbmday, &(RBM_DAY->Year), &(RBM_DAY->Month), &(RBM_DAY->Day),
+		       &(RBM_DAY->Hour), &(RBM_DAY->Min), &sec);
+  RBM_DAY->Sec = (int)sec;
+
+  fprintf(OutFile, "%02d/%02d/%4d-00:%02d:%02d", RBM_DAY->Month, RBM_DAY->Day,
+	  RBM_DAY->Year, RBM_DAY->Min, RBM_DAY->Sec);
+}
 /* -------------------------------------------------------------
    SPrintDate
    Formats a DATE to a string
@@ -235,7 +254,7 @@ void SPrintDate(DATE * Day, char *buffer)
 /*****************************************************************************
   IsNewMonth()
 *****************************************************************************/
-uchar IsNewMonth(DATE * Now, int Interval)
+uchar IsNewMonth(DATE *Now, int Interval)
 {
   int Year;
   int Month;
@@ -278,7 +297,7 @@ uchar Before(DATE * Day1, DATE * Day2)
 /*****************************************************************************
   After()
 *****************************************************************************/
-uchar After(DATE * Day1, DATE * Day2)
+uchar After(DATE *Day1, DATE *Day2)
 {
   if (Day1->Julian > Day2->Julian)
     return TRUE;
@@ -683,8 +702,3 @@ int SScanMonthDay(char *DateStr, DATE * Day)
   return TRUE;
 }
 
-/*---------------Funtion rint (round to nearest integer)----------------------*/
-/* float rint(float x) */
-/* { */
-/* return floor(x + 0.5); */
-/* } */

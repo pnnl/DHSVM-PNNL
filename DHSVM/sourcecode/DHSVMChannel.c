@@ -7,7 +7,7 @@
    ------------------------------------------------------------- */
 /* -------------------------------------------------------------
    Created August 30, 1996 by  William A Perkins
-   $Id: DHSVMChannel.c,v 1.16 2004/08/18 01:01:26 colleen Exp $
+   $Id: DHSVMChannel.c, v3.1.2  2013/12/20   Ning Exp $
    ------------------------------------------------------------- */
 
 #include <stdio.h>
@@ -27,7 +27,7 @@
    Reads stream and road files and builds the networks.
    -------------------------------------------------------------------------- */
 void
-InitChannel(LISTPTR Input, MAPSIZE * Map, int deltat, CHANNEL * channel,
+InitChannel(LISTPTR Input, MAPSIZE *Map, int deltat, CHANNEL *channel,
 	    SOILPIX ** SoilMap, int *MaxStreamID, int *MaxRoadID, OPTIONSTRUCT *Options)
 {
   int i;
@@ -35,6 +35,7 @@ InitChannel(LISTPTR Input, MAPSIZE * Map, int deltat, CHANNEL * channel,
     {"ROUTING", "STREAM NETWORK FILE", "", ""},
     {"ROUTING", "STREAM MAP FILE", "", ""},
     {"ROUTING", "STREAM CLASS FILE", "", ""},
+	{"ROUTING", "RIPARIAN VEG FILE", "", ""},
     {"ROUTING", "ROAD NETWORK FILE", "", "none"},
     {"ROUTING", "ROAD MAP FILE", "", "none"},
     {"ROUTING", "ROAD CLASS FILE", "", "none"},
@@ -85,6 +86,13 @@ InitChannel(LISTPTR Input, MAPSIZE * Map, int deltat, CHANNEL * channel,
     channel_routing_parameters(channel->streams, (double) deltat);
   }
 
+  if (Options->StreamTemp) {
+	if (strncmp(StrEnv[riparian_veg].VarStr, "none", 4)) {
+	  printf("\tReading channel riparian vegetation params\n");
+	  channel_read_rveg_param(channel->streams, StrEnv[riparian_veg].VarStr, MaxStreamID);
+	}
+  }
+
   if (strncmp(StrEnv[road_class].VarStr, "none", 4)) {
 
     printf("\tReading Road data\n");
@@ -113,7 +121,8 @@ InitChannel(LISTPTR Input, MAPSIZE * Map, int deltat, CHANNEL * channel,
 /* -------------------------------------------------------------
    InitChannelDump
    ------------------------------------------------------------- */
-void InitChannelDump(CHANNEL * channel, char *DumpPath)
+void InitChannelDump(OPTIONSTRUCT *Options, CHANNEL * channel, 
+					 char *DumpPath)
 {
   char buffer[NAMESIZE];
 
@@ -122,6 +131,45 @@ void InitChannelDump(CHANNEL * channel, char *DumpPath)
     OpenFile(&(channel->streamout), buffer, "w", TRUE);
     sprintf(buffer, "%sStreamflow.Only", DumpPath);
     OpenFile(&(channel->streamflowout), buffer, "w", TRUE);
+    /* output files for John's RBM model */
+	if (Options->StreamTemp) {
+      //inflow to segment
+      sprintf(buffer, "%sInflow.Only", DumpPath);
+      OpenFile(&(channel->streaminflow), buffer, "w", TRUE);
+      // outflow ( redundant but it's a check
+      sprintf(buffer, "%sOutflow.Only", DumpPath);
+      OpenFile(&(channel->streamoutflow), buffer, "w", TRUE);
+      // total incoming short wave
+      sprintf(buffer, "%sISW.Only", DumpPath);
+      OpenFile(&(channel->streamISW), buffer, "w", TRUE);
+	  //net incoming short wave
+      sprintf(buffer, "%sNSW.Only", DumpPath);
+      OpenFile(&(channel->streamNSW), buffer, "w", TRUE);
+      // total incoming long wave
+      sprintf(buffer, "%sILW.Only", DumpPath);
+      OpenFile(&(channel->streamILW), buffer, "w", TRUE);
+	  // net incoming long wave
+	  sprintf(buffer, "%sNLW.Only", DumpPath);
+      OpenFile(&(channel->streamNLW), buffer, "w", TRUE);
+      //Vapor pressure
+      sprintf(buffer, "%sVP.Only", DumpPath);
+      OpenFile(&(channel->streamVP), buffer, "w", TRUE);
+      //wind speed
+      sprintf(buffer, "%sWND.Only", DumpPath);
+      OpenFile(&(channel->streamWND), buffer, "w", TRUE);
+      //air temperature
+      sprintf(buffer, "%sATP.Only", DumpPath);
+      OpenFile(&(channel->streamATP), buffer, "w", TRUE);
+	  //beam radiation
+      sprintf(buffer, "%sBeam.Only", DumpPath);
+      OpenFile(&(channel->streamBeam), buffer, "w", TRUE);
+	  //diffuse radiation
+      sprintf(buffer, "%sDiffuse.Only", DumpPath);
+      OpenFile(&(channel->streamDiffuse), buffer, "w", TRUE);
+	  //skyview
+      sprintf(buffer, "%sSkyview.Only", DumpPath);
+      OpenFile(&(channel->streamSkyView), buffer, "w", TRUE);
+	}
   }
   if (channel->roads != NULL) {
     sprintf(buffer, "%sRoad.Flow", DumpPath);
@@ -192,12 +240,14 @@ RouteChannel(CHANNEL * ChannelData, TIMESTRUCT * Time, MAPSIZE * Map,
   char buffer[32];
   float CulvertFlow;
 
+
   /* give any surface water to roads w/o sinks */
   for (y = 0; y < Map->NY; y++) {
     for (x = 0; x < Map->NX; x++) {
       if (INBASIN(TopoMap[y][x].Mask)) {
 	SoilMap[y][x].IExcessSed = SoilMap[y][x].IExcess;
 	if (channel_grid_has_channel(ChannelData->road_map, x, y) && !channel_grid_has_sink(ChannelData->road_map, x, y)) {	/* road w/o sink */
+
 
 	  SoilMap[y][x].RoadInt += SoilMap[y][x].IExcess;
 	  channel_grid_inc_inflow(ChannelData->road_map, x, y,
@@ -260,6 +310,9 @@ RouteChannel(CHANNEL * ChannelData, TIMESTRUCT * Time, MAPSIZE * Map,
     channel_save_outflow_text(buffer, ChannelData->streams,
 			      ChannelData->streamout,
 			      ChannelData->streamflowout, flag);
+	/* save parameters for John's RBM model */
+	if (Options->StreamTemp)
+	  channel_save_outflow_text_cplmt(Time, buffer,ChannelData->streams,ChannelData, flag);
   }
   
 }

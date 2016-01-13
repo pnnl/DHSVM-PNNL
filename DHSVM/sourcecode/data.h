@@ -10,7 +10,7 @@
  * DESCRIP-END.
  * FUNCTIONS:    
  * COMMENTS:
- * $Id: data.h,v 1.31 2004/05/04 19:39:00 colleen Exp $     
+* $Id: data.h, v 3.1.1  2012/10/31   Ning Exp $ 
  */
 
 #ifndef DATA_H
@@ -119,17 +119,18 @@ typedef struct {
 
 typedef struct {
   float Tair;			/* Air temperature (C) */
-  float Rh;			/* Relative humidity (%) */
+  float Rh;			    /* Relative humidity (%) */
   float Wind;			/* Wind (m/s) */
+  float VICSin;         /* Observed Incoming shortwave used for RBM only (W/m2) */
   float Sin;			/* Incoming shortwave (W/m^2) */
-  float SinBeam;		        /* Incoming beam radiation (W/m^2) */
+  float SinBeam;		/* Incoming beam radiation (W/m^2) */
   float SinDiffuse;		/* Incoming diffuse radiation (W/m^2) */
   float Lin;			/* Incoming longwave (W/m^2) */
-  float AirDens;		        /* Air density on kg/m^3 */
-  float Lv;			/* Latent heat of vaporization (J/kg) */
+  float AirDens;		/* Air density on kg/m^3 */
+  float Lv;			    /* Latent heat of vaporization (J/kg) */
   float Press;			/* Atmospheric pressure (Pa) */
   float Gamma;			/* Psychrometric constant (Pa/C) */
-  float Es;			/* Saturated vapor pressure (Pa) */
+  float Es;			    /* Saturated vapor pressure (Pa) */
   float Eact;			/* Actual vapor pressure (Pa) */
   float Slope;			/* Slope of vapor pressure curve (Pa/C) */
   float Vpd;			/* Vapor pressure deficit (Pa) */
@@ -166,39 +167,39 @@ typedef struct {
 typedef struct {
   float Tair;			/* Air temperature (C) */
   float TempLapse;		/* Temperature lapse rate (C/m) */
-  float Rh;			/* Relative humidity (%) */
+  float Rh;				/* Relative humidity (%) */
   float Wind;			/* Wind (m/s) */
-  int WindDirection;		/* Wind direction, used when 
-				   WindSource == MODEL  */
+  int WindDirection;    /* Wind direction, used when WindSource == MODEL  */
+
   float Sin;			/* Incoming shortwave (W/m^2) */
   float SinBeamObs;		/* Observed incoming beam radiation (W/m^2) */
-  float SinDiffuseObs;		/* Observed incoming diffuse radiation 
-				   (W/m^2) */
+  float SinDiffuseObs;	/* Observed incoming diffuse radiation (W/m^2) */
+
   float SinBeamMod;		/* Modeled incoming beam radiation (W/m^2) */
-  float SinDiffuseMod;		/* Modeled incoming diffuse radiation (W/m^2) */
+  float SinDiffuseMod;	/* Modeled incoming diffuse radiation (W/m^2) */
   float BeamRatio;		/* Ratio of observed beam to modeled beam */
-  float DiffuseRatio;		/* Ratio of observed diffuse to modeled 
-				   diffuse */
+  float DiffuseRatio;	/* Ratio of observed diffuse to modeled diffuse */
+
   float Lin;			/* Incoming longwave (W/m^2) */
   float ClearIndex;		/* Cloudiness index */
-  /* The following is a hack, and needs to be
-     replaced by a better method,
-     WORK IN PROGRESS */
+  /* The following is a hack, and needs to be replaced by a better method, WORK IN PROGRESS */
+
+
   float Precip;			/* Rainfall if available (m) */
-  float Tsoil[3];		        /* Soil temperature in upper three layers */
-  float PrecipLapse;		/* Elevation Adjustment Factor for Precip */
+  float Tsoil[3];		/* Soil temperature in upper three layers */
+  float PrecipLapse;	/* Elevation Adjustment Factor for Precip */
 } MET;
 
 typedef struct {
-  char Name[BUFSIZE + 1];	/* Station name */
-  COORD Loc;			/* Station locations */
-  float Elev;			/* Station elevations */
-  float PrismPrecip[12];	/* MonthlyPrism Precip for each station if outside=TRUE */
+  char Name[BUFSIZE + 1];		/* Station name */
+  COORD Loc;					/* Station locations */
+  float Elev;					/* Station elevations */
+  float PrismPrecip[12];		/* MonthlyPrism Precip for each station if outside=TRUE */
   uchar IsWindModelLocation;	/* Only used in case the wind model option is
-				   specified.  In that case this field is TRUE
-				   for one (and only one) station, and FALSE 
-				   for all others */
-  FILES MetFile;		/* File with observations */
+								specified.  In that case this field is TRUE
+								for one (and only one) station, and FALSE for all others */
+
+  FILES MetFile;				/* File with observations */
   MET Data;
 } METLOCATION;
 
@@ -250,6 +251,8 @@ typedef struct {
   int Outside;					/* if TRUE then all listed met stats are used */
   int Rhoverride;				/* if TRUE then RH=100% if Precip>0 */
   int Shading;					/* if TRUE then terrain shading for solar is on */
+  int StreamTemp;
+  int CanopyShading;
   char SedFile[BUFSIZE+1];		/* Filename for sediment input file  */
   char PrismDataPath[BUFSIZE + 1];
   char PrismDataExt[BUFSIZE + 1];
@@ -261,6 +264,7 @@ typedef struct {
 
 typedef struct {
   float Precip;					/* Total amount of precipitation at pixel (m) */
+  float SumPrecip;              /* Accumulated precipitation at pixel (m) */
   float RainFall;		        /* Amount of rainfall (m) */
   float SnowFall;		        /* Amount of snowfall (m) */
   float MomentSq;               /* Momentum squared for rain, used in the sediment model (kg* m/s)^2 /m^2*s) */
@@ -281,15 +285,21 @@ typedef struct {
 } RADCLASSPIX;
 
 typedef struct {
-  float NetShort[2];             /* Shortwave radiation for vegetation surfaces 
-				   and ground/snow surface W/m2 */
-  float LongIn[2];		/* Incoming longwave radiation for vegetation
-				   surfaces and ground/snow surface W/m2 */
-  float LongOut[2];		/* Outgoing longwave radiation for vegetation
-				   surfaces and ground/snow surface W/m2 */
-  float PixelNetShort;		/* Net shortwave for the entire pixel W/m2 */
-  float PixelLongIn;		/* Incoming longwave for entire pixel W/m2 */
-  float PixelLongOut;		/* Outgoing longwave for entire pixel W/m2 */
+  float NetShort[2];    /* Shortwave radiation for vegetation surfaces and ground/snow surface W/m2 */
+
+  float LongIn[2];		/* Incoming longwave radiation for vegetation surfaces and ground/snow surface W/m2 */
+
+  float LongOut[2];		/* Outgoing longwave radiation for vegetation surfaces and ground/snow surface W/m2 */
+
+  float PixelNetShort;	/* Net shortwave for the entire pixel W/m2 */
+  float RBMNetLong;     /* Longwave radiation reaching the water surface W/m2 (for RBM) */
+  float RBMNetShort;
+  float PixelLongIn;	/* Incoming longwave for entire pixel W/m2 */
+  float PixelLongOut;	/* Outgoing longwave for entire pixel W/m2 */
+  float ObsShortIn;
+  float PixelShortIn;   /* Incoming shortwave for entire pixel W/m2 */
+  float PixelBeam;      /* Net direct beam radiation W/m2 */
+  float PixelDiffuse;   /* Net diffuse beam radiation W/m2 */
 } PIXRAD;
 
 typedef struct {
@@ -317,26 +327,25 @@ typedef struct {
 
 typedef struct {
   float SolarAzimuth;		/* solar azimuth */
-  float Latitude;		        /* Latitude of center of study area */
-  float Longitude;		/* Longitude of center of study area */
-  float StandardMeridian;	        /* Standard meridian for current time zone */
-  float NoonHour;		        /* Time at which solar noon occurs for
-				   current location */
+  float Latitude;		    /* Latitude of center of study area */
+  float Longitude;			/* Longitude of center of study area */
+  float StandardMeridian;	/* Standard meridian for current time zone */
+  float NoonHour;		    /* Time at which solar noon occurs for current location */
+
   float Declination;		/* Solar declination */
   float HalfDayLength;		/* Length of half day in hours */
-  float Sunrise;		        /* Hour of sunrise */
-  float Sunset;			/* Hour of sunset */
-  float TimeAdjustment;		/* Time adjustment to be made between center
-				   of study area and standard meridian */
-  float SunEarthDistance;	        /* Distance from Sun to Earth */
+  float Sunrise;		    /* Hour of sunrise */
+  float Sunset;				/* Hour of sunset */
+  float TimeAdjustment;		/* Time adjustment to be made between center of study area and standard meridian */
+
+  float SunEarthDistance;	/* Distance from Sun to Earth */
   float SineSolarAltitude;	/* Sine of sun's SolarAltitude  */
-  int DayLight;			/* FALSE: measured solar radiation and the
-				   sun is below the horizon.  
-				   TRUE: sun is above the horizon */
-  float SolarTimeStep;		/* Fraction of the timestep the sun is above
-				   the horizon  */
-  float SunMax;			/* Calculated solar radiation at the top of
-				   the atmosphere (W/m^2) */
+  int DayLight;				/* FALSE: measured solar radiation and the sun is below the horizon.  
+
+							TRUE: sun is above the horizon */
+  float SolarTimeStep;		/* Fraction of the timestep the sun is above the horizon  */
+
+  float SunMax;				/* Calculated solar radiation at the top of the atmosphere (W/m^2) */
 } SOLARGEOMETRY;
 
 typedef struct {

@@ -19,6 +19,7 @@
 #include "settings.h"
 #include "data.h"
 #include "functions.h"
+#include "constants.h"
 
 /*****************************************************************************
   Function name: LapseT()
@@ -68,9 +69,13 @@ float LapsePrecip(float Precip, float FromElev, float ToElev, float PrecipLapse)
 {
   float LapsedPrecip;		/* Precipitation at ToElev (m/timestep) */
 
-  LapsedPrecip = Precip * (1.0 + PrecipLapse * (ToElev - FromElev));
+  LapsedPrecip = Precip * (1.0 + PrecipLapse * (ToElev - FromElev))
+	  * (1 + PRECIPMULTIPLIER * (ToElev - MINELEV));
+
   if (LapsedPrecip < 0.0)
     LapsedPrecip = 0.0;
 
   return LapsedPrecip;
+
+
 }

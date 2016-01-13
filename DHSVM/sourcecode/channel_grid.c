@@ -7,7 +7,7 @@
    ------------------------------------------------------------- */
 /* -------------------------------------------------------------
    Created January  5, 1996 by  William A Perkins
-   $Id: channel_grid.c,v 1.12 2004/10/07 20:51:08 jlanini Exp $
+   $Id: channel_grid.c,v 3.1.2 2014/1/2 Ning Exp $
    ------------------------------------------------------------- */
 
 #include <stdlib.h>
@@ -421,7 +421,7 @@ void channel_grid_free_map(ChannelMapPtr ** map)
 /* -------------------------------------------------------------
    channel_grid_read_map
    ------------------------------------------------------------- */
-ChannelMapPtr **channel_grid_read_map(Channel * net, const char *file,
+ChannelMapPtr **channel_grid_read_map(Channel *net, const char *file,
 				      SOILPIX ** SoilMap)
 {
   ChannelMapPtr **map;
@@ -564,6 +564,7 @@ ChannelMapPtr **channel_grid_read_map(Channel * net, const char *file,
 	case 6:
 	  /* road aspect is read in degrees and
 	     stored in radians */
+	  cell->azimuth = (float)(map_fields[i].value.real);
 	  cell->aspect = map_fields[i].value.real * PI / 180.0;
 	  break;
 	case 7:
@@ -1038,6 +1039,101 @@ int main(int argc, char **argv)
 }
 #endif
 
+/* -----------------------------------------------------------------------------------
+   Function name : channel_grid_inc_other ()
+   Author: Nathalie Voisin Aug 2010
+   Function usage:
+   This function generates outputs required by John's RBM model
+
+   Given a mass/flux, this function increases the mass/flux in any
+   channel(s) is in proportion to their length within the cell 
+   BECAUSE THOSE ARE NRG fluxes, similar to each segment
+   --------------------------------------------------------------------------------- */
+
+void channel_grid_inc_other(ChannelMapPtr ** map, int col, int row, PIXRAD * LocalRad, 
+							PIXMET * LocalMet, float skyview)
+{
+  ChannelMapPtr cell = map[col][row];
+  float len = channel_grid_cell_length(map, col, row);
+
+  while (cell != NULL ) {
+	/* ISW is the total incoming shortwave radiation (VIC outputs) */
+	cell->channel->ISW += LocalRad->ObsShortIn;
+	
+	cell->channel->NSW += LocalRad->RBMNetShort;
+	cell->channel->Beam += LocalRad->PixelBeam;
+	cell->channel->Diffuse += LocalRad->PixelDiffuse;
+
+    cell->channel->ILW += LocalRad->PixelLongIn;
+	cell->channel->NLW += LocalRad->RBMNetLong;
+
+    cell->channel->VP += LocalMet->Eact;
+    cell->channel->WND += LocalMet->Wind;
+    cell->channel->ATP += LocalMet->Tair;
+
+	cell->channel->azimuth += 
+		cell->azimuth*cell->length /cell->channel->length;
+
+	cell->channel->skyview += skyview;
+
+    cell = cell->next;
+  }
+}
+/*************************************************************************************
+void channel_grid_avg( ): average the heat budget variables by the total cell numbers
+*************************************************************************************/
+void channel_grid_avg(Channel *Channel)
+{  
+  while (Channel) {
+    if (Channel->Ncells > 0 ) {
+	  Channel->ISW /= Channel->Ncells ;
+	  
+	  Channel->NSW /= Channel->Ncells;
+	  Channel->Beam /= Channel->Ncells;
+	  Channel->Diffuse /= Channel->Ncells;
+
+	  Channel->ILW /= Channel->Ncells ;
+	  Channel->NLW /= Channel->Ncells ;
+      
+      Channel->VP  /= Channel->Ncells;
+      Channel->WND /= Channel->Ncells;
+	  Channel->ATP /= Channel->Ncells;
+
+	  Channel->skyview /= Channel->Ncells;
+    }
+	Channel = Channel->next; 
+  }
+}
+/*********************************************************************************
+Init_segment_ncell : computes the number of grid cell contributing to one segment
+**********************************************************************************/
+void Init_segment_ncell(TOPOPIX **TopoMap, ChannelMapPtr ** map, int NY, 
+						int NX, Channel* net)
+{
+  int y,x;
+  ChannelMapPtr cell; 
+
+  for (y = 0; y < NY; y++) {
+    for (x = 0; x < NX; x++) {      
+	  if (INBASIN(TopoMap[y][x].Mask)) {
+		if (channel_grid_has_channel(map, x, y)){	
+           cell = map[x][y];
+		   while (cell != NULL) {
+			 cell->channel->Ncells++;
+             cell = cell->next;
+		   }   
+        }
+      }
+    }
+  }
+
+  // then check all segments
+  for (; net != NULL; net = net->next) {
+    if (net->Ncells == 0 ) {
+      error_handler(ERRHDL_ERROR,"Init_segment_ncells: write error:%s", strerror(errno));
+    }
+  }
+} 
 
 
 

@@ -1,0 +1,585 @@
+/* -------------------------------------------------------------
+/* file: createstreamnetwork.aml 
+/* 
+/* usage: streamnetwork.aml <dem> <wshed> <soildepth> <stream network> 
+/*	<MOUTH|MASK> {source area} {min depth} {max depth}
+/*  
+/*	{soildepth} {stream network} {min depth} {max depth}
+/* example: &run createstreamnetwork.aml elev mouth 250000 .5 3.0
+/*
+/* dem (grid) must be in meters
+/* mouth (grid) 
+/* source area for stream initiation (sq meters, ie 2 ha = 20000)
+/* minimum soil depth 
+/* maximum soil depth
+/*
+/* This aml creates the stream network files for DHSVM. It requires a 
+/* dem with all the sinks filled in, and a grid indicating the location 
+/* of the basin outlet.
+
+/* If a soil depth map is not provided, one is created based on 
+/* local slope (determined from DEM), upstream source area, and 
+/* elevation.  See soildepth.aml for complete assumptions.
+/*
+/* Note this script assigns channel hydraulic classes automatically 
+/* based on slope and contributing area.  If you have additional 
+/* channel hydraulic inforamtion this will have to be edited.
+/* -------------------------------------------------------------
+
+/* -------------------------------------------------------------
+/* Created by: Kenneth Westrick 12/27/1999
+/* Last change: Ning Sun, 09/04/2012 (customized the channel orders)
+/* -------------------------------------------------------------
+
+&severity &error &routine hndlerr
+&severity &warning &ignore
+
+&args elev wshed soildepth streamnet key source mindepth maxdepth 
+
+&if %:program% ne ARC &then
+  &do
+    &type Sorry, this should be run in ARC not %:program%
+    &return &error
+  &end
+
+/* -------------------------------------------------------------
+/* variable initialization
+/* -------------------------------------------------------------
+&setvar omessages = [show &messages]
+&messages &on /* &off &info
+&setvar odisplay = [show display]
+display 0
+
+&setvar program = STREAMNETWORK
+&setvar usage = usage: %program% <dem> <wshed> <soildepth> <stream network> <MOUTH|MASK> {source area} {min depth} {max depth} 
+
+/* -------------------------------------------------------------
+/* check command line options
+/* -------------------------------------------------------------
+
+&if [null %elev%] or [null %wshed%] or [null %streamnet%] or [null %soildepth%] &then
+  &do
+    &call recover
+    &return &error %usage%
+  &end
+
+&if not [exists %soildepth% -grid] &then
+  &if [null %mindepth%] or [null %maxdepth%] &then
+    &do
+      &type %program%: error: either a soil depth grid or min/max soil depths must be specified
+      &call recover
+      &return &error %usage%
+    &end
+
+&if not [exists %streamnet% -cover] &then
+  &if [null %source%] &then
+    &do
+      &type %program%: error: either a stream network or contributing source area must be specified
+      &call recover
+      &return &error %usage%
+    &end
+
+/* -------------------------------------------------------------
+/* check validity of inputs
+/* -------------------------------------------------------------
+grid
+&describe %elev%
+&if %grd$type% = 1 &then
+  &do
+    &type grid %elev% is integer
+    &type please convert to correct
+    &type floating point in meters
+    &stop
+  &end
+
+setwindow %elev%
+setcell %elev%
+&type computing flowdir
+&if [exists flowdir -grid] &then
+  kill flowdir all
+flowdir = flowdirection(%elev%)
+&if [exists sinks -grid] &then kill sinks
+sinks = sink(flowdir)
+
+&describe sinks
+&if %GRD$ZMIN% > 0 &then 
+  &do
+    &type DEM %elev% has sinks, stopping
+    &stop
+  &end
+
+&type no sinks encountered
+
+/* -------------------------------------------------------------
+/* Create stream network if it wasn't provided
+/* -------------------------------------------------------------
+
+&if not [exists %streamnet% -cover] &then
+  &do
+
+    &type Stream network not provided, creating...
+
+    &if [exists flowacc -grid] &then
+      kill flowacc all
+    flowacc = flowaccumulation(flowdir)
+
+    &if [exists wshd -grid] &then
+      kill wshd all
+
+    &if %key% = MOUTH &then
+      &do	
+
+	&type mask file not provided, computing watershed...	
+	wshd = watershed (flowdir,%wshed%)
+        &type Mask file created
+      &end
+
+    &if %key% = MASK &then	
+       wshd = %wshed%
+		
+    &describe %elev%
+    &setvar deltax = %grd$dx%
+    &setvar sourcepix =  %source% / ( %deltax% * %deltax% ) 
+    &type The number of pixels that define the source area is %sourcepix%
+
+    &if [exists temp -grid] &then
+       kill temp all
+
+    temp = con(flowacc gt %sourcepix%,1)
+
+    &if [exists rivg -grid] &then
+       kill rivg all
+
+    rivg = temp * wshd
+
+    %streamnet% = streamline(rivg,flowdir)
+    kill temp all
+  &end
+
+quit
+build %streamnet% line
+renode %streamnet%
+intersecterr %streamnet%
+
+/* -------------------------------------------------------------
+/* Find contributing area to each cell along stream network
+/* -------------------------------------------------------------
+
+grid
+setwindow %elev%
+setcell %elev%
+&if [exists rivg -grid] &then
+  kill rivg all
+rivg = linegrid(%streamnet%)
+&if [exists local -grid] &then
+  kill local all
+local = watershed(flowdir,rivg)
+quit
+
+/* -------------------------------------------------------------
+/* Create stream coverage attribute table
+/* -------------------------------------------------------------
+
+&type calling TABLES to configure %streamnet%.aat
+TABLES
+&if not [iteminfo %streamnet% -arc local -exists] &then	
+  additem %streamnet%.aat local 4 8 i
+&if not [iteminfo %streamnet% -arc from -exists] &then
+  additem %streamnet%.aat from 4 12 F 3
+&if not [iteminfo %streamnet% -arc to -exists] &then
+  additem %streamnet%.aat to 4 12 F 3
+&if not [iteminfo %streamnet% -arc dz -exists] &then
+  additem %streamnet%.aat dz 4 12 F 3
+&if not [iteminfo %streamnet% -arc slope -exists] &then
+  additem %streamnet%.aat slope 4 12 F 5
+&if not [iteminfo %streamnet% -arc wshd -exists] &then
+  additem %streamnet%.aat wshd 4 8 i
+&if not [iteminfo %streamnet% -arc maxmsq -exists] &then
+  additem %streamnet%.aat maxmsq 4 12 b
+&if not [iteminfo %streamnet% -arc meanmsq -exists] &then
+  additem %streamnet%.aat meanmsq 4 12 b
+&if not [iteminfo %streamnet% -arc shreve -exists] &then
+  additem %streamnet%.aat shreve 4 8 b
+&if not [iteminfo %streamnet% -arc strahler -exists] &then
+  additem %streamnet%.aat strahler 4 4 b
+&if not [iteminfo %streamnet% -arc segorder -exists] &then
+  additem %streamnet%.aat segorder 4 4 b
+&if not [iteminfo %streamnet% -arc downarc -exists] &then
+  additem %streamnet%.aat downarc 4 8 b
+&if not [iteminfo %streamnet% -arc uparc -exists] &then
+  additem %streamnet%.aat uparc 4 8 b
+&if not [iteminfo %streamnet% -arc chanclass -exists] &then
+  additem %streamnet%.aat chanclass 4 4 b
+&if not [iteminfo %streamnet% -arc hyddepth -exists] &then
+  additem %streamnet%.aat hyddepth 4 8 F 2
+&if not [iteminfo %streamnet% -arc hydwidth -exists] &then
+  additem %streamnet%.aat hydwidth 4 8 F 2
+&if not [iteminfo %streamnet% -arc effwidth -exists] &then
+  additem %streamnet%.aat effwidth 4 8 F 2
+&if not [iteminfo %streamnet% -arc effdepth -exists] &then
+  additem %streamnet%.aat effdepth 4 8 F 2
+
+sel %streamnet%.aat
+relate add
+uff
+local.vat
+INFO
+%streamnet%#
+value
+linear
+ro
+[unquote '']
+calc local = uff//count
+calc %streamnet%-id = %streamnet%#
+quit
+
+/* -------------------------------------------------------------
+/* Renumber nodes, create node point coverage and find elevations
+/* -------------------------------------------------------------
+&type renoding %streamnet% and running latticespot
+&if [exists nodes -cover] &then
+  kill nodes all
+renode %streamnet%
+nodepoint %streamnet% nodes
+build nodes point
+latticespot %elev% nodes
+
+/* -------------------------------------------------------------
+/* Relate to TNODE and FNODE in %streamnet%.aat, to the NODES# 
+/* attribute in the node point coverage
+/* -------------------------------------------------------------
+relate add
+too
+nodes.pat
+INFO
+TNODE#
+NODES#
+linear
+RO
+fro
+nodes.pat
+INFO
+FNODE#
+NODES#
+linear
+RO
+[unquote '']
+
+/* -------------------------------------------------------------
+/* Calculate segment sloe using the node elevations
+/* -------------------------------------------------------------
+
+&type calculating slopes
+indexitem %streamnet%.aat FNODE#
+indexitem %streamnet%.aat TNODE#
+indexitem nodes.pat NODES#
+tables
+sel %streamnet%.aat
+calc from = fro//spot
+calc to = too//spot
+calc dz = from - to
+resel dz lt 0
+&s bad = [show number select]
+calc dz = dz * -1
+asel
+calc slope = dz / length
+resel slope lt 0.00001
+calc slope = 0.00001
+QUIT
+
+&type there are %bad% segments with negative slope...flipping
+&if %bad% gt 0 &then ;&do
+  &type flipping %bad% arcs
+  ARCEDIT
+  ec %streamnet%
+  ef arc
+  sel to gt from
+  flip
+  QUIT
+  yes
+  yes
+&end
+
+/* -------------------------------------------------------------
+/* Assign channel hydraulic classes
+/* Add contributing area to the stream aat and use this to assign channel hydraulic classes.
+/* -------------------------------------------------------------
+&type renoding and running the java script
+renode %streamnet%
+&sys java -classpath programs\ AddAat2 %streamnet%
+
+&type configuring channel classes, hydraulic depths and widths
+tables
+sel %streamnet%.aat
+asel
+resel slope lt .002 and meanmsq lt 1000000
+calc chanclass = 1
+calc hyddepth = 0.5
+calc hydwidth = 0.03
+calc effwidth = 0.06
+asel
+resel slope lt .002 and meanmsq ge 1000000 and meanmsq lt 10000000
+calc chanclass = 2
+calc hyddepth = 1.0
+calc hydwidth = 0.03
+calc effwidth = 0.09
+asel
+resel slope lt .002 and meanmsq ge 10000000 and meanmsq lt 20000000
+calc chanclass = 3
+calc hyddepth = 2.0 
+calc hydwidth = 0.03
+calc effwidth = 0.12
+asel
+resel slope lt .002 and meanmsq ge 20000000 and meanmsq lt 30000000
+calc chanclass = 4
+calc hyddepth = 3.0 
+calc hydwidth = 0.03
+calc effwidth = 0.15
+asel
+resel slope lt .002 and meanmsq ge 30000000 and meanmsq lt 40000000
+calc chanclass = 5
+calc hyddepth = 4.0
+calc hydwidth = 0.03
+calc effwidth = 0.18
+asel
+resel slope lt .002 and meanmsq ge 40000000 
+calc chanclass = 6
+calc hyddepth = 4.5
+calc hydwidth = 0.03
+calc effwidth = 0.21
+asel
+resel slope ge .002 and slope lt .01 and meanmsq lt 1000000
+calc chanclass = 7
+calc hyddepth = 0.5
+calc hydwidth = 0.05
+calc effwidth = 0.1
+asel
+resel slope ge .002 and slope lt .01 and meanmsq ge 1000000 and meanmsq lt 10000000
+calc chanclass = 8
+calc hyddepth = 1.0
+calc hydwidth = 0.05
+calc effwidth = 0.15
+asel
+resel slope ge .002 and slope lt .01 and meanmsq ge 10000000 and meanmsq lt 20000000
+calc chanclass = 9
+calc hyddepth = 2.0
+calc hydwidth = 0.05
+calc effwidth = 0.2
+asel
+resel slope ge .002 and slope lt .01 and meanmsq ge 20000000 and meanmsq lt 30000000
+calc chanclass = 10
+calc hyddepth = 3.0
+calc hydwidth = 0.05
+calc effwidth = 0.25
+asel
+resel slope ge .002 and slope lt .01 and meanmsq ge 30000000 and meanmsq lt 40000000
+calc chanclass = 11
+calc hyddepth = 4.0
+calc hydwidth = 0.05
+calc effwidth = 0.3
+asel
+resel slope ge .002 and slope lt .01 and meanmsq ge 40000000
+calc chanclass = 12
+calc hyddepth = 4.5
+calc hydwidth = 0.05
+calc effwidth = 0.35
+asel
+resel slope ge .01 and meanmsq lt 1000000
+calc chanclass = 13
+calc hyddepth = 0.5
+calc hydwidth = 0.1
+calc effwidth = 0.2
+asel
+resel slope ge .01 and meanmsq ge 1000000 and meanmsq lt 10000000
+calc chanclass = 14
+calc hyddepth = 1.0
+calc hydwidth = 0.1
+calc effwidth = 0.3
+asel
+resel slope ge .01 and meanmsq ge 10000000 and meanmsq lt 20000000
+calc chanclass = 15
+calc hyddepth = 2.0
+calc hydwidth = 0.1
+calc effwidth = 0.4
+asel
+resel slope ge .01 and meanmsq ge 20000000 and meanmsq lt 30000000
+calc chanclass = 16
+calc hyddepth = 3.0
+calc hydwidth = 0.1
+calc effwidth = 0.5
+asel
+resel slope ge .01 and meanmsq ge 30000000 and meanmsq lt 40000000
+calc chanclass = 17
+calc hyddepth = 4.0
+calc hydwidth = 0.1
+calc effwidth = 0.6
+asel
+resel slope ge .01 and meanmsq ge 40000000
+calc chanclass = 18
+calc hyddepth = 4.5
+calc hydwidth = 0.1
+calc effwidth = 0.7
+asel
+quit
+/* -------------------------------------------------------------
+/* Create soil depth map if it wasn't provided
+/* -------------------------------------------------------------
+
+&if not [exists %soildepth% -grid] &then
+  &do
+
+    &type Soil depth not provided, creating map...
+    &type making the soil depth with mindepth of %mindepth% and maxdepth of %maxdepth% 
+
+    grid
+      &run soildepth.aml flowacc %elev% %mindepth% %maxdepth%
+    quit
+    rename soildepth %soildepth%	
+    &type done running soildepth
+  &end	
+
+/* -------------------------------------------------------------
+/* Define the 'shallowest' soil depth for each stream segment as 
+/* the effective channel depth.  (This step ensures that the cut 
+/* depth will not exceed the channel depth, will causes DHSVM to crash. 
+/* -------------------------------------------------------------
+
+/* make the %streamnet% into a point coverage
+
+&if [exists streampt -cover] &then
+  kill streampt all
+
+&type running arcpoint to make streampt
+
+arcpoint %streamnet% streampt line %streamnet%#
+build streampt point
+
+/* get the soildepth at each of the points and put the spot elevation in the point coverage
+latticespot %soildepth% streampt 
+
+&type determining the minimum soil depth for each segment
+
+&if [exists %soildepth% -info] &then
+  killinfo %soildepth%
+
+&if [delete %soildepth% -info] = 0 &then
+  &type %soildepth% info file successfully deleted
+&else &type unable to delete %soildepth% info file 
+
+Arcplot
+statistics STREAMPT point %STREAMNET%# %soildepth%
+min spot
+end
+q
+
+joinitem %streamnet%.aat %soildepth% %streamnet%.aat %STREAMNET%#
+tables
+sel %streamnet%.aat
+alter min-spot,seg-depth,,,,,
+calc effdepth = 0.95 * seg-depth
+quit
+
+/* -------------------------------------------------------------
+/* Create stream network file for DHSVM
+/* -------------------------------------------------------------
+
+&if [exists stream.network.dat -FILE] &then
+  &if [delete stream.network.dat -FILE] = 0 &then
+    &type stream.network.dat file successfully deleted
+  &else &type unable to delete stream.network.dat file 
+&else &type old stream.network.dat file doesn't exist
+
+tables
+sel %streamnet%.aat
+unload stream.network.dat %STREAMNET%-ID SEGORDER SLOPE LENGTH CHANCLASS DOWNARC COLUMNAR #
+q
+
+&type Stream network file has been output.
+
+/* -------------------------------------------------------------
+/* Create stream map file for DHSVM
+/* -------------------------------------------------------------
+
+&type running wshdslope
+
+grid
+&run wshdslope %elev% slope aspect
+q
+
+&type running rowcolmap, this may take awhile
+&if [exists rowcolout -cover] &then
+  kill rowcolout all
+&run rowcolmap aspect slope rowcolout
+
+&type running roadmap
+&if [exists outcover -cover] &then
+  kill outcover all
+&run roadmap %streamnet% rowcolout outcover %streamnet%-id
+
+&type running roadaspect
+&run roadaspect outcover %elev%
+
+&type running roadelevation
+&run roadelevation %streamnet% %elev%
+
+&type running roadmapfile
+&run streammapfile outcover %streamnet% stream.map.dat EFFWIDTH EFFDEPTH RDASPECT
+
+&type cleaning up
+&if [exists aspect -grid] &then
+  kill aspect all
+&if [exists slope -grid] &then
+  kill slope all
+&if [exists flowdir -grid] &then
+  kill flowdir all
+&if [exists flowacc -grid] &then
+  kill flowacc all
+&if [exists sinks -grid] &then
+  kill sinks all
+&if [exists slopegrid -grid] &then
+  kill slopegrid all
+&if [exists rivg -grid] &then
+  kill rivg all
+&if [exists wshd -grid] &then
+  kill wshd all
+&if [exists local -grid] &then
+  kill local all
+&if [exists outcover -cover] &then
+  kill outcover all
+&if [exists streampt -cover] &then
+  kill streampt all
+&if [exists nodes -cover] &then
+  kill nodes all
+&if [exists rowcolout -cover] &then
+  kill rowcolout all
+&return 
+
+/* -------------------------------------------------------------
+/* recover
+/* -------------------------------------------------------------
+&routine recover
+
+&if [variable tmpws] &then
+    &if [exists %tmpws% -workspace] &then
+      &setvar junk = [delete %tmpws% -workspace]
+
+&if [variable oldwin] &then 
+  setwindow %oldwin%
+&if [variable oldcell] &then 
+  setcell %oldcell%
+  
+&messages %omessages%
+
+&return
+
+
+/* -------------------------------------------------------------
+/* hndlerr
+/* -------------------------------------------------------------
+&routine hndlerr
+&severity &error &fail
+&call recover
+&type %program%: unrecoverable error 
+&return &error Aborting...
+
+

@@ -1,0 +1,227 @@
+/* -------------------------------------------------------------
+/* file: roadnetwork.aml
+/*
+/* usage: roadnetwork <roads> <outfile>
+/*
+/* This is an ARC script. This script produces a text file which is
+/* used as input to the PNL watershed model.  The file describes the
+/* channel "network" represented by the "roads" coverage.  Each
+/* segment
+/*
+/* -------------------------------------------------------------
+/* -------------------------------------------------------------
+/* Battelle Memorial Institute
+/* Pacific Northwest Laboratory
+/* -------------------------------------------------------------
+/* -------------------------------------------------------------
+/* Created November 28, 1995 by  William A Perkins
+/* Last Change: Wed Sep 25 14:58:25 1996 by  William A Perkins <perk@mnemosyne.pnl.gov>
+/* -------------------------------------------------------------
+
+/* RCS ID: $Id: roadnetwork.aml,v 1.2 1996/09/25 22:17:03 perk Exp $
+
+&severity &error &routine hndlerr
+&severity &warning &ignore
+
+&args roads outfile class elevrte
+
+/* -------------------------------------------------------------
+/* variable initialization
+/* -------------------------------------------------------------
+&setvar omessages = [show &messages]
+&messages &on /* &off &info
+&setvar odisplay = [show display]
+display 0
+
+&setvar program = ROADNETWORK
+&setvar usage = usage: %program% <roads> <outfile> <class> {route}
+
+&if %:program% ne ARC &then
+  &do
+    &type Sorry, this should be run in ARC not %:program%
+    &return &error
+  &end
+
+/* -------------------------------------------------------------
+/* check command line
+/* -------------------------------------------------------------
+
+                                /* roads coverage
+
+&if [null %roads%] or [null %outfile%] or [null %class%] &then
+  &do
+    &call recover
+    &return &error %usage%
+  &end
+&setvar roads = [translate %roads%]
+
+&if not [exist %roads% -arc] &then
+  &do
+    &type %program%: error: arc coverage %roads% does not exist
+    &call recover
+    &return &error %usage%
+  &end
+
+                                /* elevation route in roads coverage
+
+&if [null %elevrte%] &then
+  &setvar elevrte = elevation
+&setvar elevrte = [translate %elevrte%]
+&if not [exists %roads% -section.%elevrte%] &then
+  &do
+    &type %program%: error: Section table for %elevrte% does not exist in %roads%
+    &call recover
+    &return &error %usage%
+  &end
+
+&if not [iteminfo %roads% -section.%elevrte% order -exists] &then
+  &do
+    &type %program%: error: Item ORDER not in %roads% %elevrte% section table
+    &type Have you run ROADORDER?
+    &call recover
+    &return &error
+  &end
+
+                                /* class item or value
+
+&if [type %class%] lt 0 &then
+  &setvar classvalue = %class%
+&else 
+  &do
+    &setvar class = [translate %class%]
+    &if [iteminfo %roads% -section.%elevrte% %class% -exist] &then
+      &setvar secclass = %class%
+    &else &if [iteminfo %roads% -arc %class% -exist] &then 
+        &setvar arcclass = %class%
+      &else
+        &do
+          &type %program%: error: item %class% not in section table or AAT
+          &call recover
+          &return &error %usage%
+        &end
+  &end
+
+
+/* -------------------------------------------------------------
+/* do the work
+/* -------------------------------------------------------------
+
+&if [exists %outfile% -file] &then
+  &do
+    &type %program%: warning: overwriting file %outfile%
+    &sys rm -f %outfile%
+  &end
+
+&setvar out = [open [unquote %outfile%] stat -write]
+&if %stat% ne 0 &then
+  &do
+    &type %program%: error: unable to write to file %outfile%
+    &return &error %usage%
+  &end
+
+&setvar stat = [write %out% '###### This file has been automatically generated #####']
+&setvar stat = [write %out% '######             EDIT WITH CARE!!!              #####']
+&setvar stat = [write %out% [quote # Generated: [date -cal] [date -ampm]]]
+&setvar stat = [write %out% [quote # Command: %program% %roads% %outfile% %elevrte%]]
+&setvar stat = [write %out% [quote # Workspace: [show workspace]]]
+&setvar stat = [write %out% '# Segment              Length   Class  Outlet  ']
+&setvar stat = [write %out% '#   ID   Order Slope     (m)     ID      ID*    SAVE*  "Save Name or Comment"']
+&setvar stat = [write %out% '#']
+
+&format 4
+&setvar fmtstr = '%1,-5% %2,-5% %3,-7% %4,-11% %5,-4% %6,-4%'
+
+relate add; aat; %roads%.aat; info; arclink#; [entryname %roads%]#; linear; ro;;
+
+cursor sec declare %roads% section.%elevrte% ro
+cursor sec open
+&do &while %:sec.AML$NEXT%
+
+                                /* find the value for class, where
+                                /* ever it may be
+  
+  &if [variable classvalue] &then
+    &setvar class = %classvalue%
+  &else &if [variable secclass] &then
+      &setvar class = [value :sec.%secclass%]
+    &else &if [variable arcclass] &then
+        &setvar class = [value :sec.aat//%arcclass%]
+      &else 
+        &do
+          &type %program%: error: this should not happen
+          &call recover
+          &return &error %usage%
+        &end
+
+                                /* set the value of outlet
+
+  &if %:sec.outlet% gt 0 &then
+    &setvar outlet = %:sec.outlet%
+  &else
+    &setvar outlet = ' '
+
+                                /* write out the record
+
+  &setvar stat = [write %out% [format %fmtstr% [value :sec.arclink#] ~
+    %:sec.order% %:sec.slope% [calc %:sec.t-meas% - %:sec.f-meas%] ~
+    %class% %outlet%] ]
+  
+  cursor sec next
+&end
+cursor sec remove
+
+&call recover
+&return
+
+/* -------------------------------------------------------------
+/* recover
+/* -------------------------------------------------------------
+&routine recover
+&do &while %:program% ne ARC
+  &select %:program% 
+    &when ARCEDIT
+      quit no
+    &when ARCPLOT
+      quit
+    &when GRID
+      quit
+  &end 
+&end 
+
+&if [variable out] &then
+  &setvar junk = [close %out%]
+
+                                /* remove used cursors
+
+&do i &list [translate [show cursors]]
+  &select %i%
+    &when SEC
+      cursor %i% remove
+  &end
+&end
+
+                                /* remove used relates
+
+&do i &list [translate [show relates]]
+  &select %i%
+    &when  AAT
+      &do
+        relate drop; %i%;;
+      &end
+  &end
+&end
+
+display %odisplay%
+&messages %omessages%
+
+&return
+
+
+/* -------------------------------------------------------------
+/* hndlerr
+/* -------------------------------------------------------------
+&routine hndlerr
+&severity &error &fail
+&call recover
+&type %program%: unrecoverable error 
+&return &error Aborting...

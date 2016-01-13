@@ -1,0 +1,144 @@
+/* -------------------------------------------------------------
+/* file: roaddivide.aml
+/*
+/* This is an ARC program.  It takes the road slope continous event
+/* database, produced by roadslope.aml, and determines the locations
+/* of slope sign change.  These are placed in a point event database.
+/*
+/* -------------------------------------------------------------
+/* -------------------------------------------------------------
+/* Battelle Memorial Institute
+/* Pacific Northwest Laboratory
+/* -------------------------------------------------------------
+/* -------------------------------------------------------------
+/* Created September 27, 1995 by  William A Perkins
+/* Last Change: Wed Nov 29 16:26:48 1995 by  William A Perkins <perk@yama.pnl.gov>
+/* -------------------------------------------------------------
+
+/* RCS ID: $Id: roaddivide.aml,v 1.2 1996/06/10 18:36:00 perk Exp $
+
+&severity &error &routine hndlerr
+&severity &warning &ignore
+
+&args roads rte slopeinfo divideinfo
+
+/* -------------------------------------------------------------
+/* constant initialization
+/* -------------------------------------------------------------
+&setvar program = ROADDIVIDE
+&setvar usage = Usage: %program% <cover> {route} {slopeinfo} {divideinfo}
+
+/* -------------------------------------------------------------
+/* check command line arguments
+/* -------------------------------------------------------------
+&if [null %roads%] &then
+  &do
+    &return &error %usage%
+  &end
+&setvar roads = [translate %roads%]
+&if not [exists %roads% -line] &then
+  &do
+    &type %program%: error: Coverage %roads% does not have ARC attributes
+    &return &error %usage%
+  &end
+
+&if [null %rte%] &then
+  &setvar rte = elevation
+&setvar rte = [translate %rte%]
+&if not [exists %roads% -route.%rte%] or not [exists %roads% -section.%rte%] &then
+  &do
+    &type %program%: error: %rte% route or section information not available in %roads% coverages
+    &return &error %usage%
+  &end
+&setvar idxitem = %rte%#
+
+&if [null %slopeinfo%] &then
+  &setvar slopeinfo = %roads%.slope
+&setvar slopeinfo = [translate %slopeinfo%]
+&if not [exists %slopeinfo% -info] &then
+  &do
+    &type %program%: error: unable to locate info file %slopeinfo%
+    &return &error %usage%
+  &end
+
+&if [null %divideinfo%] &then
+  &setvar divideinfo = %roads%.div
+&setvar divideinfo = [translate %divideinfo%]
+&if [exists %divideinfo% -info] &then
+  &do
+    &type %program%: warning: overwriting existing info file %divideinfo%
+    &setvar junk = [delete %divideinfo% -info]
+  &end
+
+/* -------------------------------------------------------------
+/* do the work
+/* -------------------------------------------------------------
+
+                                /* create a divide info file. The type
+                                /* is one of 'S', 'D', or ' ' for
+                                /* sink, divide, or neither
+
+arcedit
+create %divideinfo% info; ~
+  %idxitem%, 4, 5, B; ~
+  measure, 4, 12, F, 3; ~
+  elevation, 4, 12, F, 3; ~
+  type, 1, 3, C;;
+quit y
+
+cursor slope declare %roads% route.%rte% ro
+cursor divide declare %divideinfo% info rw
+relate add ; sec ; %slopeinfo%; info; %idxitem%; %idxitem%; linear; ro;;
+cursor slope open
+cursor divide open
+
+&do &while %:slope.AML$NEXT%
+  &setvar first = .TRUE.
+  &setvar lsign = 0
+  &do &while %:slope.sec//AML$NEXT%
+    &if %:slope.sec//percent% ne 0 and %:slope.sec//percent% ne -9999 &then
+      &setvar sign = [calc %:slope.sec//percent% / [abs %:slope.sec//percent%]]
+    &else 
+      &setvar sign = %lsign%
+    &if not %first% &then
+      &do
+        &if %sign% ne %lsign% &then
+          &do
+            cursor divide insert
+            &setvar :divide.%idxitem% = [value :slope.%idxitem%]
+            &setvar :divide.measure = %:slope.sec//f-meas%
+            &setvar :divide.elevation = %:slope.sec//f-elev%
+            &if %:slope.sec//t-elev% gt %:slope.sec//f-elev% &then
+              &do
+                &setvar :divide.type = 'S'
+              &end
+            &else
+              &do
+                &setvar :divide.type = 'D'
+              &end
+          &end
+      &end
+    &else 
+      &do
+        &setvar first = .FALSE.
+      &end
+    &setvar lsign = %sign%
+    cursor slope relate sec next
+  &end
+  cursor slope next
+&end
+
+cursor slope remove
+cursor divide remove
+relate drop; sec;;
+
+
+&return
+
+/* -------------------------------------------------------------
+/* hndlerr
+/* -------------------------------------------------------------
+&routine hndlerr
+&severity &error &fail
+&type %program%: unrecoverable error 
+&return &error Aborting...

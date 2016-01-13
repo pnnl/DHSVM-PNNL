@@ -1,0 +1,234 @@
+/* -------------------------------------------------------------
+/* file: arcintersect.aml
+/* -------------------------------------------------------------
+/* -------------------------------------------------------------
+/* Battelle Memorial Institute
+/* Pacific Northwest Laboratory
+/* -------------------------------------------------------------
+/* -------------------------------------------------------------
+/* Created May 10, 1996 by  William A Perkins
+/* Last Change: Mon May 13 09:36:47 1996 by  William A Perkins <perk@yama.pnl.gov>
+/* -------------------------------------------------------------
+
+/* RCS ID: $Id: arcintersect.aml,v 1.1 1996/05/29 18:28:43 perk Exp $
+
+&severity &error &routine hndlerr
+&severity &warning &ignore
+
+&args streams roads outcover spot
+
+&if %:program% ne ARC &then
+  &do
+    &type Sorry, this should be run in ARC not %:program%
+    &return &error
+  &end
+
+/* -------------------------------------------------------------
+/* variable initialization
+/* -------------------------------------------------------------
+&setvar omessages = [show &messages]
+&messages &on /* &off &info
+&setvar odisplay = [show display]
+display 0
+
+&setvar program = ARCINTERSECT
+&setvar usage = usage: %program% <streams> <roads> <ptcover> {spot}
+
+&setvar titem = TYPE
+/* -------------------------------------------------------------
+/* check command line
+/* -------------------------------------------------------------
+&if [null %streams%] or [null %roads%] or [null %outcover%] &then
+  &do
+    &call recover
+    &return &error %usage%
+  &end
+&setvar streams = [translate %streams%]
+&setvar roads = [translate %roads%]
+&setvar outcover = [translate %outcover%]
+
+&if [null %spot%] &then
+  &do
+    &setvar spot = SPOT
+  &end
+
+&if [iteminfo %roads% -arc %spot% -exists] &then
+  &do
+    &setvar extract = .true.
+    &type %program%: info: Extracting the value of %spot% from %roads%
+  &end
+&else 
+  &setvar extract = .false.
+
+/* -------------------------------------------------------------
+/* do the work
+/* -------------------------------------------------------------
+
+                                /* loose the attributes from the input
+                                /* coverages and add an item to each
+                                /* which is different depending on the
+                                /* coverage
+
+&setvar tmpstream = [scratchname -directory]
+copyfeatures %streams% arc %tmpstream% arc geometry
+build %tmpstream% arc
+additem %tmpstream%.aat %tmpstream%.aat %titem% 3 3 C
+&data arc arcedit
+  edit %tmpstream% arc
+  select all
+  calc %titem% = 'STR'
+  quit y
+&end
+
+&setvar tmproad = [scratchname -directory]
+copyfeatures %roads% arc %tmproad% arc geometry
+build %tmproad% arc
+additem %tmproad%.aat %tmproad%.aat %titem% 3 3 C
+&data arc arcedit
+  edit %tmproad% arc
+  select all
+  calc %titem% = 'ROD'
+  quit y
+&end
+
+                                /* append the two arc coverages
+                                /* together and clean them
+
+&setvar tmpint = [scratchname -directory]
+&data arc append %tmpint% arc features
+  %tmpstream%
+  %tmproad%
+
+  y
+  y
+&end
+clean %tmpint%
+
+                                /* these are not needed anymore
+
+kill %tmpstream% all
+kill %tmproad% all
+
+                                /* prepare the combined coverage to
+                                /* locate intersections
+
+build %tmpint% arc
+build %tmpint% node
+&run buildnal [translate %tmpint%]
+additem %tmpint%.nat %tmpint%.nat flag 1 1 I
+&if %extract%  &then
+  &do
+    additem %tmpint%.nat %tmpint%.nat ~
+      value [iteminfo %roads% -arc %spot% -definition]
+  &end
+
+relate add; arc; %tmpint%.aat; info; arc#; %tmpint%#; linear; ro;;
+relate add; nal; %tmpint%.nal; info; %tmpint%#; node#; linear; ro;;
+
+cursor node declare %tmpint% node rw
+cursor node open
+&do &while %:node.AML$NEXT%
+  &setvar :node.flag = 0
+  cursor node relate nal first
+  &setvar first = [value :node.nal//arc//%titem%]
+  cursor node relate nal next
+  &do &while %:node.nal//AML$NEXT%
+    &if %first% ne [value :node.nal//arc//%titem% ] &then
+      &do
+        &setvar :node.flag = 1
+        &if %extract% &then
+          &setvar :node.value = [value :node.nal//arc//%spot%]
+      &end
+    cursor node relate nal next
+  &end
+  cursor node next
+&end
+cursor node remove
+relate drop; arc; nal;;
+
+
+                                /* create a point coverage to store
+                                /* the intersections
+
+&setvar tmppt = [translate [scratchname -directory]]
+nodepoint %tmpint% %tmppt% 
+
+&if [exist %outcover% -cover] &then
+  &do
+    &type %program%: warning: overwriting existing coverage %outcover%
+    kill %outcover% all
+  &end
+
+                                /* extract the flagged nodes into the
+                                /* new point coverage
+
+&data arc reselect %tmppt% %outcover% point
+  aselect flag gt 0
+
+  n
+  n
+&end
+  
+&call recover
+&return
+
+/* -------------------------------------------------------------
+/* recover
+/* -------------------------------------------------------------
+&routine recover
+&do &while %:program% ne ARC
+  &select %:program% 
+    &when ARCEDIT
+      quit no
+    &when ARCPLOT
+      quit
+    &when GRID
+      quit
+  &end 
+&end 
+
+                                /* remove temporary coverages
+
+&do i &list tmpstream tmproad tmpint tmppt
+  &if [variable %i%] &then
+    &do
+      &if [exists [value %i%] -cover] &then
+        &do
+          kill [value %i%] all
+        &end
+    &end
+&end
+                                /* remove cursors used
+
+&do i &list [translate [show cursors]]
+  &select %i% 
+    &when NODE
+      &do
+        cursor %i% remove
+      &end
+  &end
+&end
+
+&do i &list [translate [show relates]]
+  &select %i%
+    &when ARC,NAL
+      &do
+        relate drop; %i%;;
+      &end
+  &end
+&end
+
+display %odisplay%
+&messages %omessages%
+
+&return
+
+
+/* -------------------------------------------------------------
+/* hndlerr
+/* -------------------------------------------------------------
+&routine hndlerr
+&severity &error &fail
+&call recover
+&type %program%: unrecoverable error 
+&return &error Aborting...

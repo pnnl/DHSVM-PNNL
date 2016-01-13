@@ -1,0 +1,179 @@
+/* -------------------------------------------------------------
+/* file: roadslopeavg.aml
+/*
+/* This is and ARC command.  This command is used to compute the
+/* average slope for each line in the road coverage.  If needed, a new
+/* attribute is added to the road coverage AAT: PERCENT.  PERCENT is
+/* an integer and is computed as a weighted average of the slopes in
+/* the event slope database.  If PERCENT is negative, flow is away
+/* from the TO node of the arc.
+/*
+/* -------------------------------------------------------------
+/* -------------------------------------------------------------
+/* Battelle Memorial Institute
+/* Pacific Northwest Laboratory
+/* -------------------------------------------------------------
+/* -------------------------------------------------------------
+/* Created October 11, 1995 by  William A Perkins
+/* Last Change: Wed Mar 20 11:15:59 1996 by  William A Perkins <perk@euterpe.muse.pnl.gov>
+/* -------------------------------------------------------------
+
+/* RCS ID: $Id: roadslopeavg.aml,v 1.2 1996/03/20 19:19:26 perk Exp $
+
+&severity &error &routine hndlerr
+&severity &warning &ignore
+
+&args roads slopeitem signitem elevrte slopeinfo
+
+&if %:program% ne ARC &then
+  &do
+    &type Sorry, this should be run in ARC not %:program%
+    &return &error
+  &end
+
+/* -------------------------------------------------------------
+/* variable initialization
+/* -------------------------------------------------------------
+&setvar program = ROADSLOPEAVG
+&setvar omessages = [show &messages]
+&messages &on /* &off &info
+&setvar odisplay = [show display]
+display 0
+&setvar usage = usage: %program% <cover> {slopeitem} {signitem} {route} {slopeinfo} 
+
+/* -------------------------------------------------------------
+/* check command line
+/* -------------------------------------------------------------
+
+                                /* road arc coverage
+
+&if [null %roads%] &then
+  &do
+    &call recover
+    &return &error %usage%
+  &end
+&setvar roads = [translate %roads%]
+
+&if not [exists %roads% -line] &then
+  &do
+    &type %program%: error: unable to find arc coverage %roads%
+    &call recover
+    &return &error %usage%
+  &end
+
+                                /* INFO items to add to section table
+
+&if [null %slopeitem%] &then
+  &setvar slopeitem = slope
+&setvar slopeitem = [translate %slopeitem%]
+
+&if [null %signitem%] &then
+  &setvar signitem = sign
+&setvar signitem = [translate %signitem%]
+
+
+                                /* elevation route
+
+&if [null %elevrte%] &then
+  &setvar elevrte = ELEVATION
+&setvar elevrte = [translate %elevrte%]
+&if not [exists %roads% -route.%elevrte%] or ~
+  not [exists %roads% -section.%elevrte%] &then
+    &do
+      &type %program%: error: route %elevrte% not complete in coverage %roads%
+      &call recover
+      &return &error %usage%
+    &end
+
+                                /* slope event database
+
+&if [null %slopeinfo%] &then
+  &setvar slopeinfo = %roads%.slope
+&setvar slopeinfo = [translate %slopeinfo%]
+&if not [exists %slopeinfo% -info] &then
+  &do
+    &type %program%: error: unable to find slope event database %slopeinfo%
+    &call recover
+    &return &error %usage%
+  &end
+
+/* -------------------------------------------------------------
+/* do the work
+/* -------------------------------------------------------------
+&if not [iteminfo %roads% -section.%elevrte% %slopeitem% -exists] &then 
+  &do
+    additem %roads%.sec%elevrte% %roads%.sec%elevrte% %slopeitem% 4 8 F 4
+  &end
+&if not [iteminfo %roads% -section.%elevrte% %signitem% -exists] &then 
+  &do
+    additem %roads%.sec%elevrte% %roads%.sec%elevrte% %signitem% 4 3 B
+  &end
+
+relate add; slp; %slopeinfo%; info; %elevrte%#; %elevrte%#; linear; ro;;
+
+cursor sec declare %roads% section.%elevrte% rw
+cursor sec open
+&do &while %:sec.AML$NEXT%
+  cursor sec relate slp first
+  &setvar startelev = %:sec.slp//f-elev%
+  &do &while %:sec.slp//AML$NEXT%
+    &setvar endelev = %:sec.slp//t-elev%
+    cursor sec relate slp next
+  &end
+  &setvar :sec.%slopeitem% = [abs [calc [calc %endelev% - %startelev%] / ~
+    [calc %:sec.t-meas% - %:sec.f-meas%]]]
+  &if %:sec.f-pos% gt %:sec.t-pos% &then
+    &setvar negate = -1
+  &else
+    &setvar negate = 1
+  &if %startelev% gt %endelev% &then 
+    &setvar :sec.%signitem% = [calc 1 * %negate%]
+  &else 
+    &setvar :sec.%signitem% = [calc -1 * %negate%]
+  cursor sec next
+&end
+
+&call recover
+&return
+
+/* -------------------------------------------------------------
+/* recover
+/* -------------------------------------------------------------
+&routine recover
+
+                                /* get rid of relates used
+
+&if not [null [show relates]] &then
+  &do i &list [translate [show relates]]
+    &select %i%
+      &when SLP
+        &do
+          relate drop; %i%;;
+        &end
+    &end        
+  &end
+
+                                /* remove used cursors
+
+&if not [null [show cursors]] &then
+  &do i &list [translate [show cursors]]
+    &select %i%
+      &when SEC
+        &do 
+          cursor %i% remove
+        &end
+    &end
+  &end
+
+display %odisplay%
+&messages %omessages%
+&return
+
+/* -------------------------------------------------------------
+/* hndlerr
+/* -------------------------------------------------------------
+&routine hndlerr
+&severity &error &fail
+&call recover
+&type %program%: unrecoverable error 
+&return &error Aborting...

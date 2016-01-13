@@ -282,7 +282,8 @@ void CreateMapFileNetCDF(char *FileName, ...)
   /****************************************************************************/
 
   ncstatus = nc_open(FileName, NC_NOWRITE, &ncid);
-  printf("Trying to open %s\n", FileName);
+  /* debugging if any file fails to be opened */
+  //printf("Trying to open %s\n", FileName);
   nc_check_err(ncstatus, __LINE__, __FILE__);
 
   /* check whether the variable exists and get its parameters */

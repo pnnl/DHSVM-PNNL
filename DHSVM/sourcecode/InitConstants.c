@@ -91,6 +91,8 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * Map,
     {"OPTIONS", "SHADING DATA PATH", "", ""},
     {"OPTIONS", "SHADING DATA EXTENSION", "", ""},
     {"OPTIONS", "SKYVIEW DATA PATH", "", ""},
+	{"OPTIONS", "STREAM TEMPERATURE", "", ""}, 
+	{"OPTIONS", "CANOPY SHADING", "", ""}, 
     {"AREA", "COORDINATE SYSTEM", "", ""},
     {"AREA", "EXTREME NORTH", "", ""},
     {"AREA", "EXTREME WEST", "", ""},
@@ -117,6 +119,7 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * Map,
     {"CONSTANTS", "OUTSIDE BASIN VALUE", "", ""},
     {"CONSTANTS", "TEMPERATURE LAPSE RATE", "", ""},
     {"CONSTANTS", "PRECIPITATION LAPSE RATE", "", ""},
+    {"CONSTANTS", "PRECIPITATION MULTIPLIER", "", ""},
     {NULL, NULL, "", NULL}
   };
 
@@ -292,6 +295,27 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * Map,
     Options->Snotel = FALSE;
   else
     ReportError(StrEnv[snotel].KeyName, 51);
+
+  /* Determine if STREAM TEMP is called for */
+  if (strncmp(StrEnv[stream_temp].VarStr, "TRUE", 4) == 0)
+    Options->StreamTemp = TRUE;
+  else if (strncmp(StrEnv[stream_temp].VarStr, "FALSE", 5) == 0)
+    Options->StreamTemp = FALSE;
+  else
+    ReportError(StrEnv[stream_temp].KeyName, 51);
+
+  /* Determine if CANOPY SHADING is called for */
+  if (strncmp(StrEnv[canopy_shading].VarStr, "TRUE", 4) == 0) {
+	Options->CanopyShading = TRUE;
+	if (Options->StreamTemp == FALSE) {
+	  printf("Stream temp module must be turned on to allow canopy shading options\n");
+	  exit(-1);
+	}
+  }
+  else if (strncmp(StrEnv[canopy_shading].VarStr, "FALSE", 5) == 0)
+	Options->CanopyShading = FALSE;
+  else
+    ReportError(StrEnv[canopy_shading].KeyName, 51);
 
   /* Determine if listed met stations outside bounding box are used */
   if (strncmp(StrEnv[outside].VarStr, "TRUE", 4) == 0)
@@ -498,4 +522,7 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * Map,
   }
   else
     PRECIPLAPSE = NOT_APPLICABLE;
+
+  if (!CopyFloat(&PRECIPMULTIPLIER, StrEnv[precip_multiplier].VarStr, 1))
+      ReportError(StrEnv[precip_multiplier].KeyName, 51);
 }

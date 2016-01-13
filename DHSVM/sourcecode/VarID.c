@@ -99,33 +99,33 @@ struct {
   205, "PRISM.Precip",
       "PRISM Precipitation", "%.4g",
       "mm/month", "PRISM precipitation", NC_FLOAT, FALSE, FALSE, FALSE, 0}, {
-  301, "Rad.Beam",
-      "Incoming Direct Radiation", "%.4g",
-      "W/m2", "Direct beam solar radiation",
+  206, "SumPrecip",
+      "SumPrecipitation", "%.4g",
+      "m", "Accumulated Precipitation", NC_FLOAT, FALSE, FALSE, FALSE, 0}, {
+  301, "Rad.ISW",
+      "Incoming ShortWave Radiation", "%.4g",
+      "W/m2", "Incoming ShortWave Radiation",
       NC_FLOAT, FALSE, FALSE, FALSE, 0}, {
-  302, "Rad.Diffuse",
-      "Incoming Diffuse Radiation", "%.4g",
-      "W/m2", "Diffuse solar radiation", NC_FLOAT, FALSE, FALSE, FALSE, 0}, {
-  303, "Rad.SW.Total",
-      "Incoming SW Radiation", "%.4g",
-      "W/m2", "Incoming solar radiation", NC_FLOAT, FALSE, FALSE, FALSE, 0}, {
+  302, "Rad.NSW",
+      "Net Shortwave Radiation", "%.4g",
+      "W/m2", "Net Shortwave solar radiation", NC_FLOAT, FALSE, FALSE, FALSE, 0}, {
+  303, "Rad.Beam",
+      "Net Beam Radiation", "%.4g",
+      "W/m2", "Net Beam Radiation", NC_FLOAT, FALSE, FALSE, FALSE, 0}, {
   304, "Shade.Factor",
       "Shade Factor", "%d",
       "", "Shade Factor", NC_BYTE, FALSE, FALSE, FALSE, 0}, {
   305, "SkyView.Factor",
       "SkyView Factor", "%.4g",
       "-", "Skyview Factor", NC_FLOAT, FALSE, FALSE, FALSE, 0}, {
-    401, "Snow.HasSnow", "Snow Presence/Absence", "%1d", "", "Snow cover flag",
-/*    NC_BYTE, FALSE, FALSE, FALSE, 0}, */
-  NC_FLOAT, FALSE, FALSE, FALSE, 0}, {
-    402, "Snow.SnowCoverOver",
+  401, "Snow.HasSnow", "Snow Presence/Absence", "%1d", "", "Snow cover flag",
+      NC_FLOAT, FALSE, FALSE, FALSE, 0}, {
+  402, "Snow.SnowCoverOver",
       "Overstory Snow Flag", "%1d", "", "Flag overstory can be covered",
-/*    NC_BYTE, FALSE, FALSE, FALSE, 0}, */
-  NC_FLOAT, FALSE, FALSE, FALSE, 0}, {
-    403, "Snow.LastSnow",
+      NC_FLOAT, FALSE, FALSE, FALSE, 0}, {
+  403, "Snow.LastSnow",
       "Last Snowfall", "%4d", "days", "Days since last snowfall",
-/*    NC_SHORT, FALSE, FALSE, FALSE, 0}, */
-  NC_FLOAT, FALSE, FALSE, FALSE, 0}, {
+      NC_FLOAT, FALSE, FALSE, FALSE, 0}, {
   404, "Snow.Swq",
       "Snow Water Equivalent", "%.4g",
       "m", "Snow water equivalent", NC_FLOAT, FALSE, FALSE, FALSE, 0}, {

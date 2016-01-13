@@ -13,7 +13,7 @@
  * COMMENTS:
  * $Id: FinalMassBalance.c,v 1.18 2004/08/18 01:01:28 colleen Exp $
  * Modification made on 2013/1/11
- * $Id: FinalMassBalance.c, v 4.0 Ning Exp $
+ * $Id: FinalMassBalance.c, v3.1.2 Ning Exp $
  */
 
 #include <stdio.h>

@@ -1,0 +1,139 @@
+/*A------------------------------AUTHOR---------------------------------
+/* 
+/*Original Coding:     ESRI 
+/*
+/*N-------------------------------NAME----------------------------------
+/* 
+/*GRIDSPOT70.AML 
+/*Copyright 1995, Environmental Systems Research Institute, Inc.  
+/*
+/*P-----------------------------PURPOSE---------------------------------
+/*
+/* This AML sets an item in a point coverage PAT equal
+/* to the value of a grid cell at the corresponding location. It is intended
+/* to be similar to the LATTICESPOT command except that it does not
+/* perform interpolation. This AML requires ARC/INFO 7.0 or higher.
+/*
+/*U------------------------------USAGE----------------------------------
+/* 
+/* GRIDSPOT <grid_name> <point_cover> {spot_item}
+/*
+/*V----------------------------VARIABLES--------------------------------
+/*
+/* 			Local variables:
+/*
+/* grid_name	Name of the grid to take cell values from
+/* ptcov	Name of point coverage to which cell values are added
+/* spot_item	Name of PAT item to which cell values are added. If
+/*              omitted, the default item name is SPOT.
+/* old$messages	Save setting of &messages
+/* old$display	Save setting of DISPLAY
+/* old$echo	Save setting of &echo
+/*
+/*			Global variables: NONE
+/*
+/*C------------------------------CALLS----------------------------------
+/*
+/* None.
+/*
+/*============================DISCLAIMER================================
+/*You may use, copy, modify, merge, distribute, alter, reproduce and/or
+/*create derivative works of this AML for your own internal use.  All
+/*rights not specifically granted herein are reserved to ESRI.  
+/*
+/*THIS AML IS PROVIDED "AS-IS" WITHOUT WARRANTY OF ANY KIND, EITHER
+/*EXPRESS OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+/*WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE,
+/*WITH RESPECT TO THE AML.  
+/*
+/*ESRI shall not be liable for any damages under any theory of law
+/*related to your use of this AML, even if ESRI is advised of the
+/*possibilites of such damage.  This AML is not supported by ESRI.
+/*======================================================================
+
+&args grid_name ptcov spot_item
+&severity &error &routine bailout 
+
+
+/* -----------Argument Checking---------------------
+
+&if [show program] ne 'ARC' &then
+  &return This aml must be run from ARC
+
+&if [null %grid_name%] &then 
+  &return Usage: GRIDSPOT <grid> <point_coverage> {spot_item}
+
+&if ^ [exists %grid_name% -grid] &then
+  &return %grid_name% is not a grid.
+
+&if [null %ptcov%] &then 
+  &return Usage: GRIDSPOT <grid> <point_coverage> {spot_item}
+
+&if ^ [exists %ptcov% -point] and not [exists %ptcov% -polygon] &then
+  &return %ptcov% is not a point coverage.
+
+&if [null %spot_item%] &then
+  &sv spot_item SPOT
+
+&s old$messages [show &messages]
+&messages &off
+
+/* Check whether spot_item exists in the point coverage PAT
+
+&if [iteminfo %ptcov%.pat -info %spot_item% -exists] &then
+  &type WARNING: Existing item %spot_item% in %ptcov%.PAT will be recalculated.
+&else
+  additem %ptcov%.pat %ptcov%.pat %spot_item% 4 12 f 3
+
+/* Now go into Arcplot and get the values
+
+&sv old$display [show display]
+display 0
+ap
+/* Declare and open a cursor to read and write to the PAT
+
+&if [exists %ptcov% -point] &then
+  &setvar feat = point
+&else
+  &setvar feat = polygon
+
+cursor ptcur declare %ptcov% %feat% rw
+cursor ptcur open
+
+&s old$echo [show &echo]
+&echo &off
+
+/* Start a loop to go through the PAT, find the cell value at each
+/* point location, and write it to the SPOT item in the PAT.
+
+&do &while %:ptcur.aml$next%
+  &s temp [show cellvalue %grid_name% [show select %ptcov% %feat% 1 xy]]
+  &if [type %temp%] gt 0 &then
+    &s :ptcur.%spot_item% -9999
+  &else 
+    &s :ptcur.%spot_item% %temp%
+  cursor ptcur next
+&end
+
+q     /* quit from arcplot
+&call exit
+&return /* To calling aml
+/*
+/* ---------------------------- Routine Exit ---------------------------------
+/*
+&routine exit
+&if [variable old$display] &then
+  display %old$display%
+&if [variable old$messages] &then
+  &messages %old$messages%
+&if [variable old$echo] &then
+  &echo %old$echo%
+&return
+/*
+/* --------------------------- Routine Bailout -------------------------------
+/*
+&routine bailout
+&severity &error &ignore
+&call exit
+&return; &return &error Bailing out of gridspot.aml
+

@@ -81,7 +81,6 @@ void InitTopoMap(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * Map,
   }
 
   /* Read the elevation data from the DEM dataset */
-
   GetVarName(001, 0, VarName);
   GetVarNumberType(001, &NumberType);
   if (!(Elev = (float *) calloc(Map->NX * Map->NY,
@@ -93,21 +92,30 @@ void InitTopoMap(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * Map,
 
   /* Assign the attributes to the map pixel */
   /* Reverse the matrix is flag = 1 & netcdf option is selected */
-  if ((Options->FileFormat == NETCDF && flag == 0) || (Options->FileFormat == BIN))
-  {
-	  for (y = 0, i = 0; y < Map->NY; y++) {
-		  for (x = 0; x < Map->NX; x++, i++) {
-			  (*TopoMap)[y][x].Dem = Elev[i]; }
-	  }
+  if ((Options->FileFormat == NETCDF && flag == 0) || (Options->FileFormat == BIN)){
+	for (y = 0, i = 0; y < Map->NY; y++) {
+	  for (x = 0; x < Map->NX; x++, i++) {
+	    (*TopoMap)[y][x].Dem = Elev[i]; }
+	}
   }
   else if (Options->FileFormat == NETCDF && flag == 1){
-	  for (y = Map->NY - 1, i = 0; y >= 0; y--) {
-		  for (x = 0; x < Map->NX; x++, i++) {
-			  (*TopoMap)[y][x].Dem = Elev[i]; }
-	  }
+	for (y = Map->NY - 1, i = 0; y >= 0; y--) {
+	  for (x = 0; x < Map->NX; x++, i++) {
+	    (*TopoMap)[y][x].Dem = Elev[i]; }
+	}
   }
   else ReportError((char *) Routine, 57);
   free(Elev);
+  
+  /* find out the minimum grid elevation of the basin */
+  MINELEV = 9999;
+  for (y = 0, i = 0; y < Map->NY; y++) {
+	for (x = 0; x < Map->NX; x++, i++) {
+	  if ((*TopoMap)[y][x].Dem < MINELEV) {
+		MINELEV = (*TopoMap)[y][x].Dem;
+	  }
+	}
+  }
 
   /* Read the mask */
   GetVarName(002, 0, VarName);

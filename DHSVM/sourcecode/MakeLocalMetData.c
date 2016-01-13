@@ -10,7 +10,7 @@
  * DESCRIP-END.
  * FUNCTIONS:    MakeLocalMetData()
  * COMMENTS:
- * $Id: MakeLocalMetData.c,v 1.5 2004/02/19 15:36:17 colleen Exp $     
+ * $Id: MakeLocalMetData.c,v3.1.2 2014/01/1 ning Exp $     
  */
 
 #include <assert.h>
@@ -96,56 +96,50 @@ PIXMET MakeLocalMetData(int y, int x, MAPSIZE * Map, int DayStep,
 
   if (Options->MM5 == TRUE) {
     LocalMet.Tair = MM5Input[MM5_temperature - 1][y][x] +
-      (LocalElev - MM5Input[MM5_terrain - 1][y][x]) * MM5Input[MM5_lapse -
-							       1][y][x];
+		(LocalElev - MM5Input[MM5_terrain - 1][y][x]) * 
+		MM5Input[MM5_lapse - 1][y][x];
     LocalMet.Rh = MM5Input[MM5_humidity - 1][y][x];
     LocalMet.Wind = MM5Input[MM5_wind - 1][y][x];
     LocalMet.Sin = MM5Input[MM5_shortwave - 1][y][x];
 
     if (Options->Shading == TRUE) {
       if (SunMax > 0.0) {
-	SeparateRadiation(LocalMet.Sin, LocalMet.Sin / SunMax,
-			  &(LocalMet.SinBeam), &(LocalMet.SinDiffuse));
-      }
+		SeparateRadiation(LocalMet.Sin, LocalMet.Sin / SunMax,
+		&(LocalMet.SinBeam), &(LocalMet.SinDiffuse)); 
+	  }
       else {
-	/* if sun is below horizon, the force all shortwave to zero */
-	LocalMet.Sin = 0.0;
-	LocalMet.SinBeam = 0.0;
-	LocalMet.SinDiffuse = 0.0;
-
-      }
+		/* if sun is below horizon, the force all shortwave to zero */
+		LocalMet.Sin = 0.0;
+		LocalMet.SinBeam = 0.0;
+		LocalMet.SinDiffuse = 0.0; 
+	  }
     }
-
     LocalMet.Lin = MM5Input[MM5_longwave - 1][y][x];
     LocalMet.Press = 101300.0;
     PrecipMap->Precip = MM5Input[MM5_precip - 1][y][x];
-/*    if(LocalMet.Sin>0) {
-    printf("LocalMet.Sin, LocalMet.Lin are: %f %f \n",LocalMet.Sin, LocalMet.Lin);
-} */
   }
   else {			/* MM5 is false and we need to interpolate the basic met records */
-
     WeightSum = 0.0;
     for (i = 0; i < NStats; i++) {
       WeightSum += (float) MetWeights[i];
       if (Options->WindSource == MODEL && Stat[i].IsWindModelLocation) {
-	ScaleWind = Stat[i].Data.Wind;
-	WindDirection = Stat[i].Data.WindDirection;
+	    ScaleWind = Stat[i].Data.Wind;
+	    WindDirection = Stat[i].Data.WindDirection;
       }
     }
     for (i = 0; i < NStats; i++) {
       CurrentWeight = ((float) MetWeights[i]) / WeightSum;
       LocalMet.Tair += CurrentWeight *
-	LapseT(Stat[i].Data.Tair, Stat[i].Elev, LocalElev,
+	  LapseT(Stat[i].Data.Tair, Stat[i].Elev, LocalElev,
 	       Stat[i].Data.TempLapse);
       LocalMet.Rh += CurrentWeight * Stat[i].Data.Rh;
       if (Options->WindSource == STATION)
-	LocalMet.Wind += CurrentWeight * Stat[i].Data.Wind;
+	  LocalMet.Wind += CurrentWeight * Stat[i].Data.Wind;
       LocalMet.Lin += CurrentWeight * Stat[i].Data.Lin;
       LocalMet.Sin += CurrentWeight * Stat[i].Data.Sin;
       if (Options->Shading == TRUE) {
-	LocalMet.SinBeam += CurrentWeight * Stat[i].Data.SinBeamObs;
-	LocalMet.SinDiffuse += CurrentWeight * Stat[i].Data.SinDiffuseObs;
+	    LocalMet.SinBeam += CurrentWeight * Stat[i].Data.SinBeamObs;
+	    LocalMet.SinDiffuse += CurrentWeight * Stat[i].Data.SinDiffuseObs;
       }
       TempLapseRate += CurrentWeight * Stat[i].Data.TempLapse;
     }
@@ -166,8 +160,7 @@ PIXMET MakeLocalMetData(int y, int x, MAPSIZE * Map, int DayStep,
        a better way of doing this would be welcome */
     if (TempLapseRate != 0.0) {
       Temp = 9.8067 / (TempLapseRate * 287.0);
-      LocalMet.Press =
-	101300. * pow(((288.0 - TempLapseRate * LocalElev) / 288.0), Temp);
+      LocalMet.Press = 101300. * pow(((288.0 - TempLapseRate * LocalElev) / 288.0), Temp);
     }
     else
       LocalMet.Press = 101300.;
@@ -209,7 +202,13 @@ PIXMET MakeLocalMetData(int y, int x, MAPSIZE * Map, int DayStep,
     are update to produce shadow factors ranging from 0 to 255 consistent with 
     arcinfo */
     LocalMet.SinBeam *= (float) shadow / 22.23191;
-    LocalMet.SinDiffuse *= skyview;
+	
+	/* if canopy shading is computed, then the skyview factor will be compared with
+       riparian canopy openess */
+	if (Options->CanopyShading && Options->StreamTemp)
+	  LocalMet.SinDiffuse *= 1;
+	else
+	  LocalMet.SinDiffuse *= skyview;
     if (LocalMet.SinBeam + LocalMet.SinDiffuse > SOLARCON)
       LocalMet.SinBeam = SOLARCON - LocalMet.SinDiffuse;
   }
@@ -219,41 +218,43 @@ PIXMET MakeLocalMetData(int y, int x, MAPSIZE * Map, int DayStep,
   }
   RadMap->Beam = LocalMet.SinBeam;
   RadMap->Diffuse = LocalMet.SinDiffuse;
+
+    /* Store the VIC incoming shortwave radiatio without topo or canopy shading */
+  if (Options->StreamTemp)
+	LocalMet.VICSin = LocalMet.Sin;
   LocalMet.Sin = RadMap->Beam + RadMap->Diffuse;
 
   if (Options->QPF == TRUE || Options->MM5 == FALSE) {
     if (Options->PrecipType == STATION && Options->Prism == FALSE) {
       PrecipMap->Precip = 0.0;
       for (i = 0; i < NStats; i++) {
-	CurrentWeight = ((float) MetWeights[i]) / WeightSum;
-	if (Options->PrecipLapse == MAP)
-	  PrecipMap->Precip += CurrentWeight *
-	    LapsePrecip(Stat[i].Data.Precip, 0, 1, PrecipLapseMap[y][x]);
-	else
-	  PrecipMap->Precip += CurrentWeight *
-	    LapsePrecip(Stat[i].Data.Precip, Stat[i].Elev, LocalElev,
-			Stat[i].Data.PrecipLapse);
+	    CurrentWeight = ((float) MetWeights[i]) / WeightSum;
+	    if (Options->PrecipLapse == MAP)
+	      PrecipMap->Precip += CurrentWeight *
+	      LapsePrecip(Stat[i].Data.Precip, 0, 1, PrecipLapseMap[y][x]);
+		else
+		  PrecipMap->Precip += CurrentWeight *
+	      LapsePrecip(Stat[i].Data.Precip, Stat[i].Elev, LocalElev,
+		  Stat[i].Data.PrecipLapse);
       }
     }
     else if (Options->PrecipType == STATION && Options->Prism == TRUE) {
       PrecipMap->Precip = 0.0;
       for (i = 0; i < NStats; i++) {
-	CurrentWeight = ((float) MetWeights[i]) / WeightSum;
-	/* this is the real prism interpolation */
-	/* note that X = position from left  boundary, ie # of columns */
-	/* note that Y = position from upper boundary, ie # of rows   */
-	if (Options->Outside == FALSE)
-	  PrecipMap->Precip +=
-	    CurrentWeight * Stat[i].Data.Precip /
-	    PrismMap[Stat[i].Loc.N][Stat[i].Loc.E] * PrismMap[y][x];
-	else
-	  PrecipMap->Precip +=
-	    CurrentWeight * Stat[i].Data.Precip /
-	    Stat[i].PrismPrecip[Month - 1] * PrismMap[y][x];
-	if(PrismMap[y][x] < 0){
-	  printf("negative PrismMap value in MakeLocalMetData.c\n");
-	  exit(0);
-	}
+	    CurrentWeight = ((float) MetWeights[i]) / WeightSum;
+		/* this is the real prism interpolation */
+		/* note that X = position from left  boundary, ie # of columns */
+		/* note that Y = position from upper boundary, ie # of rows   */
+		if (Options->Outside == FALSE)
+	      PrecipMap->Precip += CurrentWeight * Stat[i].Data.Precip /
+		  PrismMap[Stat[i].Loc.N][Stat[i].Loc.E] * PrismMap[y][x];
+		else
+		  PrecipMap->Precip += CurrentWeight * Stat[i].Data.Precip /
+		  Stat[i].PrismPrecip[Month - 1] * PrismMap[y][x];
+		if (PrismMap[y][x] < 0){
+		  printf("negative PrismMap value in MakeLocalMetData.c\n");
+		  exit(0);
+		}
       }
     }
   }
@@ -317,9 +318,8 @@ PIXMET MakeLocalMetData(int y, int x, MAPSIZE * Map, int DayStep,
     LocalSnow->LastSnow = 0;
 
   if (NGraphics > 0) {
-
     (*MetMap)[y][x].accum_precip =
-      (*MetMap)[y][x].accum_precip + PrecipMap->Precip;
+    (*MetMap)[y][x].accum_precip + PrecipMap->Precip;
     (*MetMap)[y][x].air_temp = LocalMet.Tair;
     (*MetMap)[y][x].wind_speed = LocalMet.Wind;
     (*MetMap)[y][x].humidity = LocalMet.Rh;

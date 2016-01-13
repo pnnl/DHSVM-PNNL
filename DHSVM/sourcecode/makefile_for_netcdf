@@ -26,7 +26,8 @@ RouteSurface.o SatVaporPressure.o SensibleHeatFlux.o SeparateRadiation.o SizeOfN
 SlopeAspect.o SnowInterception.o SnowMelt.o SnowPackEnergyBalance.o  \
 SoilEvaporation.o StabilityCorrection.o StoreModelState.o	     \
 SurfaceEnergyBalance.o UnsaturatedFlow.o VarID.o WaterTableDepth.o   \
-channel.o channel_grid.o equal.o errorhandler.o globals.o tableio.o
+channel.o channel_grid.o equal.o errorhandler.o globals.o tableio.o \
+channel_complt.o CanopyShading.o
 
 SRCS = $(OBJS:%.o=%.c)
 
@@ -55,7 +56,7 @@ LIBS = -lm -L/usr/X11R6/lib -lX11 -L/sw/lib -L/usr/local/lib -lnetcdf
 #LIBS = -lm -L/usr/X11R6/lib -lX11 -L/sw/lib -L/usr/local/lib -lnetcdf
 
 DHSVM: $(OBJS)
-	$(CC) $(OBJS) $(CFLAGS) -o DHSVM3.1.1 $(LIBS)
+	$(CC) $(OBJS) $(CFLAGS) -o DHSVM3.1.2 $(LIBS)
 
 clean::
 	rm -f DHSVM
@@ -117,8 +118,12 @@ CalcWeights.o: CalcWeights.c constants.h settings.h data.h Calendar.h \
  channel_grid.h
 Calendar.o: Calendar.c settings.h functions.h data.h Calendar.h \
  DHSVMChannel.h getinit.h channel.h channel_grid.h DHSVMerror.h
+CanopyShading.o: CanopyShading.c channel.h channel_grid.h constants.h \
+ functions.h settings.h
 CanopyResistance.o: CanopyResistance.c settings.h massenergy.h data.h \
  Calendar.h constants.h
+channel_complt.o: channel_complt.c  functions.h errorhandler.h constants.h \
+tableio.h settings.h
 ChannelState.o: ChannelState.c settings.h data.h Calendar.h \
  DHSVMerror.h fileio.h functions.h DHSVMChannel.h getinit.h channel.h \
  channel_grid.h constants.h sizeofnt.h

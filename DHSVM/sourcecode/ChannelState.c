@@ -48,7 +48,7 @@ int CompareRecordID(const void *key, const void *record);
   ASCII file, with the unique channel IDs in the first column and the amount
   of storage in the second column (m3)
 *****************************************************************************/
-void ReadChannelState(char *Path, DATE * Now, Channel * Head)
+void ReadChannelState(char *Path, DATE *Now, Channel *Head)
 {
   char InFileName[BUFSIZ + 1] = "";
   char Str[BUFSIZ + 1] = "";

@@ -10,12 +10,8 @@
  * DESCRIP-END.
  * FUNCTIONS:    MassEnergyBalance()
  * COMMENTS:
- * $Id: MassEnergyBalance.c,v 1.16 2004/08/18 01:01:31 colleen Exp $     
+ * $Id: MassEnergyBalance.c,v3.1.2 2013/08/18 ning Exp $     
  */
-
-/* #define NO_ET */
-/* #define NO_SNOW */
-
 #ifdef SNOW_ONLY
 #define NO_ET
 #define NO_SOIL
@@ -60,79 +56,77 @@ erosion and sediment yield component for the SHE hydrological modeling system,
 Journal of Hydrology, 175, 213-238.
 
 *****************************************************************************/
-void MassEnergyBalance(int y, int x, float SineSolarAltitude, float DX, 
-		       float DY, int Dt, int HeatFluxOption, 
+void MassEnergyBalance(OPTIONSTRUCT *Options, int y, int x, float SineSolarAltitude, 
+		       float DX, float DY, int Dt, int HeatFluxOption, 
 		       int CanopyRadAttOption, int RoadRouteOption,
 		       int InfiltOption, int MaxVegLayers, PIXMET *LocalMet,
 		       ROADSTRUCT *LocalNetwork, PRECIPPIX *LocalPrecip,
 		       VEGTABLE *VType, VEGPIX *LocalVeg, SOILTABLE *SType,
 		       SOILPIX *LocalSoil, SNOWPIX *LocalSnow,
 		       EVAPPIX *LocalEvap, PIXRAD *TotalRad,
-		       CHANNEL *ChannelData)
+		       CHANNEL *ChannelData, float **skyview)
 {
- PIXRAD LocalRad;		/* Radiation balance components (W/m^2) */
-  float SurfaceWater;		/* Pixel average depth of water before
-				   infiltration is calculated (m) */
-  float RoadWater;               /* Average depth of water on the road surface 
-				    (normalized by grid cell area) before
-				    infiltration is calculated (m) */
-  float ChannelWater;            /* Precip that hits the channel */
+  PIXRAD LocalRad;			/* Radiation balance components (W/m^2) */
+  float SurfaceWater;		/* Pixel average depth of water before infiltration is calculated (m) */
+
+  float RoadWater;          /* Average depth of water on the road surface 
+							   (normalized by grid cell area) 
+							   before infiltration is calculated (m) */
+  float ChannelWater;       /* Precip that hits the channel */
   float Infiltration;		/* Infiltration into the top soil layer (m) */
-  float Infiltrability;          /* Dynamic infiltration capacity (m/s)*/
-  float B;                       /* Capillary drive and soil saturation deficit
-				  used in dynamic infiltration calculation*/
-  float LowerRa;		        /* Aerodynamic resistance for lower layer 
-				   (s/m) */
-  float LowerWind;		/* Wind for lower layer (m/s) */
-  float MaxInfiltration;	        /* Maximum infiltration into the top
-				   soil layer (m) */
-  float MaxRoadbedInfiltration;	/* Maximum infiltration through the road bed
-				   soil layer (m) */
-  float MeltEnergy;		/* Energy used to melt snow and  change of
-				   cold content of snow pack */
+  float Infiltrability;     /* Dynamic infiltration capacity (m/s)*/
+  float B;                  /* Capillary drive and soil saturation deficit used 
+							   in dynamic infiltration calculation*/
+  float LowerRa;		    /* Aerodynamic resistance for lower layer (s/m) */
+
+  float LowerWind;			/* Wind for lower layer (m/s) */
+  float MaxInfiltration;	/* Maximum infiltration into the top soil layer (m) */
+
+  float MaxRoadbedInfiltration;	/* Maximum infiltration through the road bed soil layer (m) */
+
+  float MeltEnergy;			/* Energy used to melt snow and  change of cold content of snow pack */
+
   float MoistureFlux;		/* Amount of water transported from the pixel 
-				   to the atmosphere (m/timestep) */
-  float NetRadiation;		/* Net radiation for a layer (W/m2) */
-  float PercArea;                /* Surface area of percolation corrected
-				    for channel and road area, divided by
-				    the grid cell area (0-1)  */
-  float Reference;		/* Reference height for sensible heat 
-				   calculation (m) */
-  float RoadbedInfiltration;	/* Infiltration through the road bed (m) */
-  float Roughness;		/* Roughness length (m) */
-  float Rp;			/* radiation flux in visible part of the 
-				   spectrum (W/m^2) */
-  float UpperRa;		        /* Aerodynamic resistance for upper layer 
-				   (s/m) */
-  float UpperWind;		/* Wind for upper layer (m/s) */
-  float SnowLongIn;		/* Incoming longwave radiation at snow surface 
-				   (W/m2) */
-  float SnowNetShort;		/* Net amount of short wave radiation at the 
-				   snow surface (W/m2) */
-  float SnowRa;			/* Aerodynamic resistance for snow */
-  float SnowWind;		        /* Wind 2 m above snow */
-  float Tsurf;			/* Surface temperature used in
-				   LongwaveBalance() (C) */
-  int NVegLActual;		/* Number of vegetation layers above snow */
+							   to the atmosphere (m/timestep) */
+  float NetRadiation;		/* Total Net long- and shortwave radiation for each veg layer (W/m2) */
+  float PercArea;           /* Surface area of percolation corrected for 
+							   channel and road area, divided by the grid cell area (0-1)  */
+
+  float Reference;			/* Reference height for sensible heat calculation (m) */
+
+  float RoadbedInfiltration;/* Infiltration through the road bed (m) */
+  float Roughness;			/* Roughness length (m) */
+  float Rp;					/* radiation flux in visible part of the spectrum (W/m^2) */
+
+  float UpperRa;		    /* Aerodynamic resistance for upper layer (s/m) */
+
+  float UpperWind;			/* Wind for upper layer (m/s) */
+  float SnowLongIn;			/* Incoming longwave radiation at snow surface (W/m2) */
+
+
+
+  float SnowNetShort;		/* Net amount of short wave radiation at the snow surface (W/m2) */
+  float SnowRa;				/* Aerodynamic resistance for snow */
+  float SnowWind;		    /* Wind 2 m above snow */
+  float Tsurf;				/* Surface temperature used in LongwaveBalance() (C) */
+  float RainfallIntensity;  /* Rainfall intensity (mm/h) */
+  float MS_Rainfall;        /* Momentum squared for rain throughfall((kg* m/s)^2 /(m^2 * s)) */
+  int MS_Index;             /* Index for determining alpha and beta cooresponding to RainfallIntensity*/
+  int   NVegLActual;		/* Number of vegetation layers above snow */
   float alpha[4]={2.69e-8,3.75e-8,6.12e-8,11.75e-8}; /* empirical coefficient
 				for rainfall momentum after Wicks and Bathurst (1996) */ 
   float beta[4]={1.6896,1.5545,1.4242,1.2821};       /* empirical coefficient
 				for rainfall momentum after Wicks and Bathurst (1996) */ 
-  float RainfallIntensity;       /* Rainfall intensity (mm/h) */
-  float MS_Rainfall;             /* Momentum squared for rain throughfall 
-				    ((kg* m/s)^2 /(m^2 * s)) */
-  int MS_Index;                  /* Index for determining alpha and beta cooresponding to
-				  RainfallIntensity*/
   int i;
   float CanopyHeight[18] = {0.5,1,1.5,2,3,4,5,6,7,8,9,10,11,12,
 			    13,14,15,16};        /* Canopy height at which drip fall 
 			          velocity is prescribed after Epema and Riezebos (1983) (m)*/           
   float FallVelocity[18] = {2.96,4.12,5.12,5.82,6.84,7.54,8.05,8.36,
 			    8.54,8.66,8.75,8.82,8.87,8.91,8.96,9.02,9.07,9.13};
-                                            /* Drip fall velocity corresponding to
-                                                          CanopyHeight after Epema and Riezebos (1983) (m/s)*/
-  float LD_FallVelocity;         /* Leaf drip fall velocity corresponding to the
-				    canopy height in vegetation map (m/s) */
+                                     /* Drip fall velocity corresponding to
+                                     CanopyHeight after Epema and Riezebos (1983) (m/s)*/
+  float LD_FallVelocity;             /* Leaf drip fall velocity corresponding to the
+                                     canopy height in vegetation map (m/s) */
 
   /* Calculate the number of vegetation layers above the snow */
 
@@ -148,15 +142,12 @@ void MassEnergyBalance(int y, int x, float SineSolarAltitude, float DX,
 
   /* calculate the radiation balance for the ground/snow surface and the
      vegetation layers above that surface */
-
-  RadiationBalance(HeatFluxOption, CanopyRadAttOption, SineSolarAltitude, 
-		   LocalMet->Sin, LocalMet->SinBeam, LocalMet->SinDiffuse, 
+  RadiationBalance(Options, HeatFluxOption, CanopyRadAttOption, SineSolarAltitude, 
+	       LocalMet->VICSin, LocalMet->Sin, LocalMet->SinBeam, LocalMet->SinDiffuse, 
 		   LocalMet->Lin, LocalMet->Tair, LocalVeg->Tcanopy, 
-		   LocalSoil->TSurf, SType->Albedo, VType, LocalSnow, 
-		   &LocalRad);
+		   LocalSoil->TSurf, SType->Albedo, VType, LocalSnow, &LocalRad);
 
   /* calculate the actual aerodynamic resistances and wind speeds */
-
   UpperWind = VType->U[0] * LocalMet->Wind;
   UpperRa = VType->Ra[0] / LocalMet->Wind;
   if (VType->OverStory == TRUE) {
@@ -260,8 +251,8 @@ void MassEnergyBalance(int y, int x, float SineSolarAltitude, float DX,
       Tsurf = LocalSoil->TSurf;
     else
       Tsurf = LocalMet->Tair;
-    LongwaveBalance(VType->OverStory, VType->Fract[0], LocalMet->Lin,
-		    LocalVeg->Tcanopy, Tsurf, &LocalRad);
+    LongwaveBalance(Options, VType->OverStory, VType->Fract[0], LocalMet->Lin, 
+	               LocalVeg->Tcanopy, Tsurf, &LocalRad);
   }
   else if (VType->NVegLayers > 0) {
     LocalVeg->Tcanopy = LocalMet->Tair;
@@ -317,7 +308,7 @@ void MassEnergyBalance(int y, int x, float SineSolarAltitude, float DX,
        can recalculate the longwave balance */
 
     Tsurf = LocalSnow->TSurf;
-    LongwaveBalance(VType->OverStory, VType->Fract[0], LocalMet->Lin,
+    LongwaveBalance(Options, VType->OverStory, VType->Fract[0], LocalMet->Lin,
 		    LocalVeg->Tcanopy, Tsurf, &LocalRad);
   }
   else {
@@ -567,7 +558,7 @@ void MassEnergyBalance(int y, int x, float SineSolarAltitude, float DX,
 		     MoistureFlux, SType->NLayers, VType->RootDepth,
 		     SType, MeltEnergy, LocalSoil);
     Tsurf = LocalSoil->TSurf;
-    LongwaveBalance(VType->OverStory, VType->Fract[0], LocalMet->Lin,
+    LongwaveBalance(Options, VType->OverStory, VType->Fract[0], LocalMet->Lin,
 		    LocalVeg->Tcanopy, Tsurf, &LocalRad);
   }
   else
@@ -578,4 +569,9 @@ void MassEnergyBalance(int y, int x, float SineSolarAltitude, float DX,
   /* add the components of the radiation balance for the current pixel to 
      the total */
   AggregateRadiation(MaxVegLayers, VType->NVegLayers, &LocalRad, TotalRad);
+  /* For RBM model, save the energy fluxes for outputs */
+  if (Options->StreamTemp) {
+    if (channel_grid_has_channel(ChannelData->stream_map, x, y))
+      channel_grid_inc_other(ChannelData->stream_map, x, y, &LocalRad, LocalMet, skyview[y][x]);
+  }
 }

@@ -88,13 +88,7 @@ static char *ErrorMessage[] = {
   "Current version does not support this setup:", /* 65 */
   "Invalid Map->Resolution value for dumping map or image of variable ID:", /* 66 */
   "The options set in the input file do not support plotting variable ID:", /* 67 */
-  "Buildup coefficients are out of range:", /* 68 */
-  "Washoff coefficients are out of range\n Washoff Coeff must be > 0 & Washoff Expon must be within [-10, 10]:", /* 69 */
-  "Invalid buildup function type:", /* 70 */
-  "Invalid washoff function type:", /* 71 */
-  "Water quality mass balance error greater than 10%: ",	/* 72 */
-  "Runoff mass balance error greater than 10%: ",	/* 73 */
-  "Number of pollutants for each land use category must be equal to the number of pollutants specified in [POLLUTANTS] section:", /* 74 */
+  "Riparian parameter < 0:", /* 68 */
   NULL
 };
 

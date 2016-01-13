@@ -37,7 +37,7 @@ typedef struct {
   int Min;
   int Sec;
   int JDay;			/* Day of year(jan 1 = 1) */
-  double Julian;		/* Julian day */
+  double Julian;	/* Julian day */
 } DATE;
 
 typedef struct {
@@ -77,6 +77,7 @@ uchar IsNewMonth(DATE * Now, int Interval);
 DATE NextDate(DATE * Current, int Interval);
 int NumberOfSteps(DATE * Start, DATE * End, int Interval);
 void PrintDate(DATE * Day, FILE * OutFile);
+void PrintRBMStartDate(int Dt, DATE * Day, FILE * OutFile);
 void SPrintDate(DATE * Day, char *buffer);
 int ScanDate(FILE * InFile, DATE * Day);
 int SScanDate(char *Str, DATE * Day);
@@ -86,6 +87,5 @@ void JulianDayToGregorian(double jd, int *y, int *m, int *d, int *h, int *mi,
 double GregorianToJulianDay(int year, int mon, int day, int h, int mi,
 			    double se);
 int DayOfWeek(double j);
-/*float rint(float x);*/
 
 #endif

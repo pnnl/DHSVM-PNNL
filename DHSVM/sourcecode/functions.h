@@ -33,7 +33,7 @@ void CalcAerodynamic(int NVegLayers, unsigned char OverStory,
 		     float n, float *Height, float Trunk, float *U,
 		     float *U2mSnow, float *Ra, float *RaSnow);
 
-float CalcBagnold(float DS,TIMESTRUCT * Time, float, float, float, float);
+float CalcBagnold(float DS, TIMESTRUCT *Time, float, float, float, float);
 
 double CalcDistance(COORD *LocA, COORD *LocB);
 
@@ -57,8 +57,6 @@ void CalcWeights(METLOCATION *Station, int NStats, int NX, int NY,
 		 uchar **BasinMask, uchar ****WeightArray,
 		 OPTIONSTRUCT *Options);
 
-/* double cbrt (double x);*/ //compute the cubic root of a value
-
 double ChannelCulvertSedFlow(int y, int x, CHANNEL * ChannelData, int i);
 
 void CheckOut(int CanopyRadAttOption, LAYER Veg, LAYER Soil, 
@@ -79,7 +77,7 @@ void draw(DATE *Day, int first, int DayStep, MAPSIZE *Map, int NGraphics,
 void DistributeSedimentDiams(float SedDiams[NSEDSIZES]);
 
 void DumpMap(MAPSIZE *Map, DATE *Current, MAPDUMP *DMap, TOPOPIX **TopoMap,
-	     EVAPPIX **EvapMap, PRECIPPIX **PrecipMap, RADCLASSPIX **RadMap,
+	     EVAPPIX **EvapMap, PRECIPPIX **PrecipMap, PIXRAD **RadMap,
 	     SNOWPIX **Snowap, SOILPIX **SoilMap, SEDPIX **SedMap, FINEPIX ***FineMap,
 	     LAYER *Soil, VEGPIX **VegMap, LAYER *Veg, ROADSTRUCT **Network,
 	     OPTIONSTRUCT *Options);
@@ -93,8 +91,8 @@ void DumpPixSed(DATE *Current, int first, FILES *OutFileSediment, SEDPIX *SedMap
              float SedimentOverroadInflow, FINEPIX *FineMap);
 
 void ExecDump(MAPSIZE * Map, DATE * Current, DATE * Start, OPTIONSTRUCT * Options,
-	      DUMPSTRUCT * Dump, TOPOPIX ** TopoMap, EVAPPIX ** EvapMap,
-	      PRECIPPIX ** PrecipMap, RADCLASSPIX ** RadMap, SNOWPIX ** SnowMap,
+	      DUMPSTRUCT * Dump, TOPOPIX ** TopoMap, EVAPPIX ** EvapMap, PIXRAD **RadiMap,
+	      PRECIPPIX ** PrecipMap, RADCLASSPIX **RadMap, SNOWPIX ** SnowMap,
 	      MET_MAP_PIX ** MetMap, VEGPIX ** VegMap, LAYER * Veg, SOILPIX ** SoilMap,
 	      SEDPIX ** SedMap, ROADSTRUCT ** Network, CHANNEL * ChannelData, 
 	      FINEPIX *** FineMap, LAYER * Soil, AGGREGATED * Total, 
@@ -121,6 +119,8 @@ void GetMetData(OPTIONSTRUCT *Options, TIMESTRUCT *Time, int NSoilLayers,
 uchar InArea(MAPSIZE *Map, COORD *Loc);
 
 void InitAggregated(int MaxVegLayers, int MaxSoilLayers, AGGREGATED *Total);
+
+void InitChannelRVeg(TIMESTRUCT *Time, Channel *Channel); 
 
 int InitChannelSediment(Channel * Head, AGGREGATED *Total);
 
@@ -251,7 +251,8 @@ void InitSnowMap(MAPSIZE *Map, SNOWPIX ***SnowMap);
 void InitSoilMap(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
 		 LAYER *Soil, TOPOPIX **TopoMap, SOILPIX ***SoilMap);
 
-int InitSoilTable(SOILTABLE **SType, LISTPTR Input, LAYER *Soil);
+int InitSoilTable(OPTIONSTRUCT *Options, SOILTABLE **SType, 
+			LISTPTR Input, LAYER *Soil, int InfiltOption);
 
 void InitSnowTable(SNOWTABLE **SnowAlbedo, int Dt);
 
@@ -321,15 +322,15 @@ PIXMET MakeLocalMetData(int y, int x, MAPSIZE *Map, int DayStep,
 void MassBalance(DATE *Current, FILES *Out, FILES *SedOut, AGGREGATED *Total,
 		 WATERBALANCE *Mass, OPTIONSTRUCT * Options);
 
-void MassEnergyBalance(int y, int x, float SineSolarAltitude, float DX, 
-		       float DY, int Dt, int HeatFluxOption, 
+void MassEnergyBalance(OPTIONSTRUCT *Options, int y, int x, float SineSolarAltitude,  
+		       float DX, float DY, int Dt, int HeatFluxOption, 
 		       int CanopyRadAttOption, int RoadRouteOption,
 		       int InfiltOption,int MaxVegLayers,  PIXMET *LocalMet,
 		       ROADSTRUCT *LocalNetwork, PRECIPPIX *LocalPrecip,
 		       VEGTABLE *VType, VEGPIX *LocalVeg, SOILTABLE *SType,
 		       SOILPIX *LocalSoil, SNOWPIX *LocalSnow,
 		       EVAPPIX *LocalEvap, PIXRAD *TotalRad,
-		       CHANNEL *ChannelData);
+		       CHANNEL *ChannelData, float** skyview);
 
 float MaxRoadInfiltration(ChannelMapPtr **map, int col, int row);
 
@@ -423,5 +424,15 @@ void StoreModelState(char *Path, DATE * Current, MAPSIZE * Map,
 		     CHANNEL * ChannelData);
 
 float viscosity(float Tair, float Rh);
+
+/* functions for John's RBM model */
+int channel_save_outflow_text_cplmt(TIMESTRUCT *Time, char *tstring, Channel *net, CHANNEL *netfile, int flag);
+void CalcCanopyShading (TIMESTRUCT *Time, Channel *Channel, SOLARGEOMETRY *SolarGeo);
+
+float CalcShadeDensity(int ShadeCase, float HDEM, float WStream, 
+					  float SunAzimuth, float StreamAzim, float SunAltitude, float TREEHEIGHT,
+					  float BUFFERWIDTH, float Dx1, float Dx2, float Ext_Coeff);
+
+float CalcCanopySkyView(float HDEM, float dist);
 
 #endif

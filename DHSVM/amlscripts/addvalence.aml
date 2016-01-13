@@ -1,0 +1,77 @@
+/*A------------------------------AUTHOR---------------------------------
+/* 
+/*Original Coding:     ESRI 
+/*
+/*N-------------------------------NAME----------------------------------
+/* 
+/*ADDVALENCE.AML 
+/*Copyright 1995, Environmental Systems Research Institute, Inc.  
+/*
+/*P-----------------------------PURPOSE---------------------------------
+/* 
+/*To add a node "valance" to a coverages NAT.  The valance is a count
+/*of how many arcs intersect at a node. A dangle has a valance of 1,
+/*a pseudo node has a valance of 2. 
+/*
+/*U------------------------------USAGE----------------------------------
+/* 
+/*ADDVALENCE <cover> 
+/*
+/*V----------------------------VARIABLES--------------------------------
+/*
+/* cover - the name of the coverage to which the valence item will be
+/*         added and populated.
+/*
+/*C------------------------------CALLS----------------------------------
+/*
+/*NONE 
+/*
+/*============================DISCLAIMER================================
+/*You may use, copy, modify, merge, distribute, alter, reproduce and/or
+/*create derivative works of this AML for your own internal use.  All
+/*rights not specifically granted herein are reserved to ESRI.  
+/*
+/*THIS AML IS PROVIDED "AS-IS" WITHOUT WARRANTY OF ANY KIND, EITHER
+/*EXPRESS OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+/*WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE,
+/*WITH RESPECT TO THE AML.  
+/*
+/*ESRI shall not be liable for any damages under any theory of law
+/*related to your use of this AML, even if ESRI is advised of the
+/*possibilites of such damage.  This AML is not supported by ESRI.
+/*======================================================================
+&args cover
+
+&if [null %cover%] &then &return Usage: ADDVALENCE <cover>
+
+&s cover [translate %cover%]
+
+/* Check for existance of coverage.
+/*
+&if ^ [exists %cover% -cover] &then &return coverage %cover% does not exist 
+&if ^ [exists %cover% -line] &then &return coverage %cover% has no ARC topology
+
+/* Build coverage node
+/*
+build %cover% node
+
+/* If valance item exists, remove it and add again.  This insures a zero
+/* value in the valance item to start.       
+/*
+&if [iteminfo %cover% -node valance -exists] &then
+  dropitem %cover%.nat %cover%.nat valance
+additem %cover%.nat %cover%.nat valance 4 5 b
+
+/* Calculate node valance.
+/*
+ 
+&data arc info
+  ARC
+  SEL %cover%.AAT
+  RELATE %cover%.NAT 1 BY FNODE# LINK
+  RELATE %cover%.NAT 2 BY TNODE# LINK
+  CALC $1VALANCE = $1VALANCE + 1
+  CALC $2VALANCE = $2VALANCE + 1
+  Q STOP
+&end 
+

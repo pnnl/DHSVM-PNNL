@@ -1,0 +1,75 @@
+/* soildepth.aml Kenneth Westrick 12/27/1999
+/* This aml creates a soildepth file for DHSVM based on local slope (determined from DEM),
+/* upstream source area, and elevation. There are a number of variables that need
+/* to be set:
+/*
+/* mindepth - the minimum depth of the soil (this is a floor)
+/* maxdepth - the maximum depth of the soil (this will never be exceeded)
+/* wtslope - the relative weighting for the slope
+/* wtsource - the relative weighting for the source area
+/* wtelev - the relative weighting for the elevation
+/* maxslope - anything greater than this will create the slope function = 1
+/* maxsource - anything greater than this will create the source function = 1
+/* maxelev - anything greater than this will create the elevation function = 1
+/* powslope - raise the slope fraction by this power
+/* powsource - raise the source area fraction by this power
+/* powelev - raise the elevation fraction by this power
+/*
+/* the below variables can/should be modified by the user
+&args source elev mindepth maxdepth
+&type source grid is %source%
+&if [show program] ne 'GRID' &then
+ &do
+  &return 'This must be launched from GRID'
+ &end
+/* for the skagit I used:
+/* &setvar wtslope := 0.7
+/* &type %wtslope%
+/* &setvar wtsource := 0.0
+/* &type %wtsource%
+/* &setvar wtelev := 0.3
+/* &type %wtelev%
+/* &setvar maxslope := 30.
+/* &setvar maxsource := 100000
+/* &setvar maxelev := 1500
+/* &setvar powslope := .25
+/* &setvar powsource := 1.
+/* &setvar powelev := .75
+&setvar wtslope := 0.7
+&type %wtslope%
+&setvar wtsource := 0.0
+&type %wtsource%
+&setvar wtelev := 0.3
+&type %wtelev%
+&setvar maxslope := 30.
+&setvar maxsource := 100000
+&setvar maxelev := 1500
+&setvar powslope := .25
+&setvar powsource := 1.
+&setvar powelev := .75
+&type All values read in
+&setvar totalwt := [calc %wtslope% + %wtsource% + %wtelev%]
+&type %totalwt%
+&if %totalwt% <> 1 &then
+  &return &inform the weights must add up to 1.
+&else
+&if [exists soildepth -grid] &then  
+  kill soildepth
+setcell %source%
+setwindow %source%
+&if [exists slopegrid -grid] &then
+  kill slopegrid
+slopegrid = slope (%elev%, degree )
+tmpsrc = con ( %source% > %maxsource%, %maxsource%, %source% )
+tmpelev = con ( %elev% > %maxelev%, %maxelev%, %elev% )
+tmpslope = con ( slopegrid > %maxslope%, %maxslope%, slopegrid )
+&if [exists soildepth -grid] &then
+  kill soildepth 
+soildepth = %mindepth% + ( %maxdepth% - %mindepth% ) * ~
+( ( %wtslope% * ( 1. - pow ( ( tmpslope / %maxslope% ) , %powslope% ) ) ) + ~
+( %wtsource% * ( pow ( (tmpsrc / %maxsource% ) , %powsource% ) ) ) + ~
+( %wtelev% * ( 1. - pow ( ( tmpelev / %maxelev%) , %powelev% ) ) ) )
+kill tmpslope
+kill tmpelev
+kill tmpsrc
+&return

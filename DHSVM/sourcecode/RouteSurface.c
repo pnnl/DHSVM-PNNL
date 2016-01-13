@@ -14,7 +14,7 @@
 				 code, some impervious channel cells are routed to themselves causing 
 				 overestimated runoff in those cells (Ning, 2013).
               
- * $Id: RouteSurface.c, v 3.1.1  2013/3/21   Ning Exp $  
+ * $Id: RouteSurface.c, v3.1.2  2013/3/21   Ning Exp $  
  */
 #include <assert.h>
 #include <stdio.h>

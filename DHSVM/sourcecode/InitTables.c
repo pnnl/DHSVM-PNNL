@@ -13,7 +13,7 @@
  *               InitVegTable() 
  *               InitSnowTable()
  * COMMENTS:
- * $Id: InitTables.c,v 1.8 2004/03/11 22:25:04 colleen Exp $     
+ * $Id: InitTables.c,v3.1.2 2013/12/11 ning Exp $     
  */
 
 #include <ctype.h>
@@ -33,13 +33,14 @@
 /*******************************************************************************/
 /*				  InitTables()                                 */
 /*******************************************************************************/
-void InitTables(int StepsPerDay, LISTPTR Input, OPTIONSTRUCT * Options,
-		SOILTABLE ** SType, LAYER * Soil, VEGTABLE ** VType,
-		LAYER * Veg, SNOWTABLE ** SnowAlbedo)
+void InitTables(int StepsPerDay, LISTPTR Input, OPTIONSTRUCT *Options,
+		SOILTABLE **SType, LAYER *Soil, VEGTABLE **VType,
+		LAYER *Veg, SNOWTABLE **SnowAlbedo)
 {
   printf("Initializing tables\n");
 
-  if ((Soil->NTypes = InitSoilTable(SType, Input, Soil)) == 0)
+  if ((Soil->NTypes = InitSoilTable(Options, SType, Input, Soil,
+	  Options->Infiltration)) == 0)
     ReportError("Input Options File", 8);
 
   if ((Veg->NTypes = InitVegTable(VType, Input, Options, Veg)) == 0)
@@ -67,7 +68,8 @@ void InitTables(int StepsPerDay, LISTPTR Input, OPTIONSTRUCT * Options,
 
   Comments     :
 ********************************************************************************/
-int InitSoilTable(SOILTABLE ** SType, LISTPTR Input, LAYER * Soil)
+int InitSoilTable(OPTIONSTRUCT *Options, SOILTABLE ** SType, 
+				  LISTPTR Input, LAYER * Soil, int InfiltOption)
 {
   const char *Routine = "InitSoilTable";
   int i;			/* counter */
@@ -144,8 +146,11 @@ int InitSoilTable(SOILTABLE ** SType, LISTPTR Input, LAYER * Soil)
     if (!CopyFloat(&((*SType)[i].MaxInfiltrationRate), VarStr[max_infiltration], 1))
       ReportError(KeyName[max_infiltration], 51);
 
-    if (!CopyFloat(&((*SType)[i].G_Infilt), VarStr[capillary_drive], 1))
-      ReportError(KeyName[capillary_drive], 51); 
+    if (InfiltOption == DYNAMIC) {
+	  if (!CopyFloat(&((*SType)[i].G_Infilt), VarStr[capillary_drive], 1))
+		ReportError(KeyName[capillary_drive], 51);
+	}
+    else (*SType)[i].G_Infilt = NOT_APPLICABLE;
 
     if (!CopyFloat(&((*SType)[i].Albedo), VarStr[soil_albedo], 1))
       ReportError(KeyName[soil_albedo], 51);
@@ -154,8 +159,12 @@ int InitSoilTable(SOILTABLE ** SType, LISTPTR Input, LAYER * Soil)
       ReportError(KeyName[number_of_layers], 51);
     Soil->NLayers[i] = (*SType)[i].NLayers;
 
-    if (!CopyFloat(&((*SType)[i].Manning), VarStr[manning], 1))
-      ReportError(KeyName[manning], 51);
+	if (Options->Routing) {
+	  if (!CopyFloat(&((*SType)[i].Manning), VarStr[manning], 1))
+        ReportError(KeyName[manning], 51);
+	}
+	else if (!Options->Routing)
+		(*SType)[i].Manning = NOT_APPLICABLE;
     
     if (Soil->NLayers[i] > Soil->MaxLayers)
       Soil->MaxLayers = Soil->NLayers[i];
@@ -374,11 +383,16 @@ int InitVegTable(VEGTABLE ** VType, LISTPTR Input, OPTIONSTRUCT * Options,
 		ReportError(KeyName[imperv_frac], 51);
 	impervious += (*VType)[i].ImpervFrac;
 
-	 if (!CopyFloat(&((*VType)[i].DetentionFrac), VarStr[detention_frac], 1))
-		 ReportError(KeyName[detention_frac], 51);
-
-    if (!CopyFloat(&((*VType)[i].DetentionDecay), VarStr[detention_decay], 1))
+	if ((*VType)[i].ImpervFrac > 0) {
+	  if (!CopyFloat(&((*VType)[i].DetentionFrac), VarStr[detention_frac], 1))
+		ReportError(KeyName[detention_frac], 51);
+	  if (!CopyFloat(&((*VType)[i].DetentionDecay), VarStr[detention_decay], 1))
 		ReportError(KeyName[detention_decay], 51);
+	}
+	else {
+	  (*VType)[i].DetentionFrac = 0.;
+	  (*VType)[i].DetentionDecay = 0.;
+	}
 
     /* allocate memory for the vegetation layers */
 

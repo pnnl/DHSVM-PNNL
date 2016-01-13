@@ -44,6 +44,8 @@ void InitMetMaps(int NDaySteps, MAPSIZE *Map, MAPSIZE *Radar,
 		 LAYER *Veg, TOPOPIX **TopoMap, float ****MM5Input,
 		 float ****WindModel)
 {
+  int y, x;
+
   printf("Initializing meteorological maps\n");
 
   InitEvapMap(Map, EvapMap, SoilMap, Soil, VegMap, Veg, TopoMap);
@@ -63,6 +65,18 @@ void InitMetMaps(int NDaySteps, MAPSIZE *Map, MAPSIZE *Radar,
       InitPrismMap(Map->NY, Map->NX, PrismMap);
     if (Options->Shading == TRUE)
       InitShadeMap(Options, NDaySteps, Map->NY, Map->NX, ShadowMap, SkyViewMap);
+
+	if (!((*SkyViewMap) = (float **) calloc(Map->NY, sizeof(float *))))
+	  ReportError("InitMetMaps()", 1);
+	for (y = 0; y < Map->NY; y++) {
+	   if (!((*SkyViewMap)[y] = (float *) calloc(Map->NX, sizeof(float))))
+		   ReportError("InitMetMaps()", 1);
+	}
+	for (y = 0; y < Map->NY; y++) {
+	  for (x = 0; x < Map->NX; x++) {
+	    (*SkyViewMap)[y][x] = 1.0;
+    }
+  }
     if (Options->WindSource == MODEL)
       InitWindModelMaps(WindPath, Map->NY, Map->NX, WindModel);
 
@@ -71,6 +85,7 @@ void InitMetMaps(int NDaySteps, MAPSIZE *Map, MAPSIZE *Radar,
   if (Options->MM5 == TRUE && Options->QPF == TRUE && Options->Prism == TRUE)
     InitPrismMap(Map->NY, Map->NX, PrismMap);
 }
+
 
 /*****************************************************************************
   InitEvapMap()

@@ -10,7 +10,7 @@
  * DESCRIP-END.
  * FUNCTIONS:    
  * COMMENTS:
- * $Id: fifoNetCDF.h,v 1.4 2003/07/01 21:26:29 olivier Exp $     
+ * $Id: fifoNetCDF.h,v3.1.2 2013/07/01 ning Exp $     
  */
 
 #ifndef FIFONETCDF_H

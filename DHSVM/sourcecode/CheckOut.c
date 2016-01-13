@@ -10,7 +10,7 @@
  * DESCRIP-END.
  * FUNCTIONS:   CheckOut()
  * COMMENTS:
- * $Id: CheckOut.c,v 1.6 2003/11/13 23:24:33 colleen Exp $     
+ * $Id: CheckOut.c,v3.1.2 2013/11/13 Ning Exp $     
  */
 
 #include <stdio.h>

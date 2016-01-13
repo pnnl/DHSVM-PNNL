@@ -72,7 +72,7 @@ float CalcTransmissivity(float SoilDepth, float WaterTable, float LateralKs,
 	if (WaterTable < DepthThresh) {
 	  Transmissivity = (LateralKs / KsExponent) * (exp(-KsExponent * WaterTable) - exp(-KsExponent * SoilDepth));
 	}
-        else  {
+    else  {
 	  TransThresh = (LateralKs / KsExponent) * (exp(-KsExponent * DepthThresh) - exp(-KsExponent * SoilDepth));
 	  if(SoilDepth < DepthThresh) {
 		printf("Warning: Soil DepthThreshold (%.2f) > the soil depth (%.2f)!\n", DepthThresh, SoilDepth);
