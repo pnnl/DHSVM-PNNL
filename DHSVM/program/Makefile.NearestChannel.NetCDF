@@ -1,0 +1,51 @@
+# -------------------------------------------------------------
+# file:         Makefile for find_nearest_channel_netcdf
+# AUTHOR:       Ning Sun
+# ORG:          University of Washington, Department of Civil Engineering
+# E-MAIL:       ning@hydro.washington.edu
+# ORIG-DATE:    Feb-2013
+# -------------------------------------------------------------
+
+
+OBJS = find_nearest_channel_netcdf.c FileIONetCDF.o Files.o InitArray.o ReportError.o \
+Calendar.o SizeOfNetCDF.o
+
+SRCS = $(OBJS:%.o=%.c)
+
+HDRS = fifoNetCDF.h fileio.h sizeofNetCDF.h settings.h DHSVMerror.h data.h Calendar.h \
+typenames.h init.h constants.h functions.h DHSVMChannel.h channel.h channel_grid.h
+
+CFLAGS = -O -g -Wall -Wno-unused
+CC = gcc
+LIBS = -lm -L/usr/local/lib -lnetcdf
+
+find_nearest_channel: $(OBJS)
+	$(CC) $(OBJS) $(CFLAGS) -o find_nearest_channel_netcdf $(LIBS)
+
+clean::
+	rm -f find_nearest_channel_netcdf.exe
+
+
+# dependancies for individual object files
+
+SizeOfNetCDF.o: SizeOfNetCDF.c DHSVMerror.h sizeofNetCDF.h
+FileIONetCDF.o: FileIONetCDF.c fifoNetCDF.h fileio.h sizeofNetCDF.h \
+ settings.h DHSVMerror.h data.h
+Files.o: Files.c settings.h data.h Calendar.h typenames.h DHSVMerror.h \
+ functions.h DHSVMChannel.h channel.h channel_grid.h constants.h \
+ init.h fileio.h
+InitArray.o: InitArray.c init.h
+Calendar.o: Calendar.c constants.h settings.h data.h Calendar.h \
+ typenames.h functions.h DHSVMChannel.h channel.h channel_grid.h
+ReportError.o: ReportError.c settings.h data.h Calendar.h typenames.h \
+ DHSVMerror.h
+
+
+# -------------------------------------------------------------
+# sources
+# -------------------------------------------------------------
+sources: $(SRCS) $(HDRS) $(OTHER)
+
+clean::
+	rm -f $(OBJS)
+	rm -f *~

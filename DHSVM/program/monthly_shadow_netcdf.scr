@@ -1,0 +1,53 @@
+#!/bin/csh 
+
+### runs the three programs used to generate the terrain and shadowing maps
+
+### *NOTE* lots of hardcoded stuff in here, please edit
+
+set cell = 30       #cell size (m)
+set lat =  47.60893338077  
+set lon =  -122.1507756929
+set rows = 423                                                               
+set cols = 211
+
+set XOrig = 558500
+set YOrig = 5256950
+
+set elev_file = ../input/dem.nc  #  input file name 
+
+### paths for UNIX and DOS are provided. Comment out/in as needed... 
+set outpath = ../input                #no trailing slash
+                                                                            
+### make skyview map for dem
+	# (also works) gcc skyviewNetCDF.c FileIONetCDF.o ReportError.o -O -DHAVE_NETCDF -o SkyView -lm -L/usr/local/lib -lnetcdf
+	# gcc skyviewNetCDF.c FileIONetCDF.o ReportError.o -o skyview -lm -L/usr/local/lib -lnetcdf
+
+	./skyview $elev_file  $outpath/SkyView.nc 8 $rows $cols $cell $XOrig $YOrig
+
+### make hourly shadow maps for each month
+### and average the hourly time steps to the model time step
+
+### compile the C files
+gcc make_shade_maps_netcdf.c FileIONetCDF.o Files.o ReportError.o InitArray.o -o shading_maps -lm -L/usr/local/lib -lnetcdf
+gcc average_shadow_netcdf.c FileIONetCDF.o Files.o ReportError.o InitArray.o -o average_shadow -lm -L/usr/local/lib -lnetcdf
+
+@ month = 1
+
+while ($month <= 12)
+
+	if ($month <10) set mon = 0$month
+     if ($month >= 10) then
+          set mon = $month
+     endif
+
+### make shade maps
+        ./shading_maps $elev_file  $outpath/Shadow.$mon.hourly.nc  $rows  $cols  $cell  $lon $lat -120 2000 $month 15 1.0 $XOrig $YOrig
+
+### average hourly maps to model time step
+	./average_shadow $outpath/Shadow.$mon.hourly.nc $outpath/Shadow.$mon.nc 24 8 $rows $cols $cell $XOrig $YOrig $month
+
+	@ month++ 
+
+end				### month loop
+
+#rm $outpath/Shadow.??.hourly.nc

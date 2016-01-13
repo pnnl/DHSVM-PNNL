@@ -1,0 +1,25 @@
+# -------------------------------------------------------------
+# file:         Shell script for find_nearest_channel_netcdf.c
+# AUTHOR:       Ning Sun
+# ORG:          University of Washington, Department of Civil Engineering
+# E-MAIL:       ning@hydro.washington.edu
+# ORIG-DATE:    Feb-2013
+# -------------------------------------------------------------
+#!/bin/csh 
+
+### runs the programs to generate the nearest channel cell for each grid cell
+### *NOTE* lots of hardcoded stuff in here, please edit
+
+set rows = 213                                                               
+set cols = 164
+set cell = 30       #cell size (m)
+set XOrig = 557427.379
+set YOrig = 5253547.579
+set flowd_file = ../input/springbrook.flowdir.nc
+set mask_file = ../input/springbrook.mask.nc  
+set map_file = ../input/springbrook.stream.map
+set out_file = ../input/surface.routing.txt
+set skipmapline = 9
+                                                                             
+### run the .exe
+	./find_nearest_channel_netcdf $rows $cols $cell $XOrig $YOrig $flowd_file $mask_file $map_file $out_file $skipmapline
