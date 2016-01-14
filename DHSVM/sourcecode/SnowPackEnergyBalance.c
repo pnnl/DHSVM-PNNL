@@ -49,46 +49,40 @@ float SnowPackEnergyBalance(float TSurf, va_list ap)
 {
   /* start of list of arguments in variable argument list */
 
-  int Dt;			/* Model time step (hours) */
-  float Ra;			/* Aerodynamic resistance (s/m) */
-  float Z;			/* Reference height (m) */
-  float Displacement;		/* Displacement height (m) */
-  float Z0;			/* Roughness length (m) */
+  int Dt;			    /* Model time step (hours) */
+  float Ra;			    /* Aerodynamic resistance (s/m) */
+  float Z;			    /* Reference height (m) */
+  float Displacement;   /* Displacement height (m) */
+  float Z0;			    /* Roughness length (m) */
   float Wind;			/* Wind speed (m/s) */
   float ShortRad;		/* Net incident shortwave radiation (W/m2) */
   float LongRadIn;		/* Incoming longwave radiation (W/m2) */
   float AirDens;		/* Density of air (kg/m3) */
-  float Lv;			/* Latent heat of vaporization (J/kg3) */
+  float Lv;			    /* Latent heat of vaporization (J/kg3) */
   float Tair;			/* Air temperature (C) */
   float Press;			/* Air pressure (Pa) */
   float Vpd;			/* Vapor pressure deficit (Pa) */
   float EactAir;		/* Actual vapor pressure of air (Pa) */
   float Rain;			/* Rain fall (m/timestep) */
-  float SweSurfaceLayer;	/* Snow water equivalent in surface layer (m)
-				 */
+  float SweSurfaceLayer;/* Snow water equivalent in surface layer (m) */
   float SurfaceLiquidWater;	/* Liquid water in the surface layer (m) */
-  float OldTSurf;		/* Surface temperature during previous time
-				   step */
+  float OldTSurf;		    /* Surface temperature during previous time step */
   float *RefreezeEnergy;	/* Refreeze energy (W/m2) */
-  float *VaporMassFlux;		/* Mass flux of water vapor to or from the
-				   intercepted snow */
+  float *VaporMassFlux;		/* Mass flux of water vapor to or from the intercepted snow */
 
   /* end of list of arguments in variable argument list */
 
   float AdvectedEnergy;		/* Energy advected by precipitation (W/m2) */
   float DeltaColdContent;	/* Change in cold content (W/m2) */
-  float EsSnow;			/* saturated vapor pressure in the snow pack
-				   (Pa)  */
-  float LatentHeat;		/* Latent heat exchange at surface (W/m2) */
-  float LongRadOut;		/* long wave radiation emitted by surface
-				   (W/m2) */
-  float Ls;			/* Latent heat of sublimation (J/kg) */
-  float NetRad;			/* Net radiation exchange at surface (W/m2) */
-  float RestTerm;		/* Rest term in surface energy balance
-				   (W/m2) */
+  float EsSnow;			    /* saturated vapor pressure in the snow pack (Pa)  */
+  float LatentHeat;		    /* Latent heat exchange at surface (W/m2) */
+  float LongRadOut;		    /* long wave radiation emitted by surface (W/m2) */
+  float Ls;			        /* Latent heat of sublimation (J/kg) */
+  float NetRad;			    /* Net radiation exchange at surface (W/m2) */
+  float RestTerm;		    /* Rest term in surface energy balance (W/m2) */
   float SensibleHeat;		/* Sensible heat exchange at surface (W/m2) */
-  float TMean;			/* Mean temperature during interval (C) */
-  double Tmp;			/* temporary variable */
+  float TMean;			    /* Mean temperature during interval (C) */
+  double Tmp;			    /* temporary variable */
 
   /* Assign the elements of the array to the appropriate variables.  The list
      is traversed as if the elements are doubles, because:
@@ -124,7 +118,6 @@ float SnowPackEnergyBalance(float TSurf, va_list ap)
   VaporMassFlux = (float *) va_arg(ap, double *);
 
   /* Calculate active temp for energy balance as average of old and new  */
-
   TMean = 0.5 * (OldTSurf + TSurf);
 
   /* Correct aerodynamic conductance for stable conditions
@@ -135,27 +128,23 @@ float SnowPackEnergyBalance(float TSurf, va_list ap)
      NOTE: In the old code 2m was passed instead of Z-Displacement.  I (bart)
      think that it is more correct to calculate ALL fluxes at the same
      reference level */
-
   if (Wind > 0.0)
     Ra /= StabilityCorrection(2.0f, 0.f, TMean, Tair, Wind, Z0);
   else
     Ra = DHSVM_HUGE;
 
   /* Calculate longwave exchange and net radiation */
-
   Tmp = TMean + 273.15;
   LongRadOut = STEFAN * (Tmp * Tmp * Tmp * Tmp);
   NetRad = ShortRad + LongRadIn - LongRadOut;
 
   /* Calculate the sensible heat flux */
-
   SensibleHeat = AirDens * CP * (Tair - TMean) / Ra;
 
   /* Calculate the mass flux of ice to or from the surface layer */
 
   /* Calculate the saturated vapor pressure in the snow pack, 
      (Equation 3.32, Bras 1990) */
-
   EsSnow = SatVaporPressure(TMean);
 
   *VaporMassFlux = AirDens * (EPS / Press) * (EactAir - EsSnow) / Ra;
@@ -164,7 +153,6 @@ float SnowPackEnergyBalance(float TSurf, va_list ap)
     *VaporMassFlux = 0.0;
 
   /* Calculate latent heat flux */
-
   if (TMean >= 0.0) {
     /* Melt conditions: use latent heat of vaporization */
     LatentHeat = Lv * *VaporMassFlux * WATER_DENSITY;
@@ -177,15 +165,12 @@ float SnowPackEnergyBalance(float TSurf, va_list ap)
 
   /* Calculate advected heat flux from rain 
      WORK IN PROGRESS:  Should the following read (Tair - Tsurf) ?? */
-
   AdvectedEnergy = (CH_WATER * Tair * Rain) / Dt;
 
   /* Calculate change in cold content */
-
   DeltaColdContent = CH_ICE * SweSurfaceLayer * (TSurf - OldTSurf) / Dt;
 
   /* Calculate net energy exchange at the snow surface */
-
   RestTerm = NetRad + SensibleHeat + LatentHeat + AdvectedEnergy -
     DeltaColdContent;
 
@@ -193,8 +178,8 @@ float SnowPackEnergyBalance(float TSurf, va_list ap)
 
   if (fequal(TSurf, 0.0) && RestTerm > -(*RefreezeEnergy)) {
     *RefreezeEnergy = -RestTerm;	/* available energy input over cold content
-					   used to melt, i.e. Qrf is negative value
-					   (energy out of pack) */
+					                   used to melt, i.e. Qrf is negative value
+					                   (energy out of pack) */
     RestTerm = 0.0;
   }
   else {

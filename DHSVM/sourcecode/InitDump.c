@@ -138,16 +138,6 @@ void InitDump(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * Map,
   sprintf(Dump->Aggregate.FileName, "%sAggregated.Values", Dump->Path);
   OpenFile(&(Dump->Aggregate.FilePtr), Dump->Aggregate.FileName, "w", TRUE);
 
-  // If specified, open file for recording aggregated sediment values for entire basin
-  if (Options->Sediment) {
-    sprintf(Dump->AggregateSediment.FileName, "%sAggregatedSediment.Values", Dump->Path);
-    OpenFile(&(Dump->AggregateSediment.FilePtr), Dump->AggregateSediment.FileName, "w", TRUE);
-
-    // Open file for recording mass balance for entire basin
-    sprintf(Dump->SedBalance.FileName, "%sMassSediment.Balance", Dump->Path);
-    OpenFile(&(Dump->SedBalance.FilePtr), Dump->SedBalance.FileName, "w", TRUE);
-  }
-
   // Open file for recording mass balance for entire basin
   sprintf(Dump->Balance.FileName, "%sMass.Balance", Dump->Path);
   OpenFile(&(Dump->Balance.FilePtr), Dump->Balance.FileName, "w", TRUE);
@@ -518,7 +508,6 @@ void InitMapDump(LISTPTR Input, MAPSIZE * Map, int MaxSoilLayers,
     char *Path            - Directory to write output to
     int NPix              - Number of pixels to dump 
     PIXDUMP **Pix         - Array of pixels to dump
-    OPTIONSTRUCT *Options - Mode options; affects whether sediment files are initialized
 
   Returns      : number of accepted dump pixels (i.e. in the mask, etc)
 
@@ -526,8 +515,8 @@ void InitMapDump(LISTPTR Input, MAPSIZE * Map, int MaxSoilLayers,
 
   Comments     :
 *******************************************************************************/
-int InitPixDump(LISTPTR Input, MAPSIZE * Map, uchar ** BasinMask, char *Path,
-		int NPix, PIXDUMP ** Pix, OPTIONSTRUCT *Options)
+int InitPixDump(LISTPTR Input, MAPSIZE *Map, uchar **BasinMask, char *Path,
+		int NPix, PIXDUMP **Pix, OPTIONSTRUCT *Options)
 {
   char *Routine = "InitPixDump";
   char Str[BUFSIZE + 1];
@@ -583,13 +572,9 @@ int InitPixDump(LISTPTR Input, MAPSIZE * Map, uchar ** BasinMask, char *Path,
       printf("Accepting dump command for pixel named %s \n", temp_name);
       sprintf(Str, "%s", temp_name);
       sprintf((*Pix)[ok].OutFile.FileName, "%sPixel.%s", Path, Str);
-      if (Options->Sediment)
-        sprintf((*Pix)[ok].OutFileSediment.FileName, "%sPixelSediment.%s", Path, Str);
       (*Pix)[ok].Loc.N = (*Pix)[i].Loc.N;
       (*Pix)[ok].Loc.E = (*Pix)[i].Loc.E;
       OpenFile(&((*Pix)[ok].OutFile.FilePtr), (*Pix)[ok].OutFile.FileName, "w", TRUE);
-      if (Options->Sediment)
-        OpenFile(&((*Pix)[ok].OutFileSediment.FilePtr), (*Pix)[ok].OutFileSediment.FileName, "w", TRUE);
       ok++;
     }
   }

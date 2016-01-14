@@ -33,12 +33,6 @@ typedef struct {
   FILE *roadout;
   FILE *streamflowout;
   FILE *roadflowout;
-  FILE *sedstreamout;
-  FILE *sedroadout;
-  FILE *sedstreamflowout;
-  FILE *sedroadflowout;
-  FILE *sedstreaminflow;
-  FILE *sedroadinflow;
   /* new output files for John's RBM model */
   FILE *streaminflow;
   FILE *streamoutflow;
@@ -60,13 +54,11 @@ typedef struct {
 void InitChannel(LISTPTR Input, MAPSIZE *Map, int deltat, CHANNEL *channel,
 		 SOILPIX **SoilMap, int *MaxStreamID, int *MaxRoadID, OPTIONSTRUCT *Options);
 void InitChannelDump(OPTIONSTRUCT *Options, CHANNEL *channel, char *DumpPath);
-void InitChannelSedimentDump(CHANNEL *channel, char *DumpPath, int ChannelRouting);
 double ChannelCulvertFlow(int y, int x, CHANNEL *ChannelData);
-void RouteChannel(CHANNEL * ChannelData, TIMESTRUCT * Time, MAPSIZE * Map,
-		  TOPOPIX ** TopoMap, SOILPIX ** SoilMap, AGGREGATED * Total, 
-		  OPTIONSTRUCT *Options, ROADSTRUCT ** Network, 
-		  SOILTABLE * SType, PRECIPPIX ** PrecipMap, SEDPIX **SedMap,
-		  float Tair, float Rh, float *SedDiams);
+void RouteChannel(CHANNEL *ChannelData, TIMESTRUCT *Time, MAPSIZE *Map,
+		  TOPOPIX **TopoMap, SOILPIX **SoilMap, AGGREGATED *Total, 
+		  OPTIONSTRUCT *Options, ROADSTRUCT **Network, SOILTABLE *SType, 
+		  PRECIPPIX **PrecipMap, float Tair, float Rh);
 void ChannelCut(int y, int x, CHANNEL *ChannelData, ROADSTRUCT *Network);
 uchar ChannelFraction(TOPOPIX *topo, ChannelMapRec *rds);
 

@@ -98,24 +98,3 @@ float SatVaporPressure(float T)
 {
   return FloatLookup(T, &svp);
 }
-
-/*****************************************************************************
-  Function name: SatVaporPressure() - old version, pre lookup table
-
-  Purpose      : Calculates the saturated vapor pressure in Pa for a certain
-                 temperature 
-
-  Required     : 
-    float T    - Temperature (C)
-
-  Returns      :
-    float      - Saturated vapor pressure (Pa) 
-
-  Modifies     : none
-  
-  Comments     : No longer used
-*****************************************************************************/
-/* float SatVaporPressure(float T) */
-/* { */
-/*   return CalcVaporPressure(T); */
-/* } */

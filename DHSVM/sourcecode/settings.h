@@ -94,7 +94,8 @@ typedef unsigned int unint;
 #define NAMESIZE     127
 
 #define NDIRS          4	/* Number of directions in which water can flow, must equal 4 */
-#define NNEIGHBORS     8    /* Number of directions in which water and  sediment can flow based on fine grid, must equal 8 */
+#define NNEIGHBORS     8    /* Number of directions in which water can flow based on fine grid, must equal 8 */
+
 
 #define NA          -9999	/* Not applicable */
 
@@ -105,8 +106,8 @@ typedef unsigned int unint;
 
 enum KEYS {
 /* Options *//* list order must match order in InitConstants.c */
-  format = 0, extent, gradient, flow_routing, sensible_heat_flux, sediment,
-  sed_input_file, routing, infiltration, interpolation, mm5, qpf, prism, canopy_radatt, 
+  format = 0, extent, gradient, flow_routing, sensible_heat_flux,
+  infiltration, interpolation, mm5, qpf, prism, canopy_radatt, 
   shading, snotel, outside, rhoverride, precipitation_source, wind_source, 
   temp_lapse, precip_lapse, cressman_radius, cressman_stations, prism_data_path, 
   prism_data_ext, shading_data_path, shading_data_ext, skyview_data_path, 
@@ -149,9 +150,6 @@ enum KEYS {
   number_of_root_zones, root_zone_depth, overstory_fraction,
   understory_fraction, overstory_monlai, understory_monlai, overstory_monalb,
   understory_monalb, 
-  /* Sediment vegetation information */
-  root_cohesion = 0, rc_min, rc_max, rc_mean, rc_dev, rc_mode, veg_surcharge,
-  vs_min, vs_max, vs_mean, vs_dev, vs_mode,
   /* terrain information */
   demfile = 0, maskfile,
   soiltype_file = 0, soildepth_file,
@@ -171,21 +169,7 @@ enum KEYS {
   image_variable = 0, image_layer, image_start, image_end, image_interval,
   image_upper, image_lower,
   /* graphics information */
-  graphics_variable = 0,
-  /* Sediment oconfiguration file */
-  /* Sedoptions */ 
-  mass_wasting = 0, surface_erosion, road_erosion, channel_routing,
-  /* Parameters */
-  mass_spacing, max_iterations,
-  // Channel Parent parameters not currently used
-  //  channeld50, channeld90,
-  debrisd50, debrisd90,
-  /* Sedtime*/
-  mass_wasting_date = 0, erosion_start = 0, erosion_end,
-  /* Sediment information */
-  sed_description = 0, kindex, dfifty, cohesion, 
-  coh_min, coh_max, coh_mean, coh_dev, coh_mode, friction_angle, fa_min, fa_max, fa_mean, 
-  fa_dev, fa_mode
+  graphics_variable = 0
 };
 
 #endif

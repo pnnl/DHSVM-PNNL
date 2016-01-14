@@ -67,9 +67,6 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * Map,
     {"OPTIONS", "GRADIENT", "", ""},
     {"OPTIONS", "FLOW ROUTING", "", ""},
     {"OPTIONS", "SENSIBLE HEAT FLUX", "", ""},
-    {"OPTIONS", "SEDIMENT", "", ""},
-    {"OPTIONS", "SEDIMENT INPUT FILE", "", ""},
-    {"OPTIONS", "OVERLAND ROUTING", "", ""}, 
     {"OPTIONS", "INFILTRATION", "", ""},
     {"OPTIONS", "INTERPOLATION", "", ""},
     {"OPTIONS", "MM5", "", ""},
@@ -92,7 +89,7 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * Map,
     {"OPTIONS", "SHADING DATA EXTENSION", "", ""},
     {"OPTIONS", "SKYVIEW DATA PATH", "", ""},
 	{"OPTIONS", "STREAM TEMPERATURE", "", ""}, 
-	{"OPTIONS", "CANOPY SHADING", "", ""}, 
+	{"OPTIONS", "RIPARIAN SHADING", "", ""}, 
     {"AREA", "COORDINATE SYSTEM", "", ""},
     {"AREA", "EXTREME NORTH", "", ""},
     {"AREA", "EXTREME WEST", "", ""},
@@ -203,35 +200,6 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * Map,
     Options->HeatFlux = FALSE;
   else
     ReportError(StrEnv[sensible_heat_flux].KeyName, 51);
-
-  /* Determine whether sediment model should be run */
-  if (strncmp(StrEnv[sediment].VarStr, "TRUE", 4) == 0)
-    Options->Sediment = TRUE;
-  else if (strncmp(StrEnv[sediment].VarStr, "FALSE", 5) == 0){
-    printf("WARNING: Sediment option has not been chosen. All erosion\n");
-    printf("options are being turned off.\n\n");
-    Options->Sediment = FALSE;
-    Options->MassWaste = FALSE;
-    Options->SurfaceErosion = FALSE;
-    Options->ErosionPeriod = FALSE;
-  }
-  else
-    ReportError(StrEnv[sediment].KeyName, 51);
-
-  if(Options->Sediment == TRUE) {
-    if (IsEmptyStr(StrEnv[sed_input_file].VarStr))
-      ReportError(StrEnv[sed_input_file].KeyName, 51);
-    strcpy(Options->SedFile, StrEnv[sed_input_file].VarStr);
-  }
-  
-  /* Determine overland flow routing method to use */
-  if (strncmp(StrEnv[routing].VarStr, "KINEMATIC", 9) == 0)
-    Options->Routing = TRUE;
-  else if (strncmp(StrEnv[routing].VarStr, "CONVENTIONAL", 12) == 0)
-    Options->Routing = FALSE;
-  else
-    ReportError(StrEnv[routing].KeyName, 51);
-  
  
   /* Determine if the maximum infiltration rate is static or dynamic */
   if (strncmp(StrEnv[infiltration].VarStr, "STATIC", 6) == 0) {

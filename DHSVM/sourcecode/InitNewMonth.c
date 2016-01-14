@@ -109,8 +109,7 @@ void InitNewMonth(TIMESTRUCT *Time, OPTIONSTRUCT *Options, MAPSIZE *Map,
   for (i = 0; i < NVegs; i++) {
     for (j = 0; j < VType[i].NVegLayers; j++) {
       VType[i].LAI[j] = VType[i].LAIMonthly[j][Time->Current.Month - 1];
-      VType[i].MaxInt[j] = VType[i].LAI[j] * VType[i].Fract[j] *
-	LAI_WATER_MULTIPLIER;
+      VType[i].MaxInt[j] = VType[i].LAI[j] * VType[i].Fract[j] * LAI_WATER_MULTIPLIER;
       VType[i].Albedo[j] = VType[i].AlbedoMonthly[j][Time->Current.Month - 1];
     }
     if (VType[i].OverStory) {

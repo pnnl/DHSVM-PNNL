@@ -33,21 +33,17 @@ void EvapoTranspiration(int Layer, int Dt, PIXMET * Met, float NetRad,
 			EVAPPIX * LocalEvap, float *Adjust, float Ra)
 {
   float *Rc;			/* canopy resistance associated with 
-				   conditions in each soil layer (s/m) */
+				           conditions in each soil layer (s/m) */
   float DryArea;		/* relative dry leaf area  */
-  float DryEvapTime;		/* amount of time remaining during a timestep
-				   after the interception storage is depleted 
-				   (sec) */
-  float F;			/* Fractional coverage by vegetation layer */
-  float SoilMoisture;		/* Amount of water in each soil layer (m) */
-  float WetArea;		/* relative leaf area wetted by interception 
-				   storage */
-  float WetEvapRate;		/* evaporation rate from wetted fraction per 
-				   unit ground area (m/s) */
-  float WetEvapTime;		/* amount of time needed to evaporate the 
-				   amount of water in interception storage 
-				   (sec) */
-  int i;			/* counter */
+  float DryEvapTime;	/* amount of time remaining during a timestep
+				           after the interception storage is depleted (sec) */
+  float F;			    /* Fractional coverage by vegetation layer */
+  float SoilMoisture;	/* Amount of water in each soil layer (m) */
+  float WetArea;		/* relative leaf area wetted by interception storage */
+  float WetEvapRate;	/* evaporation rate from wetted fraction per unit ground area (m/s) */
+  float WetEvapTime;	/* amount of time needed to evaporate the amount of water 
+                           in interception storage (sec) */
+  int i;			    /* counter */
 
   /* Convert the water amounts related to partial canopy cover to a pixel depth 
      as if the entire pixel is covered.  These depths will be converted 
@@ -143,7 +139,6 @@ void EvapoTranspiration(int Layer, int Dt, PIXMET * Met, float NetRad,
 
   /* calculate the canopy conductances associated with the conditions in 
      each of the soil layers */
-
   for (i = 0; i < VType->NSoilLayers; i++)
     Rc[i] = CanopyResistance(VType->LAI[Layer], VType->RsMin[Layer],
 			     VType->RsMax[Layer], VType->Rpc[Layer],
@@ -153,12 +148,9 @@ void EvapoTranspiration(int Layer, int Dt, PIXMET * Met, float NetRad,
 
   /* calculate the transpiration rate for the current vegetation layer,
      and adjust the soil moisture content in each of the soil layers */
-
   for (i = 0; i < VType->NSoilLayers; i++) {
     LocalEvap->ESoil[Layer][i] = (Met->Slope + Met->Gamma) /
-      (Met->Slope +
-       Met->Gamma * (1 +
-		     Rc[i] / Ra)) * VType->RootFract[Layer][i] *
+      (Met->Slope + Met->Gamma * (1 + Rc[i] / Ra)) * VType->RootFract[Layer][i] *
       LocalEvap->EPot[Layer] * Adjust[i];
 
     /* calculate the amounts of water transpirated during each timestep based 
