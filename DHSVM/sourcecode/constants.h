@@ -53,6 +53,7 @@
 #define VON_KARMAN  0.4		    /* Von Karman's constant */
 #define WATER_DENSITY 1000.		/* Density of water in kg/m3 */
 #define Z0_MULTIPLIER 0.13		/* Multiplier for vegetation height to get roughness length (m) */
+#define MinDiff   (1.e-8)
 
 /**************** extern constants - see globals.c ****************/
 

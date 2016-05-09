@@ -36,8 +36,7 @@ extern int (*Write2DMatrix) (char *Filename, void *Matrix, int NumberType,
 
 
 /* generic file functions */
-
-void OpenFile(FILE ** FilePtr, char *FileName, char *Mode,
+void OpenFile(FILE **FilePtr, char *FileName, char *Mode,
 	      unsigned char OverWrite);
 
 #endif

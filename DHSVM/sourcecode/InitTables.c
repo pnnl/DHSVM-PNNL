@@ -84,7 +84,6 @@ int InitSoilTable(OPTIONSTRUCT *Options, SOILTABLE ** SType,
     "MAXIMUM INFILTRATION",
     "CAPILLARY DRIVE",
     "SURFACE ALBEDO",
-    "MANNINGS N",
     "NUMBER OF SOIL LAYERS",
     "POROSITY",
     "PORE SIZE DISTRIBUTION",
@@ -568,7 +567,6 @@ int InitVegTable(VEGTABLE ** VType, LISTPTR Input, OPTIONSTRUCT * Options,
       (*VType)[i].Cn, (*VType)[i].Height, (*VType)[i].Trunk,
       (*VType)[i].U, &((*VType)[i].USnow), (*VType)[i].Ra,
       &((*VType)[i].RaSnow));
-
 
     /* Run the improved radiation scheme in which the tree height, solar altitude and fractional coverage 
     are all taken into account into the radiation calculation */

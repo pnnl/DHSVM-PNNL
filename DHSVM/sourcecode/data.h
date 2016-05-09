@@ -191,10 +191,18 @@ typedef struct {
   uchar IsWindModelLocation;	/* Only used in case the wind model option is
 								specified.  In that case this field is TRUE
 								for one (and only one) station, and FALSE for all others */
-
   FILES MetFile;				/* File with observations */
   MET Data;
 } METLOCATION;
+
+typedef struct {
+  int row;
+  int col;
+  float LatOrig;                    /* latitude */
+  float LonOrig;                    /* longitude */
+  float GridSize;                   /* resolution of grid */
+  char filepath[BUFSIZE + 1];       /* file path */
+} GRID;
 
 typedef struct {
   int FileFormat;				/* File format indicator, BIN or HDF */
@@ -222,6 +230,7 @@ typedef struct {
   int Interpolation;
   int MM5;						/* TRUE if MM5 interface is to be used, FALSE otherwise */
   int QPF;						/* TRUE if QPF override, else FALSE */
+  int GRIDMET;                  /* TRUE if gridded forcing will be used, FALSE otherwise */
   int PointX;					/* X-index of point to model in POINT mode */
   int PointY;					/* Y-index of point to model in POINT mode */
   int Snotel;					/* if TRUE then station veg = bare for output */
@@ -372,7 +381,6 @@ typedef struct {
   int Index;
   int NLayers;				/* Number of soil layers */
   float Albedo;				/* Albedo of the soil surface */
-  float Manning;		    /* Manning's roughness of the soil surface */ 
   float *Porosity;			/* Soil porosity for each layer */
   float *PoreDist;			/* Pore size distribution for each layer */
   float *Press;				/* Soil bubbling pressure for each layer */

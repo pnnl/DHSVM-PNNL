@@ -59,6 +59,8 @@ void CheckOut(OPTIONSTRUCT *Options, LAYER Veg, LAYER Soil,
 
 unsigned char dequal(double a, double b);
 
+void deg2utm(float la, float lo, float *x, float *y);
+
 void draw(DATE *Day, int first, int DayStep, MAPSIZE *Map, int NGraphics,
 	  int *which_graphics, VEGTABLE *VType, SOILTABLE *SType, SNOWPIX **SnowMap, 
 	  SOILPIX **SoilMap, VEGPIX **VegMap, TOPOPIX **TopoMap, PRECIPPIX **PrecipMap, 
@@ -129,6 +131,9 @@ void InitMapDump(LISTPTR Input, MAPSIZE *Map, int MaxSoilLayers, int MaxVegLayer
 
 void InitMassWaste(LISTPTR Input, TIMESTRUCT *Time);
 
+void InitGridMet(OPTIONSTRUCT *Options, LISTPTR Input, MAPSIZE *Map, GRID *Grid, 
+         METLOCATION **Stat, int *NStats);
+
 void InitMetMaps(int NDaySteps, MAPSIZE *Map, MAPSIZE *Radar,
 		 OPTIONSTRUCT *Options, char *WindPath, char *PrecipLapsePath,
 		 float ***PrecipLapseMap, float ***PrismMap,
@@ -140,7 +145,8 @@ void InitMetMaps(int NDaySteps, MAPSIZE *Map, MAPSIZE *Radar,
 
 void InitMetSources(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
 		    int NSoilLayers, TIMESTRUCT *Time, INPUTFILES *InFiles,
-		    int *NStats, METLOCATION **Stat, MAPSIZE *Radar, MAPSIZE *MM5Map);
+		    int *NStats, METLOCATION **Stat, MAPSIZE *Radar, MAPSIZE *MM5Map,
+            GRID *Grid);
 
 void InitMM5(LISTPTR Input, int NSoilLayers, TIMESTRUCT *Time,
 	     INPUTFILES *InFiles, OPTIONSTRUCT *Options, MAPSIZE *MM5Map,

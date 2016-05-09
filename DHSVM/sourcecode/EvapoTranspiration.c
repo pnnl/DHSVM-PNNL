@@ -161,7 +161,6 @@ void EvapoTranspiration(int Layer, int ImpvRad, int Dt, PIXMET *Met,
     LocalEvap->ESoil[Layer][i] *= WetEvapTime * (1 - WetArea) + DryEvapTime;
 
     SoilMoisture = LocalSoil->Moist[i] * VType->RootDepth[i] * Adjust[i];
-
     if (SoilMoisture < LocalEvap->ESoil[Layer][i])
       LocalEvap->ESoil[Layer][i] = SoilMoisture;
 
@@ -169,6 +168,7 @@ void EvapoTranspiration(int Layer, int ImpvRad, int Dt, PIXMET *Met,
        the soil moisture */
     LocalEvap->ESoil[Layer][i] *= F;
     SoilMoisture -= LocalEvap->ESoil[Layer][i];
+
     LocalSoil->Moist[i] = SoilMoisture / (VType->RootDepth[i] * Adjust[i]);
   }
 

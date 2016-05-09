@@ -72,6 +72,7 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
     {"OPTIONS", "MM5", "", ""},
     {"OPTIONS", "QPF", "", ""},
     {"OPTIONS", "PRISM", "", ""},
+    {"OPTIONS", "GRIDDED MET DATA", "", "" },
     {"OPTIONS", "CANOPY RADIATION ATTENUATION MODE", "", ""},
     {"OPTIONS", "SHADING", "", ""},
     {"OPTIONS", "SNOTEL", "", ""},
@@ -238,6 +239,14 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
   else
     ReportError(StrEnv[prism].KeyName, 51);
 
+  /* Determine whether gridded met forcing should be used */
+  if (strncmp(StrEnv[grid].VarStr, "TRUE", 4) == 0)
+    Options->GRIDMET = TRUE;
+  else if (strncmp(StrEnv[grid].VarStr, "FALSE", 5) == 0)
+    Options->GRIDMET = FALSE;
+  else
+    ReportError(StrEnv[grid].KeyName, 51);
+
   /* Determine the kind of canopy radiation attenuation to be used */
   if (strncmp(StrEnv[canopy_radatt].VarStr, "FIXED", 3) == 0)
     Options->CanopyRadAtt = FIXED;
@@ -302,6 +311,7 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
   else
     ReportError(StrEnv[outside].KeyName, 51);
 
+  /* The file path to PRIMS files */
   if (Options->Prism == TRUE) {
     if (IsEmptyStr(StrEnv[prism_data_path].VarStr))
       ReportError(StrEnv[prism_data_path].KeyName, 51);
@@ -332,7 +342,6 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
     ReportError(StrEnv[rhoverride].KeyName, 51);
 
   /* The other met options are only of importance if MM5 is FALSE */
-
   if (Options->MM5 == TRUE) {
     Options->PrecipType = NOT_APPLICABLE;
     Options->WindSource = NOT_APPLICABLE;

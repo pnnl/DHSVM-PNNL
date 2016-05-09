@@ -26,7 +26,6 @@
 /*****************************************************************************
   ReadRadarMap()
 *****************************************************************************/
-
 void ReadRadarMap(DATE * Current, DATE * StartRadar, int Dt, MAPSIZE * Radar,
 		  RADARPIX ** RadarMap, char *FileName)
 {
@@ -50,7 +49,6 @@ void ReadRadarMap(DATE * Current, DATE * StartRadar, int Dt, MAPSIZE * Radar,
   RadarStep = NumberOfSteps(StartRadar, Current, Dt);
 
   /* Read the precipitation */
-
   Read2DMatrix(FileName, Array, NumberType, Radar->NY, Radar->NX, RadarStep);
 
   for (y = 0, i = 0; y < Radar->NY; y++)

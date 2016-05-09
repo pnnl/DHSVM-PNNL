@@ -85,7 +85,6 @@ void CalcCanopyShading(TIMESTRUCT *Time, Channel *Channel, SOLARGEOMETRY *SolarG
 		  Channel->rveg.CanopyBankDist < 0. ) {
 		ReportError("CalcCanopyShading()", 68);
 	  }
-	  /* debug ends */
 
 	  /* compute the average height of the canopy */
 	  HDEM = Channel->rveg.TREEHEIGHT;

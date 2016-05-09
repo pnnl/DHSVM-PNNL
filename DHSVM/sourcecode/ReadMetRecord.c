@@ -22,21 +22,19 @@
 #include "constants.h"
 
 #define MAXMETVARS    21	/* Maximum Number of meteorological variables 
-				   to read.  Hack to be replaced by something
-				   better */
+ to read.  Hack to be replaced by something better */
 
 /*****************************************************************************
   ReadMetRecord()
 *****************************************************************************/
-void ReadMetRecord(OPTIONSTRUCT * Options, DATE * Current, int NSoilLayers,
-		   FILES * InFile, unsigned char IsWindModelLocation,
-		   MET * MetRecord)
+void ReadMetRecord(OPTIONSTRUCT *Options, DATE *Current, int NSoilLayers,
+		   FILES *InFile, unsigned char IsWindModelLocation,
+		   MET *MetRecord)
 {
   DATE MetDate;			/* Date of meteorological record */
   float Array[MAXMETVARS];	/* Temporary storage of met variables */
   int i;
-  int NMetVars;			/* Number of meteorological variables to 
-				   read */
+  int NMetVars;			/* Number of meteorological variables to read */
   NMetVars = 5;
   /* these are - in order: 
      air temp,

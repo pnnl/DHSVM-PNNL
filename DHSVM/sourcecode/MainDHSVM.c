@@ -96,6 +96,7 @@ int main(int argc, char **argv)
   MAPSIZE Map;					/* Size and location of model area */
   MAPSIZE Radar;				/* Size and location of area covered by precipitation radar */
   MAPSIZE MM5Map;				/* Size and location of area covered by MM5 input files */
+  GRID Grid;
   METLOCATION *Stat = NULL;
   OPTIONSTRUCT Options;			/* Structure with information which program options to follow */
   PIXMET LocalMet;				/* Meteorological conditions for current pixel */
@@ -164,7 +165,7 @@ int main(int argc, char **argv)
 	      VegMap, VType, &Network, &ChannelData, Veg, &Options);
 
   InitMetSources(Input, &Options, &Map, Soil.MaxLayers, &Time,
-		 &InFiles, &NStats, &Stat, &Radar, &MM5Map);
+		 &InFiles, &NStats, &Stat, &Radar, &MM5Map, &Grid);
 
   /* the following piece of code is for the UW PRISM project */
   /* for real-time verification of SWE at Snotel sites */
@@ -252,6 +253,13 @@ int main(int argc, char **argv)
 *****************************************************************************/
   while (Before(&(Time.Current), &(Time.End)) ||
 	 IsEqualTime(&(Time.Current), &(Time.End))) {
+
+    /* debug */
+    if (Time.Current.Month == 5 && Time.Current.Day == 20 && Time.Current.Hour >= 9 && Time.Current.Hour <= 15)
+      printf("stop here for a little\n");
+    /* debug ends */
+
+    /* reset aggregated variables */
     ResetAggregate(&Soil, &Veg, &Total, &Options);
 
     if (IsNewMonth(&(Time.Current), Time.Dt))
@@ -277,7 +285,6 @@ int main(int argc, char **argv)
     for (y = 0; y < Map.NY; y++) {
       for (x = 0; x < Map.NX; x++) {
 	    if (INBASIN(TopoMap[y][x].Mask)) {
-
 		  if (Options.Shading)
 	        LocalMet =
 	        MakeLocalMetData(y, x, &Map, Time.DayStep, &Options, NStats,

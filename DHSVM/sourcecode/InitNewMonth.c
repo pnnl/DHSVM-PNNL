@@ -207,7 +207,7 @@ void InitNewStep(INPUTFILES *InFiles, MAPSIZE *Map, TIMESTRUCT *Time,
   int j;			/* counter */
   int x;			/* counter */
   int y;			/* counter */
-  int NumberType;		/* number type in MM5 input */
+  int NumberType;	/* number type in MM5 input */
   int Step;			/* Step in the MM5 Input */
   float *Array = NULL;
   int MM5Y, MM5X;
@@ -226,19 +226,15 @@ void InitNewStep(INPUTFILES *InFiles, MAPSIZE *Map, TIMESTRUCT *Time,
     &(SolarGeo->SolarTimeStep), &(SolarGeo->SunMax),
     &(SolarGeo->SolarAzimuth));
 
-  /*printf("SunMax is %f\n",SolarGeo->SunMax);*/
   if (Options->MM5 == TRUE) {
-
     /* Read the data from the MM5 files */
-
     if (!(Array = (float *)calloc(MM5Map->NY * MM5Map->NX, sizeof(float))))
       ReportError((char *)Routine, 1);
     NumberType = NC_FLOAT;
 
     Step = NumberOfSteps(&(Time->StartMM5), &(Time->Current), Time->Dt);
 
-    Read2DMatrix(InFiles->MM5Temp, Array, NumberType, MM5Map->NY,
-      MM5Map->NX, Step);
+    Read2DMatrix(InFiles->MM5Temp, Array, NumberType, MM5Map->NY, MM5Map->NX, Step);
     for (y = 0; y < Map->NY; y++)
       for (x = 0; x < Map->NX; x++) {
         MM5Y = (int)((y + MM5Map->OffsetY) * Map->DY / MM5Map->DY);
@@ -246,8 +242,7 @@ void InitNewStep(INPUTFILES *InFiles, MAPSIZE *Map, TIMESTRUCT *Time,
         MM5Input[MM5_temperature - 1][y][x] = Array[MM5Y * MM5Map->NX + MM5X];
       }
 
-    Read2DMatrix(InFiles->MM5Humidity, Array, NumberType, MM5Map->NY,
-      MM5Map->NX, Step);
+    Read2DMatrix(InFiles->MM5Humidity, Array, NumberType, MM5Map->NY, MM5Map->NX, Step);
 
     for (y = 0; y < Map->NY; y++)
       for (x = 0; x < Map->NX; x++) {

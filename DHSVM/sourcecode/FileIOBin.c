@@ -81,13 +81,10 @@ int Read2DMatrixBin(char *FileName, void *Matrix, int NumberType, int NY,
   int NElements = 0;		/* number of elements read */
   size_t ElemSize;
   unsigned long OffSet;		/* number of bytes to OffSet (is non-zero when
-				   reading matrices other than the first one
-				   in the file */
+				   reading matrices other than the first one in the file */
 
   OpenFile(&InFile, FileName, "rb", FALSE);
-
   ElemSize = SizeOfNumberType(NumberType);
-
   OffSet = NY * NX * ElemSize * NDataSet;
 
   if (fseek(InFile, OffSet, SEEK_SET))

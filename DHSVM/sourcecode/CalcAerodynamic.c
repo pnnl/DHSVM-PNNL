@@ -81,6 +81,7 @@ void CalcAerodynamic(int NVegLayers, unsigned char OverStory,
   float Z0_Upper;    /* roughness length for overstory (m) */
   float Zt;
   float Zw;
+  float junk;
 
   K2 = VON_KARMAN * VON_KARMAN;
 
@@ -122,6 +123,7 @@ void CalcAerodynamic(int NVegLayers, unsigned char OverStory,
 
     Zw = 1.5 * Height[0] - 0.5 * d_Upper;
     Zt = Trunk * Height[0];
+    
     if (Zt < (Z0_Lower + d_Lower))
       ReportError("Trunk space height below \"center\" of lower boundary", 48);
 
