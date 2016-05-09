@@ -11,8 +11,23 @@
  * FUNCTIONS:    RadiationBalance()
  *               LongwaveBalance()
  *               ShortwaveBalance()
- * COMMENTS:
- * $Id: RadiationBalance.c,v3.1.2 2013/10/01 ning Exp $     
+ * Reference:  
+
+   Wigmosta, M. S., L. W. Vail, and D. P. Lettenmaier, A distributed
+   hydrology-vegetation model for complex terrain, Water Resour. Res.,
+   30(6), 1665-1679, 1994.
+
+   Nijssen and Lettenmaier, A simplified approach for predicting shortwave
+   radiation transfer through boreal forest canopies, JGR, 1999.
+
+   **references of improved radiation scheme **
+
+   Reifsnyder, W. E., and H. W. Lull (1965), Radiant energy in relation to forests,
+   USDA For. Serv. Tech. Bull., 1344, 111.
+
+   Thyer M. et al. (2004), Diagnosing a distributed hydrologic model for two
+   high-elevation forested catchments based on detailed stand- and basin-scale data.
+   Water Resources Research. DOI:10.1029/2003WR002414.
  */
 
 #include <math.h>
@@ -65,15 +80,6 @@
         interception
       - There are at most two vegetation layers
 
-  Reference:
-    Wigmosta, M. S., L. W. Vail, and D. P. Lettenmaier, A distributed 
-    hydrology-vegetation model for complex terrain, Water Resour. Res.,
-    30(6), 1665-1679, 1994.
-
-  Reference:
-    Nijssen and Lettenmaier, A simplified approach for predicting shortwave
-    radiation transfer through boreal forest canopies, JGR, 1999.
-
 *****************************************************************************/
 void RadiationBalance(OPTIONSTRUCT *Options, int HeatFluxOption, 
               int CanopyRadAttOption, float SineSolarAltitude, 
@@ -82,6 +88,7 @@ void RadiationBalance(OPTIONSTRUCT *Options, int HeatFluxOption,
 		      VEGTABLE *VType, SNOWPIX *LocalSnow, PIXRAD *LocalRad)
 {
   float F;			    /* Fraction of pixel covered by top canopy layer [0-1] */
+  float h;              /* Canopy height (m) */
   float Albedo[2];		/* Albedo of each layer */
   float Tau;			/* Transmittance for overstory vegetation layer */
   float Taub, Taud;		/* Transmittance for overstory vegetation layer for
@@ -89,6 +96,7 @@ void RadiationBalance(OPTIONSTRUCT *Options, int HeatFluxOption,
   float Tsurf;			/* Surface temperature (C) */
 
   F = VType->Fract[0];
+  h = VType->Height[0];
 
   /*following added 08/13/2001 by Pascal Storck */
   if (CanopyRadAttOption == VARIABLE) {
@@ -152,6 +160,19 @@ void RadiationBalance(OPTIONSTRUCT *Options, int HeatFluxOption,
       Tau = 0.;
   }
 
+  /* A new version of radiation scheme -- by Ning Sun */
+  if (Options->ImprovRadiation) {
+    if (VType->OverStory == TRUE) {
+      if (SineSolarAltitude > 0.)
+        Tau = exp(-VType->ExtnCoeff * h * F / SineSolarAltitude);
+      else
+        Tau = 0.;
+    }
+    else
+      Tau = 0.;
+  }
+
+  /* Calculate shortwave radiation balance */
   ShortwaveBalance(Options, VType->OverStory, F, Rs, Rsb, Rsd, Tau, Albedo, LocalRad);
 
   if (LocalSnow->HasSnow == TRUE)
@@ -160,18 +181,19 @@ void RadiationBalance(OPTIONSTRUCT *Options, int HeatFluxOption,
     Tsurf = Tsoil;
   else
     Tsurf = Tair;
-
-  LongwaveBalance(Options, VType->OverStory, F, Ld, Tcanopy, Tsurf, LocalRad);
+  
+  /* Calculate longwave radiation balance */
+  LongwaveBalance(Options, VType->OverStory, F, VType->Vf, Ld, Tcanopy, Tsurf, LocalRad);
 
   /* For John's RBM input */
-  if (Options->StreamTemp) {
-    LocalRad->PixelLongIn = Ld;
-	// total shortwave radiation without any shading effect even if shading is on
-	LocalRad->ObsShortIn = VIC_Rs;
-  }
+  LocalRad->PixelLongIn = Ld;
+  
+  // copy the local Met variable value -- total shortwave radiation without any shading effect 
+  LocalRad->ObsShortIn = VIC_Rs;
+
 }
 
-/*****************************************************************************
+/************************************************************************************************
   Function name: LongwaveBalance() 
   
   Purpose      : Calculate the longwave radiation balance for the individual 
@@ -194,11 +216,12 @@ void RadiationBalance(OPTIONSTRUCT *Options, int HeatFluxOption,
 
   Comments     : This function is used to update the longwave radiation
                  balance when new surface temperatures are calculated
-*****************************************************************************/
-void LongwaveBalance(OPTIONSTRUCT *Options, unsigned char OverStory, float F, 
-		     float Ld, float Tcanopy, float Tsurf, PIXRAD * LocalRad)
+************************************************************************************************/
+void LongwaveBalance(OPTIONSTRUCT *Options, unsigned char OverStory, 
+            float F, float Vf, float Ld, float Tcanopy, float Tsurf, 
+            PIXRAD *LocalRad)
 {
-  double Tmp;			/* temporary variable */
+  double Tmp;			
 
   /* calculate emitted longwave for each layer */
   if (OverStory == TRUE) {
@@ -215,8 +238,19 @@ void LongwaveBalance(OPTIONSTRUCT *Options, unsigned char OverStory, float F,
 
   /* Calculate the incoming longwave for each layer */
   if (OverStory == TRUE) {
-    LocalRad->LongIn[0] = (Ld + LocalRad->LongOut[1]) * F;
-    LocalRad->LongIn[1] = Ld * (1 - F) + LocalRad->LongOut[0] * F;
+    /* In the improved radiation scheme, F is replaced by the canopy view 
+    factor Vf that indicates the proportion of the sky view blocked by the 
+    canopy. Here Vf is estimated by VfAdjust * F. IN the case of clear-cut, 
+    F = Vf = 0. Details can be found in Thyer et al. (2004) and 
+    Reifsnyder and Lull (1965) */
+    if (Options->ImprovRadiation == TRUE) {
+      LocalRad->LongIn[0] = (Ld + LocalRad->LongOut[1]) * Vf;
+      LocalRad->LongIn[1] = Ld * (1 - Vf) + LocalRad->LongOut[0] * Vf;
+    }
+    else {
+      LocalRad->LongIn[0] = (Ld + LocalRad->LongOut[1]) * F;
+      LocalRad->LongIn[1] = Ld * (1 - F) + LocalRad->LongOut[0] * F;
+    }
   }
   else {
     LocalRad->LongIn[0] = Ld;
@@ -276,14 +310,24 @@ void LongwaveBalance(OPTIONSTRUCT *Options, unsigned char OverStory, float F,
     timestep, since the shortwave radiation balance is independent of
     the surface temperatures
 *****************************************************************************/
-void ShortwaveBalance(OPTIONSTRUCT *Options, unsigned char OverStory, float F, float Rs, 
-		      float Rsb, float Rsd, float Tau, float *Albedo, PIXRAD * LocalRad)
+void ShortwaveBalance(OPTIONSTRUCT *Options, unsigned char OverStory, 
+              float F, float Rs, float Rsb, float Rsd, float Tau, 
+              float *Albedo, PIXRAD *LocalRad)
 {
   /* Calculate the net shortwave for each layer */
   /* Overstory present, i.e. two layers */
   if (OverStory == TRUE) {
-    LocalRad->NetShort[0] = Rs * F * ((1 - Albedo[0]) - Tau * (1 - Albedo[1]));
-    LocalRad->NetShort[1] = Rs * (1 - Albedo[1]) * ((1 - F) + (Tau * F));
+    /* A new version of radiation scheme: 
+    Beause F was factored in during the tau calculations, F is not used 
+    repeatedly here */
+    if (Options->ImprovRadiation == TRUE) {
+      LocalRad->NetShort[0] = Rs * (1 - Albedo[0]) * (1 - Tau * (1 - Albedo[1]));
+      LocalRad->NetShort[1] = Rs * (1 - Albedo[1]) * Tau;
+    }
+    else {
+      LocalRad->NetShort[0] = Rs * F * ((1 - Albedo[0]) - Tau * (1 - Albedo[1]));
+      LocalRad->NetShort[1] = Rs * (1 - Albedo[1]) * ((1 - F) + (Tau * F));
+    }
   }
   else {
     LocalRad->NetShort[0] = Rs * (1 - Albedo[0]);
@@ -291,12 +335,20 @@ void ShortwaveBalance(OPTIONSTRUCT *Options, unsigned char OverStory, float F, f
   }
 
   /* Calculate the net shortwave for the entire pixel */
-  if (OverStory == TRUE) 
-    LocalRad->PixelNetShort = Rs * (1 - Albedo[0] * F - Albedo[1] * (1 - F));
+  if (OverStory == TRUE) {
+    if (Options->ImprovRadiation == TRUE) {
+      LocalRad->PixelNetShort = Rs * (1 - Albedo[0] - Albedo[0] * (1-Albedo[1]));
+    }
+    else {
+      LocalRad->PixelNetShort = Rs * (1 - Albedo[0] * F - Albedo[1] * (1 - F));
+    }
+  }
   else 
     LocalRad->PixelNetShort = LocalRad->NetShort[0];
 
   /* Calculate the incoming shortwave reaching the water surface */
+  /* When the canopy shading option is off, the model still takes into account the shading
+  created by the local vegetation defined by the input vegetation map */
   if (Options->StreamTemp && !Options->CanopyShading){
     if (OverStory == TRUE) {
       LocalRad->RBMNetShort = Rs * (1 - F) + Rs * Tau * F;
@@ -309,6 +361,8 @@ void ShortwaveBalance(OPTIONSTRUCT *Options, unsigned char OverStory, float F, f
 	  LocalRad->PixelDiffuse = Rsd;
     }
   }
+  /* When turning on the canopy shading top, only riparian veg characterized by the height, width and 
+  other parameters are used for calculations. The VEG type defined by the vegetation map is dismissed. */
   else if (Options->StreamTemp && Options->CanopyShading){ 
       LocalRad->RBMNetShort = Rs;
 	  LocalRad->PixelBeam = Rsb;

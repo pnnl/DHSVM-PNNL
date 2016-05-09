@@ -118,8 +118,9 @@ typedef struct {
   float Tair;			/* Air temperature (C) */
   float Rh;			    /* Relative humidity (%) */
   float Wind;			/* Wind (m/s) */
-  float VICSin;         /* Observed Incoming shortwave used for RBM only (W/m2) */
-  float Sin;			/* Incoming shortwave (W/m^2) */
+  float VICSin;         /* Observed incoming shortwave radiation 
+                           without topographic or canopy shading (W/m2) */
+  float Sin;			/* Incoming shortwave adjusted for topographic shading (W/m^2) */
   float SinBeam;		/* Incoming beam radiation (W/m^2) */
   float SinDiffuse;		/* Incoming diffuse radiation (W/m^2) */
   float Lin;			/* Incoming longwave (W/m^2) */
@@ -229,6 +230,7 @@ typedef struct {
   int Shading;					/* if TRUE then terrain shading for solar is on */
   int StreamTemp;
   int CanopyShading;
+  int ImprovRadiation;          /* if TRUE then improved radiation scheme is on */
   char PrismDataPath[BUFSIZE + 1];
   char PrismDataExt[BUFSIZE + 1];
   char ShadingDataPath[BUFSIZE + 1];
@@ -255,26 +257,22 @@ typedef struct {
 } RADARPIX;
 
 typedef struct {
-  float Beam;			/* Beam value */
-  float Diffuse;		/* Diffuse value */
-} RADCLASSPIX;
-
-typedef struct {
   float NetShort[2];    /* Shortwave radiation for vegetation surfaces and ground/snow surface W/m2 */
-
   float LongIn[2];		/* Incoming longwave radiation for vegetation surfaces and ground/snow surface W/m2 */
-
   float LongOut[2];		/* Outgoing longwave radiation for vegetation surfaces and ground/snow surface W/m2 */
-
   float PixelNetShort;	/* Net shortwave for the entire pixel W/m2 */
-  float RBMNetLong;     /* Longwave radiation reaching the water surface W/m2 (for RBM) */
-  float RBMNetShort;
+  float NetRadiation[2]; /* Net radiation received by the entire pixel W/m2 */
   float PixelLongIn;	/* Incoming longwave for entire pixel W/m2 */
   float PixelLongOut;	/* Outgoing longwave for entire pixel W/m2 */
-  float ObsShortIn;
-  float PixelShortIn;   /* Incoming shortwave for entire pixel W/m2 */
-  float PixelBeam;      /* Net direct beam radiation W/m2 */
-  float PixelDiffuse;   /* Net diffuse beam radiation W/m2 */
+  float ObsShortIn;     /* Incoming shortwave radiation straight from the weather file without topographic or canopy shading */
+  float BeamIn;         /* Incoming beam radiation */
+  float DiffuseIn;      /* Incomning diffuse radiation */
+
+  // for RBM use only 
+  float RBMNetLong;     /* Longwave radiation reaching the water surface W/m2 (for RBM only) */
+  float RBMNetShort;    /* Shortwave radiation reaching the water surface W/m2 (for RBM only) */
+  float PixelBeam;      /* Net beam radiation W/m2 (used for RBM only) */
+  float PixelDiffuse;   /* Net diffuse radiation W/m2 (used for RBM only) */
 } PIXRAD;
 
 typedef struct {
@@ -332,12 +330,11 @@ typedef struct {
   float ColdContent;		/* Cold content of snow pack */
   float Albedo;				/* Albedo of snow pack */
   float Depth;				/* Snow depth; Does not appear to be calculated
-							or used anywhere */
-  float VaporMassFlux;		/* Vapor mass flux to/from snow pack
-				   (m/timestep) */
-  float CanopyVaporMassFlux;	/* Vapor mass flux to/from intercepted snow in
-				   the canopy (m/timestep) */
-  float Glacier;		/*amount of snow added to glacier during simulation */
+							   or used anywhere */
+  float VaporMassFlux;		/* Vapor mass flux to/from snow pack,(m/timestep). 
+                               A negataive value indicates flux from snow -- sublimiation */
+  float CanopyVaporMassFlux;/* Vapor mass flux to/from intercepted snow in the canopy (m/timestep) */
+  float Glacier;		    /* Amount of snow added to glacier during simulation */
 } SNOWPIX;
 
 typedef struct {
@@ -477,6 +474,11 @@ typedef struct {
   float Trunk;			/* Fraction of overstory height that identifies the top of the trunk space */
   float U[2];			/* Wind speed profile (m/s) */
   float USnow;			/* wind speed 2, above snow surface (m/s) */
+  float Vf;             /* Canopy view factor (0 - 1); Vf = VfAdjust*Fract */
+  float VfAdjust;       /* Canopy view adjustment factor */
+  float ExtnCoeff;            /* Light extinction coefficient varied by month */
+  float MonthlyExtnCoeff[12]; /* Monthly light extinction (or attenuation coeff); unit: m^-1; 
+                             used in improved radiation scheme */
 } VEGTABLE;
 
 typedef struct {
@@ -490,7 +492,6 @@ typedef struct {
   float CumSnowVaporFlux;
   float CumCulvertReturnFlow;
   float CumCulvertToChannel;
-  float CumRunoffToChannel;
 } WATERBALANCE;
 
 typedef struct {
@@ -511,10 +512,10 @@ typedef struct {
   EVAPPIX Evap;
   PRECIPPIX Precip;
   PIXRAD Rad;
-  RADCLASSPIX RadClass;
   ROADSTRUCT Road;
   SNOWPIX Snow;
   SOILPIX Soil;
+  float NetRad;
   float SoilWater;
   float CanopyWater;
   float Runoff;
@@ -523,7 +524,6 @@ typedef struct {
   unsigned long Saturated;
   float CulvertReturnFlow;
   float CulvertToChannel;
-  float RunoffToChannel;
 } AGGREGATED;
 
 #endif

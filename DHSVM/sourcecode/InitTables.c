@@ -263,9 +263,10 @@ int InitVegTable(VEGTABLE ** VType, LISTPTR Input, OPTIONSTRUCT * Options,
   const char *Routine = "InitVegTable";
   int i;			/* Counter */
   int j;			/* Counter */
-  float impervious;		/* flag to check whether impervious layers are
-                   specified */
-  int NVegs;			/* Number of vegetation types */
+  int k;            /* counter */
+  float impervious;	/* flag to check whether impervious layers are specified */
+  int NVegs;		/* Number of vegetation types */
+
   char KeyName[understory_monalb + 1][BUFSIZE + 1];
   char *KeyStr[] = {
     "VEGETATION DESCRIPTION",
@@ -296,6 +297,8 @@ int InitVegTable(VEGTABLE ** VType, LISTPTR Input, OPTIONSTRUCT * Options,
     "ROOT ZONE DEPTHS",
     "OVERSTORY ROOT FRACTION",
     "UNDERSTORY ROOT FRACTION",
+    "MONTHLY LIGHT EXTINCTION",
+    "CANOPY VIEW ADJ FACTOR",
     "OVERSTORY MONTHLY LAI",
     "UNDERSTORY MONTHLY LAI",
     "OVERSTORY MONTHLY ALB",
@@ -401,35 +404,25 @@ int InitVegTable(VEGTABLE ** VType, LISTPTR Input, OPTIONSTRUCT * Options,
       (*VType)[i].HemiFract = NULL;
     }
 
-    if (!((*VType)[i].Height = (float *)calloc((*VType)[i].NVegLayers,
-      sizeof(float))))
+    if (!((*VType)[i].Height = (float *)calloc((*VType)[i].NVegLayers, sizeof(float))))
       ReportError((char *)Routine, 1);
-    if (!((*VType)[i].RsMax = (float *)calloc((*VType)[i].NVegLayers,
-      sizeof(float))))
+    if (!((*VType)[i].RsMax = (float *)calloc((*VType)[i].NVegLayers, sizeof(float))))
       ReportError((char *)Routine, 1);
-    if (!((*VType)[i].RsMin = (float *)calloc((*VType)[i].NVegLayers,
-      sizeof(float))))
+    if (!((*VType)[i].RsMin = (float *)calloc((*VType)[i].NVegLayers, sizeof(float))))
       ReportError((char *)Routine, 1);
-    if (!((*VType)[i].MoistThres = (float *)calloc((*VType)[i].NVegLayers,
-      sizeof(float))))
+    if (!((*VType)[i].MoistThres = (float *)calloc((*VType)[i].NVegLayers, sizeof(float))))
       ReportError((char *)Routine, 1);
-    if (!((*VType)[i].VpdThres = (float *)calloc((*VType)[i].NVegLayers,
-      sizeof(float))))
+    if (!((*VType)[i].VpdThres = (float *)calloc((*VType)[i].NVegLayers, sizeof(float))))
       ReportError((char *)Routine, 1);
-    if (!((*VType)[i].Rpc = (float *)calloc((*VType)[i].NVegLayers,
-      sizeof(float))))
+    if (!((*VType)[i].Rpc = (float *)calloc((*VType)[i].NVegLayers, sizeof(float))))
       ReportError((char *)Routine, 1);
-    if (!((*VType)[i].Albedo = (float *)calloc(((*VType)[i].NVegLayers + 1),
-      sizeof(float))))
+    if (!((*VType)[i].Albedo = (float *)calloc(((*VType)[i].NVegLayers + 1), sizeof(float))))
       ReportError((char *)Routine, 1);
-    if (!((*VType)[i].MaxInt = (float *)calloc((*VType)[i].NVegLayers,
-      sizeof(float))))
+    if (!((*VType)[i].MaxInt = (float *)calloc((*VType)[i].NVegLayers, sizeof(float))))
       ReportError((char *)Routine, 1);
-    if (!((*VType)[i].LAI = (float *)calloc((*VType)[i].NVegLayers,
-      sizeof(float))))
+    if (!((*VType)[i].LAI = (float *)calloc((*VType)[i].NVegLayers, sizeof(float))))
       ReportError((char *)Routine, 1);
-    if (!((*VType)[i].RootFract = (float **)calloc((*VType)[i].NVegLayers,
-      sizeof(float *))))
+    if (!((*VType)[i].RootFract = (float **)calloc((*VType)[i].NVegLayers, sizeof(float *))))
       ReportError((char *)Routine, 1);
 
     for (j = 0; j < (*VType)[i].NVegLayers; j++) {
@@ -437,20 +430,17 @@ int InitVegTable(VEGTABLE ** VType, LISTPTR Input, OPTIONSTRUCT * Options,
         (float *)calloc((*VType)[i].NSoilLayers, sizeof(float))))
         ReportError((char *)Routine, 1);
     }
-    if (!((*VType)[i].RootDepth = (float *)calloc((*VType)[i].NSoilLayers,
-      sizeof(float))))
+    if (!((*VType)[i].RootDepth = (float *)calloc((*VType)[i].NSoilLayers, sizeof(float))))
       ReportError((char *)Routine, 1);
 
-    if (!((*VType)[i].LAIMonthly = (float **)calloc((*VType)[i].NVegLayers,
-      sizeof(float *))))
+    if (!((*VType)[i].LAIMonthly = (float **)calloc((*VType)[i].NVegLayers, sizeof(float *))))
       ReportError((char *)Routine, 1);
     for (j = 0; j < (*VType)[i].NVegLayers; j++) {
-      if (!((*VType)[i].LAIMonthly[j] = (float *)calloc(12, sizeof(float))))
+      if (!((*VType)[i].LAIMonthly[j] = (float *) calloc(12, sizeof(float))))
         ReportError((char *)Routine, 1);
     }
 
-    if (!((*VType)[i].AlbedoMonthly = (float **)calloc((*VType)[i].NVegLayers,
-      sizeof(float *))))
+    if (!((*VType)[i].AlbedoMonthly = (float **)calloc((*VType)[i].NVegLayers, sizeof(float *))))
       ReportError((char *)Routine, 1);
     for (j = 0; j < (*VType)[i].NVegLayers; j++) {
       if (!((*VType)[i].AlbedoMonthly[j] = (float *)calloc(12, sizeof(float))))
@@ -508,8 +498,7 @@ int InitVegTable(VEGTABLE ** VType, LISTPTR Input, OPTIONSTRUCT * Options,
       if (!CopyFloat((*VType)[i].LAIMonthly[0], VarStr[overstory_monlai], 12))
         ReportError(KeyName[overstory_monlai], 51);
 
-      if (!CopyFloat((*VType)[i].AlbedoMonthly[0], VarStr[overstory_monalb],
-        12))
+      if (!CopyFloat((*VType)[i].AlbedoMonthly[0], VarStr[overstory_monalb], 12))
         ReportError(KeyName[overstory_monalb], 51);
 
       if ((*VType)[i].UnderStory == TRUE) {
@@ -518,12 +507,10 @@ int InitVegTable(VEGTABLE ** VType, LISTPTR Input, OPTIONSTRUCT * Options,
           (*VType)[i].NSoilLayers))
           ReportError(KeyName[understory_fraction], 51);
 
-        if (!CopyFloat((*VType)[i].LAIMonthly[1], VarStr[understory_monlai],
-          12))
+        if (!CopyFloat((*VType)[i].LAIMonthly[1], VarStr[understory_monlai], 12))
           ReportError(KeyName[understory_monlai], 51);
 
-        if (!CopyFloat((*VType)[i].AlbedoMonthly[1], VarStr[understory_monalb],
-          12))
+        if (!CopyFloat((*VType)[i].AlbedoMonthly[1], VarStr[understory_monalb], 12))
           ReportError(KeyName[understory_monalb], 51);
 
       }
@@ -535,12 +522,10 @@ int InitVegTable(VEGTABLE ** VType, LISTPTR Input, OPTIONSTRUCT * Options,
           (*VType)[i].NSoilLayers))
           ReportError(KeyName[understory_fraction], 51);
 
-        if (!CopyFloat((*VType)[i].LAIMonthly[0], VarStr[understory_monlai],
-          12))
+        if (!CopyFloat((*VType)[i].LAIMonthly[0], VarStr[understory_monlai], 12))
           ReportError(KeyName[understory_monlai], 51);
 
-        if (!CopyFloat((*VType)[i].AlbedoMonthly[0], VarStr[understory_monalb],
-          12))
+        if (!CopyFloat((*VType)[i].AlbedoMonthly[0], VarStr[understory_monalb], 12))
           ReportError(KeyName[understory_monalb], 51);
 
       }
@@ -579,12 +564,34 @@ int InitVegTable(VEGTABLE ** VType, LISTPTR Input, OPTIONSTRUCT * Options,
        for each layer.  The values are normalized for a reference height wind
        speed of 1 m/s, and are adjusted each timestep using actual reference
        height wind speeds */
-
     CalcAerodynamic((*VType)[i].NVegLayers, (*VType)[i].OverStory,
       (*VType)[i].Cn, (*VType)[i].Height, (*VType)[i].Trunk,
       (*VType)[i].U, &((*VType)[i].USnow), (*VType)[i].Ra,
       &((*VType)[i].RaSnow));
-  }
+
+
+    /* Run the improved radiation scheme in which the tree height, solar altitude and fractional coverage 
+    are all taken into account into the radiation calculation */
+    if (Options->ImprovRadiation == TRUE) {
+      if ((*VType)[i].OverStory == TRUE) {
+        if (!CopyFloat((*VType)[i].MonthlyExtnCoeff, VarStr[monextn], 12))
+          ReportError(KeyName[monextn], 51);
+        if (!CopyFloat(&((*VType)[i].VfAdjust), VarStr[vf_adj], 1)) 
+          ReportError(KeyName[vf_adj], 51);
+        (*VType)[i].Vf = (*VType)[i].Fract[0] * (*VType)[i].VfAdjust;
+      }
+      else {
+        if ((*VType)[i].UnderStory == TRUE) {
+          for (k = 0; k < 12; k++)
+            (*VType)[i].MonthlyExtnCoeff[k] = 0;
+          (*VType)[i].VfAdjust = 1.0;
+          /* assuming 100% coverage if understory=TRUE & overstory=FALSE*/
+          (*VType)[i].Vf = (*VType)[i].Fract[1] * (*VType)[i].VfAdjust;
+        }
+      }
+    }
+
+  } /* end of the VEG TYPE loop */ 
 
   if (impervious) {
     GetInitString(SectionName, "IMPERVIOUS SURFACE ROUTING FILE", "", VarStr[0],

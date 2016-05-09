@@ -23,12 +23,11 @@
 #include "functions.h"
 #include "constants.h"
 
-void CheckOut(int CanopyRadAttOption, LAYER Veg, LAYER Soil,
-  VEGTABLE *VType, SOILTABLE *SType, MAPSIZE *Map,
-  TOPOPIX **TopoMap, VEGPIX **VegMap, SOILPIX **SoilMap)
-{
+void CheckOut(OPTIONSTRUCT *Options, LAYER Veg, LAYER Soil, VEGTABLE *VType, SOILTABLE *SType,
+  MAPSIZE *Map, TOPOPIX **TopoMap, VEGPIX **VegMap, SOILPIX **SoilMap)
 
-  int y, x, i, j;
+{
+  int y, x, i, j, k;
   int *count = NULL, *scount = NULL;
   float a, b, l, Taud, Taub20, Taub40, Taub60, Taub80;
 
@@ -107,7 +106,7 @@ void CheckOut(int CanopyRadAttOption, LAYER Veg, LAYER Soil,
           }
         }
         /* printf("Overstory LAI July %2.3f Effective LAI July %2.3f\n", VType[i].LAIMonthly[0][6]);*/
-        if (CanopyRadAttOption == VARIABLE) {
+        if (Options->CanopyRadAtt == VARIABLE) {
           a = VType[i].LeafAngleA;
           b = VType[i].LeafAngleB;
           l = VType[i].LAIMonthly[0][6] / VType[i].ClumpingFactor;
@@ -147,6 +146,21 @@ void CheckOut(int CanopyRadAttOption, LAYER Veg, LAYER Soil,
       }
     }
   }
+
+  if (Options->ImprovRadiation) {
+    printf("\nMonthly attenuation coeff. for the VEG Type with an overstory: \n\n");
+    for (i = 0; i < Veg.NTypes; i++) {
+      if (VType[i].OverStory == TRUE) {
+        printf("\n%s:\n", VType[i].Desc);
+        for (k = 0; k < 12; k++) {
+          printf("%.3f ", VType[i].MonthlyExtnCoeff[k]);
+        }
+        printf("\n");
+      }
+    }
+    printf("\n");
+  }
+
   if (count) {
     free(count);
   }

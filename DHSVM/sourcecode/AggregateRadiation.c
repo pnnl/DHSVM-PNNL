@@ -26,8 +26,7 @@
   for the entire area.  Therefore these components are aggregated here.  They
   are averaged over the basin in Aggregate()
 *****************************************************************************/
-void AggregateRadiation(int MaxVegLayers, int NVegL, PIXRAD * Rad,
-			PIXRAD * TotalRad)
+void AggregateRadiation(int MaxVegLayers, int NVegL, PIXRAD *Rad, PIXRAD *TotalRad)
 {
   int i;			/* counter */
 

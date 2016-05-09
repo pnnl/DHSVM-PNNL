@@ -76,13 +76,13 @@ int main(int argc, char **argv)
   AGGREGATED Total = {			/* Total or average value of a  variable over the entire basin */
     {0.0, NULL, NULL, NULL, NULL, 0.0},												/* EVAPPIX */
     {0.0, 0.0, 0.0, 0.0, 0.0, NULL, NULL, 0.0, 0, 0.0},								/* PRECIPPIX */
-    {{0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, 0.0, 0.0, 0.0},							/* PIXRAD */
-    {0.0, 0.0},																		/* RADCLASSPIX */
+    {{0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, 0.0, {0.0, 0.0}, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                                                                                    /* PIXRAD */
     {0.0, 0.0, 0, NULL, NULL, 0.0, 0, 0.0, 0.0, 0.0, 0.0, NULL, NULL},				/* ROADSTRUCT*/
     {0, 0, 0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},		/* SNOWPIX */
     {0, 0.0, NULL, NULL, NULL, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-     0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},			            /* SOILPIX */
-    0.0, 0.0, 0.0, 0.0, 0.0, 0l, 0.0, 0.0, 0.0
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},			                /* SOILPIX */
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0l, 0.0, 0.0
   };
   CHANNEL ChannelData = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, 
   NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
@@ -101,7 +101,6 @@ int main(int argc, char **argv)
   PIXMET LocalMet;				/* Meteorological conditions for current pixel */
   PRECIPPIX **PrecipMap = NULL;
   RADARPIX **RadarMap	= NULL;
-  RADCLASSPIX **RadMap	= NULL;
   PIXRAD **RadiationMap = NULL;
   ROADSTRUCT **Network	= NULL;	/* 2D Array with channel information for each pixel */
   SNOWPIX **SnowMap		= NULL;
@@ -117,7 +116,7 @@ int main(int argc, char **argv)
   VEGPIX **VegMap = NULL;
   VEGTABLE *VType = NULL;
   WATERBALANCE Mass =			/* parameter for mass balance calculations */
-    { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+    { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
 
 /*****************************************************************************
   Initialization Procedures 
@@ -153,8 +152,7 @@ int main(int argc, char **argv)
 
   InitTerrainMaps(Input, &Options, &Map, &Soil, &TopoMap, &SoilMap, &VegMap);
 
-  CheckOut(Options.CanopyRadAtt, Veg, Soil, VType, SType, &Map, TopoMap, 
-	   VegMap, SoilMap);
+  CheckOut(&Options, Veg, Soil, VType, SType, &Map, TopoMap, VegMap, SoilMap);
 
   if (Options.HasNetwork)
     InitChannel(Input, &Map, Time.Dt, &ChannelData, SoilMap, &MaxStreamID, &MaxRoadID, &Options);
@@ -197,7 +195,7 @@ int main(int argc, char **argv)
   InitMetMaps(Time.NDaySteps, &Map, &Radar, &Options, InFiles.WindMapPath,
 	      InFiles.PrecipLapseFile, &PrecipLapseMap, &PrismMap,
 	      &ShadowMap, &SkyViewMap, &EvapMap, &PrecipMap,
-	      &RadarMap, &RadMap, SoilMap, &Soil, VegMap, &Veg, TopoMap,
+	      &RadarMap, &RadiationMap, SoilMap, &Soil, VegMap, &Veg, TopoMap,
 	      &MM5Input, &WindModel);
 
   InitInterpolationWeights(&Map, &Options, TopoMap, &MetWeights, Stat, NStats);
@@ -220,7 +218,7 @@ int main(int argc, char **argv)
 		 SnowAlbedo, TopoMap, Network, &HydrographInfo, Hydrograph);
 
   InitNewMonth(&Time, &Options, &Map, TopoMap, PrismMap, ShadowMap,
-	       RadMap, &InFiles, Veg.NTypes, VType, NStats, Stat, Dump.InitStatePath);
+	       &InFiles, Veg.NTypes, VType, NStats, Stat, Dump.InitStatePath);
 
   InitNewDay(Time.Current.JDay, &SolarGeo);
 
@@ -238,7 +236,7 @@ int main(int argc, char **argv)
 
   /* setup for mass balance calculations */
   Aggregate(&Map, &Options, TopoMap, &Soil, &Veg, VegMap, EvapMap, PrecipMap,
-	      RadMap, SnowMap, SoilMap, &Total, VType, Network, &ChannelData, &roadarea);
+	      RadiationMap, SnowMap, SoilMap, &Total, VType, Network, &ChannelData, &roadarea);
 
   Mass.StartWaterStorage =
     Total.Soil.IExcess + Total.CanopyWater + Total.SoilWater + Total.Snow.Swq +
@@ -258,7 +256,7 @@ int main(int argc, char **argv)
 
     if (IsNewMonth(&(Time.Current), Time.Dt))
       InitNewMonth(&Time, &Options, &Map, TopoMap, PrismMap, ShadowMap,
-		   RadMap, &InFiles, Veg.NTypes, VType, NStats, Stat, Dump.InitStatePath);
+		   &InFiles, Veg.NTypes, VType, NStats, Stat, Dump.InitStatePath);
 
     if (IsNewDay(Time.DayStep)) {
       InitNewDay(Time.Current.JDay, &SolarGeo);
@@ -267,7 +265,7 @@ int main(int argc, char **argv)
     }
 
     InitNewStep(&InFiles, &Map, &Time, Soil.MaxLayers, &Options, NStats, Stat,
-		InFiles.RadarFile, &Radar, RadarMap, &SolarGeo, TopoMap, RadMap,
+		InFiles.RadarFile, &Radar, RadarMap, &SolarGeo, TopoMap, 
         SoilMap, MM5Input, WindModel, &MM5Map);
 
     /* initialize channel/road networks for time step */
@@ -279,11 +277,12 @@ int main(int argc, char **argv)
     for (y = 0; y < Map.NY; y++) {
       for (x = 0; x < Map.NX; x++) {
 	    if (INBASIN(TopoMap[y][x].Mask)) {
+
 		  if (Options.Shading)
 	        LocalMet =
 	        MakeLocalMetData(y, x, &Map, Time.DayStep, &Options, NStats,
 			       Stat, MetWeights[y][x], TopoMap[y][x].Dem,
-			       &(RadMap[y][x]), &(PrecipMap[y][x]), &Radar,
+			       &(RadiationMap[y][x]), &(PrecipMap[y][x]), &Radar,
 			       RadarMap, PrismMap, &(SnowMap[y][x]),
 			       SnowAlbedo, MM5Input, WindModel, PrecipLapseMap,
 			       &MetMap, NGraphics, Time.Current.Month,
@@ -293,7 +292,7 @@ int main(int argc, char **argv)
 	        LocalMet =
 	        MakeLocalMetData(y, x, &Map, Time.DayStep, &Options, NStats,
 			       Stat, MetWeights[y][x], TopoMap[y][x].Dem,
-			       &(RadMap[y][x]), &(PrecipMap[y][x]), &Radar,
+			       &(RadiationMap[y][x]), &(PrecipMap[y][x]), &Radar,
 			       RadarMap, PrismMap, &(SnowMap[y][x]),
 			       SnowAlbedo, MM5Input, WindModel, PrecipLapseMap,
 			       &MetMap, NGraphics, Time.Current.Month, 0.0,
@@ -321,8 +320,8 @@ int main(int argc, char **argv)
 			    Time.Dt, Options.HeatFlux, Options.CanopyRadAtt, Options.Infiltration, 
 				Veg.MaxLayers, &LocalMet, &(Network[y][x]), &(PrecipMap[y][x]), 
 			    &(VType[VegMap[y][x].Veg-1]), &(VegMap[y][x]), &(SType[SoilMap[y][x].Soil-1]),
-			    &(SoilMap[y][x]), &(SnowMap[y][x]), &(EvapMap[y][x]), &(Total.Rad),
-				 &ChannelData, SkyViewMap);
+			    &(SoilMap[y][x]), &(SnowMap[y][x]), &(RadiationMap[y][x]), &(EvapMap[y][x]), 
+                &(Total.Rad), &ChannelData, SkyViewMap);
 		 
 		  PrecipMap[y][x].SumPrecip += PrecipMap[y][x].Precip;
 		}
@@ -358,16 +357,16 @@ int main(int argc, char **argv)
       draw(&(Time.Current), IsEqualTime(&(Time.Current), &(Time.Start)),
 	   Time.DayStep, &Map, NGraphics, which_graphics, VType,
 	   SType, SnowMap, SoilMap, VegMap, TopoMap, PrecipMap,
-	   PrismMap, SkyViewMap, ShadowMap, EvapMap, RadMap, 
+	   PrismMap, SkyViewMap, ShadowMap, EvapMap, RadiationMap, 
 	   MetMap, Network, &Options);
     
     Aggregate(&Map, &Options, TopoMap, &Soil, &Veg, VegMap, EvapMap, PrecipMap,
-	      RadMap, SnowMap, SoilMap, &Total, VType, Network, &ChannelData, &roadarea);
+	      RadiationMap, SnowMap, SoilMap, &Total, VType, Network, &ChannelData, &roadarea);
     
-    MassBalance(&(Time.Current), &(Dump.Balance), &Total, &Mass);
+    MassBalance(&(Time.Current), &(Time.Start), &(Dump.Balance), &Total, &Mass);
 
     ExecDump(&Map, &(Time.Current), &(Time.Start), &Options, &Dump, TopoMap,
-	     EvapMap, RadiationMap, PrecipMap, RadMap, SnowMap, MetMap, VegMap, &Veg, 
+	     EvapMap, RadiationMap, PrecipMap, SnowMap, MetMap, VegMap, &Veg, 
 		 SoilMap, Network, &ChannelData, &Soil, &Total, &HydrographInfo,Hydrograph);
 	
     IncreaseTime(&Time);
@@ -375,7 +374,7 @@ int main(int argc, char **argv)
   }
 
   ExecDump(&Map, &(Time.Current), &(Time.Start), &Options, &Dump, TopoMap,
-	   EvapMap, RadiationMap, PrecipMap, RadMap, SnowMap, MetMap, VegMap, &Veg, SoilMap,
+	   EvapMap, RadiationMap, PrecipMap, SnowMap, MetMap, VegMap, &Veg, SoilMap,
 	   Network, &ChannelData, &Soil, &Total, &HydrographInfo, Hydrograph);
 
   FinalMassBalance(&(Dump.FinalBalance), &Total, &Mass);

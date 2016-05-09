@@ -50,7 +50,7 @@ typedef struct {
 	float ExtnCoeff[12];        /* Monthly Extinction coefficient */
 	float Extn;
 	float CanopyBankDist;       /* Distance from bank to canopy */
-        float StreamWidth;          /* segment width used in riparian shading module */
+    float StreamWidth;          /* segment width used in riparian shading module */
 } CHANRVEG;
 
 /* -------------------------------------------------------------
