@@ -11,7 +11,6 @@
  * DESCRIP-END.cd
  * FUNCTIONS:    main()
  * COMMENTS:
- * $Id: MainDHSVM.c,v 1.42 2006/10/12 20:38:11 nathalie Exp $
  */
 
 /******************************************************************************/
@@ -58,13 +57,10 @@ int main(int argc, char **argv)
   float **SkyViewMap = NULL;
   float ***WindModel = NULL;
   int MaxStreamID, MaxRoadID;
-  float SedDiams[NSEDSIZES];     /* Sediment particle diameters (mm) */
   clock_t start, finish1;
   double runtime = 0.0;
   int t = 0;
   float roadarea;
-  time_t tloc;
-  int flag;
   int i;
   int j;
   int x;						/* row counter */
@@ -75,26 +71,21 @@ int main(int argc, char **argv)
 
   int NGraphics;				/* number of graphics for X11 */
   int *which_graphics;			/* which graphics for X11 */
-  char buffer[32];
 
   AGGREGATED Total = {			/* Total or average value of a  variable over the entire basin */
     {0.0, NULL, NULL, NULL, NULL, 0.0},												/* EVAPPIX */
     {0.0, 0.0, 0.0, 0.0, 0.0, NULL, NULL, 0.0, 0, 0.0},								/* PRECIPPIX */
     {{0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, 0.0, 0.0, 0.0},							/* PIXRAD */
     {0.0, 0.0},																		/* RADCLASSPIX */
-    {0.0, 0.0, 0, NULL, NULL, 0.0, 0, 0.0, 0.0, 0.0, 0.0, NULL, 
-	NULL, NULL, NULL, NULL, NULL, 0.0},												/* ROADSTRUCT*/
+    {0.0, 0.0, 0, NULL, NULL, 0.0, 0, 0.0, 0.0, 0.0, 0.0, NULL, NULL},				/* ROADSTRUCT*/
     {0, 0, 0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},		/* SNOWPIX */
     {0, 0.0, NULL, NULL, NULL, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-     0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},			/*SOILPIX */
-    { 0.0, 0.0, 0.0, 0.0, 0.0},														/*SEDPIX */
-    { 0.0, 0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},							/*FINEPIX */
-    0.0, 0.0, 0.0, 0.0, 0.0, 0l, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+     0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},			            /* SOILPIX */
+    0.0, 0.0, 0.0, 0.0, 0.0, 0l, 0.0, 0.0, 0.0
   };
   CHANNEL ChannelData = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, 
   NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-  NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-  NULL, NULL, NULL, NULL};
+  NULL, NULL, NULL, NULL, NULL, NULL};
   DUMPSTRUCT Dump;
   EVAPPIX **EvapMap = NULL;
   INPUTFILES InFiles;
@@ -107,7 +98,6 @@ int main(int argc, char **argv)
   METLOCATION *Stat = NULL;
   OPTIONSTRUCT Options;			/* Structure with information which program options to follow */
   PIXMET LocalMet;				/* Meteorological conditions for current pixel */
-  FINEPIX ***FineMap	= NULL;
   PRECIPPIX **PrecipMap = NULL;
   RADARPIX **RadarMap	= NULL;
   RADCLASSPIX **RadMap	= NULL;
@@ -117,9 +107,7 @@ int main(int argc, char **argv)
   MET_MAP_PIX **MetMap	= NULL;
   SNOWTABLE *SnowAlbedo = NULL;
   SOILPIX **SoilMap		= NULL;
-  SEDPIX **SedMap		= NULL;
   SOILTABLE *SType	    = NULL;
-  SEDTABLE *SedType		= NULL;
   SOLARGEOMETRY SolarGeo;		/* Geometry of Sun-Earth system (needed for INLINE radiation calculations */
   TIMESTRUCT Time;
   TOPOPIX **TopoMap = NULL;
@@ -128,8 +116,7 @@ int main(int argc, char **argv)
   VEGPIX **VegMap = NULL;
   VEGTABLE *VType = NULL;
   WATERBALANCE Mass =			/* parameter for mass balance calculations */
-    { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,  
-      0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+    { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
 
 /*****************************************************************************
   Initialization Procedures 
@@ -232,8 +219,7 @@ int main(int argc, char **argv)
 		 SnowAlbedo, TopoMap, Network, &HydrographInfo, Hydrograph);
 
   InitNewMonth(&Time, &Options, &Map, TopoMap, PrismMap, ShadowMap,
-	       RadMap, &InFiles, Veg.NTypes, VType, NStats, Stat, 
-	       Dump.InitStatePath);
+	       RadMap, &InFiles, Veg.NTypes, VType, NStats, Stat, Dump.InitStatePath);
 
   InitNewDay(Time.Current.JDay, &SolarGeo);
 
@@ -249,56 +235,14 @@ int main(int argc, char **argv)
   /* Done with initialization, delete the list with input strings */
   DeleteList(Input);
 
-  /*****************************************************************************
-  Sediment Initialization Procedures 
-  *****************************************************************************/
-  if(Options.Sediment) {
-     time (&tloc);
-     srand (tloc);
-  /* Randomize Random Generator */
- 
-  /* Commenting the line above and uncommenting the line below 
-     allows for the comparison of scenarios. */
-  /*  srand48 (0);  */
-    printf("\nSTARTING SEDIMENT INITIALIZATION PROCEDURES\n\n");
-
-    ReadInitFile(Options.SedFile, &Input);
-
-    InitParameters(Input, &Options, &Map, &Network, &ChannelData, TopoMap,
-		   &Time, SedDiams);
-
-    InitSedimentTables(Time.NDaySteps, Input, &SedType, &SType, &VType, &Soil, &Veg);
-
-    InitFineMaps(Input, &Options, &Map, &Soil, &TopoMap, &SoilMap, 
-		  &FineMap);
-
-    if (Options.HasNetwork){ 
-      printf("Initializing channel sediment\n\n");
-      InitChannelSedimentDump(&ChannelData, Dump.Path, Options.ChannelRouting); 
-      InitChannelSediment(ChannelData.streams, &Total);
-      InitChannelSediment(ChannelData.roads, &Total);
-    }
-
-    InitSedMap( &Map, &SedMap);
-
-    /* Done with initialization, delete the list with input strings */
-    DeleteList(Input);
-  }
-
   /* setup for mass balance calculations */
   Aggregate(&Map, &Options, TopoMap, &Soil, &Veg, VegMap, EvapMap, PrecipMap,
-	      RadMap, SnowMap, SoilMap, &Total, VType, Network, SedMap, FineMap,
-	      &ChannelData, &roadarea);
+	      RadMap, SnowMap, SoilMap, &Total, VType, Network, &ChannelData, &roadarea);
 
   Mass.StartWaterStorage =
     Total.Soil.IExcess + Total.CanopyWater + Total.SoilWater + Total.Snow.Swq +
     Total.Soil.SatFlow;
   Mass.OldWaterStorage = Mass.StartWaterStorage;
-
-  if (Options.Sediment) {
-    Mass.StartChannelSedimentStorage = Total.ChannelSedimentStorage;
-    Mass.LastChannelSedimentStorage = Mass.StartChannelSedimentStorage;
-  }
 
   /* computes the number of grid cell contributing to one segment */
   if (Options.StreamTemp) 
@@ -313,17 +257,13 @@ int main(int argc, char **argv)
 
     if (IsNewMonth(&(Time.Current), Time.Dt))
       InitNewMonth(&Time, &Options, &Map, TopoMap, PrismMap, ShadowMap,
-		   RadMap, &InFiles, Veg.NTypes, VType, NStats, Stat, 
-		   Dump.InitStatePath);
+		   RadMap, &InFiles, Veg.NTypes, VType, NStats, Stat, Dump.InitStatePath);
 
     if (IsNewDay(Time.DayStep)) {
       InitNewDay(Time.Current.JDay, &SolarGeo);
       PrintDate(&(Time.Current), stdout);
       printf("\n");
     }
-
-    /* determine surface erosion and routing scheme */
-    SedimentFlag(&Options, &Time); 
 
     InitNewStep(&InFiles, &Map, &Time, Soil.MaxLayers, &Options, NStats, Stat,
 		InFiles.RadarFile, &Radar, RadarMap, &SolarGeo, TopoMap, RadMap,
@@ -358,25 +298,30 @@ int main(int argc, char **argv)
 			       &MetMap, NGraphics, Time.Current.Month, 0.0,
 			       0.0, SolarGeo.SunMax,
 			       SolarGeo.SineSolarAltitude);
-		  
+
+		  /* get surface tempeature of each soil layer */
 		  for (i = 0; i < Soil.MaxLayers; i++) {
 	        if (Options.HeatFlux == TRUE) {
 	          if (Options.MM5 == TRUE)
 		        SoilMap[y][x].Temp[i] =
 				MM5Input[shade_offset + i + N_MM5_MAPS][y][x];
+
+              /* read tempeature of each soil layer from met station input */
 			  else
 		        SoilMap[y][x].Temp[i] = Stat[0].Data.Tsoil[i];
 			}
+            /* if heat flux option is turned off, soil temperature of all 3 layers 
+            is taken equal to air tempeature */
 	        else
 	          SoilMap[y][x].Temp[i] = LocalMet.Tair;
 		  }
 		  
 		  MassEnergyBalance(&Options, y, x, SolarGeo.SineSolarAltitude, Map.DX, Map.DY, 
-			    Time.Dt, Options.HeatFlux, Options.CanopyRadAtt, Options.RoadRouting, 
-			    Options.Infiltration, Veg.MaxLayers, &LocalMet, &(Network[y][x]), 
-			    &(PrecipMap[y][x]), &(VType[VegMap[y][x].Veg-1]), &(VegMap[y][x]),
-			    &(SType[SoilMap[y][x].Soil-1]), &(SoilMap[y][x]), &(SnowMap[y][x]), 
-				&(EvapMap[y][x]), &(Total.Rad), &ChannelData, SkyViewMap);
+			    Time.Dt, Options.HeatFlux, Options.CanopyRadAtt, Options.Infiltration, 
+				Veg.MaxLayers, &LocalMet, &(Network[y][x]), &(PrecipMap[y][x]), 
+			    &(VType[VegMap[y][x].Veg-1]), &(VegMap[y][x]), &(SType[SoilMap[y][x].Soil-1]),
+			    &(SoilMap[y][x]), &(SnowMap[y][x]), &(EvapMap[y][x]), &(Total.Rad),
+				 &ChannelData, SkyViewMap);
 		 
 		  PrecipMap[y][x].SumPrecip += PrecipMap[y][x].Precip;
 		}
@@ -391,79 +336,36 @@ int main(int argc, char **argv)
 	}
 
  #ifndef SNOW_ONLY
-
-    /* set sediment inflows to zero - they are incremented elsewhere */
-    if ((Options.HasNetwork) && (Options.Sediment)){ 
-      InitChannelSedInflow(ChannelData.streams);
-      InitChannelSedInflow(ChannelData.roads);
-	}
     
     RouteSubSurface(Time.Dt, &Map, TopoMap, VType, VegMap, Network,
 		    SType, SoilMap, &ChannelData, &Time, &Options, Dump.Path,
-		    SedMap, FineMap, SedType, MaxStreamID, SnowMap);
+		    MaxStreamID, SnowMap);
 
     if (Options.HasNetwork)
       RouteChannel(&ChannelData, &Time, &Map, TopoMap, SoilMap, &Total, 
-		   &Options, Network, SType, PrecipMap, SedMap,
-		   LocalMet.Tair, LocalMet.Rh, SedDiams);
+		   &Options, Network, SType, PrecipMap, LocalMet.Tair, LocalMet.Rh);
 
-    /* Sediment Routing in Channel and output to sediment files */
-    if ((Options.HasNetwork) && (Options.Sediment)){
-      SPrintDate(&(Time.Current), buffer);
-      flag = IsEqualTime(&(Time.Current), &(Time.Start));
-
-      if (Options.ChannelRouting){
-	    if (ChannelData.roads != NULL) {
-	      RouteChannelSediment(ChannelData.roads, Time, &Dump, &Total, SedDiams);
-	      channel_save_sed_outflow_text(buffer, ChannelData.roads,
-					ChannelData.sedroadout,
-					ChannelData.sedroadflowout, flag);
-		  RouteCulvertSediment(&ChannelData, &Map, TopoMap, SedMap, 
-			       &Total, SedDiams);
-		}
-	    RouteChannelSediment(ChannelData.streams, Time, &Dump, &Total, SedDiams);
- 	    channel_save_sed_outflow_text(buffer, ChannelData.streams,
-				      ChannelData.sedstreamout,
-				      ChannelData.sedstreamflowout, flag);
-	  }
-      else {
-	    if (ChannelData.roads != NULL) {
-			channel_save_sed_inflow_text(buffer, ChannelData.roads,
-			ChannelData.sedroadinflow, SedDiams,flag);
-		}
-	    channel_save_sed_inflow_text(buffer, ChannelData.streams,
-			ChannelData.sedstreaminflow, SedDiams,flag);
-      }
-      SaveChannelSedInflow(ChannelData.roads, &Total);
-      SaveChannelSedInflow(ChannelData.streams, &Total);
-    }
-    
     if (Options.Extent == BASIN)
       RouteSurface(&Map, &Time, TopoMap, SoilMap, &Options,
-		   UnitHydrograph, &HydrographInfo, Hydrograph,
-		   &Dump, VegMap, VType, SType, &ChannelData, SedMap,
-		   PrecipMap, SedType, LocalMet.Tair, LocalMet.Rh, SedDiams);
-
+        UnitHydrograph, &HydrographInfo, Hydrograph,
+        &Dump, VegMap, VType, &ChannelData);
 #endif
 
     if (NGraphics > 0)
       draw(&(Time.Current), IsEqualTime(&(Time.Current), &(Time.Start)),
 	   Time.DayStep, &Map, NGraphics, which_graphics, VType,
-	   SType, SnowMap, SoilMap, SedMap, FineMap, VegMap, TopoMap, PrecipMap,
-	   PrismMap, SkyViewMap, ShadowMap, EvapMap, RadMap, MetMap, Network,
-	   &Options);
+	   SType, SnowMap, SoilMap, VegMap, TopoMap, PrecipMap,
+	   PrismMap, SkyViewMap, ShadowMap, EvapMap, RadMap, 
+	   MetMap, Network, &Options);
     
     Aggregate(&Map, &Options, TopoMap, &Soil, &Veg, VegMap, EvapMap, PrecipMap,
-	      RadMap, SnowMap, SoilMap, &Total, VType, Network, SedMap, FineMap,
-	      &ChannelData, &roadarea);
+	      RadMap, SnowMap, SoilMap, &Total, VType, Network, &ChannelData, &roadarea);
     
-    MassBalance(&(Time.Current), &(Dump.Balance), &(Dump.SedBalance), &Total, 
-		&Mass, &Options);
+    MassBalance(&(Time.Current), &(Dump.Balance), &Total, &Mass);
 
     ExecDump(&Map, &(Time.Current), &(Time.Start), &Options, &Dump, TopoMap,
 	     EvapMap, RadiationMap, PrecipMap, RadMap, SnowMap, MetMap, VegMap, &Veg, 
-		 SoilMap, SedMap, Network, &ChannelData, FineMap, &Soil, &Total, 
-		 &HydrographInfo,Hydrograph);
+		 SoilMap, Network, &ChannelData, &Soil, &Total, &HydrographInfo,Hydrograph);
 	
     IncreaseTime(&Time);
 	t += 1;
@@ -471,12 +373,10 @@ int main(int argc, char **argv)
 
   ExecDump(&Map, &(Time.Current), &(Time.Start), &Options, &Dump, TopoMap,
 	   EvapMap, RadiationMap, PrecipMap, RadMap, SnowMap, MetMap, VegMap, &Veg, SoilMap,
-	   SedMap, Network, &ChannelData, FineMap, &Soil, &Total, &HydrographInfo, Hydrograph);
+	   Network, &ChannelData, &Soil, &Total, &HydrographInfo, Hydrograph);
 
-  FinalMassBalance(&(Dump.FinalBalance), &Total, &Mass, &Options, roadarea);
+  FinalMassBalance(&(Dump.FinalBalance), &Total, &Mass);
 
-  /*printf("\nSTARTING CLEANUP\n\n");
-  cleanup(&Dump, &ChannelData, &Options);*/
   printf("\nEND OF MODEL RUN\n\n");
 
   /* record the run time at the end of each time loop */

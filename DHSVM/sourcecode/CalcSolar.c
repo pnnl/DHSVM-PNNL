@@ -143,8 +143,7 @@ void SolarHour(float Latitude, float LocalHour, float Dt, float NoonHour,
   float SolarZenith;		/* sun zenith angle (rads) */
   float StartHour = 0;		/* currect Hour in solar time (hr) */
   float EndHour = 0;		/* mid-point of current solar Hour (hr) */
-  float Hour;			/* angle of current "halfhr" from solar noon
-				   (rads) */
+  float Hour;			    /* angle of current "halfhr" from solar noon (rads) */
 
   /* NOTE THAT HERE Dt IS IN HOURS NOT IN SECONDS */
 

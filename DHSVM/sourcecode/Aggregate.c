@@ -28,9 +28,8 @@
   Aggregate()
   
   Calculate the average values for the different fluxes and state variables
-  over the basin.  Only the runoff and some of the sediment variables (as 
-  noted) are calculated as a totals (i.e. runoff is total volume) instead
-  of an average.  In the current implementation the local radiation
+  over the basin.  
+  In the current implementation the local radiation
   elements are not stored for the entire area.  Therefore these components
   are aggregated in AggregateRadiation() inside MassEnergyBalance().
   
@@ -41,11 +40,9 @@ void Aggregate(MAPSIZE *Map, OPTIONSTRUCT *Options, TOPOPIX **TopoMap,
 	       LAYER *Soil, LAYER * Veg, VEGPIX **VegMap, EVAPPIX **Evap,
 	       PRECIPPIX **Precip, RADCLASSPIX **RadMap, SNOWPIX **Snow,
 	       SOILPIX **SoilMap, AGGREGATED *Total, VEGTABLE *VType,
-	       ROADSTRUCT **Network, SEDPIX **SedMap, FINEPIX ***FineMap,
-	       CHANNEL *ChannelData, float *roadarea)
+	       ROADSTRUCT **Network, CHANNEL *ChannelData, float *roadarea)
 {
   int NPixels;			/* Number of pixels in the basin */
-  int NPixelsfine;		/* Number of pixels in the finemap */
   int NSoilL;			/* Number of soil layers for current pixel */
   int NVegL;			/* Number of vegetation layers for current pixel */
   int i;				/* counter */
@@ -53,14 +50,9 @@ void Aggregate(MAPSIZE *Map, OPTIONSTRUCT *Options, TOPOPIX **TopoMap,
   int x;
   int y;
   float DeepDepth;		/* depth to bottom of lowest rooting zone */
-  int ii;				/* FineMap counter */
-  int jj;				/* FineMap counter */
-  int xx;				/* x-coordinate on FineMap grid */
-  int yy;				/* y-coordinate on FineMap grid */
 
   NPixels = 0;
   *roadarea = 0.;
-  NPixelsfine = 0;
 
   for (y = 0; y < Map->NY; y++) {
     for (x = 0; x < Map->NX; x++) {
@@ -152,12 +144,6 @@ void Aggregate(MAPSIZE *Map, OPTIONSTRUCT *Options, TOPOPIX **TopoMap,
 		Total->Soil.Qst += SoilMap[y][x].Qst;
 		Total->Soil.IExcess += SoilMap[y][x].IExcess;
 		Total->Soil.DetentionStorage += SoilMap[y][x].DetentionStorage;
-		if(Options->RoadRouting){
-			if (Network[y][x].RoadArea > 0) {
-				for (i = 0; i < CELLFACTOR; i++)
-					Total->Road.IExcess += (Network[y][x].h[i]* Network[y][x].RoadArea)/((float)CELLFACTOR * (Map->DX*Map->DY));
-			}
-		}
 		
 		if (Options->Infiltration == DYNAMIC)
 			Total->Soil.InfiltAcc += SoilMap[y][x].InfiltAcc;
@@ -167,28 +153,6 @@ void Aggregate(MAPSIZE *Map, OPTIONSTRUCT *Options, TOPOPIX **TopoMap,
 		SoilMap[y][x].ChannelInt = 0.0;
 		Total->RoadInt += SoilMap[y][x].RoadInt;
 		SoilMap[y][x].RoadInt = 0.0;
-		
-		if(Options->Sediment){
-			if (Options->SurfaceErosion) {
-				Total->Sediment.Erosion += SedMap[y][x].Erosion; 
-				Total->Sediment.SedFluxOut += SedMap[y][x].SedFluxOut; 
-			}
-			*roadarea += Network[y][x].RoadArea;
-			Total->Road.Erosion += Network[y][x].Erosion;
-			Total->Sediment.RoadSed += SedMap[y][x].RoadSed;
-			for (ii=0; ii< Map->DY/Map->DMASS; ii++) {
-				for (jj=0; jj< Map->DX/Map->DMASS; jj++) {
-					yy = (int) y*Map->DY/Map->DMASS + ii;
-					xx = (int) x*Map->DX/Map->DMASS + jj;
-					Total->Fine.SatThickness += (*FineMap[yy][xx]).SatThickness;
-					Total->Fine.DeltaDepth += (*FineMap[yy][xx]).DeltaDepth;
-					Total->Fine.Probability += (*FineMap[yy][xx]).Probability;
-					Total->Fine.MassWasting += (*FineMap[yy][xx]).MassWasting;
-					Total->Fine.MassDeposition += (*FineMap[yy][xx]).MassDeposition;
-					Total->Fine.SedimentToChannel += (*FineMap[yy][xx]).SedimentToChannel;
-				}
-			}
-		}
       }
     }
   }
@@ -277,21 +241,4 @@ void Aggregate(MAPSIZE *Map, OPTIONSTRUCT *Options, TOPOPIX **TopoMap,
   Total->CulvertReturnFlow /= NPixels;
   Total->CulvertToChannel /= NPixels;
   Total->RunoffToChannel /= NPixels;
-
-  /* Average Sediment results */
-  if (Options->Sediment) {
-    if (Options->SurfaceErosion){
-      Total->Sediment.Erosion /= NPixels; 
-      Total->Sediment.SedFluxOut /= NPixels; 
-    }
-    Total->Road.Erosion /= NPixels;
-    Total->Sediment.RoadSed /= NPixels;
-    // FineMap quantities must be averaged over number of FineMap cells
-    // rather than over the number of coarse grid cells
-    Total->Fine.SatThickness /= (NPixels*Map->DMASS*Map->DMASS); 
-    Total->Fine.DeltaDepth /= (NPixels*Map->DMASS*Map->DMASS); 
-    Total->Fine.Probability /= (NPixels*Map->DMASS*Map->DMASS); 
-    // (We don't divide SedimentToChannel, MassWasting, etc. by NPixels,
-    // since they are totals and not averages)
-  }
 }

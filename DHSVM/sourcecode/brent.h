@@ -20,14 +20,9 @@ float RootBrent(int y, int x, float LowerBound, float UpperBound,
 		float (*Function) (float Estimate, va_list ap), ...);
 
 #define MACHEPS      3e-8	/* machine floating point precision (float) */
-
 #define T            1e-5	/* tolerance */
-
 #define MAXITER      1000	/* maximum number of allowed iterations */
-
-#define MAXTRIES     5		/* maximum number of tries to bracket the 
-				   root */
-
+#define MAXTRIES     5		/* maximum number of tries to bracket the root */
 #define TSTEP        10		/* step to take in both directions if
-				   attempting to bracket thr root  */
+				               attempting to bracket thr root  */
 #endif

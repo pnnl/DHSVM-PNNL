@@ -10,7 +10,7 @@
  * DESCRIP-END.
  * FUNCTIONS:    CanopyResistance()
  * COMMENTS:
- * $Id: CanopyResistance.c,v 1.4 2003/07/01 21:26:11 olivier Exp $     
+ * $Id: CanopyResistance.c,v 1.4 2003/07/01 21:26:11 olivier Exp $
  */
 
 #include <math.h>
@@ -20,22 +20,18 @@
 #include "massenergy.h"
 #include "constants.h"
 
-/*****************************************************************************
-  CanopyResistance()
-*****************************************************************************/
+ /*****************************************************************************
+   CanopyResistance()
+ *****************************************************************************/
 float CanopyResistance(float LAI, float RsMin, float RsMax, float Rpc,
-		       float VpdThres, float MoistThres, float WP,
-		       float TSoil, float SoilMoisture, float Vpd, float Rp)
+  float VpdThres, float MoistThres, float WP,
+  float TSoil, float SoilMoisture, float Vpd, float Rp)
 {
-  float MoistFactor;		/* multiplier for resistance due to soil
-				   moisture feed-back */
+  float MoistFactor;	/* multiplier for resistance due to soil moisture feed-back */
   float Resistance;		/* Canopy resistance (s/m) */
-  float RpFactor;		/* multiplier for resistance due to light
-				   level feed-back */
-  float TFactor;		/* multiplier for resistance due to soil 
-				   temperaure feed-back */
-  float VpdFactor;		/* multiplier for resistance due to vapor
-				   pressure deficit feed-back */
+  float RpFactor;		/* multiplier for resistance due to light level feed-back */
+  float TFactor;		/* multiplier for resistance due to soil temperaure feed-back */
+  float VpdFactor;		/* multiplier for resistance due to vapor pressure deficit feed-back */
 
   if (TSoil <= 0) {
     Resistance = DHSVM_HUGE;
@@ -44,9 +40,6 @@ float CanopyResistance(float LAI, float RsMin, float RsMax, float Rpc,
 
   /* for OBS */
   TFactor = 1.0 / (0.176 + 0.0770 * TSoil - 0.0018 * TSoil * TSoil);
-
-  /* for OJP */
-/*   TFactor = 1.0/(.0705 * TSoil - 0.0013 * pow(TSoil, (double) 2.0)); */
 
   if (TFactor <= 0) {
     Resistance = DHSVM_HUGE;

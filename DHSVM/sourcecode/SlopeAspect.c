@@ -67,19 +67,9 @@ int yneighbor[NNEIGHBORS] = {
    Checks to see if grid indices, x and y, are within the grid 
    defined by the specified Map
    ------------------------------------------------------------- */
-int valid_cell(MAPSIZE * Map, int x, int y)
+int valid_cell(MAPSIZE *Map, int x, int y)
 {
   return (x >= 0 && y >= 0 && x < Map->NX && y < Map->NY);
-}
-/******************************************************************************/
-/*   valid_cell_fine                                                          */
-/*   Checks to see if grid indices, x and y, are within the grid              */
-/*   defined by the specified Map                                             */ 
-/******************************************************************************/
-
-int valid_cell_fine(MAPSIZE *Map, int x, int y) 
-{
-  return (x >= 0 && y >= 0 && x < Map->NXfine && y < Map->NYfine);
 }
 
 /* -------------------------------------------------------------
@@ -382,116 +372,6 @@ void HeadSlopeAspect(MAPSIZE * Map, TOPOPIX ** TopoMap, SOILPIX ** SoilMap,
     }
   }
   return;
-}
-/******************************************************************************/
-/*			     ElevationSlope                            */
-/* Part of MWM, should probably be merged w/ ElevationSlopeAspect function.   */
-/******************************************************************************/
-
-float ElevationSlope(MAPSIZE *Map, TOPOPIX **TopoMap, FINEPIX ***FineMap, int y, int x, int *nexty, 
-		     int *nextx, int prevy, int prevx, float *Aspect) 
-{
-  int n, direction;
-  float soil_elev[NNEIGHBORS];
-  float bedrock_elev[NNEIGHBORS];
-  float Slope;
-  float temp_slope[NNEIGHBORS];
-  double length_diagonal;
-  float dx, dy, celev;
-  int coarsej, coarsei;
-
-  /* fill neighbor array */
-  
-  for (n = 0; n < NNEIGHBORS; n++) {
-
-    int xn = x + xneighbor[n];
-    int yn = y + yneighbor[n];
-   
-    // Initialize soil_elev and bedrock_elev
-    soil_elev[n] = (float) OUTSIDEBASIN;
-    bedrock_elev[n] = (float) OUTSIDEBASIN;
-
-    // Check whether yn, xn are within FineMap array bounds
-    if (valid_cell_fine(Map,xn,yn)){
-
-      coarsej = floor(yn*Map->DMASS/Map->DY);
-      coarsei = floor(xn*Map->DMASS/Map->DX);
-
-      // Check whether FineMap element has been allocated for this cell
-      // (equivalent to checking whether parent coarse grid cell is within coarse mask)
-      if (INBASIN(TopoMap[coarsej][coarsei].Mask)) { 
-
-	bedrock_elev[n] = (((*FineMap[yn][xn]).Mask) ? (*FineMap[yn][xn]).bedrock : (float) OUTSIDEBASIN);
-	soil_elev[n] = (((*FineMap[yn][xn]).Mask) ? (*FineMap[yn][xn]).bedrock+(*FineMap[yn][xn]).sediment : (float) OUTSIDEBASIN);
-	
-      }
-    }
-    
-  }       
-  /*  Find bedrock slope in all directions. Negative slope = ascent, positive slope = descent.  */     
-  dx = Map->DMASS;
-  dy = Map->DMASS;
-  celev = (*FineMap[y][x]).bedrock;
-
-
-  length_diagonal = sqrt((pow((double)dx, (double)2)) + (pow((double)dy, (double)2))); 
-
-  for (n = 0; n < NNEIGHBORS; n++) {
-    if (bedrock_elev[n] == OUTSIDEBASIN) 
-      bedrock_elev[n] = DHSVM_HUGE;
-    
-    if(n==0 || n==2 || n==4 || n==6)
-      temp_slope[n] = (atan((celev - bedrock_elev[n]) / length_diagonal))
-	* DEGPRAD;
-    else if(n==1 || n==5)
-      temp_slope[n] = (atan((celev - bedrock_elev[n]) / dy)) * DEGPRAD;
-    else
-      temp_slope[n] = (atan((celev - bedrock_elev[n]) / dx)) * DEGPRAD;
-  }
-    
- /* Find largest (positive) slope, this is the direction of failure along bedrock plain.  
-     Backtracking isn't a problem if using the bedrock, but sinks may exist. */ 
-   
-  Slope = -999.;
-  *Aspect = -99.;
-
-  for (n = 0; n < NNEIGHBORS; n++){
-    if(temp_slope[n] > Slope) {
-      Slope = temp_slope[n];
-      *Aspect = temp_aspect[n] * PI / 180.0;
-      direction = n;
-      *nexty = y + yneighbor[n];
-      *nextx = x + xneighbor[n];
-    }
-  }
-
-  /* If no positive slope found, a bedrock sink was encountered.  Assuming the 
-     sink should be filled to the lowest "pour elevation", aspect should have 
-     already been assigned correctly. */
-
-  /* Find dynamic slope in direction of steepest descent. */
-  
-  celev = (*FineMap[y][x]).bedrock + (*FineMap[y][x]).sediment;
-  if(direction==0 || direction==2 || direction==4 || direction==6)
-    Slope = (atan((celev - soil_elev[direction]) / length_diagonal))
-      * DEGPRAD;
-  else if(direction==1 || direction==5)
-    Slope = (atan((celev - soil_elev[direction]) / dy)) * DEGPRAD;
-  else
-    Slope = (atan((celev - soil_elev[direction]) / dx)) * DEGPRAD;
-
-  /* It is possible that a "soil" sink could be encountered at this point.  
-     This is not really an error, and is checked for in MainMWM. */
-  // if(Slope < 0.0 ) {
-  // fprintf(stderr, "Sink encountered in cell y= %d x= %d, all routes from here go up!\n", y,x);
-  // }
-
-  if(Slope == -999. || *Aspect == -99.) {
-    fprintf(stderr, "Aspect not assigned, this shouldn't have happened.\n");
-    exit(0);
-  }
-
-  return Slope;
 }
 
 

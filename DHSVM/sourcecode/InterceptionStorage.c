@@ -34,10 +34,6 @@ void InterceptionStorage(int NMax, int NAct, float *MaxInt, float *Fract,
   float Intercepted;		/* Amount of water intercepted during this 
 				   timestep */
   int i;			/* counter */
-  float OriginalPrecip;
-
-  OriginalPrecip = *Precip;
-
   
   /* The precipitation is multiplied by the fractional coverage, since if the 
      vegetation covers only 10% of the grid cell, only 10% can be intercepted as a 
@@ -52,7 +48,7 @@ void InterceptionStorage(int NMax, int NAct, float *MaxInt, float *Fract,
     Int[i] += Intercepted;
   }
 
-  /* Find momentum squared of rainfall for use by the sediment model. */
+  /* Find momentum squared of rainfall. */
   if(Understory) 
     /* Since the understory is assumed to cover the entire grid cell, all 
        momentum is associated with leaf drip, eq. 2, Wicks and Bathurst (1996) */

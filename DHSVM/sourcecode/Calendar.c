@@ -324,32 +324,6 @@ void IncreaseTime(TIMESTRUCT * Time)
 				 Time->Current.Day);
 }
 
-/*****************************************************************************
-  IncreaseVariableTime()
-*****************************************************************************/
-void IncreaseVariableTime(TIMESTRUCT *Time, float VariableDT, TIMESTRUCT *NextTime)
-{
-  double Sec;
-
-  Time->Current.Julian = Time->Current.Julian + VariableDT/SECPDAY;
-
-  if(After(&(Time->Current), &(NextTime->Current)) || 
-     IsEqualTime(&(Time->Current), &(NextTime->Current))) {
-
-    (Time->Step)++;
-    Time->DayStep = (Time->DayStep + 1) % Time->NDaySteps;
-  }
-
-  JulianDayToGregorian(Time->Current.Julian, &(Time->Current.Year),
-		       &(Time->Current.Month), &(Time->Current.Day),
-		       &(Time->Current.Hour), &(Time->Current.Min), 
-		       &(Sec));
-  Time->Current.Sec = (int) Sec;
-  Time->Current.JDay = DayOfYear(Time->Current.Year, Time->Current.Month,
-				 Time->Current.Day);
- 
-}
-
 /******************************************************************************/
 /*				   InitTime()                                 */
 /******************************************************************************/

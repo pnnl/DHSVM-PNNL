@@ -33,6 +33,8 @@
     int HeatFluxOption - TRUE if surface temperature is being calculated
     float Rs           - Incoming shortwave radiation adjusted by topo shading 
 	                     if shading option is on (W/m2)
+    float Rsb          - Incoming direct shortwave radiation separated from Rs 
+    float Rsd          - Incoming diffuse shortwave radiation separated from Rs
 	float VIC_Rs       - Input 'observed' shortwave radiation in the forcing file
     float Ld           - Incoming longwave radiation (W/m2)
     float Tair         - Ambient air temperature (C)
@@ -73,10 +75,10 @@
     radiation transfer through boreal forest canopies, JGR, 1999.
 
 *****************************************************************************/
-void RadiationBalance(OPTIONSTRUCT *Options, int HeatFluxOption, int CanopyRadAttOption, 
-		      float SineSolarAltitude, float VIC_Rs, float Rs,
-		      float Rsb, float Rsd, float Ld, float Tair,
-		      float Tcanopy, float Tsoil, float SoilAlbedo,
+void RadiationBalance(OPTIONSTRUCT *Options, int HeatFluxOption, 
+              int CanopyRadAttOption, float SineSolarAltitude, 
+              float VIC_Rs, float Rs, float Rsb, float Rsd, float Ld, 
+              float Tair, float Tcanopy, float Tsoil, float SoilAlbedo,
 		      VEGTABLE *VType, SNOWPIX *LocalSnow, PIXRAD *LocalRad)
 {
   float F;			    /* Fraction of pixel covered by top canopy layer [0-1] */
@@ -87,6 +89,7 @@ void RadiationBalance(OPTIONSTRUCT *Options, int HeatFluxOption, int CanopyRadAt
   float Tsurf;			/* Surface temperature (C) */
 
   F = VType->Fract[0];
+
   /*following added 08/13/2001 by Pascal Storck */
   if (CanopyRadAttOption == VARIABLE) {
     F = VType->HemiFract[0];
@@ -96,6 +99,7 @@ void RadiationBalance(OPTIONSTRUCT *Options, int HeatFluxOption, int CanopyRadAt
   /* Determine Albedo */
   if (VType->OverStory == TRUE) {
     Albedo[0] = VType->Albedo[0];
+    /* With snow, understory canopy albedo is set equal to snow albedo */
     if (LocalSnow->HasSnow == TRUE)
       Albedo[1] = LocalSnow->Albedo;
     else if (VType->UnderStory == TRUE)
@@ -109,7 +113,8 @@ void RadiationBalance(OPTIONSTRUCT *Options, int HeatFluxOption, int CanopyRadAt
     Albedo[0] = VType->Albedo[0];
   else
     Albedo[0] = SoilAlbedo;
-
+  
+  /* calculate canopy transmittance coefficient for overstory layer */
   /* if the attenuation is fixed, calculate the canopy transmittance */
   if (CanopyRadAttOption == FIXED) {
     if (VType->OverStory == TRUE)
@@ -117,24 +122,27 @@ void RadiationBalance(OPTIONSTRUCT *Options, int HeatFluxOption, int CanopyRadAt
     else
       Tau = 0.;
   }
-
-  /* calculate canopy transmittance coefficient for overstory vegetation 
-     layer */
-  /* for the case where Bart Nijssen's simplified radiation scheme is used
-     then k*LAI is assumed to be the effective Leaf Area Index (L in Nijssen
-     and Lettenmaier, 2000) */
+  /* Nijssen's simplified radiation scheme as in Nijssen and Lettenmaier, 1999 */
   else if (CanopyRadAttOption == VARIABLE) {
     if (VType->OverStory == TRUE) {
+      /* Calculate transmittance of overstory canopy for direct radiation:
+         1) LAI * ClumpingFactor = Effective LAI 
+         2) Formulation is typically based on the cos of the solar zenith angle,
+         which is the sin of the solar altitude (SA = 90 - SZA) */
       Taub = exp(-VType->LAI[0] / VType->ClumpingFactor *
 	    (VType->LeafAngleA / SineSolarAltitude + VType->LeafAngleB));
-      /*formulation is typically based on the cos of the solar zenith angle,
-	  which is the sin of the solar altitude (SA = 90 - SZA) */
+      
+      /* transmittance for diffuse radiation (cacluated in CheckOut.c as a function of
+         LeafAngleA and LeafAngleB and solar altitude) */
       Taud = VType->Taud;
+
+      /* cacluate the total canopy transimittance for shortwave radiation (adjusted to 
+         scattering and multiple reflection */
       if (Rs > 0.0) {
 	    Tau = Taub * Rsb / Rs + Taud * Rsd / Rs;
+        /* adjust Tau to scaterring parameter */
 	    Tau = pow(Tau, (VType->Scat));
-	    /* VType->Scat can be specified as a scattering paramter 
-	    or DHSVM will set it to 0.8 if not specified */
+        /* adjust Tau to over- and under- story reflection */
 	    Tau = Tau / (1 - Albedo[0] * Albedo[1]);
       }
       else

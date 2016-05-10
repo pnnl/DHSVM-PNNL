@@ -67,8 +67,7 @@ InitChannel(LISTPTR Input, MAPSIZE *Map, int deltat, CHANNEL *channel,
     printf("\tReading Stream data\n");
 
     if ((channel->stream_class =
-	 channel_read_classes(StrEnv[stream_class].VarStr, stream_class,
-	 FALSE)) == NULL) {
+	 channel_read_classes(StrEnv[stream_class].VarStr, stream_class)) == NULL) {
       ReportError(StrEnv[stream_class].VarStr, 5);
     }
     if ((channel->streams =
@@ -98,8 +97,7 @@ InitChannel(LISTPTR Input, MAPSIZE *Map, int deltat, CHANNEL *channel,
     printf("\tReading Road data\n");
 
     if ((channel->road_class =
-	 channel_read_classes(StrEnv[road_class].VarStr, road_class,
-	 Options->Sediment)) == NULL) {
+	 channel_read_classes(StrEnv[road_class].VarStr, road_class) == NULL)) {
       ReportError(StrEnv[road_class].VarStr, 5);
     }
     if ((channel->roads =
@@ -179,36 +177,6 @@ void InitChannelDump(OPTIONSTRUCT *Options, CHANNEL * channel,
 
   }
 }
-/* -------------------------------------------------------------
-   InitChannelSedimentDump
-   ------------------------------------------------------------- */
-void InitChannelSedimentDump(CHANNEL * channel, char *DumpPath, 
-			     int ChannelRouting)
-{
-  char buffer[NAMESIZE];
-  
-  if ((channel->streams != NULL) && (ChannelRouting == TRUE)) {
-    sprintf(buffer, "%sSed.Stream.Flow", DumpPath);
-    OpenFile(&(channel->sedstreamout), buffer, "w", TRUE);
-    sprintf(buffer, "%sSed.Streamflow.Only", DumpPath);
-    OpenFile(&(channel->sedstreamflowout), buffer, "w", TRUE);
-  }
-  else if ((channel->streams != NULL) && (ChannelRouting == FALSE)) {
-    sprintf(buffer, "%sSed.Streaminflow.Only", DumpPath);
-    OpenFile(&(channel->sedstreaminflow), buffer, "w", TRUE);
-  }
-
-  if ((channel->roads != NULL) && (ChannelRouting == TRUE)) {
-    sprintf(buffer, "%sSed.Road.Flow", DumpPath);
-    OpenFile(&(channel->sedroadout), buffer, "w", TRUE);
-    sprintf(buffer, "%sSed.Roadflow.Only", DumpPath);
-    OpenFile(&(channel->sedroadflowout), buffer, "w", TRUE);
-  }
-  else if ((channel->roads != NULL) && (ChannelRouting == FALSE)) {
-    sprintf(buffer, "%sSed.Roadinflow.Only", DumpPath);
-    OpenFile(&(channel->sedroadinflow), buffer, "w", TRUE);
-  }
-}
 
 /* -------------------------------------------------------------
    ChannelCulvertFlow    
@@ -229,11 +197,10 @@ double ChannelCulvertFlow(int y, int x, CHANNEL * ChannelData)
    RouteChannel
    ------------------------------------------------------------- */
 void
-RouteChannel(CHANNEL * ChannelData, TIMESTRUCT * Time, MAPSIZE * Map,
-	    TOPOPIX ** TopoMap, SOILPIX ** SoilMap, AGGREGATED * Total, 
-	     OPTIONSTRUCT *Options, ROADSTRUCT ** Network, 
-	     SOILTABLE * SType, PRECIPPIX ** PrecipMap, SEDPIX **SedMap,
-	     float Tair, float Rh, float *SedDiams)
+RouteChannel(CHANNEL *ChannelData, TIMESTRUCT *Time, MAPSIZE *Map,
+	    TOPOPIX **TopoMap, SOILPIX **SoilMap, AGGREGATED *Total, 
+	     OPTIONSTRUCT *Options, ROADSTRUCT **Network, SOILTABLE *SType, 
+		 PRECIPPIX **PrecipMap, float Tair, float Rh)
 {
   int x, y;
   int flag;
@@ -245,23 +212,14 @@ RouteChannel(CHANNEL * ChannelData, TIMESTRUCT * Time, MAPSIZE * Map,
   for (y = 0; y < Map->NY; y++) {
     for (x = 0; x < Map->NX; x++) {
       if (INBASIN(TopoMap[y][x].Mask)) {
-	SoilMap[y][x].IExcessSed = SoilMap[y][x].IExcess;
-	if (channel_grid_has_channel(ChannelData->road_map, x, y) && !channel_grid_has_sink(ChannelData->road_map, x, y)) {	/* road w/o sink */
-
-
-	  SoilMap[y][x].RoadInt += SoilMap[y][x].IExcess;
-	  channel_grid_inc_inflow(ChannelData->road_map, x, y,
-				  SoilMap[y][x].IExcess * Map->DX * Map->DY);
-	  SoilMap[y][x].IExcess = 0.0f;
-	  
-	}
+		if (channel_grid_has_channel(ChannelData->road_map, x, y) && 
+			!channel_grid_has_sink(ChannelData->road_map, x, y)) {	/* road w/o sink */
+	      SoilMap[y][x].RoadInt += SoilMap[y][x].IExcess; 
+		  channel_grid_inc_inflow(ChannelData->road_map, x, y, SoilMap[y][x].IExcess * Map->DX * Map->DY);
+		  SoilMap[y][x].IExcess = 0.0f;
+		}
       }
     }
-  }
-  
-  if(Options->RoadRouting){
-    RouteRoad(Map, Time, TopoMap, SoilMap, Network, SType, ChannelData, 
-	      PrecipMap, SedMap, Tair, Rh, SedDiams);  
   }
 
   /* route the road network and save results */
@@ -270,8 +228,7 @@ RouteChannel(CHANNEL * ChannelData, TIMESTRUCT * Time, MAPSIZE * Map,
   if (ChannelData->roads != NULL) {
     channel_route_network(ChannelData->roads, Time->Dt);
     channel_save_outflow_text(buffer, ChannelData->roads,
-			      ChannelData->roadout, ChannelData->roadflowout,
-			      flag);
+			      ChannelData->roadout, ChannelData->roadflowout, flag);
   }
   
   /* add culvert outflow to surface water */
@@ -279,28 +236,22 @@ RouteChannel(CHANNEL * ChannelData, TIMESTRUCT * Time, MAPSIZE * Map,
   for (y = 0; y < Map->NY; y++) {
     for (x = 0; x < Map->NX; x++) {
       if (INBASIN(TopoMap[y][x].Mask)) {
-
-	CulvertFlow = ChannelCulvertFlow(y, x, ChannelData);
-	CulvertFlow /= Map->DX * Map->DY;
-	/* CulvertFlow = (CulvertFlow > 0.0) ? CulvertFlow : 0.0; */
-	
-	if (channel_grid_has_channel(ChannelData->stream_map, x, y)) {
-	  channel_grid_inc_inflow(ChannelData->stream_map, x, y,
-				  (SoilMap[y][x].IExcess + 
-				   CulvertFlow) * Map->DX * Map->DY);
-	  SoilMap[y][x].ChannelInt += SoilMap[y][x].IExcess;
-	  
-	  Total->CulvertToChannel += CulvertFlow;
-	  Total->RunoffToChannel += SoilMap[y][x].IExcess;
-	  
-	  SoilMap[y][x].IExcess = 0.0f;
-
-	}
-	else {
-	  SoilMap[y][x].IExcess += CulvertFlow;
-	  Total->CulvertReturnFlow += CulvertFlow;
-	  
-	}
+		CulvertFlow = ChannelCulvertFlow(y, x, ChannelData);
+		CulvertFlow /= Map->DX * Map->DY;
+		
+		/* CulvertFlow = (CulvertFlow > 0.0) ? CulvertFlow : 0.0; */
+		if (channel_grid_has_channel(ChannelData->stream_map, x, y)) {
+		  channel_grid_inc_inflow(ChannelData->stream_map, x, y,
+				  (SoilMap[y][x].IExcess + CulvertFlow) * Map->DX * Map->DY);
+		  SoilMap[y][x].ChannelInt += SoilMap[y][x].IExcess;
+		  Total->CulvertToChannel += CulvertFlow;
+		  Total->RunoffToChannel += SoilMap[y][x].IExcess;
+		  SoilMap[y][x].IExcess = 0.0f;
+		}
+		else {
+		  SoilMap[y][x].IExcess += CulvertFlow;
+		  Total->CulvertReturnFlow += CulvertFlow;
+		}
       }
     }
   }

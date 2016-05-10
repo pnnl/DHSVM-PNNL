@@ -216,36 +216,6 @@ struct {
       "m/s", "Windspeed", NC_INT, FALSE, FALSE, FALSE, 0}, {
   704, "MetMap.humidity",
       "Humidity", "%.2f", "", "Humidity", NC_INT, FALSE, FALSE, FALSE, 0}, {
-  801, "FineMap.Dem",
-      "Elevation", "%.2f", "m", "Elevation",
-      NC_FLOAT, FALSE, FALSE, FALSE, 0}, {
-  802, "FineMap.Slope",
-      "Slope", "%.2f", "", "Land Surface Slope",
-      NC_FLOAT, FALSE, FALSE, FALSE, 0}, {
-  803, "FineMap.SatThickness",
-      "SatThickness", "%.2f", "m", "Water Table Thickness",
-      NC_FLOAT, FALSE, FALSE, FALSE, 0}, {
-  804, "FineMap.DeltaDepth",
-      "DeltaDepth", "%.2f", "m", "Cumulative Change in Sediment Depth",
-      NC_FLOAT, FALSE, FALSE, FALSE, 0}, {
-  805, "FineMap.Probability",
-      "Failure Probability", "%.2f", "", "Pixel Failure Probability",
-      NC_FLOAT, FALSE, FALSE, FALSE, 0}, {
-  806, "FineMap.SedimentToChannel",
-      "SedimentToChannel", "%.2f", "m", "Sediment from Mass-Wasting Deposited into Channels",
-      NC_FLOAT, FALSE, FALSE, FALSE, 0}, {
-  901, "SedMap.SedFluxOut",
-      "Sediment Flux Out", "%.4g",
-      "(m3/m3)/timestep", "Total Sediment Flux from Grid Cell",
-      NC_FLOAT, FALSE, FALSE, FALSE, 0}, {
-  902, "SedMap.Erosion",
-      "Erosion", "%.4g",
-      "m/timestep", "Change in Grid Cell Elevation due to Erosion",
-      NC_FLOAT, FALSE, FALSE, FALSE, 0}, {
-  903, "Network.Erosion",
-      "Road Erosion", "%.4g",
-      "m/timestep", "Change in Road Elevation due to Erosion",
-      NC_FLOAT, FALSE, FALSE, FALSE, 0}, {
   ENDOFLIST, "", "", "", "", "",
       ENDOFLIST, ENDOFLIST, ENDOFLIST, ENDOFLIST, ENDOFLIST}
 };
