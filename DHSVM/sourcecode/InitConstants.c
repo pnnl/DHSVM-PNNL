@@ -51,8 +51,8 @@
 
   Comments     :
 *****************************************************************************/
-void InitConstants(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * Map,
-		   SOLARGEOMETRY * SolarGeo, TIMESTRUCT * Time)
+void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
+		   SOLARGEOMETRY *SolarGeo, TIMESTRUCT *Time)
 {
   int i;			/* counter */
   double PointModelX;		/* X-coordinate for POINT model mode */
@@ -72,6 +72,7 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * Map,
     {"OPTIONS", "MM5", "", ""},
     {"OPTIONS", "QPF", "", ""},
     {"OPTIONS", "PRISM", "", ""},
+    {"OPTIONS", "GRIDDED MET DATA", "", "" },
     {"OPTIONS", "CANOPY RADIATION ATTENUATION MODE", "", ""},
     {"OPTIONS", "SHADING", "", ""},
     {"OPTIONS", "SNOTEL", "", ""},
@@ -90,6 +91,7 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * Map,
     {"OPTIONS", "SKYVIEW DATA PATH", "", ""},
 	{"OPTIONS", "STREAM TEMPERATURE", "", ""}, 
 	{"OPTIONS", "RIPARIAN SHADING", "", ""}, 
+    {"OPTIONS", "IMPROVED RADIATION SCHEME", "", "" },
     {"AREA", "COORDINATE SYSTEM", "", ""},
     {"AREA", "EXTREME NORTH", "", ""},
     {"AREA", "EXTREME WEST", "", ""},
@@ -237,6 +239,14 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * Map,
   else
     ReportError(StrEnv[prism].KeyName, 51);
 
+  /* Determine whether gridded met forcing should be used */
+  if (strncmp(StrEnv[grid].VarStr, "TRUE", 4) == 0)
+    Options->GRIDMET = TRUE;
+  else if (strncmp(StrEnv[grid].VarStr, "FALSE", 5) == 0)
+    Options->GRIDMET = FALSE;
+  else
+    ReportError(StrEnv[grid].KeyName, 51);
+
   /* Determine the kind of canopy radiation attenuation to be used */
   if (strncmp(StrEnv[canopy_radatt].VarStr, "FIXED", 3) == 0)
     Options->CanopyRadAtt = FIXED;
@@ -285,6 +295,14 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * Map,
   else
     ReportError(StrEnv[canopy_shading].KeyName, 51);
 
+  /* Determine if then improved radiation scheme will be used */
+  if (strncmp(StrEnv[improv_radiation].VarStr, "TRUE", 4) == 0)
+    Options->ImprovRadiation = TRUE;
+  else if (strncmp(StrEnv[improv_radiation].VarStr, "FALSE", 5) == 0)
+    Options->ImprovRadiation = FALSE;
+  else
+    ReportError(StrEnv[improv_radiation].KeyName, 51);
+
   /* Determine if listed met stations outside bounding box are used */
   if (strncmp(StrEnv[outside].VarStr, "TRUE", 4) == 0)
     Options->Outside = TRUE;
@@ -293,6 +311,7 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * Map,
   else
     ReportError(StrEnv[outside].KeyName, 51);
 
+  /* The file path to PRIMS files */
   if (Options->Prism == TRUE) {
     if (IsEmptyStr(StrEnv[prism_data_path].VarStr))
       ReportError(StrEnv[prism_data_path].KeyName, 51);
@@ -323,7 +342,6 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * Map,
     ReportError(StrEnv[rhoverride].KeyName, 51);
 
   /* The other met options are only of importance if MM5 is FALSE */
-
   if (Options->MM5 == TRUE) {
     Options->PrecipType = NOT_APPLICABLE;
     Options->WindSource = NOT_APPLICABLE;
@@ -413,13 +431,10 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * Map,
   Map->NumCells = 0;
 
   if (Options->Extent == POINT) {
-
     if (!CopyDouble(&PointModelY, StrEnv[point_north].VarStr, 1))
       ReportError(StrEnv[point_north].KeyName, 51);
-
     if (!CopyDouble(&PointModelX, StrEnv[point_east].VarStr, 1))
       ReportError(StrEnv[point_east].KeyName, 51);
-
     Options->PointY =
       Round(((Map->Yorig - 0.5 * Map->DY) - PointModelY) / Map->DY);
     Options->PointX =

@@ -57,7 +57,7 @@ Handbook of hydrology,  1993, McGraw-Hill, New York, etc..
 PIXMET MakeLocalMetData(int y, int x, MAPSIZE *Map, int DayStep,
                         OPTIONSTRUCT *Options, int NStats,
                         METLOCATION *Stat, uchar *MetWeights,
-                        float LocalElev, RADCLASSPIX *RadMap,
+                        float LocalElev, PIXRAD *RadMap,
                         PRECIPPIX *PrecipMap, MAPSIZE *Radar,
                         RADARPIX **RadarMap, float **PrismMap,
                         SNOWPIX *LocalSnow, SNOWTABLE *SnowAlbedo,
@@ -176,7 +176,8 @@ PIXMET MakeLocalMetData(int y, int x, MAPSIZE *Map, int DayStep,
   /* into account the slope and aspect and topographic shading */
   /* of the local pixel.  If we wanted to use this value directly */
   /* then the correction to the observed beam w.r.t. a horizontal plane */
-  /* would be   actual = horizontal*shadefactor/255/sin(solar_altitude) */
+  /* would be   
+  /*        actual = horizontal*shadefactor/255/sin(solar_altitude) */
   /* the sin(solar_altitude) is necessary to convert horizontal into the maximum */
   /* possible flux */
 
@@ -216,13 +217,14 @@ PIXMET MakeLocalMetData(int y, int x, MAPSIZE *Map, int DayStep,
     LocalMet.SinBeam = LocalMet.Sin;
     LocalMet.SinDiffuse = 0;
   }
-  RadMap->Beam = LocalMet.SinBeam;
-  RadMap->Diffuse = LocalMet.SinDiffuse;
+  RadMap->BeamIn = LocalMet.SinBeam;
+  RadMap->DiffuseIn = LocalMet.SinDiffuse;
 
   /* Store the VIC incoming shortwave radiatio without topo or canopy shading */
-  if (Options->StreamTemp)
-    LocalMet.VICSin = LocalMet.Sin;
-  LocalMet.Sin = RadMap->Beam + RadMap->Diffuse;
+  LocalMet.VICSin = LocalMet.Sin;
+
+  /* the incoming shortwave radiation adjusted for shading */
+  LocalMet.Sin = RadMap->BeamIn + RadMap->DiffuseIn;
 
   if (Options->QPF == TRUE || Options->MM5 == FALSE) {
     if (Options->PrecipType == STATION && Options->Prism == FALSE) {

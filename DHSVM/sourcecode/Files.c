@@ -35,7 +35,7 @@
 /*****************************************************************************
   OpenFile()
 *****************************************************************************/
-void OpenFile(FILE ** FilePtr, char *FileName, char *Mode, uchar OverWrite)
+void OpenFile(FILE **FilePtr, char *FileName, char *Mode, uchar OverWrite)
 {
   struct stat FileInfo;
 

@@ -39,7 +39,7 @@ static FLOATTABLE svp;		/* Table that contains saturated vapor
 *****************************************************************************/
 void InitSatVaporTable(void)
 {
-  InitFloatTable(10000L, -100., .02, CalcVaporPressure, &svp);
+  InitFloatTable(30000L, -300., .02, CalcVaporPressure, &svp);
 }
 
 /*****************************************************************************

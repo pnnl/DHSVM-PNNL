@@ -54,11 +54,10 @@
 void StoreModelState(char *Path, DATE * Current, MAPSIZE * Map,
   OPTIONSTRUCT * Options, TOPOPIX ** TopoMap,
   PRECIPPIX ** PrecipMap, SNOWPIX ** SnowMap,
-  MET_MAP_PIX ** MetMap, RADCLASSPIX ** RadMap,
-  VEGPIX ** VegMap, LAYER * Veg, SOILPIX ** SoilMap,
-  LAYER * Soil, ROADSTRUCT ** Network,
-  UNITHYDRINFO * HydrographInfo, float *Hydrograph,
-  CHANNEL * ChannelData)
+  MET_MAP_PIX ** MetMap, VEGPIX ** VegMap, 
+  LAYER * Veg, SOILPIX ** SoilMap, LAYER * Soil, 
+  ROADSTRUCT ** Network, UNITHYDRINFO * HydrographInfo, 
+  float *Hydrograph, CHANNEL * ChannelData)
 {
   const char *Routine = "StoreModelState";
   char Str[NAMESIZE + 1];
@@ -112,9 +111,7 @@ void StoreModelState(char *Path, DATE * Current, MAPSIZE * Map,
     for (y = 0; y < Map->NY; y++) {
       for (x = 0; x < Map->NX; x++) {
         if (INBASIN(TopoMap[y][x].Mask)) {
-
           ((float *)Array)[y * Map->NX + x] = MetMap[y][x].accum_precip;
-
         }
         else
           ((float *)Array)[y * Map->NX + x] = NA;
@@ -129,9 +126,7 @@ void StoreModelState(char *Path, DATE * Current, MAPSIZE * Map,
     for (y = 0; y < Map->NY; y++) {
       for (x = 0; x < Map->NX; x++) {
         if (INBASIN(TopoMap[y][x].Mask)) {
-
           ((float *)Array)[y * Map->NX + x] = MetMap[y][x].air_temp;
-
         }
         else
           ((float *)Array)[y * Map->NX + x] = NA;
@@ -146,9 +141,7 @@ void StoreModelState(char *Path, DATE * Current, MAPSIZE * Map,
     for (y = 0; y < Map->NY; y++) {
       for (x = 0; x < Map->NX; x++) {
         if (INBASIN(TopoMap[y][x].Mask)) {
-
           ((float *)Array)[y * Map->NX + x] = MetMap[y][x].wind_speed;
-
         }
         else
           ((float *)Array)[y * Map->NX + x] = NA;
@@ -163,33 +156,13 @@ void StoreModelState(char *Path, DATE * Current, MAPSIZE * Map,
     for (y = 0; y < Map->NY; y++) {
       for (x = 0; x < Map->NX; x++) {
         if (INBASIN(TopoMap[y][x].Mask)) {
-
           ((float *)Array)[y * Map->NX + x] = MetMap[y][x].humidity;
-
         }
         else
           ((float *)Array)[y * Map->NX + x] = NA;
       }
     }
     DMap.ID = 704;
-    DMap.Resolution = MAP_OUTPUT;
-    strcpy(DMap.FileName, "");
-    GetVarAttr(&DMap);
-    Write2DMatrix(FileName, Array, DMap.NumberType, Map->NY, Map->NX, &DMap, 0);
-
-    for (y = 0; y < Map->NY; y++) {
-      for (x = 0; x < Map->NX; x++) {
-        if (INBASIN(TopoMap[y][x].Mask)) {
-
-          ((float *)Array)[y * Map->NX + x] = RadMap[y][x].Beam +
-            RadMap[y][x].Diffuse;
-
-        }
-        else
-          ((float *)Array)[y * Map->NX + x] = NA;
-      }
-    }
-    DMap.ID = 303;
     DMap.Resolution = MAP_OUTPUT;
     strcpy(DMap.FileName, "");
     GetVarAttr(&DMap);

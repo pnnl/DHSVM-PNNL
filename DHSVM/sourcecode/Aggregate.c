@@ -38,7 +38,7 @@
 *****************************************************************************/
 void Aggregate(MAPSIZE *Map, OPTIONSTRUCT *Options, TOPOPIX **TopoMap,
 	       LAYER *Soil, LAYER * Veg, VEGPIX **VegMap, EVAPPIX **Evap,
-	       PRECIPPIX **Precip, RADCLASSPIX **RadMap, SNOWPIX **Snow,
+	       PRECIPPIX **Precip, PIXRAD **RadMap, SNOWPIX **Snow,
 	       SOILPIX **SoilMap, AGGREGATED *Total, VEGTABLE *VType,
 	       ROADSTRUCT **Network, CHANNEL *ChannelData, float *roadarea)
 {
@@ -80,6 +80,7 @@ void Aggregate(MAPSIZE *Map, OPTIONSTRUCT *Options, TOPOPIX **TopoMap,
 		  
 		  /* aggregate precipitation data */
 		  Total->Precip.Precip += Precip[y][x].Precip;
+          Total->Precip.SnowFall += Precip[y][x].SnowFall;
 		  for (i = 0; i < NVegL; i++) {
 			  Total->Precip.IntRain[i] += Precip[y][x].IntRain[i];
 			  Total->Precip.IntSnow[i] += Precip[y][x].IntSnow[i];
@@ -89,12 +90,18 @@ void Aggregate(MAPSIZE *Map, OPTIONSTRUCT *Options, TOPOPIX **TopoMap,
 
 	/* aggregate radiation data */
 	if (Options->MM5 == TRUE) {
-	  Total->RadClass.Beam = NOT_APPLICABLE;
-	  Total->RadClass.Diffuse = NOT_APPLICABLE;
+	  Total->Rad.BeamIn = NOT_APPLICABLE;
+	  Total->Rad.DiffuseIn = NOT_APPLICABLE;
 	}
 	else {
-	  Total->RadClass.Beam += RadMap[y][x].Beam;
-	  Total->RadClass.Diffuse += RadMap[y][x].Diffuse;
+      Total->Rad.ObsShortIn += RadMap[y][x].ObsShortIn;
+	  Total->Rad.BeamIn += RadMap[y][x].BeamIn;
+	  Total->Rad.DiffuseIn += RadMap[y][x].DiffuseIn;
+      Total->Rad.PixelNetShort += RadMap[y][x].PixelNetShort;
+      for (i = 0; i < NVegL; i++) {
+        Total->Rad.NetShort[i] += RadMap[y][x].NetShort[i];        
+      }
+      Total->NetRad += RadMap[y][x].NetRadiation[0] + RadMap[y][x].NetRadiation[1];
 	}
 
 	/* aggregate snow data */
@@ -179,6 +186,7 @@ void Aggregate(MAPSIZE *Map, OPTIONSTRUCT *Options, TOPOPIX **TopoMap,
 
   /* average precipitation data */
   Total->Precip.Precip /= NPixels;
+  Total->Precip.SnowFall /= NPixels;
   for (i = 0; i < Veg->MaxLayers; i++) {
     Total->Precip.IntRain[i] /= NPixels;
     Total->Precip.IntSnow[i] /= NPixels;
@@ -186,17 +194,14 @@ void Aggregate(MAPSIZE *Map, OPTIONSTRUCT *Options, TOPOPIX **TopoMap,
   Total->CanopyWater /= NPixels;
 
   /* average radiation data */
-  for (i = 0; i < Veg->MaxLayers + 1; i++) {
-    Total->Rad.NetShort[i] /= NPixels;
-    Total->Rad.LongIn[i] /= NPixels;
-    Total->Rad.LongOut[i] /= NPixels;
-  }
+  Total->Rad.ObsShortIn /= NPixels;
   Total->Rad.PixelNetShort /= NPixels;
-  Total->Rad.PixelLongIn /= NPixels;
-  Total->Rad.PixelLongOut /= NPixels;
-
-  Total->RadClass.Beam /= NPixels;
-  Total->RadClass.Diffuse /= NPixels;
+  Total->NetRad /= NPixels;
+  Total->Rad.BeamIn /= NPixels;
+  Total->Rad.DiffuseIn /= NPixels;
+  for (i = 0; i < NVegL; i++) {
+    Total->Rad.NetShort[i] /= NPixels;
+  }
 
   /* average snow data */
   Total->Snow.Swq /= NPixels;
@@ -234,11 +239,11 @@ void Aggregate(MAPSIZE *Map, OPTIONSTRUCT *Options, TOPOPIX **TopoMap,
   
   if (Options->Infiltration == DYNAMIC)
     Total->Soil.InfiltAcc /= NPixels;
+
   Total->SoilWater /= NPixels;
   Total->Soil.Runoff /= NPixels;
   Total->ChannelInt /= NPixels;
   Total->RoadInt /= NPixels;
   Total->CulvertReturnFlow /= NPixels;
   Total->CulvertToChannel /= NPixels;
-  Total->RunoffToChannel /= NPixels;
 }

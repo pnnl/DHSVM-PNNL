@@ -48,23 +48,21 @@ void ResetAggregate(LAYER * Soil, LAYER * Veg, AGGREGATED * Total,
 
   /* initialize precipitation data */
   Total->Precip.Precip = 0.0;
+  Total->Precip.SnowFall = 0.0;
   for (i = 0; i < Veg->MaxLayers; i++) {
     Total->Precip.IntRain[i] = 0.0;
     Total->Precip.IntSnow[i] = 0.0;
   }
 
   /* initialize radiation data */
-  for (i = 0; i < Veg->MaxLayers + 1; i++) {
-    Total->Rad.NetShort[i] = 0.0;
-    Total->Rad.LongIn[i] = 0.0;
-    Total->Rad.LongOut[i] = 0.0;
-  }
   Total->Rad.PixelNetShort = 0.0;
-  Total->Rad.PixelLongIn = 0.0;
-  Total->Rad.PixelLongOut = 0.0;
-
-  Total->RadClass.Beam = 0.0;
-  Total->RadClass.Diffuse = 0.0;
+  Total->Rad.BeamIn = 0.;
+  Total->Rad.DiffuseIn = 0.;
+  Total->NetRad = 0.;
+  Total->Rad.ObsShortIn = 0.;
+  for (i = 0; i < Veg->MaxLayers; i++) {
+    Total->Rad.NetShort[i] = 0.;
+  }
 
   /* initialize snow data */
   Total->Snow.HasSnow = FALSE;
@@ -116,5 +114,4 @@ void ResetAggregate(LAYER * Soil, LAYER * Veg, AGGREGATED * Total,
   Total->Saturated = 0;
   Total->CulvertReturnFlow = 0;
   Total->CulvertToChannel = 0;
-  Total->RunoffToChannel = 0;
 }

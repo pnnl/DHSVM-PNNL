@@ -27,10 +27,10 @@
 /*****************************************************************************
   EvapoTranspiration()
 *****************************************************************************/
-void EvapoTranspiration(int Layer, int Dt, PIXMET * Met, float NetRad,
-			float Rp, VEGTABLE * VType, SOILTABLE * SType,
-			float MoistureFlux, SOILPIX * LocalSoil, float *Int,
-			EVAPPIX * LocalEvap, float *Adjust, float Ra)
+void EvapoTranspiration(int Layer, int ImpvRad, int Dt, PIXMET *Met, 
+            float NetRad, float Rp, VEGTABLE *VType, SOILTABLE *SType,
+			float MoistureFlux, SOILPIX *LocalSoil, float *Int,
+			EVAPPIX *LocalEvap, float *Adjust, float Ra)
 {
   float *Rc;			/* canopy resistance associated with 
 				           conditions in each soil layer (s/m) */
@@ -45,38 +45,39 @@ void EvapoTranspiration(int Layer, int Dt, PIXMET * Met, float NetRad,
                            in interception storage (sec) */
   int i;			    /* counter */
 
-  /* Convert the water amounts related to partial canopy cover to a pixel depth 
-     as if the entire pixel is covered.  These depths will be converted 
-     back later on. */
 
   F = VType->Fract[Layer];
+  /* If the improved radiation scheme, the forested cell is considered continuous with 
+  small canopy gaps. This assumption is valid for the typical DHSVM implmentation on the 
+  spatial scale of 30-150 m. As such,  no conversion is needed in constrast to the 
+  orignal approach  */
+  if (!ImpvRad)
+    NetRad /= F;
+
+  /* Convert the water amounts related to partial canopy cover to a pixel depth
+  as if the entire pixel is covered. These depths will be converted back later on. */
   *Int /= F;
-  NetRad /= F;
   MoistureFlux /= F;
   VType->MaxInt[Layer] /= F;
 
   /* allocate memory for the canopy resistance array */
-
   if (!(Rc = (float *) calloc(VType->NSoilLayers, sizeof(float))))
     ReportError("EvapoTranspiration()", 1);
 
   /* Calculate the evaporation rate in m/s */
-
-  LocalEvap->EPot[Layer] = (Met->Slope * NetRad +
-			    Met->AirDens * CP * Met->Vpd / Ra) /
+  LocalEvap->EPot[Layer] = (Met->Slope * NetRad + Met->AirDens * CP * Met->Vpd / Ra) /
     (WATER_DENSITY * Met->Lv * (Met->Slope + Met->Gamma));
 
   /* The potential evaporation rate accounts for the amount of moisture that
-     the atmosphere can absorb.  If we do not account for the amount of
+     the atmosphere can absorb. If we do not account for the amount of
      evaporation from overlying evaporation, we can end up with the situation
      that all vegetation layers and the soil layer transpire/evaporate at the
      potential rate, resulting in an overprediction of the actual evaporation
-     rate.  Thus we subtract the amount of evaporation that has already
+     rate. Thus we subtract the amount of evaporation that has already
      been calculated for overlying layers from the potential evaporation.
      Another mechanism that could be used to account for this would be to 
      decrease the vapor pressure deficit while going down through the canopy
      (not implemented here) */
-
   LocalEvap->EPot[Layer] -= MoistureFlux / Dt;
 
   if (LocalEvap->EPot[Layer] < 0)
@@ -131,7 +132,6 @@ void EvapoTranspiration(int Layer, int Dt, PIXMET * Met, float NetRad,
 
   /* Correct the evaporation from interception and the interception storage for
      the fractional overstory coverage */
-
   LocalEvap->EInt[Layer] *= F;
   LocalEvap->ETot += LocalEvap->EInt[Layer];
   *Int *= F;
@@ -158,19 +158,17 @@ void EvapoTranspiration(int Layer, int Dt, PIXMET * Met, float NetRad,
        in interception storage only the area that is not covered by intercep-
        ted water will transpire.  When all of the interception storage has 
        disappeared all leaves will contribute to the transpiration */
-
     LocalEvap->ESoil[Layer][i] *= WetEvapTime * (1 - WetArea) + DryEvapTime;
 
     SoilMoisture = LocalSoil->Moist[i] * VType->RootDepth[i] * Adjust[i];
-
     if (SoilMoisture < LocalEvap->ESoil[Layer][i])
       LocalEvap->ESoil[Layer][i] = SoilMoisture;
 
     /* correct the evaporation for the fractional overstory coverage and update
-       the soil  moisture */
-
+       the soil moisture */
     LocalEvap->ESoil[Layer][i] *= F;
     SoilMoisture -= LocalEvap->ESoil[Layer][i];
+
     LocalSoil->Moist[i] = SoilMoisture / (VType->RootDepth[i] * Adjust[i]);
   }
 

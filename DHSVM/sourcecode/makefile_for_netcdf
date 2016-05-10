@@ -26,7 +26,7 @@ SlopeAspect.o SnowInterception.o SnowMelt.o SnowPackEnergyBalance.o  \
 SoilEvaporation.o StabilityCorrection.o StoreModelState.o	      \
 SurfaceEnergyBalance.o UnsaturatedFlow.o VarID.o WaterTableDepth.o   \
 channel.o channel_grid.o equal.o errorhandler.o globals.o tableio.o  \
-channel_complt.o RiparianShading.o
+channel_complt.o RiparianShading.o deg2utm.o
 
 SRCS = $(OBJS:%.o=%.c)
 
@@ -55,7 +55,7 @@ LIBS = -lm -L/usr/X11R6/lib -lX11 -L/sw/lib -L/usr/local/lib -lnetcdf
 #LIBS = -lm -L/usr/X11R6/lib -lX11 -L/sw/lib -L/usr/local/lib -lnetcdf
 
 DHSVM: $(OBJS)
-	$(CC) $(OBJS) $(CFLAGS) -o DHSVM3.1.2 $(LIBS)
+	$(CC) $(OBJS) $(CFLAGS) -o DHSVM3.1.3 $(LIBS)
 
 clean::
 	rm -f DHSVM
@@ -111,6 +111,7 @@ CalcWeights.o: CalcWeights.c constants.h settings.h data.h Calendar.h \
  channel_grid.h
 Calendar.o: Calendar.c settings.h functions.h data.h Calendar.h \
  DHSVMChannel.h getinit.h channel.h channel_grid.h DHSVMerror.h
+deg2utm.o: deg2utm.c settings.h constants.h functions.h
 RiparianShading.o: RiparianShading.c channel.h channel_grid.h constants.h \
  functions.h settings.h
 CanopyResistance.o: CanopyResistance.c settings.h massenergy.h data.h \

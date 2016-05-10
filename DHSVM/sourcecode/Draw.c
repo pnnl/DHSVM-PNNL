@@ -41,8 +41,9 @@ extern int e, ndx;
 void draw(DATE *Day, int first, int DayStep, MAPSIZE *Map, int NGraphics,
           int *which_graphics, VEGTABLE *VType, SOILTABLE *SType, SNOWPIX **SnowMap, 
           SOILPIX **SoilMap, VEGPIX **VegMap, TOPOPIX **TopoMap, PRECIPPIX **PrecipMap, 
-          float **PrismMap, float **SkyViewMap, unsigned char ***ShadowMap, EVAPPIX **EvapMap,
-          RADCLASSPIX **RadMap, MET_MAP_PIX **MetMap, ROADSTRUCT **Network, OPTIONSTRUCT *Options)
+          float **PrismMap, float **SkyViewMap, unsigned char ***ShadowMap, 
+          EVAPPIX **EvapMap, PIXRAD **RadMap, MET_MAP_PIX **MetMap, 
+          ROADSTRUCT **Network, OPTIONSTRUCT *Options)
 {				
   int i, j, k, ie, je, ir, jr;
   int PX, PY;
@@ -237,7 +238,7 @@ void draw(DATE *Day, int first, int DayStep, MAPSIZE *Map, int NGraphics,
             for (i = 0; i < Map->NX; i++) {
               for (j = 0; j < Map->NY; j++) {
                 if (INBASIN(TopoMap[j][i].Mask)) {
-                  temp = RadMap[j][i].Beam + RadMap[j][i].Diffuse;
+                  temp = RadMap[j][i].BeamIn + RadMap[j][i].DiffuseIn;
                   if (temp > max)
                     max = temp;
                   if (temp < min)
@@ -773,12 +774,12 @@ void draw(DATE *Day, int first, int DayStep, MAPSIZE *Map, int NGraphics,
           }
 
           if (MapNumber == 43) {
-            text = "Direct Shortwave (W/sqm)";
+            text = "Incoming Direct Beam Shortwave (W/sqm)";
             length = 24;
             for (i = 0; i < Map->NX; i++) {
               for (j = 0; j < Map->NY; j++) {
                 if (INBASIN(TopoMap[j][i].Mask)) {
-                  temp = RadMap[j][i].Beam;
+                  temp = RadMap[j][i].BeamIn;
                   if (temp > max)
                     max = temp;
                   if (temp < min)
@@ -790,12 +791,12 @@ void draw(DATE *Day, int first, int DayStep, MAPSIZE *Map, int NGraphics,
           }
 
           if (MapNumber == 44) {
-            text = "Diffuse Shortwave (W/sqm)";
+            text = "Incoming Diffuse Shortwave (W/sqm)";
             length = 25;
             for (i = 0; i < Map->NX; i++) {
               for (j = 0; j < Map->NY; j++) {
                 if (INBASIN(TopoMap[j][i].Mask)) {
-                  temp = RadMap[j][i].Diffuse;
+                  temp = RadMap[j][i].DiffuseIn;
                   if (temp > max)
                     max = temp;
                   if (temp < min)

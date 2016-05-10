@@ -245,7 +245,6 @@ RouteChannel(CHANNEL *ChannelData, TIMESTRUCT *Time, MAPSIZE *Map,
 				  (SoilMap[y][x].IExcess + CulvertFlow) * Map->DX * Map->DY);
 		  SoilMap[y][x].ChannelInt += SoilMap[y][x].IExcess;
 		  Total->CulvertToChannel += CulvertFlow;
-		  Total->RunoffToChannel += SoilMap[y][x].IExcess;
 		  SoilMap[y][x].IExcess = 0.0f;
 		}
 		else {

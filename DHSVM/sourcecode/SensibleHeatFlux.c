@@ -30,26 +30,20 @@
   SensibleHeatFlux()
 *****************************************************************************/
 void SensibleHeatFlux(int y, int x, int Dt, float Ra, float ZRef,
-		      float Displacement, float Z0, PIXMET * LocalMet,
+		      float Displacement, float Z0, PIXMET *LocalMet,
 		      float NetShort, float LongIn, float ETot,
-		      int NSoilLayers, float *SoilDepth, SOILTABLE * SoilType,
-		      float MeltEnergy, SOILPIX * LocalSoil)
+		      int NSoilLayers, float *SoilDepth, SOILTABLE *SoilType,
+		      float MeltEnergy, SOILPIX *LocalSoil)
 {
   float FluxDepth;		/* Lower boundary for soil heat flux (m) */
-  float HeatCapacity;		/* Soil heat capacity */
-  float MaxTSurf;		/* Upper bracket for effective surface 
-				   temperature (C) */
-  float MinTSurf;		/* Lower bracket for effective surface
-				   temperature (C) */
-  float OldTSurf;		/* Effective surface temperature at the end of
-				   the last timestep (C) */
-  float KhEff;			/* Thermal conductivity of the soil (W/(m*C)
-				 */
+  float HeatCapacity;	/* Soil heat capacity */
+  float MaxTSurf;		/* Upper bracket for effective surface temperature (C) */
+  float MinTSurf;		/* Lower bracket for effective surface temperature (C) */
+  float OldTSurf;		/* Effective surface temperature at the end of the last timestep (C) */
+  float KhEff;			/* Thermal conductivity of the soil (W/(m*C) */
   float TMean;			/* Average surface temperature (C) */
-  float TSoilLower;		/* Temperature os the soil at FluxDepth (C)
-				 */
-  float TSoilUpper;		/* Temperature os the soil in top layer (C)
-				 */
+  float TSoilLower;		/* Temperature os the soil at FluxDepth (C) */
+  float TSoilUpper;		/* Temperature os the soil in top layer (C) */
   double Tmp;			/* Temporary value */
 
   OldTSurf = LocalSoil->TSurf;
@@ -98,6 +92,7 @@ void SensibleHeatFlux(int y, int x, int Dt, float Ra, float ZRef,
   LocalSoil->Ra = Ra;
 
   Tmp = TMean + 273.15;
+
   LocalSoil->Qnet = NetShort + LongIn - STEFAN * (Tmp * Tmp * Tmp * Tmp);
 
   LocalSoil->Qs = LocalMet->AirDens * CP * (LocalMet->Tair - TMean) / Ra;
@@ -140,8 +135,7 @@ void SensibleHeatFlux(int y, int x, int Dt, float Ra, float ZRef,
   Comments     : This function sets all the energy fluxes at the pixel level 
                  to 0.0, but calculates the evapotranspiration in W/m2
 *****************************************************************************/
-void NoSensibleHeatFlux(int Dt, PIXMET * LocalMet, float ETot,
-			SOILPIX * LocalSoil)
+void NoSensibleHeatFlux(int Dt, PIXMET *LocalMet, float ETot, SOILPIX *LocalSoil)
 {
   LocalSoil->TSurf = 0.0;
 
