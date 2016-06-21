@@ -55,6 +55,7 @@ void ResetAggregate(LAYER * Soil, LAYER * Veg, AGGREGATED * Total,
   }
 
   /* initialize radiation data */
+  Total->Rad.Tair = 0.;
   Total->Rad.PixelNetShort = 0.0;
   Total->Rad.BeamIn = 0.;
   Total->Rad.DiffuseIn = 0.;

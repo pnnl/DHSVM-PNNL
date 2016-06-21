@@ -276,7 +276,7 @@ typedef struct {
   float ObsShortIn;     /* Incoming shortwave radiation straight from the weather file without topographic or canopy shading */
   float BeamIn;         /* Incoming beam radiation */
   float DiffuseIn;      /* Incomning diffuse radiation */
-
+  float Tair;           /* Air temperature */
   // for RBM use only 
   float RBMNetLong;     /* Longwave radiation reaching the water surface W/m2 (for RBM only) */
   float RBMNetShort;    /* Shortwave radiation reaching the water surface W/m2 (for RBM only) */

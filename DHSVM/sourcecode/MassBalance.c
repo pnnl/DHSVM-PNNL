@@ -79,16 +79,16 @@ void MassBalance(DATE *Current, DATE *Start, FILES *Out, AGGREGATED *Total, WATE
     fprintf(Out->FilePtr, " SatFlow ");
     fprintf(Out->FilePtr, " SnowVaporFlux ");
     fprintf(Out->FilePtr, " ChannelInt RoadInt CulvertInt"),
-    fprintf(Out->FilePtr, " PixelShortIn PixelNetShort NetShort.Layer1 NetShort.Layer2 PixelNetRadiation Error");
+    fprintf(Out->FilePtr, " PixelShortIn PixelNetShort NetShort.Layer1 NetShort.Layer2 PixelNetRadiation Tair Error");
     fprintf(Out->FilePtr, "\n");
   }
   PrintDate(Current, Out->FilePtr);
-  fprintf(Out->FilePtr, " %g  %g  %g  %g  %g  %g  %g  %g  %g \
-      %g  %g  %g  %g  %g  %g  %g  %g %g  %g \n",
+  fprintf(Out->FilePtr, " %g  %g  %g  %g  %g  %g  %g  %g  %g  %g \
+      %g  %g  %g  %g  %g  %g  %g  %g %g  %g \n", 
       Total->Precip.Precip, Total->Precip.SnowFall, Total->Soil.IExcess,
       Total->Snow.Swq, Total->Snow.Melt, Total->Evap.ETot, 
       Total->CanopyWater, Total->SoilWater, Total->Soil.SatFlow, Total->Snow.VaporMassFlux,
 	  Total->ChannelInt,  Total->RoadInt, Total->CulvertToChannel, 
       Total->Rad.BeamIn+Total->Rad.DiffuseIn, Total->Rad.PixelNetShort, 
-      Total->Rad.NetShort[0], Total->Rad.NetShort[1], Total->NetRad, MassError);
+      Total->Rad.NetShort[0], Total->Rad.NetShort[1], Total->NetRad, Total->Rad.Tair, MassError);
 }

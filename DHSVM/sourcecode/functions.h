@@ -131,8 +131,8 @@ void InitMapDump(LISTPTR Input, MAPSIZE *Map, int MaxSoilLayers, int MaxVegLayer
 
 void InitMassWaste(LISTPTR Input, TIMESTRUCT *Time);
 
-void InitGridMet(OPTIONSTRUCT *Options, LISTPTR Input, MAPSIZE *Map, GRID *Grid, 
-         METLOCATION **Stat, int *NStats);
+void InitGridMet(OPTIONSTRUCT *Options, LISTPTR Input, MAPSIZE *Map, TOPOPIX **TopoMap,  
+         GRID *Grid, METLOCATION **Stat, int *NStats);
 
 void InitMetMaps(int NDaySteps, MAPSIZE *Map, MAPSIZE *Radar,
 		 OPTIONSTRUCT *Options, char *WindPath, char *PrecipLapsePath,
@@ -144,9 +144,9 @@ void InitMetMaps(int NDaySteps, MAPSIZE *Map, MAPSIZE *Radar,
          float ****MM5Input, float ****WindModel);
 
 void InitMetSources(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
-		    int NSoilLayers, TIMESTRUCT *Time, INPUTFILES *InFiles,
-		    int *NStats, METLOCATION **Stat, MAPSIZE *Radar, MAPSIZE *MM5Map,
-            GRID *Grid);
+            TOPOPIX **TopoMap, int NSoilLayers, TIMESTRUCT *Time, 
+            INPUTFILES *InFiles, int *NStats, METLOCATION **Stat, MAPSIZE *Radar, 
+            MAPSIZE *MM5Map, GRID *Grid);
 
 void InitMM5(LISTPTR Input, int NSoilLayers, TIMESTRUCT *Time,
 	     INPUTFILES *InFiles, OPTIONSTRUCT *Options, MAPSIZE *MM5Map,
@@ -315,12 +315,10 @@ void RouteSubSurface(int Dt, MAPSIZE *Map, TOPOPIX **TopoMap,
 		     TIMESTRUCT *Time, OPTIONSTRUCT *Options, 
 		     char *DumpPath, int MaxStreamID, SNOWPIX **SnowMap);
 
-void RouteSurface(MAPSIZE *Map, TIMESTRUCT *Time, TOPOPIX **TopoMap,
-		  SOILPIX **SoilMap, OPTIONSTRUCT *Options,
-		  UNITHYDR **UnitHydrograph, UNITHYDRINFO *HydrographInfo, 
-		  float *Hydrograph, DUMPSTRUCT *Dump, VEGPIX **VegMap, 
-		  VEGTABLE *VType, SOILTABLE *SType, CHANNEL *ChannelData, 
-		  PRECIPPIX **PrecipMap, float Tair, float Rh);
+void RouteSurface(MAPSIZE * Map, TIMESTRUCT * Time, TOPOPIX ** TopoMap,
+  SOILPIX ** SoilMap, OPTIONSTRUCT *Options,
+  UNITHYDR ** UnitHydrograph, UNITHYDRINFO * HydrographInfo, float *Hydrograph,
+  DUMPSTRUCT *Dump, VEGPIX ** VegMap, VEGTABLE * VType, CHANNEL *ChannelData);
 
 float SatVaporPressure(float Temperature);
 

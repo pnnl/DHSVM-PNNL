@@ -851,7 +851,7 @@ int channel_read_rveg_param(Channel *head, const char *file, int *MaxID)
     else {
       current = current->next;
     }
-    printf ("%d\n", current->id);
+
 
     for (i = 0; i < fields; i++) {
       if (rveg_fields[i].read) {

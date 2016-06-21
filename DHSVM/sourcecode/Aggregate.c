@@ -94,13 +94,11 @@ void Aggregate(MAPSIZE *Map, OPTIONSTRUCT *Options, TOPOPIX **TopoMap,
 	  Total->Rad.DiffuseIn = NOT_APPLICABLE;
 	}
 	else {
+      Total->Rad.Tair += RadMap[y][x].Tair;
       Total->Rad.ObsShortIn += RadMap[y][x].ObsShortIn;
 	  Total->Rad.BeamIn += RadMap[y][x].BeamIn;
 	  Total->Rad.DiffuseIn += RadMap[y][x].DiffuseIn;
       Total->Rad.PixelNetShort += RadMap[y][x].PixelNetShort;
-      for (i = 0; i < NVegL; i++) {
-        Total->Rad.NetShort[i] += RadMap[y][x].NetShort[i];        
-      }
       Total->NetRad += RadMap[y][x].NetRadiation[0] + RadMap[y][x].NetRadiation[1];
 	}
 
@@ -194,12 +192,13 @@ void Aggregate(MAPSIZE *Map, OPTIONSTRUCT *Options, TOPOPIX **TopoMap,
   Total->CanopyWater /= NPixels;
 
   /* average radiation data */
+  Total->Rad.Tair /= NPixels;
   Total->Rad.ObsShortIn /= NPixels;
   Total->Rad.PixelNetShort /= NPixels;
   Total->NetRad /= NPixels;
   Total->Rad.BeamIn /= NPixels;
   Total->Rad.DiffuseIn /= NPixels;
-  for (i = 0; i < NVegL; i++) {
+  for (i = 0; i <= 2; i++) {
     Total->Rad.NetShort[i] /= NPixels;
   }
 

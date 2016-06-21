@@ -58,7 +58,7 @@
    Comments     :
  *******************************************************************************/
 void InitMetSources(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
-  int NSoilLayers, TIMESTRUCT *Time, INPUTFILES *InFiles,
+  TOPOPIX **TopoMap, int NSoilLayers, TIMESTRUCT *Time, INPUTFILES *InFiles,
   int *NStats, METLOCATION **Stat, MAPSIZE *Radar, MAPSIZE *MM5Map,
   GRID *Grid)
 {
@@ -78,7 +78,7 @@ void InitMetSources(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
 
   /* Use gridded met forcing data */
   if (Options->GRIDMET == TRUE)
-    InitGridMet(Options, Input, Map, Grid, Stat, NStats);
+    InitGridMet(Options, Input, Map, TopoMap, Grid, Stat, NStats);
 
   /* otherwise, check and initialize the other options */
   if (Options->QPF == TRUE || (Options->MM5 == FALSE && Options->GRIDMET == FALSE)) 
@@ -224,8 +224,8 @@ Function name: InitGridMet()
 Purpose      : Read the gridded met file.  This information
 is in the [METEOROLOGY] section
 *****************************************************************************/
-void InitGridMet(OPTIONSTRUCT *Options, LISTPTR Input, MAPSIZE *Map, GRID *Grid,
-  METLOCATION **Stat, int *NStats)
+void InitGridMet(OPTIONSTRUCT *Options, LISTPTR Input, MAPSIZE *Map, 
+  TOPOPIX **TopoMap, GRID *Grid, METLOCATION **Stat, int *NStats)
 {
   char *Routine = "InitGridMet";
   char KeyName[BUFSIZE + 1];
@@ -292,17 +292,20 @@ void InitGridMet(OPTIONSTRUCT *Options, LISTPTR Input, MAPSIZE *Map, GRID *Grid,
       (*Stat)[k].Loc.E = Round((East - (Map->Xorig + 0.5 * Map->DX)) / Map->DX);
       sprintf((*Stat)[k].Name, "data_%.5f_%.5f", lat, lon);
       m += 1;
-      if (((*Stat)[k].Loc.N >= Map->NY || (*Stat)[k].Loc.N < 0 ||
-        (*Stat)[k].Loc.E >= Map->NX || (*Stat)[k].Loc.E < 0)  && Options->Outside == FALSE)
-        printf("Station %d outside bounding box: %s ignored\n", m + 1, (*Stat)[k].Name);
+      if (((*Stat)[k].Loc.N >= Map->NY || (*Stat)[k].Loc.N < 0 || 
+        (*Stat)[k].Loc.E >= Map->NX || (*Stat)[k].Loc.E < 0) )
+        printf("Station %d outside the basin: %s ignored\n", m + 1, (*Stat)[k].Name);
       else {
-        /* open met data file */
-        sprintf((*Stat)[k].MetFile.FileName, "%s%.5f_%.5f", Grid->filepath, lat, lon);
-        if (!((*Stat)[k].MetFile.FilePtr = fopen((*Stat)[k].MetFile.FileName, "r"))) {
-          printf("%s doesn't exist\n", (*Stat)[k].MetFile.FileName);
-          continue;
-      }
-        k = k + 1;
+        if (INBASIN(TopoMap[(*Stat)[k].Loc.N][(*Stat)[k].Loc.E].Mask)) {  
+          /* open met data file */
+          sprintf((*Stat)[k].MetFile.FileName, "%s%.5f_%.5f", Grid->filepath, lat, lon);
+          
+          if (!((*Stat)[k].MetFile.FilePtr = fopen((*Stat)[k].MetFile.FileName, "r"))) {
+            printf("%s doesn't exist\n", (*Stat)[k].MetFile.FileName);
+            continue;
+          }
+          k = k + 1;
+        }
       }
     }
   }

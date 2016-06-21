@@ -219,6 +219,7 @@ PIXMET MakeLocalMetData(int y, int x, MAPSIZE *Map, int DayStep,
   }
   RadMap->BeamIn = LocalMet.SinBeam;
   RadMap->DiffuseIn = LocalMet.SinDiffuse;
+  RadMap->Tair = LocalMet.Tair;
 
   /* Store the VIC incoming shortwave radiatio without topo or canopy shading */
   LocalMet.VICSin = LocalMet.Sin;

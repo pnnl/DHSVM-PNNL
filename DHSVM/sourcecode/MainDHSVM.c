@@ -76,7 +76,7 @@ int main(int argc, char **argv)
   AGGREGATED Total = {			/* Total or average value of a  variable over the entire basin */
     {0.0, NULL, NULL, NULL, NULL, 0.0},												/* EVAPPIX */
     {0.0, 0.0, 0.0, 0.0, 0.0, NULL, NULL, 0.0, 0, 0.0},								/* PRECIPPIX */
-    {{0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, 0.0, {0.0, 0.0}, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+    {{0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, 0.0, {0.0, 0.0}, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
                                                                                     /* PIXRAD */
     {0.0, 0.0, 0, NULL, NULL, 0.0, 0, 0.0, 0.0, 0.0, 0.0, NULL, NULL},				/* ROADSTRUCT*/
     {0, 0, 0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},		/* SNOWPIX */
@@ -164,7 +164,7 @@ int main(int argc, char **argv)
   InitNetwork(Map.NY, Map.NX, Map.DX, Map.DY, TopoMap, SoilMap, 
 	      VegMap, VType, &Network, &ChannelData, Veg, &Options);
 
-  InitMetSources(Input, &Options, &Map, Soil.MaxLayers, &Time,
+  InitMetSources(Input, &Options, &Map, TopoMap, Soil.MaxLayers, &Time,
 		 &InFiles, &NStats, &Stat, &Radar, &MM5Map, &Grid);
 
   /* the following piece of code is for the UW PRISM project */
@@ -253,11 +253,6 @@ int main(int argc, char **argv)
 *****************************************************************************/
   while (Before(&(Time.Current), &(Time.End)) ||
 	 IsEqualTime(&(Time.Current), &(Time.End))) {
-
-    /* debug */
-    if (Time.Current.Month == 5 && Time.Current.Day == 20 && Time.Current.Hour >= 9 && Time.Current.Hour <= 15)
-      printf("stop here for a little\n");
-    /* debug ends */
 
     /* reset aggregated variables */
     ResetAggregate(&Soil, &Veg, &Total, &Options);
@@ -354,9 +349,8 @@ int main(int argc, char **argv)
 
     if (Options.Extent == BASIN)
       RouteSurface(&Map, &Time, TopoMap, SoilMap, &Options,
-		   UnitHydrograph, &HydrographInfo, Hydrograph,
-		   &Dump, VegMap, VType, SType, &ChannelData, 
-		   PrecipMap, LocalMet.Tair, LocalMet.Rh);
+        UnitHydrograph, &HydrographInfo, Hydrograph,
+        &Dump, VegMap, VType, &ChannelData);
 
 #endif
 

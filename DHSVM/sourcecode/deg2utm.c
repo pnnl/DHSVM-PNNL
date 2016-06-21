@@ -25,7 +25,6 @@ void deg2utm(float la, float lo, float *x, float *y)
    float lat, lon, nu, Huso;
    float sa = 6378137.000000 ; 
    float sb = 6356752.314245;
-   char Letra;
          
    e2 = pow((pow(sa, 2) - pow(sb, 2)), 0.5) / sb;
    e2cuadrada = pow(e2, 2);
