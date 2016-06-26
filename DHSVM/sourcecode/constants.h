@@ -76,5 +76,5 @@ extern int NWINDMAPS;					/* Number of wind maps in case the wind source is MODE
 extern float Z0_GROUND;					/* Roughness length for bare soil (m) */
 extern float Z0_SNOW;					/* Roughness length for snow (m) */
 extern float Zref;						/* Reference height (m) */
-
+extern float GL_ALB;            /* Glacier Albedo */
 #endif

@@ -313,8 +313,8 @@ PIXMET MakeLocalMetData(int y, int x, MAPSIZE *Map, int DayStep,
       LocalSnow->LastSnow = 0;
     else
       LocalSnow->LastSnow++;
-    LocalSnow->Albedo = CalcSnowAlbedo(LocalSnow->TSurf, LocalSnow->LastSnow,
-      SnowAlbedo);
+    LocalSnow->Albedo = CalcSnowAlbedo(LocalSnow->TSurf, LocalSnow->Swq,
+    LocalSnow->LastSnow, SnowAlbedo);
   }
   else
     LocalSnow->LastSnow = 0;

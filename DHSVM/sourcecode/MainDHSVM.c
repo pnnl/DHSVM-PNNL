@@ -30,7 +30,7 @@
 #include "getinit.h"
 #include "DHSVMChannel.h"
 #include "channel.h"
-
+#include "glacier.h"
 /******************************************************************************/
 /*				GLOBAL VARIABLES                              */
 /******************************************************************************/
@@ -45,6 +45,44 @@ char *version = "Version 3.1.1";        /* store version string */
 char commandline[BUFSIZE + 1] = "";		/* store command line */
 char fileext[BUFSIZ + 1] = "";			/* file extension */
 char errorstr[BUFSIZ + 1] = "";			/* error message */
+
+/* global glacier model variables */
+int *ip_jc;
+int *im_jc;
+int *ic_jp;
+int *ic_jm;
+int *ic_jc;
+int *ip_jp;
+int *im_jp;
+int *ip_jm;
+int *im_jm;
+
+int nx;
+int ny;
+int N;
+double  dx;
+double  dy;
+double  g       = 9.80;
+double  RHO     = 900;
+double  RHO_w   = 1000;
+double  A_GLEN  = 6.3115e-18;  // units yr^-1 Pa^-3: 7.5738e-17;  units month^-1 Pa^-3:  6.3115e-18
+double  n_GLEN  = 3;
+double  C_SLIDE = 0.0;
+double  m_SLIDE = 2;
+double  K0_eps  = 1.0e-12;
+double  A_tilde;
+double  C_tilde;
+
+double  nm_half;
+double  np1;
+double  mm_half;
+double  m1;
+
+double  OMEGA = 1.50;
+
+double  *b_dot_melt_in;
+double  *b_dot_ppt_in;
+
 /******************************************************************************/
 /*				      MAIN                                    */
 /******************************************************************************/
@@ -57,6 +95,10 @@ int main(int argc, char **argv)
   unsigned char ***ShadowMap = NULL;
   float **SkyViewMap = NULL;
   float ***WindModel = NULL;
+  /* Glacier Model Variable */
+  double  dt_year;
+  double  year_min;
+  double  year_max;
   int MaxStreamID, MaxRoadID;
   clock_t start, finish1;
   double runtime = 0.0;
@@ -105,6 +147,7 @@ int main(int argc, char **argv)
   PIXRAD **RadiationMap = NULL;
   ROADSTRUCT **Network	= NULL;	/* 2D Array with channel information for each pixel */
   SNOWPIX **SnowMap		= NULL;
+  GLPIX **GlacierMap = NULL; /* glacier model*/
   MET_MAP_PIX **MetMap	= NULL;
   SNOWTABLE *SnowAlbedo = NULL;
   SOILPIX **SoilMap		= NULL;
@@ -150,9 +193,9 @@ int main(int argc, char **argv)
   InitFileIO(Options.FileFormat);
   InitTables(Time.NDaySteps, Input, &Options, &SType, &Soil, &VType, &Veg,
 	     &SnowAlbedo);
-
-  InitTerrainMaps(Input, &Options, &Map, &Soil, &TopoMap, &SoilMap, &VegMap);
-
+  InitGlacierMap(&Map, &GlacierMap); /*glacier model*/
+  InitTerrainMaps(Input, &Options, &Map, &Soil, &TopoMap, &SoilMap, &VegMap, &GlacierMap);
+  
   CheckOut(&Options, Veg, Soil, VType, SType, &Map, TopoMap, VegMap, SoilMap);
 
   if (Options.HasNetwork)
@@ -216,7 +259,20 @@ int main(int argc, char **argv)
 
   InitModelState(&(Time.Start), &Map, &Options, PrecipMap, SnowMap, SoilMap,
 		 Soil, SType, VegMap, Veg, VType, Dump.InitStatePath,
-		 SnowAlbedo, TopoMap, Network, &HydrographInfo, Hydrograph);
+		 SnowAlbedo, TopoMap, Network, &HydrographInfo, Hydrograph, GlacierMap);
+
+#ifdef HAVE_GLACIER
+/* Glacier Model is run independently to "spinup" glacier ice state over 1000 years */
+  if (Options.Glacier == GLSPINUP){
+   dt_year  = 1;
+   year_min = 0;
+   year_max = 1000;
+   printf("Glacier model spin up run for %f years\n", year_max);
+   main_spinup(&Map, TopoMap, SnowMap,GlacierMap, dt_year,year_min,year_max, 
+   &(Time.Current), &Dump, &Options);
+   return EXIT_SUCCESS;
+  }
+#endif
 
   InitNewMonth(&Time, &Options, &Map, TopoMap, PrismMap, ShadowMap,
 	       &InFiles, Veg.NTypes, VType, NStats, Stat, Dump.InitStatePath);
@@ -262,10 +318,29 @@ int main(int argc, char **argv)
     /* reset aggregated variables */
     ResetAggregate(&Soil, &Veg, &Total, &Options);
 
-    if (IsNewMonth(&(Time.Current), Time.Dt))
+    if (IsNewMonth(&(Time.Current), Time.Dt)){
       InitNewMonth(&Time, &Options, &Map, TopoMap, PrismMap, ShadowMap,
 		   &InFiles, Veg.NTypes, VType, NStats, Stat, Dump.InitStatePath);
+#ifdef HAVE_GLACIER
+          /* Run the glacier model at the end of every month */
+	  if (Options.Glacier == GLSTATIC || Options.Glacier == GLDYNAMIC){
+            dt_year  = 1.0;
+            year_min = 1.0;
+            year_max = 1.0;
+             if(Time.Current.Month == 10 && Time.Current.Day == 1){
+            /* Calculate Equilibrium Line Altitude at end of Water Year (assumed Oct1) */
+	    /* will need to be changed depending on geography define water year */
+	     calc_ela(&Map, TopoMap,SnowMap,GlacierMap,&(Time.Current), &Dump);
+	}
 
+            main_gl(&Map, TopoMap, SnowMap,GlacierMap, dt_year,year_min,year_max,
+	    &(Time.Current), &Dump,&Options);
+            /*Use the next program to output balance information for indivdual glaciers */
+            gl_massbalance(&Map, TopoMap, SnowMap,GlacierMap, dt_year,year_min,
+	    year_max, &(Time.Current), &Dump);
+	}
+#endif
+    }
     if (IsNewDay(Time.DayStep)) {
       InitNewDay(Time.Current.JDay, &SolarGeo);
       PrintDate(&(Time.Current), stdout);

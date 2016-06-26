@@ -13,6 +13,7 @@
  * $Id: CalcSnowAlbedo.c,v 1.4 2003/07/01 21:26:10 olivier Exp $     
  */
 
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -21,12 +22,13 @@
 #include "data.h"
 #include "Calendar.h"
 #include "functions.h"
-
+#include "snow.h"
 /*****************************************************************************
   CalcSnowAlbedo()
 *****************************************************************************/
-float CalcSnowAlbedo(float TSurf, unsigned short Last, SNOWTABLE * SnowAlbedo)
+float CalcSnowAlbedo(float TSurf, float Swq,unsigned short Last, SNOWTABLE * SnowAlbedo)
 {
+  if (Swq > 0.000){
   if (Last > (unsigned short) DAYPYEAR)
     Last = (unsigned short) DAYPYEAR;
 
@@ -37,4 +39,7 @@ float CalcSnowAlbedo(float TSurf, unsigned short Last, SNOWTABLE * SnowAlbedo)
   /* Melt season */
   else
     return SnowAlbedo[Last].Thaw;
+}
+  else  /* SWE = 0.000, IWE>0.0, only glacier exposed */
+    return GL_ALB;
 }

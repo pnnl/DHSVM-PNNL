@@ -237,6 +237,7 @@ typedef struct {
   int Outside;					/* if TRUE then all listed met stats are used */
   int Rhoverride;				/* if TRUE then RH=100% if Precip>0 */
   int Shading;					/* if TRUE then terrain shading for solar is on */
+  int Glacier;                                  /* if TRUE then run glacier model */
   int StreamTemp;
   int CanopyShading;
   int ImprovRadiation;          /* if TRUE then improved radiation scheme is on */
@@ -331,7 +332,8 @@ typedef struct {
   unshort LastSnow;			/* Days since last snowfall */
   float Swq;				/* Snow water equivalent */
   float Melt;				/* Snow Melt */
-  float Outflow;		    /* Snow pack outflow (m) */
+  float GlMelt;                         /* Glacier Melt */
+  float Outflow;		    /* Snow and glacier pack outflow (m) */
   float PackWater;			/* Liquid water content of snow pack */
   float TPack;				/* Temperature of snow pack */
   float SurfWater;			/* Liquid water content of surface layer */
@@ -343,7 +345,20 @@ typedef struct {
   float VaporMassFlux;		/* Vapor mass flux to/from snow pack,(m/timestep). 
                                A negataive value indicates flux from snow -- sublimiation */
   float CanopyVaporMassFlux;/* Vapor mass flux to/from intercepted snow in the canopy (m/timestep) */
-  float Glacier;		    /* Amount of snow added to glacier during simulation */
+    /* glacier model varibale */
+  float ppt;                  /* monthly accumulation  */
+  float melt;                 /* monthly ablation */
+  float Iwq;                     /* Initial Ice Water equivalent of ice layer */
+  float iweold;
+  float sweold;
+  float depth;
+  float density;
+  uchar SnowCov;
+  float glwater;
+  float Qold;
+  float IceRemoved;
+  float sweann;
+  float iweann;
 } SNOWPIX;
 
 typedef struct {

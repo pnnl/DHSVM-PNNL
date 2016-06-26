@@ -42,7 +42,7 @@ float CalcEffectiveKh(int NSoilLayers, float Top, float Bottom,
 
 float CalcKhDry(float Density);
 
-float CalcSnowAlbedo(float TSurf, unsigned short Last, SNOWTABLE *SnowAlbedo);
+float CalcSnowAlbedo(float TSurf,float Swq,unsigned short Last, SNOWTABLE *SnowAlbedo);
 
 float CalcTransmissivity(float SoilDepth, float WaterTable, float LateralKs,
 			 float KsExponent, float DepthThresh);
@@ -161,7 +161,7 @@ void InitModelState(DATE *Start, MAPSIZE *Map, OPTIONSTRUCT *Options,
 		    VEGPIX **VegMap, LAYER Veg, VEGTABLE *VType, char *Path,
 		    SNOWTABLE *SnowAlbedo, TOPOPIX **TopoMap,
 		    ROADSTRUCT **Network, UNITHYDRINFO *HydrographInfo,
-		    float *Hydrograph);
+		    float *Hydrograph, GLPIX ** GlacierMap);
 
 void InitNetwork(int NY, int NX, float DX, float DY, TOPOPIX **TopoMap, 
 		 SOILPIX **SoilMap, VEGPIX **VegMap, VEGTABLE *VType, 
@@ -230,10 +230,13 @@ void InitTables(int StepsPerDay, LISTPTR Input, OPTIONSTRUCT *Options,
 
 void InitTerrainMaps(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
 		     LAYER *Soil, TOPOPIX ***TopoMap, SOILPIX ***SoilMap,
-		     VEGPIX ***VegMap);
+		     VEGPIX ***VegMap, GLPIX *** GlacierMap);
 
 void InitTopoMap(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
 		 TOPOPIX ***TopoMap);
+
+void InitGlacierMaps(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
+		     GLPIX *** GlacierMap);
 
 void InitUnitHydrograph(LISTPTR Input, MAPSIZE *Map, TOPOPIX **TopoMap,
 			UNITHYDR ***UnitHydrograph, float **Hydrograph,

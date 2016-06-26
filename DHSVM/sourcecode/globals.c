@@ -28,3 +28,4 @@ float TEMPLAPSE;		/* Temperature lapse rate in C/m */
 float Z0_GROUND;		/* Roughness length for bare soil (m) */
 float Z0_SNOW;			/* Roughness length for snow (m) */
 float Zref;			    /* Reference height (m) */
+float GL_ALB;                   /* Glacier Albedo */
