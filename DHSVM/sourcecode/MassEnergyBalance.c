@@ -271,7 +271,10 @@ void MassEnergyBalance(OPTIONSTRUCT *Options, int y, int x,
         LocalMet->Tair, LocalMet->Vpd, SnowWind,
         &(LocalSnow->PackWater), &(LocalSnow->SurfWater),
         &(LocalSnow->Swq), &(LocalSnow->VaporMassFlux),
-        &(LocalSnow->TPack), &(LocalSnow->TSurf), &MeltEnergy);
+        &(LocalSnow->TPack), &(LocalSnow->TSurf), &MeltEnergy),
+	&(LocalSnow->Iwq),&(LocalSnow->GlMelt), &(LocalSnow->depth),
+	&(LocalSnow->density), &(LocalSnow->glwater), &(LocalSnow->Qold),
+	Options, &(LocalSnow->IceRemoved));
 
     /* Rainfall was added to SurfWater of the snow pack and has to be set to zero */
     LocalPrecip->RainFall = 0.0;
