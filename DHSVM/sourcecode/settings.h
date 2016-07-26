@@ -122,7 +122,8 @@ enum KEYS {
   ground_roughness, snow_roughness, rain_threshold, snow_threshold,
   snow_water_capacity, reference_height, rain_lai_multiplier,
   snow_lai_multiplier, min_intercepted_snow, outside_basin,
-  temp_lapse_rate, precip_lapse_rate, precip_multiplier,
+  temp_lapse_rate, precip_lapse_rate, precip_multiplier, alb_acc_lambda, 
+  alb_melt_lambda, alb_acc_min, alb_melt_min,
   /* Station information */
   station_name = 0, station_north, station_east, station_elev, station_file,
   /* RADAR information */

@@ -16,6 +16,9 @@
  * $Id: InitTables.c,v3.1.2 2013/12/11 ning Exp $
  */
 
+
+
+
 #include <ctype.h>
 #include <math.h>
 #include <stdio.h>
@@ -32,6 +35,7 @@
 
  /*******************************************************************************/
  /*				  InitTables()                                 */
+
  /*******************************************************************************/
 void InitTables(int StepsPerDay, LISTPTR Input, OPTIONSTRUCT *Options,
   SOILTABLE **SType, LAYER *Soil, VEGTABLE **VType,
@@ -84,10 +88,12 @@ int InitSoilTable(OPTIONSTRUCT *Options, SOILTABLE ** SType,
     "MAXIMUM INFILTRATION",
     "CAPILLARY DRIVE",
     "SURFACE ALBEDO",
+
     "NUMBER OF SOIL LAYERS",
     "POROSITY",
     "PORE SIZE DISTRIBUTION",
     "BUBBLING PRESSURE",
+
     "FIELD CAPACITY",
     "WILTING POINT",
     "BULK DENSITY",
@@ -264,6 +270,7 @@ int InitVegTable(VEGTABLE ** VType, LISTPTR Input, OPTIONSTRUCT * Options,
   int j;			/* Counter */
   int k;            /* counter */
   float impervious;	/* flag to check whether impervious layers are specified */
+
   int NVegs;		/* Number of vegetation types */
 
   char KeyName[understory_monalb + 1][BUFSIZE + 1];
@@ -405,22 +412,31 @@ int InitVegTable(VEGTABLE ** VType, LISTPTR Input, OPTIONSTRUCT * Options,
 
     if (!((*VType)[i].Height = (float *)calloc((*VType)[i].NVegLayers, sizeof(float))))
       ReportError((char *)Routine, 1);
+
     if (!((*VType)[i].RsMax = (float *)calloc((*VType)[i].NVegLayers, sizeof(float))))
       ReportError((char *)Routine, 1);
+
     if (!((*VType)[i].RsMin = (float *)calloc((*VType)[i].NVegLayers, sizeof(float))))
       ReportError((char *)Routine, 1);
+
     if (!((*VType)[i].MoistThres = (float *)calloc((*VType)[i].NVegLayers, sizeof(float))))
       ReportError((char *)Routine, 1);
+
     if (!((*VType)[i].VpdThres = (float *)calloc((*VType)[i].NVegLayers, sizeof(float))))
       ReportError((char *)Routine, 1);
+
     if (!((*VType)[i].Rpc = (float *)calloc((*VType)[i].NVegLayers, sizeof(float))))
       ReportError((char *)Routine, 1);
+
     if (!((*VType)[i].Albedo = (float *)calloc(((*VType)[i].NVegLayers + 1), sizeof(float))))
       ReportError((char *)Routine, 1);
+
     if (!((*VType)[i].MaxInt = (float *)calloc((*VType)[i].NVegLayers, sizeof(float))))
+
       ReportError((char *)Routine, 1);
     if (!((*VType)[i].LAI = (float *)calloc((*VType)[i].NVegLayers, sizeof(float))))
       ReportError((char *)Routine, 1);
+
     if (!((*VType)[i].RootFract = (float **)calloc((*VType)[i].NVegLayers, sizeof(float *))))
       ReportError((char *)Routine, 1);
 
@@ -435,7 +451,7 @@ int InitVegTable(VEGTABLE ** VType, LISTPTR Input, OPTIONSTRUCT * Options,
     if (!((*VType)[i].LAIMonthly = (float **)calloc((*VType)[i].NVegLayers, sizeof(float *))))
       ReportError((char *)Routine, 1);
     for (j = 0; j < (*VType)[i].NVegLayers; j++) {
-      if (!((*VType)[i].LAIMonthly[j] = (float *) calloc(12, sizeof(float))))
+      if (!((*VType)[i].LAIMonthly[j] = (float *)calloc(12, sizeof(float))))
         ReportError((char *)Routine, 1);
     }
 
@@ -466,6 +482,7 @@ int InitVegTable(VEGTABLE ** VType, LISTPTR Input, OPTIONSTRUCT * Options,
           ReportError(KeyName[scat], 51);
         (*VType)[i].Atten = NOT_APPLICABLE;
       }
+
       else if (Options->CanopyRadAtt == FIXED) {
         if (!CopyFloat(&((*VType)[i].Atten), VarStr[radiation_att], 1))
           ReportError(KeyName[radiation_att], 51);
@@ -511,7 +528,6 @@ int InitVegTable(VEGTABLE ** VType, LISTPTR Input, OPTIONSTRUCT * Options,
 
         if (!CopyFloat((*VType)[i].AlbedoMonthly[1], VarStr[understory_monalb], 12))
           ReportError(KeyName[understory_monalb], 51);
-
       }
     }
     else {
@@ -526,7 +542,6 @@ int InitVegTable(VEGTABLE ** VType, LISTPTR Input, OPTIONSTRUCT * Options,
 
         if (!CopyFloat((*VType)[i].AlbedoMonthly[0], VarStr[understory_monalb], 12))
           ReportError(KeyName[understory_monalb], 51);
-
       }
       (*VType)[i].Trunk = NOT_APPLICABLE;
       (*VType)[i].Cn = NOT_APPLICABLE;
@@ -568,13 +583,13 @@ int InitVegTable(VEGTABLE ** VType, LISTPTR Input, OPTIONSTRUCT * Options,
       (*VType)[i].U, &((*VType)[i].USnow), (*VType)[i].Ra,
       &((*VType)[i].RaSnow));
 
-    /* Run the improved radiation scheme in which the tree height, solar altitude and fractional coverage 
+    /* Run the improved radiation scheme in which the tree height, solar altitude and fractional coverage
     are all taken into account into the radiation calculation */
     if (Options->ImprovRadiation == TRUE) {
       if ((*VType)[i].OverStory == TRUE) {
         if (!CopyFloat((*VType)[i].MonthlyExtnCoeff, VarStr[monextn], 12))
           ReportError(KeyName[monextn], 51);
-        if (!CopyFloat(&((*VType)[i].VfAdjust), VarStr[vf_adj], 1)) 
+        if (!CopyFloat(&((*VType)[i].VfAdjust), VarStr[vf_adj], 1))
           ReportError(KeyName[vf_adj], 51);
         (*VType)[i].Vf = (*VType)[i].Fract[0] * (*VType)[i].VfAdjust;
       }
@@ -589,7 +604,7 @@ int InitVegTable(VEGTABLE ** VType, LISTPTR Input, OPTIONSTRUCT * Options,
       }
     }
 
-  } /* end of the VEG TYPE loop */ 
+  } /* end of the VEG TYPE loop */
 
   if (impervious) {
     GetInitString(SectionName, "IMPERVIOUS SURFACE ROUTING FILE", "", VarStr[0],
@@ -627,14 +642,15 @@ void InitSnowTable(SNOWTABLE ** SnowAlbedo, int StepsPerDay)
 
   /* Laramie and Schaake (1972) */
   /* Updated based on Storck (2000) */
+
   for (i = 0; i < ((DAYPYEAR + 1) * StepsPerDay); i++) {
     (*SnowAlbedo)[i].Freeze =
-      0.85 * pow(0.92, pow(((float)i) / StepsPerDay, 0.58));
-    if ((*SnowAlbedo)[i].Freeze < 0.4)
-      (*SnowAlbedo)[i].Freeze = 0.4;
+      0.85 * pow(ALB_ACC_LAMBDA, pow(((float)i) / StepsPerDay, 0.58));
+    if ((*SnowAlbedo)[i].Freeze < ALB_ACC_MIN)
+      (*SnowAlbedo)[i].Freeze = ALB_ACC_MIN;
     (*SnowAlbedo)[i].Thaw =
-      0.85 * pow(0.70, pow(((float)i) / StepsPerDay, 0.46));
-    if ((*SnowAlbedo)[i].Thaw < 0.4)
-      (*SnowAlbedo)[i].Thaw = 0.4;
+      0.85 * pow(ALB_MELT_LAMBDA, pow(((float)i) / StepsPerDay, 0.46));
+    if ((*SnowAlbedo)[i].Thaw < ALB_MELT_MIN)
+      (*SnowAlbedo)[i].Thaw = ALB_MELT_MIN;
   }
 }

@@ -119,6 +119,10 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
     {"CONSTANTS", "TEMPERATURE LAPSE RATE", "", ""},
     {"CONSTANTS", "PRECIPITATION LAPSE RATE", "", ""},
     {"CONSTANTS", "PRECIPITATION MULTIPLIER", "", ""},
+    { "CONSTANTS", "ALBEDO ACCUMULATION LAMBDA", "", "" },
+    { "CONSTANTS", "ALBEDO MELTING LAMBDA", "", "" },
+    { "CONSTANTS", "ALBEDO ACCUMULATION MIN", "", "" },
+    { "CONSTANTS", "ALBEDO MELTING MIN", "", "" },
     {NULL, NULL, "", NULL}
   };
 
@@ -508,4 +512,20 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
 
   if (!CopyFloat(&PRECIPMULTIPLIER, StrEnv[precip_multiplier].VarStr, 1))
       ReportError(StrEnv[precip_multiplier].KeyName, 51);
+
+  if (!CopyFloat(&ALB_ACC_LAMBDA,
+    StrEnv[alb_acc_lambda].VarStr, 1))
+    ReportError(StrEnv[alb_acc_lambda].KeyName, 51);
+
+  if (!CopyFloat(&ALB_MELT_LAMBDA,
+    StrEnv[alb_melt_lambda].VarStr, 1))
+    ReportError(StrEnv[alb_melt_lambda].KeyName, 51);
+
+  if (!CopyFloat(&ALB_ACC_MIN,
+    StrEnv[alb_acc_min].VarStr, 1))
+    ReportError(StrEnv[alb_acc_min].KeyName, 51);
+
+  if (!CopyFloat(&ALB_MELT_MIN,
+    StrEnv[alb_melt_min].VarStr, 1))
+    ReportError(StrEnv[alb_melt_min].KeyName, 51);
 }
