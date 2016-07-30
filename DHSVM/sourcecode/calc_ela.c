@@ -2,7 +2,6 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
-#include "snow.h"
 #include "glacier.h"
 #include "settings.h"
 #include "constants.h"

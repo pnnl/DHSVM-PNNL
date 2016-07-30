@@ -4,7 +4,6 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
-#include "snow.h"
 #include "glacier.h"
 #include "settings.h"
 #include "constants.h"
@@ -53,7 +52,7 @@ void main_spinup(MAPSIZE *Map, TOPOPIX **TopoMap, SNOWPIX **Snow, GLPIX **Glacie
   b_dot      = malloc(N*sizeof(double));
   
   // Array  = malloc(N*sizeof(float));
-  if (!(Array1 = (float *) calloc(Map->NX * Map->NY, sizeof(float))));
+  // if (!(Array1 = (float *) calloc(Map->NX * Map->NY, sizeof(float))));
   
   dt_yr = dt_year;
  

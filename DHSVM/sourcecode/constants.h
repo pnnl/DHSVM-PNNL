@@ -55,6 +55,22 @@
 #define Z0_MULTIPLIER 0.13		/* Multiplier for vegetation height to get roughness length (m) */
 #define MinDiff   (1.e-8)
 
+/* Constants in snow density computation */
+#define SNDENS_ETA0     (3.6e6) /* viscosity of snow at T = 0C and density = 0
+                                   used in calculation of true viscosity (Ns/m2) */
+#define SNDENS_C1       0.04
+#define SNDENS_C2       (2.778e-6)
+#define SNDENS_C5       0.08    /* constant used in snow viscosity calculation,
+                                   taken from SNTHRM.89 (/C)*/
+#define SNDENS_C6       0.021   /* constant used in snow viscosity calculation,
+                                   taken from SNTHRM.89 (kg/m3) */
+#define SNDENS_F        0.6     /* internal compaction rate coefficient */
+
+#define KELVIN          273.15
+
+
+#define RHO_W            999.84
+
 /**************** extern constants - see globals.c ****************/
 
 extern float LAI_SNOW_MULTIPLIER;		/* multiplier to calculate the amount of available
@@ -77,4 +93,5 @@ extern float Z0_GROUND;					/* Roughness length for bare soil (m) */
 extern float Z0_SNOW;					/* Roughness length for snow (m) */
 extern float Zref;						/* Reference height (m) */
 extern float GL_ALB;            /* Glacier Albedo */
+
 #endif

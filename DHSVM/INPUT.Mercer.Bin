@@ -54,8 +54,9 @@ Precipitation lapse rate = CONSTANT       # CONSTANT, MAP, or VARIABLE
 Cressman radius      = 10                 # in model pixels
 Cressman stations    =  4                 # number of stations
 Stream Temperature   = TRUE               # TRUE or FALSE
-Canopy Shading       = FALSE
-
+RIPARIAN Shading       = FALSE
+GRIDDED MET DATA = FALSE
+IMPROVED RADIATION SCHEME = FALSE
 ################################################################################
 # MODEL AREA SECTION
 ################################################################################

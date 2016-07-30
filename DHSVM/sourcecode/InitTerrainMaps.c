@@ -34,7 +34,8 @@
    InitTerrainMaps()
  *****************************************************************************/
 void InitTerrainMaps(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * Map,
-  LAYER * Soil, TOPOPIX *** TopoMap, SOILPIX *** SoilMap, VEGPIX *** VegMap)
+  LAYER * Soil, TOPOPIX *** TopoMap, SOILPIX *** SoilMap, VEGPIX *** VegMap,
+  GLPIX *** GlacierMap)
 {
   printf("\nInitializing terrain maps\n");
 

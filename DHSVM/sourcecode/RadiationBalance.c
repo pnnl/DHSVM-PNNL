@@ -108,14 +108,14 @@ void RadiationBalance(OPTIONSTRUCT *Options, int HeatFluxOption,
   if (VType->OverStory == TRUE) {
     Albedo[0] = VType->Albedo[0];
     /* With snow, understory canopy albedo is set equal to snow albedo */
-    if (LocalSnow->HasSnow == TRUE)
+    if (LocalSnow->HasSnow == TRUE || LocalSnow->Iwq > 0.0)
       Albedo[1] = LocalSnow->Albedo;
     else if (VType->UnderStory == TRUE)
       Albedo[1] = VType->Albedo[1];
     else
       Albedo[1] = SoilAlbedo;
   }
-  else if (LocalSnow->HasSnow == TRUE)
+  else if (LocalSnow->HasSnow == TRUE || LocalSnow->Iwq > 0.0)
     Albedo[0] = LocalSnow->Albedo;
   else if (VType->UnderStory == TRUE)
     Albedo[0] = VType->Albedo[0];
@@ -175,7 +175,7 @@ void RadiationBalance(OPTIONSTRUCT *Options, int HeatFluxOption,
   /* Calculate shortwave radiation balance */
   ShortwaveBalance(Options, VType->OverStory, F, Rs, Rsb, Rsd, Tau, Albedo, LocalRad);
 
-  if (LocalSnow->HasSnow == TRUE)
+  if (LocalSnow->HasSnow == TRUE || LocalSnow->Iwq > 0.0)
     Tsurf = LocalSnow->TSurf;
   else if (HeatFluxOption == TRUE)
     Tsurf = Tsoil;

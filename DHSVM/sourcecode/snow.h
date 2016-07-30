@@ -17,6 +17,7 @@
 #define SNOW_H
 
 #include <stdarg.h>
+#include "data.h"
 
 #define MAX_SURFACE_SWE     0.125	/* maximum depth of the surface layer
 					                   in water equivalent (m) */
@@ -27,7 +28,7 @@ void MassRelease(float *InterceptedSnow, float *TempInterceptionStorage,
 void SnowInterception(OPTIONSTRUCT *Options, int y, int x, int Dt, float F, 
               float Vf, float LAI, float MaxInt, float MaxSnowIntCap, 
               float MDRatio, float SnowIntEff, float Ra, float AirDens, 
-              float EactAir, float Lv, PIXRAD * LocalRad, float Press, 
+              float EactAir, float Lv, PIXRAD *LocalRad, float Press, 
               float Tair, float Vpd, float Wind, float *RainFall, 
               float *SnowFall, float *IntRain, float *IntSnow, 
               float *TempIntStorage, float *VaporMassFlux, float *Tcanopy, 
@@ -40,7 +41,7 @@ float SnowMelt(int y, int x, int Dt, float Z, float Displacement, float Z0,
 	       float SnowFall, float Tair, float Vpd, float Wind,
 	       float *PackWater, float *SurfWater, float *Swq,
 	       float *VaporMassFlux, float *TPack, float *TSurf,
-	       float *MeltEnergy);
+	       float *MeltEnergy,float *Iwq, float *GlMelt, float *depth, float *density,	        float *glwater, float *Qold, OPTIONSTRUCT * Options, float *IceRemoved);
 
 float SnowPackEnergyBalance(float TSurf, va_list ap);
 

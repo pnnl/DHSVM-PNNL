@@ -89,10 +89,10 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
     {"OPTIONS", "SHADING DATA PATH", "", ""},
     {"OPTIONS", "SHADING DATA EXTENSION", "", ""},
     {"OPTIONS", "SKYVIEW DATA PATH", "", ""},
-	{"OPTIONS", "STREAM TEMPERATURE", "", ""}, 
-	{"OPTIONS", "RIPARIAN SHADING", "", ""}, 
+    {"OPTIONS", "STREAM TEMPERATURE", "", ""}, 
+    {"OPTIONS", "RIPARIAN SHADING", "", ""}, 
     {"OPTIONS", "IMPROVED RADIATION SCHEME", "", "" },
-    {"OPTIONS", "GLACIER", "", "" },
+    {"OPTIONS", "GLACIER", "", ""},
     {"AREA", "COORDINATE SYSTEM", "", ""},
     {"AREA", "EXTREME NORTH", "", ""},
     {"AREA", "EXTREME WEST", "", ""},
@@ -304,8 +304,8 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
     Options->ImprovRadiation = FALSE;
   else
     ReportError(StrEnv[improv_radiation].KeyName, 51);
-
-  /*************************** Determine if Glacier Model is called for ***********************/
+  
+  /* Determine if Glacier Model is called for */
   if (strncmp(StrEnv[glacier].VarStr, "NO_GLACIER", 10) == 0)
     Options->Glacier = NO_GLACIER;
   else if (strncmp(StrEnv[glacier].VarStr, "GLSPINUP", 6) == 0)
@@ -315,6 +315,7 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
   else if (strncmp(StrEnv[glacier].VarStr, "GLDYNAMIC", 7) == 0)
     Options->Glacier = GLDYNAMIC;
   else
+    printf("%s", StrEnv[glacier].KeyName);
     ReportError(StrEnv[glacier].KeyName, 51);
 
   /* Determine if listed met stations outside bounding box are used */
@@ -520,9 +521,9 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
   else
     PRECIPLAPSE = NOT_APPLICABLE;
 
-if (!CopyFloat(&GL_ALB, StrEnv[glacier_albedo].VarStr, 1))
-    ReportError(StrEnv[glacier_albedo].KeyName, 51);
-
   if (!CopyFloat(&PRECIPMULTIPLIER, StrEnv[precip_multiplier].VarStr, 1))
       ReportError(StrEnv[precip_multiplier].KeyName, 51);
+
+  if (!CopyFloat(&GL_ALB, StrEnv[glacier_albedo].VarStr, 1))
+    ReportError(StrEnv[glacier_albedo].KeyName, 51);
 }

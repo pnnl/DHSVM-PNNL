@@ -50,7 +50,7 @@ void InitModelState(DATE *Start, MAPSIZE *Map, OPTIONSTRUCT *Options, PRECIPPIX 
   SNOWPIX **SnowMap, SOILPIX **SoilMap, LAYER Soil, SOILTABLE *SType,
   VEGPIX **VegMap, LAYER Veg, VEGTABLE *VType, char *Path, SNOWTABLE *SnowAlbedo,
   TOPOPIX **TopoMap, ROADSTRUCT **Network, UNITHYDRINFO *HydrographInfo,
-  float *Hydrograph)
+  float *Hydrograph, AGGREGATED *Total,GLPIX ** GlacierMap)
 {
   const char *Routine = "InitModelState";
   char Str[NAMESIZE + 1];
@@ -276,7 +276,8 @@ void InitModelState(DATE *Start, MAPSIZE *Map, OPTIONSTRUCT *Options, PRECIPPIX 
     for (x = 0; x < Map->NX; x++) {
       if (INBASIN(TopoMap[y][x].Mask)) {
         if (SnowMap[y][x].HasSnow)
-          SnowMap[y][x].Albedo = CalcSnowAlbedo(SnowMap[y][x].TSurf, SnowMap[y][x].LastSnow, SnowAlbedo);
+         SnowMap[y][x].Albedo = CalcSnowAlbedo(SnowMap[y][x].TSurf,
+		SnowMap[y][x].Swq,SnowMap[y][x].LastSnow, SnowAlbedo); 
         else
           SnowMap[y][x].Albedo = 0;
       }

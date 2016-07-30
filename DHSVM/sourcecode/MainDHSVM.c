@@ -259,7 +259,7 @@ int main(int argc, char **argv)
 
   InitModelState(&(Time.Start), &Map, &Options, PrecipMap, SnowMap, SoilMap,
 		 Soil, SType, VegMap, Veg, VType, Dump.InitStatePath,
-		 SnowAlbedo, TopoMap, Network, &HydrographInfo, Hydrograph, GlacierMap);
+		 SnowAlbedo, TopoMap, Network, &HydrographInfo, Hydrograph, &Total, GlacierMap);
 
 #ifdef HAVE_GLACIER
 /* Glacier Model is run independently to "spinup" glacier ice state over 1000 years */
@@ -297,7 +297,7 @@ int main(int argc, char **argv)
 
   Mass.StartWaterStorage =
     Total.Soil.IExcess + Total.CanopyWater + Total.SoilWater + Total.Snow.Swq +
-    Total.Soil.SatFlow;
+    Total.Soil.SatFlow + Total.Snow.Iwq + Total.Snow.IceRemoved;
   Mass.OldWaterStorage = Mass.StartWaterStorage;
 
   /* computes the number of grid cell contributing to one segment */

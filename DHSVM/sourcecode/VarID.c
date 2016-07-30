@@ -216,6 +216,27 @@ struct {
       "m/s", "Windspeed", NC_INT, FALSE, FALSE, FALSE, 0}, {
   704, "MetMap.humidity",
       "Humidity", "%.2f", "", "Humidity", NC_INT, FALSE, FALSE, FALSE, 0}, {
+  705, "Snow.Iwq",
+      "Glacier Thickness", "%.3f",
+  "m", "Glacier Thickness", NC_FLOAT, FALSE, FALSE, FALSE, 0}, {
+  706, "Snow.GlMelt",
+    "Glacier Melt", "%.3f",
+    "m", "Glacier Melt", NC_FLOAT, FALSE, FALSE, FALSE, 0}, {
+  707, "Glacier.BMap",
+    "Bed Topo", "%.3f",
+    "m", "Bed Topo", NC_FLOAT, FALSE, FALSE, FALSE, 0}, {
+  708, "Glacier.SMap",
+    "Surface Topo", "%.3f",
+    "m", "Surface Topo", NC_FLOAT, FALSE, FALSE, FALSE, 0}, {
+  709, "Glacier.Mbal",
+    "Glacier MassBalance", "%.3f",
+    "m", "Glacier MassBalance", NC_FLOAT, FALSE, FALSE, FALSE, 0}, {
+  710, "Basin.wshmask",
+    "Watershed Mask", "%d",
+    "m", "Watershed mask", NC_BYTE, FALSE, FALSE, FALSE, 0}, {
+  711, "Glacier.GlMask",
+      "Basin glacier mask", "%d", "", "Basin glacier mask", NC_BYTE, FALSE, FALSE, FALSE, 0}, {
+
   ENDOFLIST, "", "", "", "", "",
       ENDOFLIST, ENDOFLIST, ENDOFLIST, ENDOFLIST, ENDOFLIST}
 };

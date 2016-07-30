@@ -161,7 +161,7 @@ void InitModelState(DATE *Start, MAPSIZE *Map, OPTIONSTRUCT *Options,
 		    VEGPIX **VegMap, LAYER Veg, VEGTABLE *VType, char *Path,
 		    SNOWTABLE *SnowAlbedo, TOPOPIX **TopoMap,
 		    ROADSTRUCT **Network, UNITHYDRINFO *HydrographInfo,
-		    float *Hydrograph, GLPIX ** GlacierMap);
+		    float *Hydrograph, AGGREGATED *Total, GLPIX ** GlacierMap);
 
 void InitNetwork(int NY, int NX, float DX, float DY, TOPOPIX **TopoMap, 
 		 SOILPIX **SoilMap, VEGPIX **VegMap, VEGTABLE *VType, 

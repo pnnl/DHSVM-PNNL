@@ -45,7 +45,8 @@ void MassBalance(DATE *Current, DATE *Start, FILES *Out, AGGREGATED *Total, WATE
 
   NewWaterStorage = Total->Soil.IExcess + Total->Road.IExcess + 
     Total->CanopyWater + Total->SoilWater +
-    Total->Snow.Swq + Total->Soil.SatFlow + Total->Soil.DetentionStorage;
+    Total->Snow.Swq + Total->Soil.SatFlow + Total->Soil.DetentionStorage +
+    Total->Snow.Iwq + Total->Snow.IceRemoved;
 
   Output = Total->ChannelInt + Total->RoadInt + Total->Evap.ETot;
   Input = Total->Precip.Precip + Total->Snow.VaporMassFlux +
@@ -72,7 +73,7 @@ void MassBalance(DATE *Current, DATE *Start, FILES *Out, AGGREGATED *Total, WATE
     fprintf(Out->FilePtr, " Precip(m) ");
     fprintf(Out->FilePtr, " Snow(m) ");
     fprintf(Out->FilePtr, " IExcess(m) ");
-    fprintf(Out->FilePtr, " Swq   Melt   ");
+    fprintf(Out->FilePtr, " Swq   Melt Iwq GlMelt IceRemoved ");
     fprintf(Out->FilePtr, " TotalET ");   /* total evapotranspiration*/
     fprintf(Out->FilePtr, " CanopyInt ");   /* canopy intercepted rain + snow*/
     fprintf(Out->FilePtr, " TotSoilMoist ");
@@ -83,10 +84,10 @@ void MassBalance(DATE *Current, DATE *Start, FILES *Out, AGGREGATED *Total, WATE
     fprintf(Out->FilePtr, "\n");
   }
   PrintDate(Current, Out->FilePtr);
-  fprintf(Out->FilePtr, " %g  %g  %g  %g  %g  %g  %g  %g  %g \
+  fprintf(Out->FilePtr, " %g  %g  %g  %g  %g  %g  %g  %g  %g %g %g\
       %g  %g  %g  %g  %g  %g  %g  %g %g  %g \n",
       Total->Precip.Precip, Total->Precip.SnowFall, Total->Soil.IExcess,
-      Total->Snow.Swq, Total->Snow.Melt, Total->Evap.ETot, 
+      Total->Snow.Swq, Total->Snow.Melt, Total->Snow.Iwq, Total->Snow.GlMelt, Total->Snow.IceRemoved, Total->Evap.ETot, 
       Total->CanopyWater, Total->SoilWater, Total->Soil.SatFlow, Total->Snow.VaporMassFlux,
 	  Total->ChannelInt,  Total->RoadInt, Total->CulvertToChannel, 
       Total->Rad.BeamIn+Total->Rad.DiffuseIn, Total->Rad.PixelNetShort, 

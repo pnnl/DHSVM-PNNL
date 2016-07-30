@@ -69,6 +69,9 @@ void ResetAggregate(LAYER * Soil, LAYER * Veg, AGGREGATED * Total,
   Total->Snow.SnowCoverOver = FALSE;
   Total->Snow.LastSnow = 0;
   Total->Snow.Swq = 0.0;
+  Total->Snow.Iwq = 0.0;
+  Total->Snow.GlMelt = 0.0;
+  Total->Snow.IceRemoved=0.0;
   Total->Snow.Melt = 0.0;
   Total->Snow.PackWater = 0.0;
   Total->Snow.TPack = 0.0;

@@ -1071,7 +1071,42 @@ void DumpMap(MAPSIZE *Map, DATE *Current, MAPDUMP *DMap, TOPOPIX **TopoMap,
     else
       ReportError(VarIDStr, 66);
     break;
-  }
+   case 705:
+    if (DMap->Resolution == MAP_OUTPUT) {
+      for (y = 0; y < Map->NY; y++)
+            for (x = 0; x < Map->NX; x++)
+              ((float *) Array)[y * Map->NX + x] = SnowMap[y][x].Iwq;
+      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map->NY, Map->NX, DMap, Index);
+    }
+    else if (DMap->Resolution == IMAGE_OUTPUT) {
+      for (y = 0; y < Map->NY; y++)
+            for (x = 0; x < Map->NX; x++)
+              ((unsigned char *) Array)[y * Map->NX + x] =
+              (unsigned char) ((SnowMap[y][x].Iwq - Offset) / Range * MAXUCHAR);
+      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map->NY, Map->NX, DMap, Index);
+    }
+    else
+       ReportError(VarIDStr, 66);
+    break;
+
+  case 706:
+    if (DMap->Resolution == MAP_OUTPUT) {
+      for (y = 0; y < Map->NY; y++)
+            for (x = 0; x < Map->NX; x++)
+              ((float *) Array)[y * Map->NX + x] = SnowMap[y][x].GlMelt;
+      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map->NY, Map->NX, DMap, Index);
+    }
+    else if (DMap->Resolution == IMAGE_OUTPUT) {
+      for (y = 0; y < Map->NY; y++)
+            for (x = 0; x < Map->NX; x++)
+              ((unsigned char *) Array)[y * Map->NX + x] =
+              (unsigned char) ((SnowMap[y][x].GlMelt - Offset) / Range * MAXUCHAR);
+      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map->NY, Map->NX, DMap, Index);
+    }
+    else
+       ReportError(VarIDStr, 66);
+    break;  
+}
 }
 
 /*****************************************************************************
@@ -1090,8 +1125,8 @@ void DumpPix(DATE *Current, int first, FILES *OutFile, EVAPPIX *Evap,
     fprintf(OutFile->FilePtr, "  Precip(m) ");
     fprintf(OutFile->FilePtr, " Snow(m) ");
     fprintf(OutFile->FilePtr, " IExcess(m) ");
-    fprintf(OutFile->FilePtr, "HasSnow SnowCover LastSnow Swq Melt   ");
-    fprintf(OutFile->FilePtr, "PackWater TPack ");
+    fprintf(OutFile->FilePtr, "HasSnow SnowCover LastSnow Swq Melt ");
+    fprintf(OutFile->FilePtr, "PackWater TPack Iwq GlMelt ");
 
     fprintf(OutFile->FilePtr, " TotalET ");   /*total evapotranspiration*/
     for (i = 0; i < NCanopyStory+1; i++)
@@ -1143,9 +1178,9 @@ void DumpPix(DATE *Current, int first, FILES *OutFile, EVAPPIX *Evap,
   fprintf(OutFile->FilePtr, " %g ", Soil->IExcess);
 
   /* Snow */
-  fprintf(OutFile->FilePtr, " %1d %1d %4d %g %g %g %g ",
+  fprintf(OutFile->FilePtr, " %1d %1d %4d %g %g %g %g %g %g ",
     Snow->HasSnow, Snow->SnowCoverOver, Snow->LastSnow, Snow->Swq,
-    Snow->Melt, Snow->PackWater, Snow->TPack);
+    Snow->Melt, Snow->PackWater, Snow->TPack, Snow->Iwq, Snow->GlMelt);
 
   fprintf(OutFile->FilePtr, " %g", Evap->ETot);
 

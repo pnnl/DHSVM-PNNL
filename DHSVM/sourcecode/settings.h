@@ -115,7 +115,7 @@ enum KEYS {
   shading, snotel, outside, rhoverride, precipitation_source, wind_source, 
   temp_lapse, precip_lapse, cressman_radius, cressman_stations, prism_data_path, 
   prism_data_ext, shading_data_path, shading_data_ext, 
-  skyview_data_path, glacier, stream_temp, canopy_shading, improv_radiation,
+  skyview_data_path, stream_temp, canopy_shading, improv_radiation, glacier,
   /* Area */
   coordinate_system, extreme_north, extreme_west, center_latitude,
   center_longitude, time_zone_meridian, number_of_rows,
@@ -157,7 +157,7 @@ enum KEYS {
   demfile = 0, maskfile,
   soiltype_file = 0, soildepth_file,
   /* glacier information */
-  glmaskfile = 0,glbedfile,stopofile,wshmaskfile,glmbalfile,
+  glmaskfile = 0,glbedfile,stopofile,wshmaskfile,glmbalfile,  
   /* DHSVM channel keys */
   stream_network = 0, stream_map, stream_class, riparian_veg,
   road_network, road_map, road_class,

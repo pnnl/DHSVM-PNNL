@@ -362,6 +362,18 @@ typedef struct {
 } SNOWPIX;
 
 typedef struct {
+
+  double  s_init;           // surface topography at start of time step (m)
+  double  h;               // ice thickness (m)
+  double  b;               // bed dem (m)
+  double  s_out;            // output ice surface elevation (vectorized)
+  double Mbal;                  /* Glacier Mass Balance */
+  double totmbal;
+  uchar GlMask;
+  uchar WshMask;
+} GLPIX;
+
+typedef struct {
   int   Soil;			/* Soil type */
   float Depth;			/* Depth of total soil zone, including all root
 						zone layers, and the saturated zone */

@@ -222,7 +222,7 @@ void MassEnergyBalance(OPTIONSTRUCT *Options, int y, int x,
 
     /* Because we now have a new estimate of the canopy temperature we can
        recalculate the longwave balance */
-    if (LocalSnow->HasSnow == TRUE)
+    if (LocalSnow->HasSnow == TRUE || LocalSnow->Iwq > 0.0)
       Tsurf = LocalSnow->TSurf;
     else if (HeatFluxOption == TRUE)
       Tsurf = LocalSoil->TSurf;
@@ -247,11 +247,11 @@ void MassEnergyBalance(OPTIONSTRUCT *Options, int y, int x,
   }
 
   /* If snow on the ground, assume no overland flow erosion. */
-  if (LocalSnow->HasSnow)
+  if (LocalSnow->HasSnow || LocalSnow->Iwq > 0.0)
     LocalPrecip->MomentSq = 0.0;
 
   /* if snow is present, simulate the snow pack dynamics */
-  if (LocalSnow->HasSnow || LocalPrecip->SnowFall > 0.0) {
+  if (LocalSnow->HasSnow || LocalPrecip->SnowFall > 0.0 || LocalSnow->Iwq > 0.0) {
     if (VType->OverStory == TRUE) {
       SnowLongIn = LocalRad->LongIn[1];
       SnowNetShort = LocalRad->NetShort[1];
@@ -271,7 +271,7 @@ void MassEnergyBalance(OPTIONSTRUCT *Options, int y, int x,
         LocalMet->Tair, LocalMet->Vpd, SnowWind,
         &(LocalSnow->PackWater), &(LocalSnow->SurfWater),
         &(LocalSnow->Swq), &(LocalSnow->VaporMassFlux),
-        &(LocalSnow->TPack), &(LocalSnow->TSurf), &MeltEnergy),
+        &(LocalSnow->TPack), &(LocalSnow->TSurf), &MeltEnergy,
 	&(LocalSnow->Iwq),&(LocalSnow->GlMelt), &(LocalSnow->depth),
 	&(LocalSnow->density), &(LocalSnow->glwater), &(LocalSnow->Qold),
 	Options, &(LocalSnow->IceRemoved));
@@ -298,14 +298,6 @@ void MassEnergyBalance(OPTIONSTRUCT *Options, int y, int x,
   else
     LocalSnow->HasSnow = FALSE;
 
-  /*do the glacier add */
-  if (LocalSnow->Swq < 1.0 && VType->Index == GLACIER) {
-    printf("resetting glacier swe of %f to 5.0 meters\n", LocalSnow->Swq);
-    LocalSnow->Glacier += (5.0 - LocalSnow->Swq);
-    LocalSnow->Swq = 5.0;
-    LocalSnow->TPack = 0.0;
-    LocalSnow->TSurf = 0.0;
-  }
 #endif
 
 #ifndef NO_ET
