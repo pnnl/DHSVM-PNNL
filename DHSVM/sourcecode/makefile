@@ -5,36 +5,38 @@
 #	$Id: makefile,v3.1.2 2015/11/12 Ning Exp $	
 
 OBJS = AdjustStorage.o Aggregate.o AggregateRadiation.o	CalcAerodynamic.o \
-CalcAvailableWater.o CalcDistance.o CalcEffectiveKh.o CalcKhDry.o \
-CalcKinViscosity.o CalcSatDensity.o CalcSnowAlbedo.o CalcSolar.o \
+CalcAvailableWater.o CalcDistance.o CalcEffectiveKh.o CalcKhDry.o   \
+CalcKinViscosity.o CalcSatDensity.o CalcSnowAlbedo.o CalcSolar.o    \
 CalcTotalWater.o CalcTransmissivity.o CalcWeights.o Calendar.o	     \
 CanopyResistance.o ChannelState.o CheckOut.o CutBankGeometry.o	     \
-DHSVMChannel.o Desorption.o Draw.o EvalExponentIntegral.o \
+DHSVMChannel.o Desorption.o diffusion.o Draw.o EvalExponentIntegral.o \
 EvapoTranspiration.o ExecDump.o FileIOBin.o FileIONetCDF.o Files.o   \
 FinalMassBalance.o GetInit.o GetMetData.o InArea.o InitAggregated.o  \
-InitArray.o InitConstants.o InitDump.o InitFileIO.o  \
+InitArray.o InitConstants.o InitDump.o InitFileIO.o InitGlacierMap.o  \
 InitInterpolationWeights.o InitMetMaps.o InitMetSources.o	     \
-InitModelState.o InitNetwork.o InitNewMonth.o InitSnowMap.o         \
-InitTables.o InitTerrainMaps.o InitUnitHydrograph.o InitXGraphics.o \
-InterceptionStorage.o IsStationLocation.o LapseT.o LookupTable.o    \
-MainDHSVM.o MakeLocalMetData.o MassBalance.o MassEnergyBalance.o    \
-MassRelease.o MaxRoadInfiltration.o NoEvap.o RadiationBalance.o     \
+InitModelState.o InitNetwork.o InitNewMonth.o InitSnowMap.o \
+InitTables.o InitTerrainMaps.o InitUnitHydrograph.o  InitXGraphics.o \
+InterceptionStorage.o IsStationLocation.o LapseT.o LookupTable.o  \
+MainDHSVM.o MakeLocalMetData.o MassBalance.o MassEnergyBalance.o     \
+MassRelease.o MaxRoadInfiltration.o NoEvap.o RadiationBalance.o      \
 ReadMetRecord.o ReadRadarMap.o ReportError.o ResetAggregate.o	     \
 RootBrent.o Round.o RouteSubSurface.o RouteSurface.o   \
 SatVaporPressure.o SensibleHeatFlux.o SeparateRadiation.o SizeOfNT.o \
-SlopeAspect.o SnowInterception.o SnowMelt.o SnowPackEnergyBalance.o  \
-SoilEvaporation.o StabilityCorrection.o StoreModelState.o	      \
-SurfaceEnergyBalance.o UnsaturatedFlow.o VarID.o WaterTableDepth.o   \
-channel.o channel_grid.o equal.o errorhandler.o globals.o tableio.o  \
-channel_complt.o RiparianShading.o
+SlopeAspect.o SnowInterception.o SnowMelt.o SnowPackEnergyBalance.o \
+SoilEvaporation.o StabilityCorrection.o StoreModelState.o	     \
+SurfaceEnergyBalance.o UnsaturatedFlow.o VarID.o WaterTableDepth.o  \
+channel.o channel_grid.o equal.o errorhandler.o globals.o tableio.o \
+channel_complt.o RiparianShading.o deg2utm.o calc_ela.o main_spinup.o\
+main_gl.o RunGlacier.o BuildDiffusivity.o BuildSparseRowColIndices.o\
+BuildSparseArrayElements.o csparse.o gl_massbalance.o SetupIndexArrays.o
 
 SRCS = $(OBJS:%.o=%.c)
 
 HDRS = Calendar.h DHSVMChannel.h DHSVMerror.h brent.h channel.h     \
 channel_grid.h constants.h data.h errorhandler.h fifoNetCDF.h	     \
-fifobin.h fileio.h functions.h getinit.h lookuptable.h massenergy.h \
+fifobin.h fileio.h functions.h getinit.h glacier.h lookuptable.h massenergy.h \
 rad.h settings.h sizeofnt.h slopeaspect.h snow.h soilmoisture.h     \
-tableio.h varid.h
+tableio.h varid.h csparse.h
 
 OTHER = makefile tableio.lex
 
@@ -43,19 +45,19 @@ GET= co
 REL=
 
  
-DEFS =  -DHAVE_X11 -DHAVE_NETCDF
-#possible DEFS -DHAVE_NETCDF -DHAVE_X11 -DSHOW_MET_ONLY -DSNOW_ONLY
-CFLAGS =  -g -I/usr/X11R6/include -Wall  -I/usr/local/include/  $(DEFS) 
+DEFS =  -DHAVE_X11 -DHAVE_GLACIER
+#possible DEFS -DHAVE_NETCDF -DHAVE_X11 -DSHOW_MET_ONLY -DSNOW_ONLY -DHAVE_GLACIER
+CFLAGS =  -g -I/usr/X11R6/include -Wall  -I/usr/local/include/ -I../Include -I../UFconfig $(DEFS) 
 
 CC = cc
 FLEX = /usr/bin/flex
-LIBS = -lm -L/usr/X11R6/lib -lX11 -L/sw/lib -L/usr/local/lib -lnetcdf
-
+LIBS = -lm -L/usr/X11R6/lib -lX11 -L/sw/lib -L/usr/local/lib
+CS = ../Lib/libcxsparse.a 
 # possible libs:   
 #LIBS = -lm -L/usr/X11R6/lib -lX11 -L/sw/lib -L/usr/local/lib -lnetcdf
 
 DHSVM: $(OBJS)
-	$(CC) $(OBJS) $(CFLAGS) -o DHSVM3.1.2 $(LIBS)
+	$(CC) $(OBJS) $(CFLAGS) -o DHSVM3.1.3 $(LIBS) $(CS)
 
 clean::
 	rm -f DHSVM
@@ -83,6 +85,7 @@ Aggregate.o: Aggregate.c settings.h data.h Calendar.h DHSVMerror.h \
  constants.h
 AggregateRadiation.o: AggregateRadiation.c settings.h data.h \
  Calendar.h massenergy.h
+calc_ela.o : glacier.h snow.h data.h settings.h constants.h
 CalcAerodynamic.o: CalcAerodynamic.c DHSVMerror.h settings.h \
  constants.h functions.h data.h Calendar.h DHSVMChannel.h getinit.h \
  channel.h channel_grid.h
@@ -124,6 +127,7 @@ CheckOut.o: CheckOut.c DHSVMerror.h settings.h data.h Calendar.h \
  functions.h DHSVMChannel.h getinit.h channel.h channel_grid.h \
  constants.h
 CutBankGeometry.o: CutBankGeometry.c settings.h soilmoisture.h
+deg2utm.o: deg2utm.c settings.h constants.h
 DHSVMChannel.o: DHSVMChannel.c constants.h getinit.h DHSVMChannel.h \
  settings.h data.h Calendar.h channel.h channel_grid.h DHSVMerror.h \
  functions.h errorhandler.h fileio.h
@@ -152,6 +156,7 @@ GetInit.o: GetInit.c DHSVMerror.h fileio.h getinit.h
 GetMetData.o: GetMetData.c settings.h data.h Calendar.h DHSVMerror.h \
  functions.h DHSVMChannel.h getinit.h channel.h channel_grid.h \
  constants.h rad.h
+gl_massbalance.o: glacier.h snow.h data.h settings.h constants.h
 InArea.o: InArea.c constants.h settings.h data.h Calendar.h
 InitAggregated.o: InitAggregated.c settings.h data.h Calendar.h \
  DHSVMerror.h functions.h DHSVMChannel.h getinit.h channel.h \
@@ -166,6 +171,7 @@ InitDump.o: InitDump.c settings.h data.h Calendar.h DHSVMerror.h \
  channel_grid.h constants.h sizeofnt.h varid.h
 InitFileIO.o: InitFileIO.c fileio.h fifobin.h fifoNetCDF.h \
  DHSVMerror.h
+InitGlacierMap.o : settings.h data.h  DHSVMerror.h constants.h glacier.h
 InitInterpolationWeights.o: InitInterpolationWeights.c settings.h \
  data.h Calendar.h DHSVMerror.h functions.h DHSVMChannel.h getinit.h \
  channel.h channel_grid.h constants.h
@@ -209,6 +215,8 @@ LookupTable.o: LookupTable.c lookuptable.h DHSVMerror.h
 MainDHSVM.o: MainDHSVM.c settings.h constants.h data.h Calendar.h \
  DHSVMerror.h functions.h DHSVMChannel.h getinit.h channel.h \
  channel_grid.h fileio.h
+main_gl.o: glacier.h snow.h data.h settings.h constants.h
+main_spinup.o: glacier.h snow.h data.h settings.h constants.h
 MakeLocalMetData.o: MakeLocalMetData.c settings.h data.h Calendar.h \
  snow.h DHSVMerror.h functions.h DHSVMChannel.h getinit.h channel.h \
  channel_grid.h constants.h rad.h
@@ -246,6 +254,7 @@ RouteSubSurface.o: RouteSubSurface.c settings.h data.h Calendar.h \
 RouteSurface.o: RouteSurface.c settings.h data.h Calendar.h \
  slopeaspect.h DHSVMerror.h functions.h DHSVMChannel.h getinit.h \
  channel.h channel_grid.h constants.h
+RunGlacier.o : csparse.h
 SatVaporPressure.o: SatVaporPressure.c lookuptable.h
 SensibleHeatFlux.o: SensibleHeatFlux.c settings.h data.h Calendar.h \
  DHSVMerror.h massenergy.h constants.h brent.h functions.h \

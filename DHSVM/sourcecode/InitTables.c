@@ -16,9 +16,6 @@
  * $Id: InitTables.c,v3.1.2 2013/12/11 ning Exp $
  */
 
-
-
-
 #include <ctype.h>
 #include <math.h>
 #include <stdio.h>
@@ -34,8 +31,7 @@
 #include "getinit.h"
 
  /*******************************************************************************/
- /*				  InitTables()                                 */
-
+ /*				  InitTables()                                                  */
  /*******************************************************************************/
 void InitTables(int StepsPerDay, LISTPTR Input, OPTIONSTRUCT *Options,
   SOILTABLE **SType, LAYER *Soil, VEGTABLE **VType,
@@ -88,12 +84,10 @@ int InitSoilTable(OPTIONSTRUCT *Options, SOILTABLE ** SType,
     "MAXIMUM INFILTRATION",
     "CAPILLARY DRIVE",
     "SURFACE ALBEDO",
-
     "NUMBER OF SOIL LAYERS",
     "POROSITY",
     "PORE SIZE DISTRIBUTION",
     "BUBBLING PRESSURE",
-
     "FIELD CAPACITY",
     "WILTING POINT",
     "BULK DENSITY",
@@ -619,12 +613,10 @@ int InitVegTable(VEGTABLE ** VType, LISTPTR Input, OPTIONSTRUCT * Options,
 
 /********************************************************************************
   InitSnowTable()
-
   Source:
   Laramie, R. L., and J. C. Schaake, Jr., Simulation of the continuous
       snowmelt process, Ralph M. Parsons Laboratory, Mass. Inst. of Technol.,
       1972
-
   Snow albedo is calculated as a function of the number of days since the
   last observed snow fall. There are separete albedo curves for the freeze
   and thaw conditions.

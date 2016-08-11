@@ -309,13 +309,13 @@ PIXMET MakeLocalMetData(int y, int x, MAPSIZE *Map, int DayStep,
   LocalMet.AirDens = 0.003486 * LocalMet.Press / (275 + LocalMet.Tair);
 
   /* Snow albedo as a function of days since last snow */
-  if (LocalSnow->HasSnow) {
+  if (LocalSnow->HasSnow || LocalSnow->Iwq > 0.0) {
     if (PrecipMap->SnowFall > 0.0)
       LocalSnow->LastSnow = 0;
     else
       LocalSnow->LastSnow++;
-    LocalSnow->Albedo = CalcSnowAlbedo(LocalSnow->TSurf, LocalSnow->LastSnow,
-      SnowAlbedo);
+    LocalSnow->Albedo = CalcSnowAlbedo(LocalSnow->TSurf, LocalSnow->Swq,
+    LocalSnow->LastSnow, SnowAlbedo);
   }
   else
     LocalSnow->LastSnow = 0;

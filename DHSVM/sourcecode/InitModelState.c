@@ -50,7 +50,7 @@ void InitModelState(DATE *Start, MAPSIZE *Map, OPTIONSTRUCT *Options, PRECIPPIX 
   SNOWPIX **SnowMap, SOILPIX **SoilMap, LAYER Soil, SOILTABLE *SType,
   VEGPIX **VegMap, LAYER Veg, VEGTABLE *VType, char *Path, SNOWTABLE *SnowAlbedo,
   TOPOPIX **TopoMap, ROADSTRUCT **Network, UNITHYDRINFO *HydrographInfo,
-  float *Hydrograph)
+  float *Hydrograph, AGGREGATED *Total, GLPIX ** GlacierMap)
 {
   const char *Routine = "InitModelState";
   char Str[NAMESIZE + 1];
@@ -276,7 +276,8 @@ void InitModelState(DATE *Start, MAPSIZE *Map, OPTIONSTRUCT *Options, PRECIPPIX 
     for (x = 0; x < Map->NX; x++) {
       if (INBASIN(TopoMap[y][x].Mask)) {
         if (SnowMap[y][x].HasSnow)
-          SnowMap[y][x].Albedo = CalcSnowAlbedo(SnowMap[y][x].TSurf, SnowMap[y][x].LastSnow, SnowAlbedo);
+          SnowMap[y][x].Albedo = CalcSnowAlbedo(SnowMap[y][x].TSurf,
+            SnowMap[y][x].Swq, SnowMap[y][x].LastSnow, SnowAlbedo);
         else
           SnowMap[y][x].Albedo = 0;
       }
@@ -425,6 +426,35 @@ void InitModelState(DATE *Start, MAPSIZE *Map, OPTIONSTRUCT *Options, PRECIPPIX 
       fscanf(HydroStateFile, "%f\n", &(Hydrograph[i]));
     fclose(HydroStateFile);
   }
+
+  /* Initialize the glacier states */
+  for (y = 0; y < Map->NY; y++) {
+    for (x = 0; x < Map->NX; x++) {
+      if (Options->Glacier == GLSTATIC || Options->Glacier == GLDYNAMIC) {
+        GlacierMap[y][x].totmbal = 0.0;
+        GlacierMap[y][x].h = GlacierMap[y][x].s_init - GlacierMap[y][x].b;
+        GlacierMap[y][x].s_out = GlacierMap[y][x].s_init;
+        SnowMap[y][x].Iwq = (GlacierMap[y][x].h) * (900. / 1000.);
+        SnowMap[y][x].iweold = SnowMap[y][x].Iwq;
+        SnowMap[y][x].glwater = 0.0;
+        SnowMap[y][x].Qold = 0.0;
+        SnowMap[y][x].IceRemoved = 0.0;
+
+        if (GlacierMap[y][x].GlMask < 1) {
+          SnowMap[y][x].IceRemoved = SnowMap[y][x].Iwq;
+          GlacierMap[y][x].h = 0.0;
+          GlacierMap[y][x].s_init = GlacierMap[y][x].b;
+          SnowMap[y][x].Iwq = 0.0;
+          SnowMap[y][x].iweold = SnowMap[y][x].Iwq;
+        }
+      }
+      else {
+        SnowMap[y][x].Iwq = 0.0;
+        SnowMap[y][x].IceRemoved = 0.0;
+      }
+    }
+  }
+
   // Initialize the flood detention storage in each pixel for impervious fraction > 0 situation. 
   for (y = 0; y < Map->NY; y++) {
     for (x = 0; x < Map->NX; x++) {

@@ -59,7 +59,7 @@ void MassEnergyBalance(OPTIONSTRUCT *Options, int y, int x,
   ROADSTRUCT *LocalNetwork, PRECIPPIX *LocalPrecip,
   VEGTABLE *VType, VEGPIX *LocalVeg, SOILTABLE *SType,
   SOILPIX *LocalSoil, SNOWPIX *LocalSnow, PIXRAD *LocalRad,
-  EVAPPIX *LocalEvap, PIXRAD *TotalRad, CHANNEL *ChannelData, 
+  EVAPPIX *LocalEvap, PIXRAD *TotalRad, CHANNEL *ChannelData,
   float **skyview)
 {
   float SurfaceWater;		/* Pixel average depth of water before infiltration is calculated (m) */
@@ -101,9 +101,9 @@ void MassEnergyBalance(OPTIONSTRUCT *Options, int y, int x,
   float beta[4] = { 1.6896,1.5545,1.4242,1.2821 };       /* empirical coefficient
                 for rainfall momentum after Wicks and Bathurst (1996) */
   int i;
-  float CanopyHeight[18] = { 0.5,1,1.5,2,3,4,5,6,7,8,9,10,11,12, 13,14,15,16 };        
-                      /* Canopy height at which drip fall
-                      velocity is prescribed after Epema and Riezebos (1983) (m)*/
+  float CanopyHeight[18] = { 0.5,1,1.5,2,3,4,5,6,7,8,9,10,11,12, 13,14,15,16 };
+  /* Canopy height at which drip fall
+  velocity is prescribed after Epema and Riezebos (1983) (m)*/
   float FallVelocity[18] = { 2.96,4.12,5.12,5.82,6.84,7.54,8.05,8.36,
                 8.54,8.66,8.75,8.82,8.87,8.91,8.96,9.02,9.07,9.13 };
   /* Drip fall velocity corresponding to
@@ -111,7 +111,7 @@ void MassEnergyBalance(OPTIONSTRUCT *Options, int y, int x,
   float LD_FallVelocity;             /* Leaf drip fall velocity corresponding to the
                                      canopy height in vegetation map (m/s) */
 
-  /* Calculate the number of vegetation layers above the snow */
+                                     /* Calculate the number of vegetation layers above the snow */
   NVegLActual = VType->NVegLayers;
   if (LocalSnow->HasSnow == TRUE && VType->UnderStory == TRUE)
     --NVegLActual;
@@ -222,13 +222,13 @@ void MassEnergyBalance(OPTIONSTRUCT *Options, int y, int x,
 
     /* Because we now have a new estimate of the canopy temperature we can
        recalculate the longwave balance */
-    if (LocalSnow->HasSnow == TRUE)
+    if (LocalSnow->HasSnow == TRUE || LocalSnow->Iwq > 0.0)
       Tsurf = LocalSnow->TSurf;
     else if (HeatFluxOption == TRUE)
       Tsurf = LocalSoil->TSurf;
     else
       Tsurf = LocalMet->Tair;
-    LongwaveBalance(Options, VType->OverStory, VType->Fract[0], VType->Vf, 
+    LongwaveBalance(Options, VType->OverStory, VType->Fract[0], VType->Vf,
       LocalMet->Lin, LocalVeg->Tcanopy, Tsurf, LocalRad);
   }
   else if (VType->NVegLayers > 0) {
@@ -241,17 +241,17 @@ void MassEnergyBalance(OPTIONSTRUCT *Options, int y, int x,
       VType->Height, VType->UnderStory, Dt, MS_Rainfall,
       LD_FallVelocity);
   }
-  else {/* If no vegetation, kinetic energy is all due to direct precipitation. */   
+  else {/* If no vegetation, kinetic energy is all due to direct precipitation. */
     if (LocalPrecip->RainFall > 0.0)
       LocalPrecip->MomentSq = MS_Rainfall;
   }
 
   /* If snow on the ground, assume no overland flow erosion. */
-  if (LocalSnow->HasSnow)
+  if (LocalSnow->HasSnow || LocalSnow->Iwq > 0.0)
     LocalPrecip->MomentSq = 0.0;
 
   /* if snow is present, simulate the snow pack dynamics */
-  if (LocalSnow->HasSnow || LocalPrecip->SnowFall > 0.0) {
+  if (LocalSnow->HasSnow || LocalPrecip->SnowFall > 0.0 || LocalSnow->Iwq > 0.0) {
     if (VType->OverStory == TRUE) {
       SnowLongIn = LocalRad->LongIn[1];
       SnowNetShort = LocalRad->NetShort[1];
@@ -271,7 +271,10 @@ void MassEnergyBalance(OPTIONSTRUCT *Options, int y, int x,
         LocalMet->Tair, LocalMet->Vpd, SnowWind,
         &(LocalSnow->PackWater), &(LocalSnow->SurfWater),
         &(LocalSnow->Swq), &(LocalSnow->VaporMassFlux),
-        &(LocalSnow->TPack), &(LocalSnow->TSurf), &MeltEnergy);
+        &(LocalSnow->TPack), &(LocalSnow->TSurf), &MeltEnergy,
+        &(LocalSnow->Iwq), &(LocalSnow->GlMelt), &(LocalSnow->depth),
+        &(LocalSnow->density), &(LocalSnow->glwater), &(LocalSnow->Qold),
+        Options, &(LocalSnow->IceRemoved));
 
     /* Rainfall was added to SurfWater of the snow pack and has to be set to zero */
     LocalPrecip->RainFall = 0.0;
@@ -295,14 +298,6 @@ void MassEnergyBalance(OPTIONSTRUCT *Options, int y, int x,
   else
     LocalSnow->HasSnow = FALSE;
 
-  /*do the glacier add */
-  if (LocalSnow->Swq < 1.0 && VType->Index == GLACIER) {
-    printf("resetting glacier swe of %f to 5.0 meters\n", LocalSnow->Swq);
-    LocalSnow->Glacier += (5.0 - LocalSnow->Swq);
-    LocalSnow->Swq = 5.0;
-    LocalSnow->TPack = 0.0;
-    LocalSnow->TSurf = 0.0;
-  }
 #endif
 
 #ifndef NO_ET
@@ -318,7 +313,7 @@ void MassEnergyBalance(OPTIONSTRUCT *Options, int y, int x,
       NetRadiation = LocalRad->NetShort[0] +
       LocalRad->LongIn[0] - 2 * VType->Fract[0] * LocalRad->LongOut[0];
     LocalRad->NetRadiation[0] = NetRadiation;
-    EvapoTranspiration(0, Options->ImprovRadiation, Dt, LocalMet, NetRadiation, 
+    EvapoTranspiration(0, Options->ImprovRadiation, Dt, LocalMet, NetRadiation,
       Rp, VType, SType, MoistureFlux, LocalSoil, &(LocalPrecip->IntRain[0]),
       LocalEvap, LocalNetwork->Adjust, UpperRa);
     MoistureFlux += LocalEvap->EAct[0] + LocalEvap->EInt[0];
@@ -329,7 +324,7 @@ void MassEnergyBalance(OPTIONSTRUCT *Options, int y, int x,
         LocalRad->NetShort[1] +
         LocalRad->LongIn[1] - VType->Fract[1] * LocalRad->LongOut[1];
       LocalRad->NetRadiation[1] = NetRadiation;
-      EvapoTranspiration(1, Options->ImprovRadiation, Dt, LocalMet, NetRadiation, 
+      EvapoTranspiration(1, Options->ImprovRadiation, Dt, LocalMet, NetRadiation,
         Rp, VType, SType, MoistureFlux, LocalSoil, &(LocalPrecip->IntRain[1]),
         LocalEvap, LocalNetwork->Adjust, LowerRa);
       MoistureFlux += LocalEvap->EAct[1] + LocalEvap->EInt[1];
@@ -345,7 +340,7 @@ void MassEnergyBalance(OPTIONSTRUCT *Options, int y, int x,
     NetRadiation =
       LocalRad->NetShort[0] +
       LocalRad->LongIn[0] - VType->Fract[0] * LocalRad->LongOut[0];
-    EvapoTranspiration(0, Options->ImprovRadiation, Dt, LocalMet, NetRadiation, 
+    EvapoTranspiration(0, Options->ImprovRadiation, Dt, LocalMet, NetRadiation,
       Rp, VType, SType, MoistureFlux, LocalSoil, &(LocalPrecip->IntRain[0]),
       LocalEvap, LocalNetwork->Adjust, LowerRa);
     MoistureFlux += LocalEvap->EAct[0] + LocalEvap->EInt[0];
@@ -450,7 +445,7 @@ void MassEnergyBalance(OPTIONSTRUCT *Options, int y, int x,
       /* Check that the B parameter > 0 */
       if ((LocalSoil->InfiltAcc > 0.) && (SType->Porosity[0] > LocalSoil->MoistInit)) {
         B = (SType->Porosity[0] - LocalSoil->MoistInit) * (SType->G_Infilt + SurfaceWater);
-          Infiltrability = SType->Ks[0] * exp((LocalSoil->InfiltAcc) / B) /
+        Infiltrability = SType->Ks[0] * exp((LocalSoil->InfiltAcc) / B) /
           (exp((LocalSoil->InfiltAcc) / B) - 1.);
       }
       else
@@ -515,7 +510,7 @@ void MassEnergyBalance(OPTIONSTRUCT *Options, int y, int x,
       MoistureFlux, SType->NLayers, VType->RootDepth,
       SType, MeltEnergy, LocalSoil);
     Tsurf = LocalSoil->TSurf;
-    LongwaveBalance(Options, VType->OverStory, VType->Fract[0], VType->Vf, 
+    LongwaveBalance(Options, VType->OverStory, VType->Fract[0], VType->Vf,
       LocalMet->Lin, LocalVeg->Tcanopy, Tsurf, LocalRad);
   }
   else

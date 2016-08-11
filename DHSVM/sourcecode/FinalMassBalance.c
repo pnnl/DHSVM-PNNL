@@ -45,7 +45,7 @@ void FinalMassBalance(FILES *Out, AGGREGATED *Total, WATERBALANCE *Mass)
 
   NewWaterStorage = Total->Soil.IExcess + Total->Road.IExcess + 
     Total->CanopyWater + Total->SoilWater +
-    Total->Snow.Swq + Total->Soil.SatFlow + Total->Soil.DetentionStorage;
+    Total->Snow.Swq + Total->Snow.Iwq + Total->Soil.SatFlow + Total->Soil.DetentionStorage + Total->Snow.IceRemoved;
 
   Output = Mass->CumChannelInt + ( Mass->CumRoadInt  -
     Mass->CumCulvertReturnFlow ) + Mass->CumET;
@@ -72,11 +72,12 @@ void FinalMassBalance(FILES *Out, AGGREGATED *Total, WATERBALANCE *Mass)
   fprintf(stderr, "\n      Initial Storage ............        %12.3f", Mass->StartWaterStorage*1000);
   fprintf(stderr, "\n      Final Storage ..............        %12.3f", NewWaterStorage*1000);
   fprintf(stderr, "\n          Final SWQ ..............        %12.3f", Total->Snow.Swq*1000);
+  fprintf(Out->FilePtr, "\n          Final IWQ ..............        %12.3f", Total->Snow.Iwq*1000);
+  fprintf(Out->FilePtr, "\n          Final Ice Removed ......        %12.3f", Total->Snow.IceRemoved*1000);
   fprintf(stderr, "\n          Final Soil Moisture ....        %12.3f", (Total->SoilWater + Total->Soil.SatFlow)*1000);
   fprintf(stderr, "\n          Final Surface ..........        %12.3f", (Total->Soil.IExcess  + 
 						                               Total->CanopyWater + Total->Soil.DetentionStorage)*1000);
   fprintf(stderr, "\n          Final Road Surface .....        %12.3f\n", Total->Road.IExcess*1000);
-  fprintf(stderr, "\n  Mass added to glacier ..........        %12.3f\n", Total->Snow.Glacier*1000);
   fprintf(stderr, "  ******************************************************");
   fprintf(stderr, "\n  Mass Error (mm).................        %12.3f", MassError*1000);
   
@@ -96,11 +97,12 @@ void FinalMassBalance(FILES *Out, AGGREGATED *Total, WATERBALANCE *Mass)
   fprintf(Out->FilePtr, "\n      Initial Storage ............        %12.3f", Mass->StartWaterStorage*1000);
   fprintf(Out->FilePtr, "\n      Final Storage ..............        %12.3f", NewWaterStorage*1000);
   fprintf(Out->FilePtr, "\n          Final SWQ ..............        %12.3f", Total->Snow.Swq*1000);
+  fprintf(stderr, "\n          Final IWQ ..............        %12.3f", Total->Snow.Iwq*1000);
+  fprintf(stderr, "\n          Final IceRemoved .......        %12.3f", Total->Snow.IceRemoved*1000);
   fprintf(Out->FilePtr, "\n          Final Soil Moisture ....        %12.3f", (Total->SoilWater + Total->Soil.SatFlow)*1000);
   fprintf(Out->FilePtr, "\n          Final Surface ..........        %12.3f", (Total->Soil.IExcess  + 
 						                               Total->CanopyWater + Total->Soil.DetentionStorage)*1000);
   fprintf(Out->FilePtr, "\n          Final Road Surface .....        %12.3f\n", Total->Road.IExcess*1000);
-  fprintf(Out->FilePtr, "\n  Mass added to glacier ..........        %12.3f\n", Total->Snow.Glacier*1000);
   fprintf(Out->FilePtr, "  ******************************************************");
   fprintf(Out->FilePtr, "\n  Mass Error (mm).................        %12.3f", MassError*1000);
 	  	 

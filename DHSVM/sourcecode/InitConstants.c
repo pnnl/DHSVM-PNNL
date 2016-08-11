@@ -5,12 +5,12 @@
  * AUTHOR:       Bart Nijssen
  * ORG:          University of Washington, Department of Civil Engineering
  * E-MAIL:       nijssen@u.washington.edu
- * ORIG-DATE:    Apr-96 
+ * ORIG-DATE:    Apr-96
  * DESCRIPTION:  Initialize constants for DHSVM
  * DESCRIP-END.
  * FUNCTIONS:    InitConstants()
  * COMMENTS:
- * $Id: InitConstants.c,v 1.16 2004/08/18 01:01:28 colleen Exp $     
+ * $Id: InitConstants.c,v 1.16 2004/08/18 01:01:28 colleen Exp $
  */
 
 #include <ctype.h>
@@ -28,31 +28,31 @@
 #include "constants.h"
 #include "rad.h"
 
-/*****************************************************************************
-  Function name: InitConstants()
+ /*****************************************************************************
+   Function name: InitConstants()
 
-  Purpose      : Initialize constants and settings for DHSVM run
-                 Processes the following sections in InFile:
-                 [OPTIONS]
-                 [AREA]
-                 [TIME]
-                 [CONSTANTS}
+   Purpose      : Initialize constants and settings for DHSVM run
+                  Processes the following sections in InFile:
+                  [OPTIONS]
+                  [AREA]
+                  [TIME]
+                  [CONSTANTS}
 
-  Required     :
-    LISTPTR Input          - Linked list with input strings
-    OPTIONSTRUCT *Options   - Structure with different program options
-    MAPSIZE *Map            - Coverage and resolution of model area
-    SOLARGEOMETRY *SolarGeo - Solar geometry information
-    TIMESTRUCT *Time        - Begin and end times, model timestep
+   Required     :
+     LISTPTR Input          - Linked list with input strings
+     OPTIONSTRUCT *Options   - Structure with different program options
+     MAPSIZE *Map            - Coverage and resolution of model area
+     SOLARGEOMETRY *SolarGeo - Solar geometry information
+     TIMESTRUCT *Time        - Begin and end times, model timestep
 
-  Returns      : void
+   Returns      : void
 
-  Modifies     : (see list of required above)
+   Modifies     : (see list of required above)
 
-  Comments     :
-*****************************************************************************/
+   Comments     :
+ *****************************************************************************/
 void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
-		   SOLARGEOMETRY *SolarGeo, TIMESTRUCT *Time)
+  SOLARGEOMETRY *SolarGeo, TIMESTRUCT *Time)
 {
   int i;			/* counter */
   double PointModelX;		/* X-coordinate for POINT model mode */
@@ -89,9 +89,10 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
     {"OPTIONS", "SHADING DATA PATH", "", ""},
     {"OPTIONS", "SHADING DATA EXTENSION", "", ""},
     {"OPTIONS", "SKYVIEW DATA PATH", "", ""},
-	{"OPTIONS", "STREAM TEMPERATURE", "", ""}, 
-	{"OPTIONS", "RIPARIAN SHADING", "", ""}, 
+    {"OPTIONS", "STREAM TEMPERATURE", "", ""},
+    {"OPTIONS", "RIPARIAN SHADING", "", ""},
     {"OPTIONS", "IMPROVED RADIATION SCHEME", "", "" },
+    {"OPTIONS", "GLACIER", "", "" },
     {"AREA", "COORDINATE SYSTEM", "", ""},
     {"AREA", "EXTREME NORTH", "", ""},
     {"AREA", "EXTREME WEST", "", ""},
@@ -119,6 +120,7 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
     {"CONSTANTS", "TEMPERATURE LAPSE RATE", "", ""},
     {"CONSTANTS", "PRECIPITATION LAPSE RATE", "", ""},
     {"CONSTANTS", "PRECIPITATION MULTIPLIER", "", ""},
+    {"CONSTANTS", "GLACIER ALBEDO", "", ""},
     { "CONSTANTS", "ALBEDO ACCUMULATION LAMBDA", "", "" },
     { "CONSTANTS", "ALBEDO MELTING LAMBDA", "", "" },
     { "CONSTANTS", "ALBEDO ACCUMULATION MIN", "", "" },
@@ -129,7 +131,7 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
   /* Read the key-entry pairs from the input file */
   for (i = 0; StrEnv[i].SectionName; i++)
     GetInitString(StrEnv[i].SectionName, StrEnv[i].KeyName, StrEnv[i].Default,
-		  StrEnv[i].VarStr, (unsigned long) BUFSIZE, Input);
+      StrEnv[i].VarStr, (unsigned long)BUFSIZE, Input);
 
   /**************** Determine model options ****************/
 
@@ -183,7 +185,7 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
     if (!CopyInt(&(Options->CressRadius), StrEnv[cressman_radius].VarStr, 1))
       ReportError(StrEnv[cressman_radius].KeyName, 51);
     if (!CopyInt
-	(&(Options->CressStations), StrEnv[cressman_stations].VarStr, 1))
+      (&(Options->CressStations), StrEnv[cressman_stations].VarStr, 1))
       ReportError(StrEnv[cressman_stations].KeyName, 51);
   }
 
@@ -206,19 +208,19 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
     Options->HeatFlux = FALSE;
   else
     ReportError(StrEnv[sensible_heat_flux].KeyName, 51);
- 
+
   /* Determine if the maximum infiltration rate is static or dynamic */
   if (strncmp(StrEnv[infiltration].VarStr, "STATIC", 6) == 0) {
     Options->Infiltration = STATIC;
   }
   else if (strncmp(StrEnv[infiltration].VarStr, "DYNAMIC", 7) == 0) {
-    Options->Infiltration = DYNAMIC ;
+    Options->Infiltration = DYNAMIC;
     printf("WARNING: Dynamic maximum infiltration capacity has\n");
     printf("not been fully tested. It is a work in progress.\n\n");
   }
   else
     ReportError(StrEnv[infiltration].KeyName, 51);
-    
+
   /* Determine whether the mm5 interface should be used */
   if (strncmp(StrEnv[mm5].VarStr, "TRUE", 4) == 0)
     Options->MM5 = TRUE;
@@ -288,14 +290,14 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
 
   /* Determine if CANOPY SHADING is called for */
   if (strncmp(StrEnv[canopy_shading].VarStr, "TRUE", 4) == 0) {
-	Options->CanopyShading = TRUE;
-	if (Options->StreamTemp == FALSE) {
-	  printf("Stream temp module must be turned on to allow canopy shading options\n");
-	  exit(-1);
-	}
+    Options->CanopyShading = TRUE;
+    if (Options->StreamTemp == FALSE) {
+      printf("Stream temp module must be turned on to allow canopy shading options\n");
+      exit(-1);
+    }
   }
   else if (strncmp(StrEnv[canopy_shading].VarStr, "FALSE", 5) == 0)
-	Options->CanopyShading = FALSE;
+    Options->CanopyShading = FALSE;
   else
     ReportError(StrEnv[canopy_shading].KeyName, 51);
 
@@ -306,6 +308,18 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
     Options->ImprovRadiation = FALSE;
   else
     ReportError(StrEnv[improv_radiation].KeyName, 51);
+
+  /*************************** Determine if Glacier Model is called for ***********************/
+  if (strncmp(StrEnv[glacier].VarStr, "NO_GLACIER", 10) == 0)
+    Options->Glacier = NO_GLACIER;
+  else if (strncmp(StrEnv[glacier].VarStr, "GLSPINUP", 6) == 0)
+    Options->Glacier = GLSPINUP;
+  else if (strncmp(StrEnv[glacier].VarStr, "GLSTATIC", 6) == 0)
+    Options->Glacier = GLSTATIC;
+  else if (strncmp(StrEnv[glacier].VarStr, "GLDYNAMIC", 7) == 0)
+    Options->Glacier = GLDYNAMIC;
+  else
+    ReportError(StrEnv[glacier].KeyName, 51);
 
   /* Determine if listed met stations outside bounding box are used */
   if (strncmp(StrEnv[outside].VarStr, "TRUE", 4) == 0)
@@ -406,16 +420,16 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
 
   if (!CopyFloat(&(SolarGeo->Latitude), StrEnv[center_latitude].VarStr, 1))
     ReportError(StrEnv[center_latitude].KeyName, 51);
-  SolarGeo->Latitude *= (float) RADPDEG;
+  SolarGeo->Latitude *= (float)RADPDEG;
 
   if (!CopyFloat(&(SolarGeo->Longitude), StrEnv[center_longitude].VarStr, 1))
     ReportError(StrEnv[center_longitude].KeyName, 51);
-  SolarGeo->Longitude *= (float) RADPDEG;
+  SolarGeo->Longitude *= (float)RADPDEG;
 
   if (!CopyFloat(&(SolarGeo->StandardMeridian),
-		 StrEnv[time_zone_meridian].VarStr, 1))
+    StrEnv[time_zone_meridian].VarStr, 1))
     ReportError(StrEnv[time_zone_meridian].KeyName, 51);
-  SolarGeo->StandardMeridian *= (float) RADPDEG;
+  SolarGeo->StandardMeridian *= (float)RADPDEG;
 
   if (!CopyInt(&(Map->NY), StrEnv[number_of_rows].VarStr, 1))
     ReportError(StrEnv[number_of_rows].KeyName, 51);
@@ -427,7 +441,7 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
     ReportError(StrEnv[grid_spacing].KeyName, 51);
 
   Map->DX = Map->DY;
-  Map->DXY = (float) sqrt(Map->DX * Map->DX + Map->DY * Map->DY);
+  Map->DXY = (float)sqrt(Map->DX * Map->DX + Map->DY * Map->DY);
   Map->X = 0;
   Map->Y = 0;
   Map->OffsetX = 0;
@@ -461,9 +475,9 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
   if (!SScanDate(StrEnv[model_end].VarStr, &(End)))
     ReportError(StrEnv[model_end].KeyName, 51);
 
-  InitTime(Time, &Start, &End, NULL, NULL, (int) TimeStep);
+  InitTime(Time, &Start, &End, NULL, NULL, (int)TimeStep);
 
-   /**************** Determine model constants ****************/
+  /**************** Determine model constants ****************/
 
   if (!CopyFloat(&Z0_GROUND, StrEnv[ground_roughness].VarStr, 1))
     ReportError(StrEnv[ground_roughness].KeyName, 51);
@@ -490,7 +504,7 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
     ReportError(StrEnv[snow_lai_multiplier].KeyName, 51);
 
   if (!CopyFloat(&MIN_INTERCEPTION_STORAGE,
-		 StrEnv[min_intercepted_snow].VarStr, 1))
+    StrEnv[min_intercepted_snow].VarStr, 1))
     ReportError(StrEnv[min_intercepted_snow].KeyName, 51);
 
   if (!CopyUChar(&OUTSIDEBASIN, StrEnv[outside_basin].VarStr, 1))
@@ -510,8 +524,11 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
   else
     PRECIPLAPSE = NOT_APPLICABLE;
 
+  if (!CopyFloat(&GL_ALB, StrEnv[glacier_albedo].VarStr, 1))
+    ReportError(StrEnv[glacier_albedo].KeyName, 51);
+
   if (!CopyFloat(&PRECIPMULTIPLIER, StrEnv[precip_multiplier].VarStr, 1))
-      ReportError(StrEnv[precip_multiplier].KeyName, 51);
+    ReportError(StrEnv[precip_multiplier].KeyName, 51);
 
   if (!CopyFloat(&ALB_ACC_LAMBDA,
     StrEnv[alb_acc_lambda].VarStr, 1))

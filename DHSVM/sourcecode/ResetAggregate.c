@@ -10,7 +10,7 @@
  * DESCRIP-END.
  * FUNCTIONS:    ResetAggregate.()
  * COMMENTS:
- * $Id: ResetAggregate.c,v 1.12 2004/05/03 03:28:46 colleen Exp $     
+ * $Id: ResetAggregate.c,v 1.12 2004/05/03 03:28:46 colleen Exp $
  */
 
 #include <stdio.h>
@@ -19,13 +19,13 @@
 #include "data.h"
 #include "functions.h"
 
-/*****************************************************************************
-  ResetAggregate()
+ /*****************************************************************************
+   ResetAggregate()
 
-  Set all the area averages to zero
-*****************************************************************************/
+   Set all the area averages to zero
+ *****************************************************************************/
 void ResetAggregate(LAYER * Soil, LAYER * Veg, AGGREGATED * Total,
-                    OPTIONSTRUCT *Options)
+  OPTIONSTRUCT *Options)
 {
   int i;			/* counter */
   int j;			/* counter */
@@ -70,6 +70,9 @@ void ResetAggregate(LAYER * Soil, LAYER * Veg, AGGREGATED * Total,
   Total->Snow.SnowCoverOver = FALSE;
   Total->Snow.LastSnow = 0;
   Total->Snow.Swq = 0.0;
+  Total->Snow.Iwq = 0.0;
+  Total->Snow.GlMelt = 0.0;
+  Total->Snow.IceRemoved = 0.0;
   Total->Snow.Melt = 0.0;
   Total->Snow.PackWater = 0.0;
   Total->Snow.TPack = 0.0;
@@ -83,7 +86,6 @@ void ResetAggregate(LAYER * Soil, LAYER * Veg, AGGREGATED * Total,
 
   /* initialize soil moisture data.  The total amount of runoff is calculated
      in the RouteSurface() routine */
-
   Total->Soil.Soil = 0;
   Total->Soil.Depth = 0.0;
   for (i = 0; i < Soil->MaxLayers + 1; i++)
