@@ -107,7 +107,7 @@ void Aggregate(MAPSIZE *Map, OPTIONSTRUCT *Options, TOPOPIX **TopoMap,
 		Total->Snow.HasSnow = TRUE;
 		Total->Snow.Swq += Snow[y][x].Swq;
  		Total->Snow.Iwq += Snow[y][x].Iwq;
-                Total->Snow.IceRemoved += Snow[y][x].IceRemoved;
+        Total->Snow.IceRemoved += Snow[y][x].IceRemoved;
 		Total->Snow.Melt += Snow[y][x].Outflow;
 		Total->Snow.GlMelt += Snow[y][x].GlMelt;
 		Total->Snow.PackWater += Snow[y][x].PackWater;
@@ -207,6 +207,7 @@ void Aggregate(MAPSIZE *Map, OPTIONSTRUCT *Options, TOPOPIX **TopoMap,
   Total->Snow.Swq /= NPixels;
   Total->Snow.Iwq /= NPixels;
   Total->Snow.Melt /= NPixels;
+  Total->Snow.IceRemoved /= NPixels;
   Total->Snow.PackWater /= NPixels;
   Total->Snow.TPack /= NPixels;
   Total->Snow.SurfWater /= NPixels;
