@@ -138,7 +138,8 @@ enum KEYS {
   MM5_longwave, MM5_precip, MM5_terrain, MM5_lapse,
   MM5_rows, MM5_cols, MM5_ext_north, MM5_ext_west, MM5_dy,
   /* grid information */
-  grid_rows = 0, grid_cols, grid_ext_north, grid_ext_east, grid_size, grid_met_file,
+  grid_ext_north=0, grid_ext_south, grid_ext_east, grid_ext_west, tot_grid, decim,
+  grid_met_file, file_prefix,
   /* Soil information */
   soil_description = 0, lateral_ks, exponent, depth_thresh, max_infiltration, capillary_drive,
   soil_albedo, number_of_layers, porosity, pore_size, bubbling_pressure, field_capacity,

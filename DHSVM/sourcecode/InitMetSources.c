@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <dirent.h>
 #include "settings.h"
 #include "data.h"
 #include "Calendar.h"
@@ -64,7 +65,7 @@ void InitMetSources(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
 {
   const char *Routine = "InitMetSources";
 
-  if (Options->Outside == TRUE && Options->MM5 == FALSE && Options->GRIDMET == FALSE) {
+  if (Options->Outside == TRUE && Options->MM5 == FALSE) {
     printf("\nAll met stations in list will be included \n");
     if (Options->Prism == TRUE) {
       printf("WARNING: PRISM Option is also on\n");
@@ -81,7 +82,7 @@ void InitMetSources(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
     InitGridMet(Options, Input, Map, TopoMap, Grid, Stat, NStats);
 
   /* otherwise, check and initialize the other options */
-  if (Options->QPF == TRUE || (Options->MM5 == FALSE && Options->GRIDMET == FALSE)) 
+  if (Options->QPF == TRUE || (Options->MM5 == FALSE && Options->GRIDMET == FALSE))
     InitStations(Input, Map, Time->NDaySteps, Options, NStats, Stat);
 
   if (Options->QPF == TRUE || Options->MM5 == FALSE) {
@@ -224,27 +225,34 @@ Function name: InitGridMet()
 Purpose      : Read the gridded met file.  This information
 is in the [METEOROLOGY] section
 *****************************************************************************/
-void InitGridMet(OPTIONSTRUCT *Options, LISTPTR Input, MAPSIZE *Map, 
+void InitGridMet(OPTIONSTRUCT *Options, LISTPTR Input, MAPSIZE *Map,
   TOPOPIX **TopoMap, GRID *Grid, METLOCATION **Stat, int *NStats)
 {
   char *Routine = "InitGridMet";
   char KeyName[BUFSIZE + 1];
   char VarStr[BUFSIZE + 1];
-  int i, j, k, m;
+  int i, k, m;
   float lat, lon, North, East;
+  char tempfilename[BUFSIZE + 1];
+  FILE *PrismStatFile;
+  char junk[BUFSIZE + 1], infileformat[BUFSIZE + 1];
+  DIR *dir;
+  struct dirent *ent;
 
   STRINIENTRY StrEnv[] = {
-    { "METEOROLOGY", "GRID ROWS", "", "" },
-    { "METEOROLOGY", "GRID COLS", "", "" },
     { "METEOROLOGY", "EXTREME NORTH LAT", "", "" },
+    { "METEOROLOGY", "EXTREME SOUTH LAT", "", "" },
     { "METEOROLOGY", "EXTREME EAST LON", "", "" },
-    { "METEOROLOGY", "GRID SIZE", "", "" },
+    { "METEOROLOGY", "EXTREME WEST LON", "", "" },
+    { "METEOROLOGY", "NUMBER OF GRIDS", "", "" },
+	{ "METEOROLOGY", "GRID_DECIMAL", "", "" },
     { "METEOROLOGY", "MET FILE PATH", "", "" },
+    { "METEOROLOGY", "FILE PREFIX", "", "" },
     { NULL, NULL, "", NULL },
   };
 
-   /* Allocate memory for the stations */
-  if (!(Grid = (GRID *) calloc(1, sizeof(GRID))))
+  /* Allocate memory for the stations */
+  if (!(Grid = (GRID *)calloc(1, sizeof(GRID))))
     ReportError(Routine, 1);
 
   /* Read the key-entry pairs from the input file */
@@ -252,73 +260,131 @@ void InitGridMet(OPTIONSTRUCT *Options, LISTPTR Input, MAPSIZE *Map,
     GetInitString(StrEnv[i].SectionName, StrEnv[i].KeyName, StrEnv[i].Default,
       StrEnv[i].VarStr, (unsigned long)BUFSIZE, Input);
 
-  if (!CopyFloat(&(Grid->LatOrig), StrEnv[grid_ext_north].VarStr, 1))
-    ReportError(StrEnv[grid_ext_north].KeyName, 51);
+  /* if the outside is FALSE, only the grids within the bounding box defined
+  by the parameters below are included. Else, the grids within the basin mask
+  are include. */
+  if (Options->Outside == TRUE) {
+    if (!CopyFloat(&(Grid->LatNorth), StrEnv[grid_ext_north].VarStr, 1))
+      ReportError(StrEnv[grid_ext_north].KeyName, 51);
+    if (!CopyFloat(&(Grid->LatSouth), StrEnv[grid_ext_south].VarStr, 1))
+      ReportError(StrEnv[grid_ext_south].KeyName, 51);
+    if (!CopyFloat(&(Grid->LonEast), StrEnv[grid_ext_east].VarStr, 1))
+      ReportError(StrEnv[grid_ext_east].KeyName, 51);
+    if (!CopyFloat(&(Grid->LonWest), StrEnv[grid_ext_west].VarStr, 1))
+      ReportError(StrEnv[grid_ext_west].KeyName, 51);
+  }
+  else {
+    Grid->LatNorth = NOT_APPLICABLE;
+    Grid->LatSouth = NOT_APPLICABLE;
+    Grid->LonEast = NOT_APPLICABLE;
+    Grid->LonWest = NOT_APPLICABLE;
+  }
 
-  if (!CopyFloat(&(Grid->LonOrig), StrEnv[grid_ext_east].VarStr, 1))
-    ReportError(StrEnv[grid_ext_east].KeyName, 51);
-
-  if (!CopyInt(&(Grid->row), StrEnv[grid_rows].VarStr, 1))
-    ReportError(StrEnv[grid_rows].KeyName, 51);
-
-  if (!CopyInt(&(Grid->col), StrEnv[grid_cols].VarStr, 1))
-    ReportError(StrEnv[grid_cols].KeyName, 51);
-
-  /* total number of grid cell */
-  *NStats = Grid->row * Grid->col; 
-
-  if (!CopyFloat(&(Grid->GridSize), StrEnv[grid_size].VarStr, 1))
-    ReportError(StrEnv[grid_size].KeyName, 51);
-
+  /* estimate of total grid cells for the basin (must > actual used grids */
+  if (!CopyInt(&(Grid->NGrids), StrEnv[tot_grid].VarStr, 1))
+    ReportError(StrEnv[tot_grid].KeyName, 51);
+  
+  /* Number of digits after decimal point in forcing file names */
+  if (!CopyInt(&(Grid->Decimal), StrEnv[decim].VarStr, 1))
+    ReportError(StrEnv[decim].KeyName, 51);
+  
   /* path to all grid met files */
   if (IsEmptyStr(StrEnv[grid_met_file].VarStr))
     ReportError(StrEnv[grid_met_file].KeyName, 51);
   strcpy(Grid->filepath, StrEnv[grid_met_file].VarStr);
 
+  /* (same) file prefix of all grid met files */
+  if (IsEmptyStr(StrEnv[file_prefix].VarStr))
+    ReportError(StrEnv[file_prefix].KeyName, 51);
+  strcpy(Grid->fileprefix, StrEnv[file_prefix].VarStr);
+
   /* Allocate memory for the stations */
-  if (!(*Stat = (METLOCATION *)calloc(*NStats, sizeof(METLOCATION))))
+  if (!(*Stat = (METLOCATION *)calloc(Grid->NGrids, sizeof(METLOCATION))))
     ReportError(Routine, 1);
 
+  /* define the format of file input */
+  sprintf(junk, "%s_%%f_%%f", Grid->fileprefix);
+  /* define input file format */
+  sprintf(infileformat, "%%s%%s_%%.%if_%%.%if", Grid->Decimal, Grid->Decimal);
+  
+  printf("\nReading the gridded met files ...\n");
   k = 0;
   m = 0;
-  for (i = 0; i < Grid->col; i++) {
-    for (j = 0; j < Grid->row; j++) {
-      lon = Grid->LonOrig - Grid->GridSize * i;
-      lat = Grid->LatOrig - Grid->GridSize * j;
-
-      /* convert lat and lon to utm */
-      deg2utm(lat, lon, &East, &North);
-      (*Stat)[k].Loc.N = Round(((Map->Yorig - 0.5 * Map->DY) - North) / Map->DY);
-      (*Stat)[k].Loc.E = Round((East - (Map->Xorig + 0.5 * Map->DX)) / Map->DX);
-      sprintf((*Stat)[k].Name, "data_%.5f_%.5f", lat, lon);
-      m += 1;
-      if (((*Stat)[k].Loc.N >= Map->NY || (*Stat)[k].Loc.N < 0 || 
-        (*Stat)[k].Loc.E >= Map->NX || (*Stat)[k].Loc.E < 0) )
-        printf("Station %d outside the basin: %s ignored\n", m + 1, (*Stat)[k].Name);
+  if ((dir = opendir(Grid->filepath)) != NULL) {
+    /* print all the files and directories within directory */
+    while ((ent = readdir(dir)) != NULL) {
+      if (!strcmp(ent->d_name, ".") || !strcmp(ent->d_name, "..")) {
+        continue;
+      }
       else {
-        if (INBASIN(TopoMap[(*Stat)[k].Loc.N][(*Stat)[k].Loc.E].Mask)) {  
-          /* open met data file */
-          sprintf((*Stat)[k].MetFile.FileName, "%s%.5f_%.5f", Grid->filepath, lat, lon);
-          
-          if (!((*Stat)[k].MetFile.FilePtr = fopen((*Stat)[k].MetFile.FileName, "r"))) {
-            printf("%s doesn't exist\n", (*Stat)[k].MetFile.FileName);
-            continue;
+        sscanf(ent->d_name, junk, &lat, &lon);
+
+        /* convert lat and lon to utm */
+        deg2utm(lat, lon, &East, &North);		
+		sprintf((*Stat)[k].Name, "data_%f_%f\n", lat, lon);
+		
+		(*Stat)[k].Loc.N = Round(((Map->Yorig - 0.5 * Map->DY) - North) / Map->DY);
+        (*Stat)[k].Loc.E = Round((East - (Map->Xorig + 0.5 * Map->DX)) / Map->DX);
+        m += 1;
+
+        /* met grids must be with the bounding box of the basin */
+		if (((*Stat)[k].Loc.N >= Map->NY || (*Stat)[k].Loc.N < 0 ||
+          (*Stat)[k].Loc.E >= Map->NX || (*Stat)[k].Loc.E < 0))
+          printf("..... Station %d outside the basin bounding box: %s ignored\n", m, (*Stat)[k].Name);
+        else {
+          /* only include grids within the mask */
+          if (Options->Outside == FALSE) {
+            if (INBASIN(TopoMap[(*Stat)[k].Loc.N][(*Stat)[k].Loc.E].Mask)) {
+              
+			  /* open met data file */
+              sprintf((*Stat)[k].MetFile.FileName, infileformat, Grid->filepath, Grid->fileprefix, lat, lon);
+
+              if (!((*Stat)[k].MetFile.FilePtr = fopen((*Stat)[k].MetFile.FileName, "r"))) {
+                printf("..... %s doesn't exist\n", (*Stat)[k].MetFile.FileName);
+                continue;
+              }
+              printf("..... Station %d: %s is selected\n", m, (*Stat)[k].Name);
+              k = k + 1;
+            }
           }
-          k = k + 1;
+          else {
+            if (lat <= Grid->LatNorth && lat >= Grid->LatSouth && lon >= Grid->LonWest && lon <= Grid->LonWest) {
+              if (!((*Stat)[k].MetFile.FilePtr = fopen((*Stat)[k].MetFile.FileName, "r"))) {
+                //printf("..... %s doesn't exist\n", (*Stat)[k].MetFile.FileName);
+                continue;
+              }
+              printf("..... Station %d: %s is selected\n", m, (*Stat)[k].Name);
+              k = k + 1;
+            }
+          }
         }
       }
     }
+    closedir(dir);
   }
+  else {
+    /* could not open directory */
+    ReportError(Grid->filepath, 3);
+  }
+
   /* if no grid is found within the mask, exit with error */
   if (k < 1)
     ReportError(Routine, 69);
 
-  if (Options->Outside == FALSE)
-    printf("Final number of stations in bounding box is %d \n\n", k);
-  else
-    printf("Forced to include all %d stations \n", k);
   *NStats = k;
+  printf("\n\nFinal number of stations in bounding box is %d \n\n", k);
 
+  if (Options->Outside == TRUE && Options->Prism == TRUE) {
+    for (i = 0; i < *NStats; i++) {
+      sprintf(tempfilename, "%s.prism", (*Stat)[i].MetFile.FileName);
+      /* Options->PrismDataExt); */
+      OpenFile(&PrismStatFile, tempfilename, "rt", FALSE);
+      for (k = 0; k < 12; k++) {
+        fscanf(PrismStatFile, "%f ", &(*Stat)[i].PrismPrecip[k]);
+      }
+      fclose(PrismStatFile);
+    }
+  }
 }
 /*******************************************************************************
   Function name: InitMM5()
