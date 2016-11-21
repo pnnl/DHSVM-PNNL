@@ -1,0 +1,55 @@
+#!/bin/csh 
+
+### runs the three programs used to generate the terrain and shadowing maps
+
+### *NOTE* lots of hardcoded stuff in here, please edit
+
+set cell = 30       #cell size (m)
+set lat =  47.60893338077    
+set lon =  -122.1507756929 
+
+set rows = 423                                                                
+set cols = 211
+
+set elev_file = ../input/mercer.dem.bin  #  input file name 
+
+### paths for UNIX and DOS are provided. Comment out/in as needed... 
+
+set outpath = ../input #no trailing slash
+                                                                            
+
+### convert to binary (if not already done):
+
+###./myconvert ascii float $elev_file $elev_file.bin $rows $cols
+
+### make skyview map for dem
+	gcc skyviewBin.c -o skyview -lm
+	./skyview $elev_file  $outpath/SkyView.bin 8 $rows $cols $cell
+
+### make hourly shadow maps for each month
+### and average the hourly time steps to the model time step
+
+### compile the C files
+gcc average_shadow_bin.c -o average_shadow -lm
+gcc make_shade_maps_bin.c -o make_dhsvm_shade_maps -lm
+
+@ month = 1
+
+while ($month <= 12)
+
+	if ($month <10) set mon = 0$month
+     if ($month >= 10) then
+          set mon = $month
+     endif
+
+### make shade maps
+        ./make_dhsvm_shade_maps $elev_file  $outpath/Shadow.$mon.hourly.bin  $rows  $cols  $cell  $lon $lat -120 2000 $month 15 1.0
+
+### average hourly maps to model time step
+	./average_shadow $outpath/Shadow.$mon.hourly.bin $outpath/Shadow.$mon.bin 24 8 $rows $cols
+
+	@ month++ 
+
+end				### month loop
+
+rm $outpath/Shadow.??.hourly.bin 

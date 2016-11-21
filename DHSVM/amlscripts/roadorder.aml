@@ -1,0 +1,281 @@
+/* -------------------------------------------------------------
+/* file: roadorder2.aml
+/* -------------------------------------------------------------
+/* -------------------------------------------------------------
+/* Battelle Memorial Institute
+/* Pacific Northwest Laboratory
+/* -------------------------------------------------------------
+/* -------------------------------------------------------------
+/* Created November 29, 1995 by  William A Perkins
+/* Last Change: Fri Jun 14 11:40:07 1996 by  William A Perkins <perk@euterpe.muse.pnl.gov>
+/* -------------------------------------------------------------
+
+/* RCS ID: $Id: roadorder.aml,v 1.2 1996/09/25 22:19:59 perk Exp $
+
+&severity &error &routine hndlerr
+&severity &warning &ignore
+
+&args roads elevrte slopeinfo
+
+/* -------------------------------------------------------------
+/* variable initialization
+/* -------------------------------------------------------------
+&setvar omessages = [show &messages]
+&messages &on /* &off &info
+&setvar odisplay = [show display]
+display 0
+
+&setvar program = ROADORDER
+&setvar usage = usage: %program% <cover> {route}
+
+/* -------------------------------------------------------------
+/* check command line
+/* -------------------------------------------------------------
+&if [null %roads%] &then
+  &do
+    &call recover
+    &return &error %usage%
+  &end
+&setvar roads = [translate %roads%]
+
+                                /* check for proper route on arc
+                                /* coverage
+
+&if [null %elevrte%] &then
+  &setvar elevrte = elevation
+&setvar elevrte = [translate %elevrte%]
+&if not [exists %roads% -route.%elevrte%] &then
+  &do
+    &type %program%: error: route %elevrte% does not exist in cover %roads%
+    &call recover
+    &return &error %usage%
+  &end
+&if not [exists %roads% -section.%elevrte%] &then
+  &do
+    &type %program%: error: section table for route  %elevrte% does not exist in cover %roads%
+    &call recover
+    &return &error %usage%
+  &end
+
+                                /* slope event database info file
+
+&if [null %slopeinfo%] &then
+  &setvar slopeinfo = %roads%.slope
+&setvar slopeinfo = [translate %slopeinfo%]
+&if not [exists %slopeinfo% -info] &then
+  &do
+    &type %program%: error: slope event database %slopeinfo% does not exist
+    &call recover
+    &return &errror %usage%
+  &end
+
+/* -------------------------------------------------------------
+/* do the work
+/* -------------------------------------------------------------
+
+                                /* set up NAT
+&if not [exists %roads% -node] &then
+  build %roads% node
+&if not [iteminfo %roads% -node type -exists] &then
+    additem %roads%.nat %roads%.nat type 1 1 c
+&if not [iteminfo %roads% -node outlet -exists] &then
+    additem %roads%.nat %roads%.nat outlet 4 5 b
+
+                                /* build a NAL
+
+&if [exists %roads%.nal -info] &then
+  &setvar junk = [delete %roads%.nal -info]
+&run buildnal %roads%
+
+                                /* add necessary items to elevation
+                                /* section table
+
+&if not [iteminfo %roads% -section.%elevrte% order -exists] &then
+  additem %roads%.sec%elevrte% %roads%.sec%elevrte% ORDER 4 5 B 
+&if not [iteminfo %roads% -section.%elevrte% outlet -exists] &then
+  additem %roads%.sec%elevrte% %roads%.sec%elevrte% OUTLET 4 5 B 
+
+
+/* -------------------------------------------------------------
+/* identify sinks and divides: a sink has no outflow sections, a
+/* divide has no inflow sections
+/* -------------------------------------------------------------
+
+relate add; nal; %roads%.nal; info; %roads%#; node#; linear; ro;;
+relate add; aat; %roads%.aat; info; arc#; %roads%#; linear; ro;;
+relate add; sec; %roads%.sec%elevrte%; info; arc#; arclink#; linear; rw;;
+
+&setvar arcinfunc = '( %:node.'%roads%'#% eq %:node.nal//aat//tnode#% and '~
+  '%:node.nal//sec//sign% gt 0 ) or' ~
+  '( %:node.'%roads%'#% eq %:node.nal//aat//fnode#% and ' ~
+   '%:node.nal//sec//sign% lt 0 )' 
+
+ 
+
+/* -------------------------------------------------------------
+/* set outlet section in node table
+/* -------------------------------------------------------------
+
+                                /* sink nodes have no outlet section
+
+cursor node declare %roads% node rw type eq 'S'
+cursor node open
+&do &while %:node.AML$NEXT%
+  &setvar :node.outlet = 0
+  cursor node next
+&end
+cursor node remove
+
+                                /* all others drain to the least steep
+                                /* outlet section
+
+cursor node declare %roads% node rw type ne 'S'
+cursor node open
+&do &while %:node.AML$NEXT%
+  &setvar minslope = 100.0
+  &setvar outid = 0
+  cursor node relate nal first
+  &do &while %:node.nal//AML$NEXT%
+    &setvar arcisin = [unquote %arcinfunc%]
+    &if not ( %arcisin% ) &then
+      &if [abs %:node.nal//sec//slope%] lt %minslope% &then
+        &do
+          &setvar minslope = [abs %:node.nal//sec//slope%]
+          &setvar outid = [value :node.nal//sec//%elevrte%#]
+        &end
+    cursor node relate nal next
+  &end
+  &setvar :node.outlet = %outid%
+  cursor node next
+&end
+cursor node remove
+
+relate add; secaat; %roads%.aat; info; arclink#; %roads%#; linear; ro;;
+relate add; fnode; %roads%.nat; info; fnode#; %roads%#; linear; ro;;
+relate add; tnode; %roads%.nat; info; tnode#; %roads%#; linear; ro;;
+
+cursor sec declare %roads% section.%elevrte% rw
+cursor sec open
+&do &while %:sec.AML$NEXT%
+  &if %:sec.sign% gt 0 &then
+    &setvar :sec.outlet = %:sec.secaat//tnode//outlet%
+  &else
+    &setvar :sec.outlet = %:sec.secaat//fnode//outlet%
+  cursor sec next
+&end
+cursor sec remove
+
+/* -------------------------------------------------------------
+/* compute order by looping several time through the network
+/* -------------------------------------------------------------
+
+                                /* initialize order
+
+cursor sec declare %roads% section.%elevrte% rw
+cursor sec open
+&do &while %:sec.AML$NEXT%
+  &setvar :sec.order = 0
+  cursor sec next
+&end
+cursor sec remove
+
+                                /* loop thru sections until all have
+                                /* an order assigned
+
+&setvar done = .false.
+&do &while not %done%
+  cursor sec declare %roads% section.%elevrte% rw order eq 0
+  cursor sec open
+  &setvar done = [calc not %:sec.AML$NEXT%]
+  &do &while %:sec.AML$NEXT%
+    &if %:sec.sign% gt 0 &then
+      &setvar fromnode = fnode
+    &else
+      &setvar fromnode = tnode
+    
+    &if [value :sec.secaat//%fromnode%//type] eq 'D' &then
+      &setvar :sec.order = 1
+    &else &if [value :sec.secaat//%fromnode%//outlet] ne ~
+      [value :sec.%elevrte%# ] &then
+        &setvar :sec.order = 1
+      &else 
+        &do
+
+          cursor node declare %roads% node ro ~
+            %roads%# eq [value :sec.secaat//%fromnode%#]
+          cursor node open
+          cursor node relate nal first
+
+          &setvar maxorder = 0
+          &setvar nonzero = [value :node.nal//AML$NEXT]
+          &do &while [value :node.nal//AML$NEXT]
+            &setvar arcisin = [unquote %arcinfunc%]
+            &if ( %arcisin% ) &then
+              &do
+                &setvar nonzero = [calc %nonzero% and ~
+                  ( [value :node.nal//sec//order] gt 0 ) ]
+                &if [value :node.nal//sec//order] gt %maxorder% &then
+                  &setvar maxorder = [value :node.nal//sec//order]
+              &end
+            cursor node relate nal next
+          &end
+          cursor node remove
+          &if %nonzero% &then
+            &setvar :sec.order = [calc %maxorder% + 1]
+        &end
+    cursor sec next
+  &end
+  cursor sec remove
+&end
+
+&call recover
+&return
+
+/* -------------------------------------------------------------
+/* recover
+/* -------------------------------------------------------------
+&routine recover
+&do &while %:program% ne ARC
+  &select %:program% 
+    &when ARCEDIT
+      quit no
+    &when ARCPLOT
+      quit
+    &when GRID
+      quit
+  &end 
+&end 
+
+                                /* remove used cursors
+
+&do i &list [translate [show cursors]]
+  &select %i%
+    &when NODE, SEC
+      cursor %i% remove
+  &end
+&end
+                                /* remove used relates
+
+&do i &list [translate [show relates]]
+  &select %i%
+    &when NAL, AAT, SEC, FNODE, TNODE
+      &do
+        relate drop; %i%;;
+      &end
+  &end
+&end
+
+display %odisplay%
+&messages %omessages%
+
+&return
+
+
+/* -------------------------------------------------------------
+/* hndlerr
+/* -------------------------------------------------------------
+&routine hndlerr
+&severity &error &fail
+&call recover
+&type %program%: unrecoverable error 
+&return &error Aborting...

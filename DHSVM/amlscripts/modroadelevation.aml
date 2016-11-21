@@ -1,0 +1,197 @@
+/* -------------------------------------------------------------
+/* file: roadelevation.aml
+/* -------------------------------------------------------------
+/* -------------------------------------------------------------
+/* Battelle Memorial Institute
+/* Pacific Northwest Laboratory
+/* -------------------------------------------------------------
+/* -------------------------------------------------------------
+/* Created September 29, 1995 by  William A Perkins
+/* Last Change: Wed May 22 15:25:01 1996 by  William A Perkins <perk@clio.muse.pnl.gov>
+/* -------------------------------------------------------------
+
+/* RCS ID: $Id: roadelevation.aml,v 1.3 1996/06/10 18:40:31 perk Exp $
+
+&severity &error &routine hndlerr
+&severity &warning &ignore
+
+&args roads elev elevinfo weed elevrte
+
+/* -------------------------------------------------------------
+/* constant initialization
+/* -------------------------------------------------------------
+&setvar omessages = [show &messages]
+&messages &on /* &off &info
+&setvar odisplay = [show display]
+display 0
+
+&setvar program = ROADELEVATION
+&setvar usage = usage: %program% <cover> <lattice> {info} {weed_tolerance} {out_route}
+
+/* -------------------------------------------------------------
+/* handle command line arguments
+/* -------------------------------------------------------------
+&if [null %roads%] or [null %elev%] &then 
+  &do 
+    &call recover
+    &return &error %usage%
+  &end 
+
+                                /* road coverage
+
+&setvar roads = [translate %roads%]
+&if not [exists %roads% -arc] &then
+  &do
+    &type %program%: error: Unable to find line coverage %roads%
+    &call recover
+    &return &error %usage%
+  &end
+&setvar roaditem = %roads%#
+
+                                /* elevation lattice
+
+&setvar elev = [translate %elev%]
+&if not [exists %elev% -grid] &then 
+  &do
+    &type %program%: error: Unable to find elevation grid %elev%
+    &call recover
+    &return &error %usage%
+  &end
+
+&if [null %elevinfo%] &then
+  &setvar elevinfo = %roads%.elev
+&else 
+  &setvar elevinfo = [translate %elevinfo%]
+&if [exists %elevinfo% -info] &then
+  &do 
+    &type %program%: warning: deleting info file %elevinfo%
+    &setvar junk = [delete %elevinfo% -info]
+  &end
+
+                                /* as a default, the the weed
+                                /* tolerance is set to 1.5 times the
+                                /* grid cell size
+
+&describe %elev%
+&if [null %weed%] &then
+  &do
+    &setvar weed = [calc 1.5 * %grd$dx%]
+  &end
+
+                                /* name of route to produce in roads
+                                /* coverage
+
+&if [null %elevrte%] &then
+  &setvar elevrte = ELEVATION
+&else
+  &setvar elevrte = [translate %elevrte%]
+&if [exists %roads% -route.%elevrte%] &then
+  &do 
+    &type %program%: warning: removing existing route %elevrte% in coverage %roads%
+    dropfeatures %roads% route.%elevrte%
+  &end
+&if [exists %roads% -section.%elevrte%] &then
+  &do 
+    &type %program%: warning: removing existing section %elevrte% in coverage %roads%
+    dropfeatures %roads% section.%elevrte%
+  &end
+
+
+/* -------------------------------------------------------------
+/* do the work
+/* -------------------------------------------------------------
+/*&setvar tmpptcov = [scratchname -directory]
+&setvar tmpptcov = nearpoints
+&setvar elevitem = ELEVATION
+
+                                /* create temporary point coverage and
+                                /* sample elevations and
+                                /* sample DEM with points
+
+/*arcpoint %roads% %tmpptcov% line %roaditem% %weed%
+/*latticespot %elev% %tmpptcov% %elevitem%
+
+                                /* create elevation route using the
+                                /* specified item in the road arc
+                                /* table
+
+measureroute arc %roads% %elevrte% %roaditem% %roaditem% length 
+addroutemeasure %tmpptcov% %roads% %elevrte% %tmpptcov%.elev point 0.0
+
+                                /* make the section measures match the
+                                /* to and from nodes on the arc; this
+                                /* will need to be consistent later
+
+arcedit
+edit %roads% section.%elevrte%
+select f-pos gt t-pos
+cursor open
+&do &while %:edit.AML$NEXT%
+  flip
+  cursor next
+&end
+quit y
+
+                                /* create an point event database of
+                                /* sample elevations on the elevation
+                                /* route
+
+joinitem %tmpptcov%.elev %tmpptcov%.pat %elevinfo% %tmpptcov%# measure linear
+
+arcedit                         /* start ARCEDIT
+
+edit %elevinfo% info
+relate add; rte; %roads%.rat%elevrte%; info; %elevrte%#; %elevrte%#; linear; ro ;;
+select %roaditem% ne rte//%roaditem%
+&if [show number select] gt 0 &then
+  &do
+    delete
+  &end
+relate drop; rte;;
+
+quit y
+
+&call recover
+&return
+
+/* -------------------------------------------------------------
+/* recover
+/* -------------------------------------------------------------
+&routine recover
+&do &while %:program% ne ARC
+  &select %:program% 
+    &when ARCEDIT
+      quit no
+    &when ARCPLOT
+      quit
+    &when GRID
+      quit
+  &end 
+&end 
+
+&if not [null [show relates]] &then
+  &do i &list [show relates]
+    &if %i% eq 'rte' &then
+      &do
+        relate drop; rte;;
+      &end
+  &end
+
+&if [variable tmmptcov] &then
+  &do
+    &if [exists %tmpptcov% -cover] &then
+      kill %tmpptcov% all
+  &end
+
+display %odisplay%
+&messages %omessages%
+
+&return
+
+/* -------------------------------------------------------------
+/* hndlerr
+/* -------------------------------------------------------------
+&routine hndlerr
+&severity &error &fail
+&type %program%: unrecoverable error 
+&return &error Aborting...

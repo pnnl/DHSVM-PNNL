@@ -1,0 +1,93 @@
+C
+C     UNDIMENSIONED INTEGER VARIABLES
+C
+      COMMON/BLOCK1/
+     & flow_cells,heat_cells
+     & ,NDAYS,nreach,ntrb,nysim
+     & ,nyear1,nyear2
+     & ,n1,n2,no_rch,nwpd,nd,nd_start
+     & ,start_year,start_month,start_day,start_hour
+     & ,end_year,end_month,end_day,end_hour
+
+C_flow
+C     UNDIMENSIONED FLOATING POINT VARIABLES
+C
+      COMMON/BLOCK2/a_smooth,b_smooth,dt_comp
+     &             ,QSUM,time,temp_init
+     &             ,XTITLE,ysim,delta_n
+C
+      COMMON/BLOCK3/
+     &  no_celm(1000),no_cells(1000),no_tribs(1000),node(1000)
+     & ,main_stem(1000),last_seg(1000)
+c
+c    Added last_seg(5000) to COMMON/BLOCK3/ to handle tributary
+c    input temperature  11/14/2008
+c
+C
+      COMMON/BLOCK4/qin(1000),q_trib(1000),qout(1000)
+     &             ,qdiff(1000),depth(1000),width(1000)
+     &             ,lat_flow(1000)
+     &             ,D_a(1000),D_b(1000),D_min(1000)
+     &             ,U_a(1000),U_b(1000),U_min(1000)
+C
+C
+      COMMON/BLOCK5/ temp(500,-2:1000,2),T_trib(1000)
+c
+
+C     BLOCKI.COM - CONTAINS ARRAYS WITH DEPTH AND VELOCITY
+C                  CHARACTERISTICS AND RIVER MILE INDICES
+C                  FOR RNGKMOD.
+C
+      COMMON/BLOCK6/dx(1000),dt(1000)
+     &  ,x_dist(500,0:1000),u(1000),elev(1000)
+C
+C
+C     BLOCKK.COM - Contains arrays with meteorological data
+C
+      COMMON/BLOCK8/
+     & QNS(1000),QNA(1000),DBT(1000),WIND(1000)
+     & ,EA(1000),PRESS(1000),PF,PHPER
+     & ,alf_Mu(1000),beta(1000),gmma(1000),mu(1000)
+c
+c     Declare variables
+c
+      COMMON/BLOCK9/segment_cell(500,1000),trib(500,1000)
+     &             ,head_cell(1000)
+c
+c
+      integer flow_cells,heat_cells,lat_flow
+     &         ,segment_cell,trib,head_cell
+     &         ,start_year,start_month,start_day,start_hour
+     &         ,end_year,end_month,end_day,end_hour
+c
+      real*4 mu
+      real*8 time
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,45 @@
+# -------------------------------------------------------------
+# file: Makefile for MakeModelState
+# -------------------------------------------------------------
+
+
+OBJS = MakeModelStateBin.c FileIOBin.o Files.o InitArray.o ReportError.o Calendar.o SizeOfNT.o
+
+SRCS = $(OBJS:%.o=%.c)
+
+HDRS = fifobin.h fileio.h sizeofnt.h settings.h DHSVMerror.h data.h Calendar.h \
+typenames.h init.h constants.h functions.h DHSVMChannel.h channel.h channel_grid.h
+
+CFLAGS = -O -g -Wall -Wno-unused
+CC = gcc
+LIBS = -lm
+
+MakeModelStateBin: $(OBJS)
+	$(CC) $(OBJS) $(CFLAGS)	-o MakeModelStateBin $(LIBS)
+
+clean::
+	rm -f MakeModelStateBin.exe
+
+
+# dependancies for individual object files
+
+FileIOBin.o: FileIOBin.c fifobin.h fileio.h sizeofnt.h settings.h DHSVMerror.h
+Files.o: Files.c settings.h data.h Calendar.h typenames.h DHSVMerror.h \
+ functions.h DHSVMChannel.h channel.h channel_grid.h constants.h \
+ init.h fileio.h
+InitArray.o: InitArray.c init.h
+SizeOfNT.o: SizeOfNT.c DHSVMerror.h sizeofnt.h
+Calendar.o: Calendar.c constants.h settings.h data.h Calendar.h \
+ typenames.h functions.h DHSVMChannel.h channel.h channel_grid.h
+ReportError.o: ReportError.c settings.h data.h Calendar.h typenames.h \
+ DHSVMerror.h
+
+
+# -------------------------------------------------------------
+# sources
+# -------------------------------------------------------------
+sources: $(SRCS) $(HDRS) $(OTHER)
+
+clean::
+	rm -f $(OBJS)
+	rm -f *~

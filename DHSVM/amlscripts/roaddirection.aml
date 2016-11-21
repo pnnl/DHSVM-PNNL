@@ -1,0 +1,119 @@
+/* -------------------------------------------------------------
+/* file: roaddirection.aml
+/* 
+/* This is an ARC command. This script is used to create an arc
+/* coverage from the slope event database.  The created coverage is
+/* used to plot flow directions.
+/*
+/* -------------------------------------------------------------
+/* -------------------------------------------------------------
+/* Battelle Memorial Institute
+/* Pacific Northwest Laboratory
+/* -------------------------------------------------------------
+/* -------------------------------------------------------------
+/* Created September 29, 1995 by  William A Perkins
+/* Last Change: Fri Sep 29 15:44:58 1995 by  William A Perkins <perk@yama.pnl.gov>
+/* -------------------------------------------------------------
+
+/* RCS ID: $Id: roaddirection.aml,v 1.1 1995/09/29 22:57:10 perk Exp $
+
+&severity &error &routine hndlerr
+&severity &warning &ignore
+
+&args roads outcover elevrte slopeinfo
+
+/* -------------------------------------------------------------
+/* variable initialization
+/* -------------------------------------------------------------
+&setvar omessages = [show &messages]
+&messages &on /* &off &info
+&setvar program = ROADDIRECTION
+&setvar usage = usage: %program% <cover> <outcover> {route} {slopeinfo} 
+
+/* -------------------------------------------------------------
+/* handle command line arguments
+/* -------------------------------------------------------------
+&if [null %roads%] or [null %outcover%] &then
+  &do
+    &call recover
+    &return &error %usage%
+  &end
+
+&setvar roads = [translate %roads%]
+&setvar outcover = [translate %outcover%]
+
+
+                                /* input road arc coverage
+
+&if not [exists %roads% -arc] &then
+  &do
+    &type %program%: error: unable to locate arc coverage %roads%
+    &call recover
+    &return &error %usage%
+  &end
+
+                                /* remove output coverage if necessary
+
+&if [exists %outcover% -cover] &then
+  &do
+    &type %program%: warning: removing existing coverage %outcover%
+    kill %outcover% all
+  &end
+
+&if [null %elevrte%] &then
+  &setvar elevrte = ELEVATION
+&setvar elevrte = [translate %elevrte%]
+&if not [exists %roads% -route.%elevrte%] &then
+  &do
+    &type %program%: error: route %elevrte% does not exist within coverage %roads%
+    &call recover
+    &return &error %usage%
+  &end
+&if not [exists %roads% -section.%elevrte%] &then
+  &do
+    &type %program%: error: sectons for route %elevrte% do not exist within coverage %roads%
+    &call recover
+    &return &error %usage%
+  &end
+
+                                /* slope event database
+
+&if [null %slopeinfo%] &then
+  &setvar slopeinfo = %roads%.slope
+&setvar slopeinfo = [translate %slopeinfo%]
+&if not [exists %slopeinfo% -info] &then
+  &do
+    &type %program%: error: unable to locate slope event database %slopeinfo%
+    &call recover
+    &return &error %usage%
+  &end
+
+/* -------------------------------------------------------------
+/* do the work
+/* -------------------------------------------------------------
+eventsource add linear slope %slopeinfo% info linear %elevrte%# %elevrte%# f-meas t-meas
+eventarc %roads% %elevrte% slope %outcover%
+eventsource drop slope
+
+&call recover
+&return
+
+/* -------------------------------------------------------------
+/* recover
+/* -------------------------------------------------------------
+&routine recover
+&if not [null [show eventsource]] &then
+  &do i &list [show eventsource]
+    &if %i% eq 'slope' &then
+      eventsource drop slope
+  &end
+&messages %omessages%
+&return
+
+/* -------------------------------------------------------------
+/* hndlerr
+/* -------------------------------------------------------------
+&routine hndlerr
+&severity &error &fail
+&type %program%: unrecoverable error 
+&return &error Aborting...

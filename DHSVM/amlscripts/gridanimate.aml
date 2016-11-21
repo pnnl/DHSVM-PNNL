@@ -1,0 +1,117 @@
+/* -------------------------------------------------------------
+/* file: gridanimate.aml
+/* -------------------------------------------------------------
+/* -------------------------------------------------------------
+/* Battelle Memorial Institute
+/* Pacific Northwest Laboratory
+/* -------------------------------------------------------------
+/* -------------------------------------------------------------
+/* Created April  9, 1996 by  William A Perkins
+/* Last Change: Wed Apr 10 09:43:30 1996 by  William A Perkins <perk@yama.pnl.gov>
+/* -------------------------------------------------------------
+
+/* RCS ID: $Id: gridanimate.aml,v 1.1 1996/05/29 18:25:13 perk Exp $
+
+&severity &error &routine hndlerr
+&severity &warning &ignore
+
+&args pattern startaml endaml remap
+
+&if %:program% ne ARCPLOT &then
+  &do
+    &type Sorry, this should be run in ARCPLOT not %:program%
+    &return &error
+  &end
+
+/* -------------------------------------------------------------
+/* variable initialization
+/* -------------------------------------------------------------
+&setvar omessages = [show &messages]
+&messages &on /* &off &info
+
+&setvar program = GRIDANIMATE
+&setvar usage = usage: %program% <pattern> <startaml> <endaml> {remap}
+
+/* -------------------------------------------------------------
+/* check command line
+/* -------------------------------------------------------------
+&if [null %pattern%] or [null %startaml%] or [null %endaml%] &then
+  &do
+    &call recover
+    &return &error %usage%
+  &end
+
+&setvar filefile = [scratchname -file]
+&setvar gridcount = [filelist %pattern% %filefile% -full -grid]
+&if %gridcount% le 0 &then 
+  &do
+    &type %program%: error: No grids match pattern %pattern%
+    &call recover
+    &return &error %usage%
+  &end
+
+&if not [null %remap%] &then
+  &do
+    &setvar remap = [translate %remap%]
+    &if not [exists %remap% -info] &then
+      &do
+        &type %program%: error: %remap% does not exist
+        &call recover
+        &return &error %usage%
+      &end
+  &end
+
+/* -------------------------------------------------------------
+/* do the work
+/* -------------------------------------------------------------
+
+&setvar unit = [open %filefile% ok -read]
+
+&do i := 1 &to %gridcount%
+  &setvar grid = [read %unit% ok]
+  
+  clear
+  &run %startaml% %grid%
+  &if not [null %remap%] &then
+    &do
+      gridshade %grid% value %remap% nowrap
+    &end
+  &else
+    &do
+      gridshade %grid% value 
+    &end
+  &run %endaml% %grid%
+  &setvar image = anim.[format '%1,-4%' %i%].ras
+  &setvar image = [subst %image% ' ' '0']
+  screensave %image%
+&end
+
+&setvar junk = [close %unit% ok]
+&setvar junk = [delete %filefile% -file]
+
+&sys /bin/ls anim.*.ras > fli.list
+&sys rm -f fli.table anim.fli
+&sys ppm2fli -f 'convert - ppm:-' -w fli.table fli.list
+&sys ppm2fli -s 500 -f 'convert - ppm:-' -m fli.table fli.list anim.fli
+
+&call recover
+&return
+
+/* -------------------------------------------------------------
+/* recover
+/* -------------------------------------------------------------
+&routine recover
+
+&messages %omessages%
+
+&return
+
+
+/* -------------------------------------------------------------
+/* hndlerr
+/* -------------------------------------------------------------
+&routine hndlerr
+&severity &error &fail
+&call recover
+&type %program%: unrecoverable error 
+&return &error Aborting...

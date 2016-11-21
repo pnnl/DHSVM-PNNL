@@ -1,0 +1,193 @@
+/* -------------------------------------------------------------
+/* file: roadaspect.aml
+/*
+/* usage: roadaspect.aml <cover> <dem>
+/*
+/* This is an ARC command.  This script computes the aspect of roads
+/* with respect to the aspect of a DEM slope.  The ooverages supplied
+/* should be that produced by ROADMAP.  A new item, RDASPECT, is added
+/* to the AAT of the specified coverage, or recalculated if it already
+/* exists. The RD-ASPECT value is the angle between the cell aspect and
+/* the direction of the road in the cell.  The DEM grid is specified
+/* only to obtain the cell dimensions.
+/*
+/* -------------------------------------------------------------
+/* -------------------------------------------------------------
+/* Battelle Memorial Institute
+/* Pacific Northwest Laboratory
+/* -------------------------------------------------------------
+/* -------------------------------------------------------------
+/* Created October 12, 1995 by  William A Perkins
+/* Last Change: Wed Sep 25 10:49:21 1996 by  William A Perkins <perk@mnemosyne.pnl.gov>
+/* -------------------------------------------------------------
+
+/* RCS ID: $Id: roadaspect.aml,v 1.5 1996/09/25 22:13:41 perk Exp $
+
+&severity &error &routine hndlerr
+&severity &warning &ignore
+
+&args roadmap dem
+
+&if %:program% ne ARC &then
+  &do
+    &type Sorry, this should be run in ARC not %:program%
+    &return &error
+  &end
+
+/* -------------------------------------------------------------
+/* variable initialization
+/* -------------------------------------------------------------
+&setvar omessages = [show &messages]
+&messages &on /* &off &info
+&setvar odisplay = [show display]
+display 0
+
+&setvar program = ROADASPECT
+&setvar usage = usage: %program% <cover> <dem>
+
+
+/* -------------------------------------------------------------
+/* check command line options
+/* -------------------------------------------------------------
+&if [null %roadmap%] or [null %dem%] &then
+  &do
+    &call recover
+    &return &error %usage%
+  &end
+&setvar roadmap = [translate %roadmap%]
+&setvar dem = [translate %dem%]
+
+                                /* check existence of road map
+                                /* coverage
+
+&if not [exists %roadmap% -arc] &then
+  &do
+    &type %program%: error: unable to locate arc coverage %roadmap%
+    &call recover
+    &return &error %usage%
+  &end
+
+                                /* make sure the items we need are in
+                                /* the road map coverage
+
+&do v &list ROW COLUMN ASPECT
+  &if not [iteminfo %roadmap% -arc %v% -exists] &then
+    &do
+      &type %program%: error: item %v% not found in %roadmap%.AAT
+      &type Was %roadmap% produced by ROADMAP?
+      &call recover
+      &return &error %usage%
+    &end
+&end
+
+                                /* check existence of DEM grid
+
+&if not [exists %dem% -grid] &then
+  &do
+    &type %program%: error: unable to locate lattice %dem%
+    &call recover
+    &return &error %usage%
+  &end
+&describe %dem%
+
+                                /* all we need the grid coverage is to
+                                /* determine cell size
+
+&setvar deltax = %GRD$DX%
+&setvar deltay = %GRD$DY%
+
+/* -------------------------------------------------------------
+/* do the work
+/* -------------------------------------------------------------
+
+                                /* add new items to the road map
+                                /* coverage
+
+&do i &list RDASPECT ST-LEN EFF-LEN
+  &if not [iteminfo %roadmap% -line %i% -exists] &then
+    &do
+      additem %roadmap%.aat %roadmap%.aat %i% 4 12 F 2
+    &end
+  &else 
+    &type %program%: warning: overwriting exiting value of %i% in %roadmap%.AAT
+&end
+
+                                /* compute the roads relative aspect
+
+&setvar DEG = [calc 3.14159 / 180.0]
+relate add; to; %roadmap%.nat; info; tnode#; %roadmap%#; linear; ro;;
+relate add; from; %roadmap%.nat; info; fnode#; %roadmap%#; linear; ro;;
+cursor rd declare %roadmap% arc rw
+cursor rd open
+&do &while %:rd.AML$NEXT%
+  &setvar dx = [calc %:rd.from//x-coord% - %:rd.to//x-coord%]
+  &setvar dy = [calc %:rd.from//y-coord% - %:rd.to//y-coord%]
+  &setvar len = [sqrt [calc ( %dx% * %dx% ) + ( %dy% * %dy% ) ]]
+  &setvar :rd.st-len = %len%
+  &setvar ang = [round [calc [atan2 %dx% %dy%] / %DEG% ]]
+  &setvar ang = [mod [round [calc %ang% + 360]] 360]
+  /* &setvar ang = [round [abs [calc %:rd.aspect% - %ang%]]]
+  &setvar :rd.rdaspect = %ang%
+  &setvar len = [abs [calc %len% * [sin [calc %ang% * %DEG%]]]]
+  &setvar :rd.eff-len = %len%
+  cursor rd next
+&end
+relate drop; to; from;;
+cursor rd close
+
+
+&call recover
+&return
+
+/* -------------------------------------------------------------
+/* recover
+/* -------------------------------------------------------------
+&routine recover
+
+&do &while %:program% ne ARC
+  &select %:program% 
+    &when ARCEDIT
+      quit no
+    &when ARCPLOT
+      quit
+    &when GRID
+      quit
+  &end 
+&end 
+
+                                /* get rid of cursors used
+
+&do i &list [translate [show cursors]]
+  &select %i%
+    &when RD
+      cursor %i% remove
+  &end
+&end
+
+                                /* get rid of relates used
+
+&do i &list [translate [show relates]]
+  &select %i%
+    &when TO,FROM
+      &do 
+        relate drop; %i% ;;
+      &end
+  &end
+&end
+
+                                /* remove temporary coverages
+
+
+display %odisplay%
+&messages %omessages%
+
+&return
+
+/* -------------------------------------------------------------
+/* hndlerr
+/* -------------------------------------------------------------
+&routine hndlerr
+&severity &error &fail
+&type %program%: unrecoverable error 
+&call recover
+&return &error Aborting...

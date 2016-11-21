@@ -1,0 +1,14 @@
+#!/bin/csh 
+
+### runs the three programs used to generate the terrain and shadowing maps
+
+### *NOTE* lots of hardcoded stuff in here, please edit
+
+set cell = 30                         #cell size (m)
+set XOrig = 557427.379
+set YOrig = 5253547.579
+set initialstatefile = ../modelstate/InitialState.txt  #  input file name 
+
+### make modelstates in NetCDF
+        ./MakeModelStateNetCDF $initialstatefile $cell $XOrig $YOrig
+

@@ -1,0 +1,175 @@
+/*A------------------------------AUTHOR---------------------------------
+/* 
+/*Original Coding:     ESRI 
+/*
+/*N-------------------------------NAME----------------------------------
+/* 
+/*GRIDSPOT.AML 
+/*Copyright 1995, Environmental Systems Research Institute, Inc.  
+/*
+/*P-----------------------------PURPOSE---------------------------------
+/*
+/* This AML sets an item in a point coverage PAT equal
+/* to the value of a grid cell at the corresponding location. It is intended
+/* to be similar to the LATTICESPOT command except that it does not
+/* perform interpolation. It captures the output of the CELLVALUE command
+/* in a watch file, opens the watch file, and reads the value from it.
+/*
+/*U------------------------------USAGE----------------------------------
+/* 
+/* GRIDSPOT <grid_name> <point_cover> {spot_item}
+/*
+/*V----------------------------VARIABLES--------------------------------
+/*
+/* 			Local variables:
+/*
+/* grid_name	Name of the grid to take cell values from
+/* ptcov	Name of point coverage to which cell values are added
+/* spot_item	Name of PAT item to which cell values are added. If
+/*              omitted, the default item name is SPOT.
+/* old$messages	Save setting of &messages
+/* old$display	Save setting of DISPLAY
+/* old$echo	Save setting of &echo
+/* record	One line read from watch file
+/*
+/*			Global variables: NONE
+/*
+/*C------------------------------CALLS----------------------------------
+/*
+/* None.
+/*
+/*============================DISCLAIMER================================
+/*You may use, copy, modify, merge, distribute, alter, reproduce and/or
+/*create derivative works of this AML for your own internal use.  All
+/*rights not specifically granted herein are reserved to ESRI.  
+/*
+/*THIS AML IS PROVIDED "AS-IS" WITHOUT WARRANTY OF ANY KIND, EITHER
+/*EXPRESS OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+/*WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE,
+/*WITH RESPECT TO THE AML.  
+/*
+/*ESRI shall not be liable for any damages under any theory of law
+/*related to your use of this AML, even if ESRI is advised of the
+/*possibilites of such damage.  This AML is not supported by ESRI.
+/*======================================================================
+
+
+
+&severity &error &routine bailout 
+
+&args grid_name ptcov spot_item
+
+/* -----------Argument checking----------------
+
+&if [show program] ne 'ARC' &then
+  &return This aml must be run from ARC
+
+&if [null %grid_name%] &then 
+  &return Usage: GRIDSPOT <grid> <point_coverage>
+
+&if ^ [exists %grid_name% -grid] &then
+  &return Grid %grid_name% does not exist
+
+&if [null %ptcov%] &then 
+  &return Usage: GRIDSPOT <grid> <point_coverage>
+
+&if ^ [exists %ptcov% -point] &then
+  &return Point coverage %ptcov% does not exist
+
+&if [null %spot_item%] &then
+  &sv spot_item spot
+
+/* Check whether item already exists in PAT
+
+&if [iteminfo %ptcov%.pat -info %spot_item% -exists] &then
+&do
+  &type Existing item %spot_item% in %ptcov%.PAT will be overwritten.
+  &if [translate [getchar 'Type q if you want to quit now' n]] = 'Q' &then
+    &call exit;&return
+&end
+
+/* Add item %spot_item% (if necessary) to point coverage PAT.
+&else 
+  additem %ptcov%.pat %ptcov%.pat %spot_item% 4 12 f 3
+
+  
+/* Now go into Arcplot and get the values
+
+&sv old$display [show display]
+display 9999 size canvas 10 10       /* A graphic display is needed
+ap
+mape %grid_name%
+
+/* Declare and open a cursor to read and write to the PAT
+
+cursor ptcur declare %ptcov% points rw
+cursor ptcur open
+
+/* Do not alter the lines below. This AML depends on capturing screen
+/* messages to a watch file.
+
+&s old$echo [show &echo]
+&echo &off
+&s old$messages [show &messages]
+&messages &on
+
+/* Start a loop to go through the PAT, find the cell value at each
+/* point location, and write it to the %spot_item% item in the PAT.
+
+&do &while %:ptcur.aml$next%
+
+  &s old$echo [show &echo]
+  &echo &off
+  &s old$messages [show &messages]
+  &messages &on
+
+  /* Start the watch file, get a point, and get the value w/ cellvalue.
+
+  &watch xxtemp
+  cellvalue %grid_name% [show select %ptcov% point 1 xy]
+  &watch &off
+
+  &echo %old$echo%
+
+  /* Open the watch file and read from it
+
+  &s file$unit1 [open xxtemp openstat$unit1 -r]
+  &s record [read %file$unit1% readstat$unit1]
+
+  /* Extract the last element, it's the cell value
+  /* and set %spot_item% to that value
+  /* If the location has NODATA, set %spot_item% to -9999
+
+  &if [keyword NODATA [unquote %record%]] = 0 &then   /* The cell is not NODATA
+    &s :ptcur.%spot_item% [extract 9  [unquote %record%]]
+  &else 
+    &s :ptcur.%spot_item% -9999                  /* The cell has NODATA
+
+  &s close$stat [close %file$unit1%]
+  cursor ptcur next
+&end
+
+q     /* quit from arcplot
+&call exit
+&return /* To calling aml
+/*
+/* ---------------------------- Routine Exit ---------------------------------
+/*
+&routine exit
+&if [variable old$display] &then
+  display %old$display%
+&if [variable old$messages] &then
+  &messages %old$messages%
+&if [variable old$echo] &then
+  &echo %old$echo%
+&s close$stat [close -all]
+&sv d [delete xxtemp -file]
+&return
+/*
+/* --------------------------- Routine Bailout -------------------------------
+/*
+&routine bailout
+&severity &error &ignore
+&call exit
+&return; &return &error Bailing out of gridspot.aml
+

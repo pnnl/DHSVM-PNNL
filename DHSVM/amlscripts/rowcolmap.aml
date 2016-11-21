@@ -1,0 +1,195 @@
+/* -------------------------------------------------------------
+/* file: rowcolmap.aml
+/* This is an ARC command.  It is a simple script used to produce a
+/* polygon representation of a grid, in which the rows and columns are
+/* numbered from the lower left had corner starting with zero.  The
+/* grid should be the aspect grid.  The aspect value is passed along
+/* into the polygon coverage.
+/* -------------------------------------------------------------
+/* -------------------------------------------------------------
+/* Battelle Memorial Institute
+/* Pacific Northwest Laboratory
+/* -------------------------------------------------------------
+/* -------------------------------------------------------------
+/* Created March 14, 1996 by  William A Perkins
+/* Last Change: Wed Sep 25 12:17:51 1996 by  William A Perkins <perk@lobster.pnl.gov>
+/* -------------------------------------------------------------
+
+/* RCS ID: $Id: rowcolmap.aml,v 1.3 1996/09/25 22:17:44 perk Exp $
+
+&severity &error &routine hndlerr
+&severity &warning &ignore
+
+&args aspect slope cover pad
+
+&if %:program% ne ARC &then
+  &do
+    &type Sorry, this should be run in ARC not %:program%
+    &return &error
+  &end
+
+/* -------------------------------------------------------------
+/* variable initialization
+/* -------------------------------------------------------------
+&setvar omessages = [show &messages]
+&messages &on /* &off &info
+&setvar odisplay = [show display]
+display 0
+
+&setvar program = ROWCOLMAP
+&setvar usage = usage: %program% <aspectgrid> <slopegrid> <cover> {pad}
+
+&if %:program% ne ARC &then
+  &do
+    &type Sorry, this should be run in ARC not %:program%
+    &return &error
+  &end
+
+/* -------------------------------------------------------------
+/* check command line
+/* -------------------------------------------------------------
+&if [null %aspect%] or [null %slope%] or [null %cover%] &then
+  &do
+    &call recover
+    &return &error %usage%
+  &end
+&setvar aspect = [translate %aspect%]
+&setvar slope = [translate %slope%]
+&setvar cover = [translate %cover%]
+
+&if not [exists %aspect% -grid] &then 
+  &do
+    &type %program%: error: grid %aspect% does not exist
+    &call recover
+    &return &error %usage%
+  &end
+
+&if not [exists %slope% -grid] &then 
+  &do
+    &type %program%: error: grid %slope% does not exist
+    &call recover
+    &return &error %usage%
+  &end
+
+&if [null %pad%] &then
+  &setvar pad = 0
+
+&if [type %pad%] ne -1 &then
+  &do
+    &type %program%: error: value of {pad} should be integral
+    &call recover
+    &return &error %usage%
+  &end
+
+/* -------------------------------------------------------------
+/* do the work
+/* -------------------------------------------------------------
+
+&describe %aspect%
+&setvar deltax = %GRD$DX%
+&setvar deltay = %GRD$DY%
+&setvar window = ~
+  [calc %GRD$XMIN% - %pad% * %deltax%] ~
+  [calc %GRD$YMIN% - %pad% * %deltay%] ~
+  [calc %GRD$XMAX% + %pad% * %deltax%] ~
+  [calc %GRD$YMAX% + %pad% * %deltay%]
+
+&setvar tmpws = [scratchname -directory]
+createworkspace %tmpws%
+
+&if [exists %cover% -cover] &then 
+  &do
+    &type %program%: warning: removing existing coverage %cover%
+    kill %cover% all
+  &end
+
+                                /* make a grid of row and column
+                                /* numbers the same size as the specified
+                                /* aspect
+
+grid
+setcell %aspect%
+setwindow %window%
+setmask off
+
+/* %tmpws%/junk = $$ROWMAP
+/* %tmpws%/row = flip(%tmpws%/junk)
+%tmpws%/row = $$ROWMAP
+%tmpws%/col = $$COLMAP
+
+setmask %aspect%
+%tmpws%/cell = combine(%tmpws%/col, %tmpws%/row)
+
+%cover% = gridpoly(%tmpws%/cell)
+quit
+
+                                /* transfer grid row and column
+                                /* numbers to polygon coverage
+
+arcedit
+edit %cover% polygon
+additem row 4 6 B
+additem column 4 6 B
+select all 
+relate add; grid; %tmpws%/cell.vat; info; GRID-CODE; VALUE; linear; ro;;
+calculate row = grid//row
+calculate column = grid//col
+relate drop; grid;;
+quit y
+
+                                /* transfer slope and aspect values to
+                                /* the polygon coverage.  We can't use
+                                /* combine here since slope and aspect
+                                /* are floating point grids
+
+&run gridspot70 %aspect% %cover% aspect
+
+&run gridspot70 %slope% %cover% slope
+
+&call recover
+&return
+
+/* -------------------------------------------------------------
+/* recover
+/* -------------------------------------------------------------
+&routine recover
+
+&do &while %:program% ne ARC
+  &select %:program% 
+    &when ARCEDIT
+      quit no
+    &when ARCPLOT
+      quit
+    &when GRID
+      quit
+  &end 
+&end 
+
+&if not [null [show relates]] &then 
+  &do i &list [show relates]
+    &select %i% 
+      &when GRID
+        &do
+          relate drop; %i%;;
+        &end
+    &end
+  &end
+
+&if [variable tmpws] &then
+  &if [exists %tmpws% -workspace] &then
+    &setvar junk = [delete %tmpws% -workspace]
+
+display %odisplay%
+&messages %omessages%
+
+&return
+
+
+/* -------------------------------------------------------------
+/* hndlerr
+/* -------------------------------------------------------------
+&routine hndlerr
+&severity &error &fail
+&call recover
+&type %program%: unrecoverable error 
+&return &error Aborting...

@@ -1,0 +1,128 @@
+/* -------------------------------------------------------------
+/* file: wshdslope.aml
+/*
+/* This is a GRID command.  It computes slope for the specified DEM
+/* lattice using only 4 neighboring cells, as opposed to 8 as the GRID
+/* SLOPE() function does.
+/*
+/* -------------------------------------------------------------
+/* -------------------------------------------------------------
+/* Battelle Memorial Institute
+/* Pacific Northwest Laboratory
+/* -------------------------------------------------------------
+/* -------------------------------------------------------------
+/* Created December 27, 1995 by  William A Perkins
+/* Last Change: Wed May 22 10:05:34 1996 by  William A Perkins <perk@clio.muse.pnl.gov>
+/* -------------------------------------------------------------
+
+/* RCS ID: $Id: wshdslope.aml,v 1.4 1996/05/14 22:48:32 perk Exp perk $
+
+&severity &error &routine hndlerr
+&severity &warning &ignore
+
+&args dem slopes aspects
+
+&if %:program% ne GRID &then
+  &do
+    &type Sorry, this should be run in GRID not %:program%
+    &return &error
+  &end
+
+
+/* -------------------------------------------------------------
+/* variable initialization
+/* -------------------------------------------------------------
+&setvar omessages = [show &messages]
+&messages &on /* &off &info
+&setvar oldwin = [show setwindow]
+&setvar oldcell = [show setcell]
+
+&setvar program = WSHD
+&setvar usage = usage: %program% <dem_lattice> <slope_lattice> <aspect_grid>
+
+&setvar tmpws = [scratchname -directory]
+arc createworkspace %tmpws%
+&setvar slope = %tmpws%/slope
+&setvar aspect = %tmpws%/aspect
+&setvar outlet = %tmpws%/outlet
+
+
+/* -------------------------------------------------------------
+/* check command line
+/* -------------------------------------------------------------
+&if [null %dem%] or [null %slope%] or [null %aspect%] &then
+  &do
+    &call recover
+    &return &error %usage%
+  &end
+&setvar dem = [translate %dem%]
+&setvar slopes = [translate %slopes%]
+&setvar aspects = [translate %aspects%]
+
+&if not [exist %dem% -grid] &then
+  &do
+    &type %program%: error: cannot find grid %dem%
+    &call recover
+    &return &error %usage%
+  &end
+
+&if [exist %slopes% -grid] &then
+  &do
+    &type %program%: warning: overwriting existing grid %slopes%
+    kill %slopes% all
+  &end
+&if [exist %aspects% -grid] &then
+  &do
+    &type %program%: warning: overwriting existing grid %aspects%
+    kill %aspects% all
+  &end
+
+/* -------------------------------------------------------------
+/* do the work
+/* -------------------------------------------------------------
+&describe %dem%
+&setvar deltax = %grd$dx%
+&setvar deltay = %grd$dy%
+
+setcell %dem%
+setwindow [calc %grd$xmin% - %deltax%] [calc %grd$ymin% - %deltay%] ~
+  [calc %grd$xmax% + %deltax%] [calc  %grd$ymax% + %deltay%]
+
+&run wshdoutlet %dem% %outlet%
+
+&run wshdaspect %dem% %slope% %aspect%
+
+setwindow %dem%
+%slopes% = setnull(isnull(%dem%), %slope%)
+%aspects% = setnull(isnull(%dem%), %aspect%)
+
+&call recover
+&return
+
+/* -------------------------------------------------------------
+/* recover
+/* -------------------------------------------------------------
+&routine recover
+
+&if [variable tmpws] &then
+    &if [exists %tmpws% -workspace] &then
+      &setvar junk = [delete %tmpws% -workspace]
+
+&if [variable oldwin] &then 
+  setwindow %oldwin%
+&if [variable oldcell] &then 
+  setcell %oldcell%
+  
+&messages %omessages%
+
+&return
+
+
+/* -------------------------------------------------------------
+/* hndlerr
+/* -------------------------------------------------------------
+&routine hndlerr
+&severity &error &fail
+/*&call recover
+&type %program%: unrecoverable error 
+&return &error Aborting...

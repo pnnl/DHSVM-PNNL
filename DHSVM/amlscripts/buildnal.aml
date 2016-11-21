@@ -1,0 +1,68 @@
+/*A------------------------------AUTHOR---------------------------------
+/* 
+/*Original Coding:     ESRI 
+/*
+/*N-------------------------------NAME----------------------------------
+/* 
+/*BUILDNAL.AML 
+/*Copyright 1995, Environmental Systems Research Institute, Inc.  
+/*
+/*P-----------------------------PURPOSE---------------------------------
+/* 
+/*This AML will build a Node Arc List for a coverage so it can relate
+/*to the same coverages .NAT to the .AAT.  The NAL is the primary 
+/*related table so FINDSTREETCROSSING.AML can perform the selections 
+/*it does.
+/*
+/*U------------------------------USAGE----------------------------------
+/* 
+/*BUILDNAL <cover>
+/*
+/*V----------------------------VARIABLES--------------------------------
+/*
+/* .covt - the TRANSLATEd version of %cov%
+/*
+/*C------------------------------CALLS----------------------------------
+/*
+/*NONE 
+/*
+/*============================DISCLAIMER================================
+/*You may use, copy, modify, merge, distribute, alter, reproduce and/or
+/*create derivative works of this AML for your own internal use.  All
+/*rights not specifically granted herein are reserved to ESRI.  
+/*
+/*THIS AML IS PROVIDED "AS-IS" WITHOUT WARRANTY OF ANY KIND, EITHER
+/*EXPRESS OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+/*WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE,
+/*WITH RESPECT TO THE AML.  
+/*
+/*ESRI shall not be liable for any damages under any theory of law
+/*related to your use of this AML, even if ESRI is advised of the
+/*possibilites of such damage.  This AML is not supported by ESRI.
+/*======================================================================
+&args .covt
+&data ARC INFO
+ARC
+DEFINE %.covt%.NAL
+NODE#,4,5,B
+ARC#,4,5,B
+[unquote '']
+SELECT %.covt%.NAL
+REDEFINE NODE#
+1,FNODE#,4,5,B
+[unquote  '']
+ALTER NODE#
+,,,,TNODE#,,,
+SELECT %.covt%.AAT RO
+REL %.covt%.NAL 1 BY FNODE# APPEND
+CALC $1ARC# = %.covt%#
+REL %.covt%.NAL 1 BY TNODE# APPEND
+CALC $1ARC# = %.covt%#
+SELECT %.covt%.NAL
+SORT NODE#,ARC#
+Q STOP
+&end
+ 
+
+ 
+ 

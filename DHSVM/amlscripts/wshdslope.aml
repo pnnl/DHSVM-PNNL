@@ -1,0 +1,178 @@
+/* -------------------------------------------------------------
+/* file: wshdslope.aml
+/*
+/* This is a GRID command.  It computes slope for the specified DEM
+/* lattice using only 4 neighboring cells, as opposed to 8 as the GRID
+/* SLOPE() function does.
+/*
+/* -------------------------------------------------------------
+/* -------------------------------------------------------------
+/* Battelle Memorial Institute
+/* Pacific Northwest Laboratory
+/* -------------------------------------------------------------
+/* -------------------------------------------------------------
+/* Created December 27, 1995 by  William A Perkins
+/* Last Change: Wed May 22 10:05:34 1996 by  William A Perkins <perk@clio.muse.pnl.gov>
+/* -------------------------------------------------------------
+
+/* RCS ID: $Id: wshdslope.aml,v 1.5 1996/06/10 18:52:09 perk Exp $
+
+&severity &error &routine hndlerr
+&severity &warning &ignore
+
+&args dem slope aspect
+
+&if %:program% ne GRID &then
+  &do
+    &type Sorry, this should be run in GRID not %:program%
+    &return &error
+  &end
+
+
+/* -------------------------------------------------------------
+/* variable initialization
+/* -------------------------------------------------------------
+&setvar omessages = [show &messages]
+&messages &on /* &off &info
+&setvar oldwin = [show setwindow]
+&setvar oldcell = [show setcell]
+
+&setvar program = WSHDSLOPE
+&setvar usage = usage: %program% <dem_lattice> <slope_lattice> <aspect_grid>
+
+&setvar tmpws = [scratchname -directory]
+arc createworkspace %tmpws%
+&setvar tmpslope = %tmpws%/slope
+&setvar tmpaspect = %tmpws%/aspect
+&setvar outlet = %tmpws%/outlet
+
+/* -------------------------------------------------------------
+/* check command line
+/* -------------------------------------------------------------
+&if [null %dem%] or [null %slope%] or [null %aspect%] &then
+  &do
+    &call recover
+    &return &error %usage%
+  &end
+&setvar dem = [translate %dem%]
+&setvar slope = [translate %slope%]
+&setvar aspect = [translate %aspect%]
+
+&if not [exist %dem% -grid] &then
+  &do
+    &type %program%: error: cannot find grid %dem%
+    &call recover
+    &return &error %usage%
+  &end
+
+&if [exist %slope% -grid] &then
+  &do
+    &type %program%: warning: overwriting existing grid %slope%
+    kill %slope% all
+  &end
+&if [exist %aspect% -grid] &then
+  &do
+    &type %program%: warning: overwriting existing grid %aspect%
+    kill %aspect% all
+  &end
+
+/* -------------------------------------------------------------
+/* do the work
+/* -------------------------------------------------------------
+&describe %dem%
+&setvar deltax = %grd$dx%
+&setvar deltay = %grd$dy%
+
+setcell %dem%
+setwindow [calc %grd$xmin% - %deltax%] [calc %grd$ymin% - %deltay%] ~
+  [calc %grd$xmax% + %deltax%] [calc  %grd$ymax% + %deltay%]
+
+&run wshdoutlet %dem% %outlet%
+
+DOCELL
+
+if (isnull(%dem%(-1,0)) & isnull(%dem%(1,0))) {
+  dzdx := 0.0
+} else if (isnull(%dem%(-1,0))) {
+  dzdx := con(%dem%(0,0) gt %dem%(1,0), (%dem%(0,0) - %dem%(1,0)) / %deltax%, 0.0)
+} else if (isnull(%dem%(1,0))) {
+  dzdx := con(%dem%(0,0) gt %dem%(-1,0), (%dem%(-1,0) - %dem%(0,0)) / %deltax%, 0.0)
+} else {
+  dzdx := (%dem%(-1,0) - %dem%(1,0)) / (2 * %deltax%)
+}
+
+if (isnull(%dem%(0,-1)) & isnull(%dem%(0,1))) {
+  dzdy := 0.0
+} else if (isnull(%dem%(0,-1))) {
+  dzdy := con(%dem%(0,0) gt %dem%(0,1), (%dem%(0,1) - %dem%(0,0)) / %deltay%, 0.0)
+} else if (isnull(%dem%(0,1))) {
+  dzdy := con(%dem%(0,0) gt %dem%(0,-1), (%dem%(0,0) - %dem%(0,-1)) / %deltay%, 0.0)
+} else {
+  dzdy := (%dem%(0,1) - %dem%(0,-1)) / (2 * %deltay%)
+}
+
+%tmpslope% = sqrt(sqr(dzdx) + sqr(dzdy))
+/* junk := con(%tmpslope% eq 0.0, int(aspect(%dem%(0,0))), int(atan2(dzdx, dzdy) * DEG) + 360)
+junk := con(dzdx eq 0.0 and dzdy eq 0.0, aspect(%dem%), int(atan2(dzdx, dzdy) * DEG) + 360)
+%tmpaspect% = con(junk > 360, junk mod 360, junk)
+
+END
+
+setwindow %dem%
+%slope% = setnull(isnull(%dem%), %tmpslope%)
+
+                                /* adjust the aspect of the outlet
+                                /* cell so that the slope direction is
+                                /* out of the watershed
+
+/* DOCELL
+
+/* if (not isnull(%outlet%)) {
+/*   if (isnull(%dem%(0,-1))) {
+/*     %aspect% = 0.0
+/*   } else if (isnull(%dem%(1,0))) {
+/*     %aspect% = 90.0
+/*   } else if (isnull(%dem%(0,1))) {
+/*     %aspect% = 180.0
+/*   } else if (isnull(%dem%(-1,0))) {
+/*     %aspect% = 270.0
+/*   } else {
+/*     %aspect% = %tmpaspect%      /* this is a problem
+/*   }
+/* } else {
+/*   %aspect% = setnull(isnull(%dem%), %tmpaspect%)
+/* }
+
+/* END
+%aspect% = setnull(isnull(%dem%), %tmpaspect%)
+
+&call recover
+&return
+
+/* -------------------------------------------------------------
+/* recover
+/* -------------------------------------------------------------
+&routine recover
+
+&if [variable tmpws] &then
+    &if [exists %tmpws% -workspace] &then
+      &setvar junk = [delete %tmpws% -workspace]
+
+&if [variable oldwin] &then 
+  setwindow %oldwin%
+&if [variable oldcell] &then 
+  setcell %oldcell%
+  
+&messages %omessages%
+
+&return
+
+
+/* -------------------------------------------------------------
+/* hndlerr
+/* -------------------------------------------------------------
+&routine hndlerr
+&severity &error &fail
+&call recover
+&type %program%: unrecoverable error 
+&return &error Aborting...

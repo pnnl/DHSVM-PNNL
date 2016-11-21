@@ -1,0 +1,114 @@
+/* -------------------------------------------------------------
+/* file: wshdoutlet.aml
+/* 
+/* This is a GRID command.  It is used to locate the lowest cell in a
+/* watershed dem.  This is assumed to be the watershed outlet.  A grid
+/* with a single cell is produced
+/*
+/* -------------------------------------------------------------
+/* -------------------------------------------------------------
+/* Battelle Memorial Institute
+/* Pacific Northwest Laboratory
+/* -------------------------------------------------------------
+/* -------------------------------------------------------------
+/* Created December 28, 1995 by  William A Perkins
+/* Last Change: Sat Feb 17 22:29:27 1996 by William A. Perkins <perk@nebo.perk.org>
+/* -------------------------------------------------------------
+
+/* RCS ID: $Id: wshdoutlet.aml,v 1.2 1996/09/25 22:18:19 perk Exp $
+
+&severity &error &routine hndlerr
+&severity &warning &ignore
+
+&args dem outlet
+
+&if %:program% ne GRID &then
+  &do
+    &type Sorry, this should be run in GRID not %:program%
+    &return &error
+  &end
+
+/* -------------------------------------------------------------
+/* variable initialization
+/* -------------------------------------------------------------
+&setvar omessages = [show &messages]
+&messages &on /* &off &info
+&setvar oldwin = [show setwindow]
+&setvar oldcell = [show setcell]
+
+
+&setvar program = WSHDOUTLET
+&setvar usage = usage: %program% <dem_lattice> <out_lattice>
+
+/* -------------------------------------------------------------
+/* check command line
+/* -------------------------------------------------------------
+&if [null %dem%] or [null %outlet%] &then
+  &do
+    &call recover
+    &return &error %usage%
+  &end
+&setvar dem = [translate %dem%]
+&setvar outlet = [translate %outlet%]
+
+&if not [exist %dem% -grid] &then
+  &do
+    &type %program%: error: cannot find grid %dem%
+    &call recover
+    &return &error %usage%
+  &end
+
+&if [exist %outlet% -grid] &then
+  &do
+    &type %program%: warning: overwriting existing grid %outlet%
+    kill %outlet% all
+  &end
+
+
+/* -------------------------------------------------------------
+/* do the work
+/* -------------------------------------------------------------
+
+setwindow %dem%
+setcell %dem%
+
+min = scalar(1.0e10)
+minrow = scalar(0)
+mincol = scalar(0)
+
+DOCELL
+  if (%dem% < min) {
+    min = %dem%
+    minrow = $$ROWMAP
+    mincol = $$COLMAP
+  }
+END
+
+%outlet% = setnull(not ($$ROWMAP eq minrow and $$COLMAP eq mincol), 1)
+
+&call recover
+&return
+
+/* -------------------------------------------------------------
+/* do the work
+/* -------------------------------------------------------------
+&routine recover
+
+&if [variable oldwin] &then 
+  setwindow %oldwin%
+&if [variable oldcell] &then 
+  setcell %oldcell%
+  
+&messages %omessages%
+
+&return
+
+
+/* -------------------------------------------------------------
+/* hndlerr
+/* -------------------------------------------------------------
+&routine hndlerr
+&severity &error &fail
+&call recover
+&type %program%: unrecoverable error 
+&return &error Aborting...

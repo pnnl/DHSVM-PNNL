@@ -1,0 +1,171 @@
+/* -------------------------------------------------------------
+/* file: roadmap.aml
+/* 
+/* This is an ARC program.  This program combines a road/channel
+/* coverage with the polygon coverage produced by ROWCOLMAP, which
+/* contains information on the base DEM grid, including slope and
+/* aspect. A new road coverage is created with the arcs split up cell
+/* by cell.  This program transfers the cell aspect and slope to
+/* individual arcs since that will be needed with further processing.
+/* It will also transfer a single item from the original road/channel
+/* coverage, which should be the segment ID, to an item SEG-ID in the
+/* new road/channel coverage.  By default, SEG-ID is filled with the
+/* internal arc ID.
+/*
+/* -------------------------------------------------------------
+/* -------------------------------------------------------------
+/* Battelle Memorial Institute
+/* Pacific Northwest Laboratory
+/* -------------------------------------------------------------
+/* -------------------------------------------------------------
+/* Created February 22, 1996 by  William A Perkins
+/* Last Change: Wed Sep 25 14:39:53 1996 by  William A Perkins <perk@mnemosyne.pnl.gov>
+/* -------------------------------------------------------------
+
+/* RCS ID: $Id: roadmap.aml,v 1.4 1996/09/25 22:15:35 perk Exp $
+
+&severity &error &routine hndlerr
+&severity &warning &ignore
+
+&args roads rowcolmap outcover rditem
+
+&if %:program% ne ARC &then
+  &do
+    &type Sorry, this should be run in ARC not %:program%
+    &return &error
+  &end
+
+/* -------------------------------------------------------------
+/* variable initialization
+/* -------------------------------------------------------------
+&setvar omessages = [show &messages]
+&messages &on /* &off &info
+&setvar odisplay = [show display]
+display 0
+
+&setvar program = ROADMAP
+&setvar usage = usage: %program% <cover> <map> <outcover> {rditem}
+
+/* -------------------------------------------------------------
+/* check command line
+/* -------------------------------------------------------------
+&if [null %roads%] or [null %rowcolmap%] or [null %outcover%] &then
+  &do
+    &call recover
+    &return &error %usage%
+  &end
+
+&setvar roads = [translate %roads%]
+&setvar rowcolmap = [translate %rowcolmap%]
+&setvar outcover = [translate %outcover%]
+&setvar rditem = [translate %rditem%]
+
+&if not [exists %roads% -arc] &then
+  &do
+    &type %program%: error: can not find arc coverage %roads%
+    &call recover
+    &return &error %usage%
+  &end
+
+&if not [exists %rowcolmap% -polygon] &then
+  &do
+    &type %program%: error: can not find polygon coverage %rowcolmap%
+    &call recover
+    &return &error %usage%
+  &end
+
+&if [null %rditem%] &then
+  &setvar rditem = [entryname %roads%]#
+&if not [iteminfo %roads% -arc %rditem% -exists] &then
+  &do
+    &type %program%: error: can not find item %rditem% in %roads% AAT
+    &call recover
+    &return &error %usage%
+  &end
+
+&if not [calc [iteminfo %rowcolmap% -polygon aspect -exists] or ~
+  [iteminfo %rowcolmap% -polygon slope -exists]] &then
+    &do
+      &type %program%: error: SLOPE or ASPECT items not found in polygon coverage %rowcolmap%
+      &type %program%: Was %rowcolmap% produced by ROWCOLMAP?
+      &call recover
+      &return &error %usage%
+  &end
+
+/* -------------------------------------------------------------
+/* do the work
+/* -------------------------------------------------------------
+
+                                /* copy the original roads coverage to
+                                /* a temporary coverage, create a new
+                                /* item to hold the Segment ID, and
+                                /* fill it.
+
+/* &setvar tmproads = [scratchname -directory]
+/* &data arc arcedit
+/*   edit %tmproads% arc
+/*   additem seg-id 4 5 B
+/*   select all
+/*   &if [quote [translate %rditem%]] eq [quote %roads%#] &then
+/*     calc seg-id = roads#
+/*   &else
+/*     calc seg-id = %rditem%
+/*   quit y
+/* &end
+
+                                /* intersect the cell/row/column map
+                                /* with the temporary roads coverage.
+
+&if [exists %outcover% -cover] &then
+  &do
+    &type %program%: warning: overwriting existing coverage %outcover%
+    kill %outcover% all
+  &end
+intersect %roads% %rowcolmap% %outcover% line 1.0 JOIN
+build %outcover% arc
+
+additem %outcover%.aat %outcover%.aat seg-id ~
+  [iteminfo %roads% -arc %rditem% -definition]
+
+&run transfer %roads% %outcover% %rditem% seg-id 1.0
+
+build %outcover% node
+addxy %outcover% node
+items %outcover%.aat
+
+&call recover
+&return
+
+/* -------------------------------------------------------------
+/* recover
+/* -------------------------------------------------------------
+&routine recover
+&do &while %:program% ne ARC
+  &select %:program% 
+    &when ARCEDIT
+      quit no
+    &when ARCPLOT
+      quit
+    &when GRID
+      quit
+  &end 
+&end 
+
+/* &if [variable tmproads] &then
+/*   &if [exists %tmproads% -cover] &then
+/*     kill %tmproads% all
+
+display %odisplay%
+&messages %omessages%
+
+&return
+
+
+/* -------------------------------------------------------------
+/* hndlerr
+/* -------------------------------------------------------------
+&routine hndlerr
+&severity &error &fail
+&call recover
+&type %program%: unrecoverable error 
+&return &error Aborting...

@@ -1,0 +1,38 @@
+#!/bin/csh -f
+# This script is used to extract the 3-hourly stream temperature output
+# for selected stream segments and average the 3-hourly stream temperature 
+# output to daily average temperature.
+
+################## hard coded parameters ##################
+set seg = 51           # selected segment number
+set inputfile = ../Work_Space/Mercer.temp
+set outdir = ../Output  # the output directory
+set startdate = 2002-01-02
+set timestep = 3
+###########################################################
+
+set interval=`expr 24\/$timestep |bc`
+
+# extract segments
+awk '{if ($3=="'$seg'") print $0}' $inputfile >! $outdir/junk$seg.temp.txt
+
+# add the date (MM/DD/YYYY to the output file
+./add_date.pl $outdir/junk$seg.temp.txt $startdate $timestep > $outdir/junk2$seg.temp.txt
+
+# reformat the output
+awk '{print $1, $6, $7, $8, $9}' $outdir/junk2$seg.temp.txt > $outdir/seg$seg.temp.txt
+
+# compute daily average
+# the 2nd col stores the day count, and the 3rd stores the segment number.
+awk 'BEGIN{i=0; j=0;}{i+=$2; j+=1; if(j=="'$interval'"){printf("%s %f\n", $1,i/"'$interval'");i=0;j=0;}}' $outdir/seg$seg.temp.txt >! $outdir/junk$seg.daily.temp.txt
+#reformat the output
+awk 'BEGIN {OFS="-";} {print $1,$2;}' $outdir/junk$seg.daily.temp.txt > $outdir/junk2$seg.daily.temp.txt
+awk 'BEGIN {FS="-";} {print $1,$3;}' $outdir/junk2$seg.daily.temp.txt > $outdir/seg$seg.daily.temp.txt
+
+#cleanup
+rm -r $outdir/junk*
+
+
+
+
+

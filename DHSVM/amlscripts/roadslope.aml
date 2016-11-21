@@ -1,0 +1,244 @@
+/* -------------------------------------------------------------
+/* file: roadslope.aml
+/*
+/* usage: roadslope <cover> {route} {elevinfo} {slopeinfo}
+/*
+/* This is an ARC script.  This script computes slope and flow
+/* direction along the elevation route created by the ROADELEVATION
+/* script. Default values for optional arguments are as follows:
+/*
+/* route: ELEVATION
+/*
+/* elevinfo: roads.ELEV
+/*
+/* slopinfo: roads.SLOPE
+/* 
+/* -------------------------------------------------------------
+/* -------------------------------------------------------------
+/* Battelle Memorial Institute
+/* Pacific Northwest Laboratory
+/* -------------------------------------------------------------
+/* -------------------------------------------------------------
+/* Created August 21, 1995 by  William A Perkins
+/* Last Change: Tue May 28 11:50:40 1996 by  William A Perkins <perk@calliope.muse.pnl.gov>
+/* -------------------------------------------------------------
+
+/* RCS ID: $Id: roadslope.aml,v 1.6 1996/06/10 18:43:49 perk Exp $
+
+&severity &error &routine hndlerr
+&severity &warning &ignore
+
+&args roads elevrte elevinfo slopeinfo
+
+
+/* -------------------------------------------------------------
+/* variable initialization
+/* -------------------------------------------------------------
+&setvar omessages = [show &messages]
+&messages &on /* &off &info
+&setvar odisplay = [show display]
+display 0
+
+&setvar program = ROADSLOPE
+&setvar usage = usage: %program% <cover> {route} {elevinfo} {slopeinfo}
+
+/* -------------------------------------------------------------
+/* handle command line arguments
+/* -------------------------------------------------------------
+&if [null %roads%] &then 
+  &do 
+    &call recover
+    &return &error %usage%
+  &end 
+
+                                /* road coverage
+
+&setvar roads = [translate %roads%]
+&if not [exists %roads% -arc] &then
+  &do
+    &type %program%: error: Unable to find line coverage %roads%
+    &call recover
+    &return &error %usage%
+  &end
+
+                                /* elevation route
+
+&if [null %elevrte%] &then
+  &setvar elevrte = ELEVATION
+&else
+  &setvar elevrte = [translate %elevrte%]
+&if not [exists %roads% -route.%elevrte%] or ~
+  not [exists %roads% -section.%elevrte%] &then
+    &do
+      &type %program%: error: Coverage %roads% has no %elevrte% ROUTE
+      &call recover
+      &return &error %usage%
+    &end
+
+                                /* check existence of elevation and
+                                /* slope event database files
+&if [null %elevinfo%] &then
+  &setvar elevinfo = %roads%.ELEV
+&else
+  &setvar elevinfo = [translate %elevinfo%]
+&if not [exists %elevinfo% -info] &then
+  &do
+    &type %program%: error: Unable to find INFO file %elevinfo%
+    &call recover
+    &return &error %usage%
+  &end
+
+&if [null %slopeinfo%] &then
+  &setvar slopeinfo = %roads%.SLOPE
+&else
+  &setvar slopeinfo = [translate %slopeinfo%]
+
+/* -------------------------------------------------------------
+/* do the work
+/* -------------------------------------------------------------
+
+                                /* build an INFO file to hold the
+                                /* slope event database
+
+arcedit                         /* start ARCEDIT
+
+&if [exists %slopeinfo% -info] &then
+  &do
+    &type %program%: warning: removing INFO %slopeinfo%
+    &setvar junk = [delete %slopeinfo% -info]
+  &end
+
+create %slopeinfo% info; ~
+  %elevrte%#, 4, 5, B; ~
+  f-meas, 4, 12, F, 3; ~
+  t-meas, 4, 12, F, 3; ~
+  f-elev, 4, 12, F, 3; ~
+  t-elev, 4, 12, F, 3; ~
+  slope, 4, 12, F, 3; ~
+  percent, 4, 10, B; ~
+  sign, 4, 4, B;;
+
+quit y                          /* leave ARCEDIT
+
+
+cursor elev declare %elevinfo% info ro
+cursor elev open 
+cursor slope declare %slopeinfo% info rw
+cursor slope open
+cursor slope insert
+&setvar lastid = -1
+&do &while %:elev.AML$NEXT%
+  &setvar id = [value :elev.%elevrte%#]
+  &setvar meas = %:elev.measure%
+  &setvar elev = %:elev.elevation%
+  &if %id% eq %lastid% &then
+    &do
+      &setvar :slope.t-meas = %meas%
+      &setvar :slope.t-elev = %elev%
+      &setvar :slope.sign = 0
+      &if %:slope.f-elev% ne -9999 and %:slope.t-elev% ne -9999 &then
+        &do
+          &if %:slope.t-meas% - %:slope.f-meas% ne 0 &then
+            &do
+              &setvar :slope.slope = ~
+                [calc [calc ~
+                [calc %:slope.t-elev% - %:slope.f-elev%] / ~
+                [calc %:slope.t-meas% - %:slope.f-meas%] ] * 100.0]
+              &setvar :slope.percent = [round %:slope.slope%]
+              &if %:slope.f-elev% gt %:slope.t-elev% &then
+                &setvar :slope.sign = 1
+              &if %:slope.f-elev% lt %:slope.t-elev% &then
+                &setvar :slope.sign = -1
+            &end
+          &else 
+            &do
+              &setvar :slope.slope = -9999
+              &setvar :slope.sign = 0
+            &end
+        &end
+      &else
+        &do
+          &setvar :slope.slope = -9999.0
+          &setvar :slope.percent = -9999
+        &end
+      cursor slope insert
+    &end
+  &setvar :slope.%elevrte%# = %id%
+  &setvar :slope.f-meas = %meas%
+  &setvar :slope.f-elev = %elev%
+  &setvar lastid = %id%
+  cursor elev next
+&end
+cursor elev remove
+cursor slope remove
+
+                                /* negate the slope event sign when
+                                /* the section measures are backwards
+
+cursor sec declare %roads% section.%elevrte% ro
+relate add; slope; %slopeinfo%; info; %elevrte%#; %elevrte%#; linear; rw;;
+cursor sec open
+
+&do &while %:sec.AML$NEXT%
+  &if %:sec.f-pos% gt %:sec.t-pos% &then
+    &setvar negate = -1
+  &else
+    &setvar negate = 1
+  &do &while %:sec.slope//AML$NEXT%
+    &setvar :sec.slope//sign = [calc %negate% * %:sec.slope//sign%]
+    cursor sec relate slope next
+  &end
+  cursor sec next
+&end
+cursor sec remove
+relate drop; slope;;
+
+&run roadslopeavg %roads% slope sign %elevrte% %slopeinfo%
+
+&call recover
+&return
+
+/* -------------------------------------------------------------
+/* recover
+/* -------------------------------------------------------------
+&routine recover
+&do &while %:program% ne ARC
+  &select %:program% 
+    &when ARCEDIT
+      quit no
+    &when ARCPLOT
+      quit
+    &when GRID
+      quit
+  &end 
+&end 
+
+&if not [null [show cursors]] &then
+  &do i &list [show cursors]
+    &select %i%
+      &when elev, slope, sec
+        cursor %i% remove
+    &end
+  &end
+
+&if not [null [show relates]] &then
+  &do 
+    relate drop; prev;;
+  &end
+&if not [null [show eventsource]] &then
+  &do
+    eventsource drop elev
+  &end
+display %odisplay%
+&messages %omessages%
+
+&return
+
+/* -------------------------------------------------------------
+/* hndlerr
+/* -------------------------------------------------------------
+&routine hndlerr
+&severity &error &fail
+&type %program%: unrecoverable error 
+&call recover
+&return &error Aborting...

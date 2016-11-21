@@ -1,0 +1,20 @@
+#!/bin/tcsh -f
+
+# Extremely simple script to create the initial channel state file.
+
+if( $#argv < 3 ) then
+    echo "usage: $0 <StreamNetworkFile> <InitialDepth> <Output Date String: MM.DD.YYYY.hh.mm.ss>"
+else    	
+
+set StreamNetworkFile = ${argv[1]}
+set InitialDepth = ${argv[2]}
+set OutputDate = ${argv[3]}
+shift   
+
+# Set the width for each channel class (numbered 1,2,3,...,n):
+
+set width = 1.5,2.,3.,5.,2.,5.,7.5,10.,15.
+
+awk -v W=$width 'BEGIN{ split( W, WARRAY, "," );}{LENGTH = $4; VOL = WARRAY[$5]*LENGTH*$InitialDepth; print $1, VOL;}' $StreamNetworkFile >! ../modelstate/Channel.State.$OutputDate
+
+endif

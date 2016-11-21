@@ -1,0 +1,19 @@
+#!/bin/csh
+
+head -6 rainymask.txt >! rainyhdr.txt
+
+tail +7 rainymask.txt >! temp1
+rm rainymask.txt
+mv temp1 rainymask.txt
+
+tail +7 rainydem.txt >! temp2
+rm rainydem.txt
+mv temp2 rainydem.txt
+
+tail +7 rainysoil.txt >! temp3
+rm rainysoil.txt
+mv temp3 rainysoil.txt
+
+tail +7 rainyveg.txt >! temp4
+rm rainyveg.txt
+mv temp4 rainyveg.txt

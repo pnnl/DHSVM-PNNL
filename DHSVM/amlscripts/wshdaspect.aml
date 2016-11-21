@@ -1,0 +1,146 @@
+/* -------------------------------------------------------------
+/* file: wshdaspect.aml
+/* 
+/* This is a GRID command.  It is used to locate the lowest cell in a
+/* watershed dem.  This is assumed to be the watershed outlet.  A grid
+/* with a single cell is produced
+/*
+/* -------------------------------------------------------------
+/* -------------------------------------------------------------
+/* Battelle Memorial Institute
+/* Pacific Northwest Laboratory
+/* -------------------------------------------------------------
+/* -------------------------------------------------------------
+/* Created December 28, 1995 by  William A Perkins
+/* Last Change: Sat Feb 17 22:29:27 1996 by William A. Perkins <perk@nebo.perk.org>
+/* -------------------------------------------------------------
+
+/* RCS ID: $Id: wshdaspect.aml,v 1.1 1995/12/28 18:05:46 perk Exp $
+
+&severity &error &routine hndlerr
+&severity &warning &ignore
+
+&args dem slope aspect
+
+&if %:program% ne GRID &then
+  &do
+    &type Sorry, this should be run in GRID not %:program%
+    &return &error
+  &end
+
+/* -------------------------------------------------------------
+/* variable initialization
+/* -------------------------------------------------------------
+&setvar omessages = [show &messages]
+&messages &on /* &off &info
+&setvar oldwin = [show setwindow]
+&setvar oldcell = [show setcell]
+
+
+&setvar program = WSHDASPECT
+&setvar usage = usage: %program% <dem_lattice> <slope_lattice> <aspect_lattice>
+
+/* -------------------------------------------------------------
+/* check command line
+/* -------------------------------------------------------------
+&if [null %dem%] or [null %slope%] or [null %aspect%] &then
+  &do
+    &call recover
+    &return &error %usage%
+  &end
+&setvar dem = [translate %dem%]
+&setvar slope = [translate %slope%]
+&setvar aspect = [translate %aspect%]
+
+&if not [exist %dem% -grid] &then
+  &do
+    &type %program%: error: cannot find grid %dem%
+    &call recover
+    &return &error %usage%
+  &end
+
+&if [exist %slope% -grid] &then
+  &do
+    &type %program%: warning: overwriting existing grid %slope%
+    kill %slope% all
+  &end
+
+&if [exist %aspect% -grid] &then
+  &do
+    &type %program%: warning: overwriting existing grid %aspect%
+    kill %aspect% all
+  &end
+
+/* -------------------------------------------------------------
+/* do the work
+/* -------------------------------------------------------------
+&describe %dem%
+&setvar deltax = %grd$dx%
+&setvar deltay = %grd$dy%
+
+setwindow %dem%
+setcell %dem%
+
+DOCELL
+if (isnull(%dem%(-1,0)) & isnull(%dem%(1,0))) {
+  dzdx := 0.0
+} else if (isnull(%dem%(-1,0))) {
+  dzdx := con(%dem%(0,0) gt %dem%(1,0), (%dem%(0,0) - %dem%(1,0)) / %deltax%, 0.0)
+} else if (isnull(%dem%(1,0))) {
+  dzdx := con(%dem%(0,0) gt %dem%(-1,0), (%dem%(-1,0) - %dem%(0,0)) / %deltax%, 0.0)
+} else {
+  dzdx := (%dem%(-1,0) - %dem%(1,0)) / (2 * %deltax%)
+}
+
+if (isnull(%dem%(0,-1)) & isnull(%dem%(0,1))) {
+  dzdy := 0.0
+} else if (isnull(%dem%(0,-1))) {
+  dzdy := con(%dem%(0,0) gt %dem%(0,1), (%dem%(0,1) - %dem%(0,0)) / %deltay%, 0.0)
+} else if (isnull(%dem%(0,1))) {
+  dzdy := con(%dem%(0,0) gt %dem%(0,-1), (%dem%(0,0) - %dem%(0,-1)) / %deltay%, 0.0)
+} else {
+  dzdy := (%dem%(0,1) - %dem%(0,-1)) / (2 * %deltay%)
+}
+&type Here I am
+
+
+/*%slope%(0,0) = scalar(sqrt(5))
+
+/*%slope%  = sqrt(sqr(dzdx) + sqr(dzdy))
+
+&type And here too
+
+
+junk := con(dzdx eq 0.0 and dzdy eq 0.0, aspect(%dem%), int(atan2(dzdx, dzdy) * DEG) + 360)
+%aspect%(0,0) = con(junk > 360, junk mod 360, junk) 
+END
+
+
+&call hndlerr
+
+&call recover
+&return
+
+/* -------------------------------------------------------------
+/* do the work
+/* -------------------------------------------------------------
+&routine recover
+
+&if [variable oldwin] &then 
+  setwindow %oldwin%
+&if [variable oldcell] &then 
+  setcell %oldcell%
+  
+&messages %omessages%
+
+&return
+
+
+/* -------------------------------------------------------------
+/* hndlerr
+/* -------------------------------------------------------------
+&routine hndlerr
+&severity &error &fail
+&call recover
+&type %program%: unrecoverable error 
+&return &error Aborting...
