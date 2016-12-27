@@ -10,7 +10,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2016-12-20 09:03:59 d3g096
+# Last Change: 2016-12-27 10:21:02 d3g096
 
 set -xue
 
@@ -64,6 +64,7 @@ common_flags="\
         -D DHSVM_SNOW_ONLY:BOOL=OFF \
         -D DHSVM_USE_X11:BOOL=ON \
         -D DHSVM_USE_NETCDF:BOOL=ON \
+        -D DHSVM_BUILD_TESTS:BOOL=OFF \
 "
 
 if [ $host == "flophouse" ]; then

@@ -9,12 +9,11 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2016-12-27 10:00:34 d3g096
+# Last Change: 2016-12-27 10:41:11 d3g096
 
 # -------------------------------------------------------------
 # General set up
 # -------------------------------------------------------------
-
 
 cmake_minimum_required (VERSION 2.8.12)
 project (DHSVM C)
@@ -59,10 +58,8 @@ endif(UNIX)
 # -------------------------------------------------------------
 if (DHSVM_USE_NETCDF)
   find_package(NetCDF REQUIRED)
-  if(NETCDF_FOUND)
-    add_definitions(-DHAVE_NETCDF)
-    include_directories(AFTER ${NETCDF_INCLUDES})
-  endif(NETCDF_FOUND)
+  add_definitions(-DHAVE_NETCDF)
+  include_directories(AFTER ${NETCDF_INCLUDES})
 endif (DHSVM_USE_NETCDF)
 
 # -------------------------------------------------------------
@@ -70,10 +67,8 @@ endif (DHSVM_USE_NETCDF)
 # -------------------------------------------------------------
 if (DHSVM_USE_X11)
   find_package(X11 REQUIRED)
-  if(X11_FOUND)
-    add_definitions(-DHAVE_X11)
-    include_directories(AFTER ${X11_INCLUDE_DIR})
-  endif(X11_FOUND)
+  add_definitions(-DHAVE_X11)
+  include_directories(AFTER ${X11_INCLUDE_DIR})
 endif (DHSVM_USE_X11)
 
 # -------------------------------------------------------------
@@ -85,3 +80,4 @@ find_package(FLEX)
 # sub directories
 # -------------------------------------------------------------
 add_subdirectory(sourcecode)
+add_subdirectory(program)
