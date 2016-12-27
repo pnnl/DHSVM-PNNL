@@ -9,7 +9,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2016-12-27 11:49:06 d3g096
+# Last Change: 2016-12-27 14:10:46 d3g096
 
 # -------------------------------------------------------------
 # Set up for this subdirectory
@@ -163,4 +163,21 @@ if (DHSVM_USE_NETCDF)
     ${MATH_LIBRARY}
     )
 endif (DHSVM_USE_NETCDF)
+
+# -------------------------------------------------------------
+# fixroads
+# -------------------------------------------------------------
+add_executable(fixroads
+  fixroads.c
+)
+target_link_libraries(make_shade_maps_bin
+  ${MATH_LIBRARY}
+)
+
+# -------------------------------------------------------------
+# fill_sinks_dhsvm
+# -------------------------------------------------------------
+add_executable(fill_sinks_dhsvm
+  FILL_SINKS_DHSVM.c
+)
 

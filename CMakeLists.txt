@@ -9,14 +9,14 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2016-12-27 10:41:11 d3g096
+# Last Change: 2016-12-27 14:01:40 d3g096
 
 # -------------------------------------------------------------
 # General set up
 # -------------------------------------------------------------
 
 cmake_minimum_required (VERSION 2.8.12)
-project (DHSVM C)
+project (DHSVM)
 
 # this is where extra CMake functions can be found
 list (APPEND CMAKE_MODULE_PATH "${DHSVM_SOURCE_DIR}/cmake")
@@ -24,6 +24,14 @@ list (APPEND CMAKE_MODULE_PATH "${DHSVM_SOURCE_DIR}/cmake")
 # -------------------------------------------------------------
 # Configuration options
 # -------------------------------------------------------------
+
+enable_language(C)
+
+# Build RBM if desired
+option (DHSVM_USE_RBM "Build RBM and related programs" OFF)
+if (DHSVM_USE_RBM)
+  enable_language(Fortran)
+endif (DHSVM_USE_RBM)
 
 # Require NetCDF File I/O
 option (DHSVM_USE_NETCDF "Look for NetCDF library and require its use" ON)
@@ -79,5 +87,10 @@ find_package(FLEX)
 # -------------------------------------------------------------
 # sub directories
 # -------------------------------------------------------------
-add_subdirectory(sourcecode)
-add_subdirectory(program)
+add_subdirectory(DHSVM/sourcecode)
+add_subdirectory(DHSVM/program)
+if (DHSVM_USE_RBM) 
+  add_subdirectory(RBM)
+  add_subdirectory(Create)
+endif (DHSVM_USE_RBM)
+
