@@ -9,7 +9,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2016-12-27 14:10:46 d3g096
+# Last Change: 2016-12-27 14:27:11 d3g096
 
 # -------------------------------------------------------------
 # Set up for this subdirectory
@@ -29,7 +29,7 @@ add_library(locBinIO STATIC
   Files.c 
   InitArray.c
   ReportError.c
-  sizeofnt.c
+  SizeOfNT.c
   Calendar.c
   )
 if (DHSVM_USE_NETCDF)
