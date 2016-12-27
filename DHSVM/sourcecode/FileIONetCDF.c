@@ -702,6 +702,8 @@ gcc -Wall -g -o test_netcdf -DTEST_FILEIONETCDF FileIONetCDF.c ReportError.c Fil
 
 #ifdef TEST_FILEIONETCDF
 
+char fileext[BUFSIZ + 1] = "";			/* file extension */
+
 int main(void)
 {
   char FileLabel[BUFSIZE + 1];
@@ -753,9 +755,8 @@ int main(void)
   DMap.DumpDate[1].Day = 1;
   DMap.DumpDate[1].JDay = 1;
   DMap.DumpDate[1].Hour = 0;
-  MakeVarAttr(&DMap, FileLabel);
 
-  CreateMapFileNetCDF(DMap.FileName, FileLabel, &Map);
+  CreateMapFileNetCDF(DMap.FileName, DMap.FileLabel, &Map);
   WriteArray = (float *) calloc(Map.NX * Map.NY, sizeof(float));
   if (WriteArray == NULL)
     ReportError("Testing NetCDF", 1);
@@ -793,7 +794,7 @@ int main(void)
   cDMap.DumpDate[1].Day = 1;
   cDMap.DumpDate[1].JDay = 1;
   cDMap.DumpDate[1].Hour = 0;
-  MakeVarAttr(&cDMap, FileLabel);
+  /* MakeVarAttr(&cDMap, FileLabel);*/
   cWriteArray = (char *) calloc(Map.NX * Map.NY, sizeof(char));
   if (cWriteArray == NULL)
     ReportError("Testing NetCDF", 1);

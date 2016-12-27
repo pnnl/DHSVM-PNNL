@@ -9,7 +9,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2016-12-27 10:07:25 d3g096
+# Last Change: 2016-12-27 12:07:37 d3g096
 
 # -------------------------------------------------------------
 # Set up for this subdirectory
@@ -153,35 +153,36 @@ target_link_libraries(DHSVM
 # -------------------------------------------------------------
 # channel_test
 # -------------------------------------------------------------
-if (DHSVM_BUILD_TESTS)
-  add_executable(channel_test
-    channel.c
-    errorhandler.c
-    ${FLEX_tableio_OUTPUTS}
-    )
-  if (MATH_LIBRARY)
-    target_link_libraries(channel_test
-      ${MATH_LIBRARY}
-      )
-  endif (MATH_LIBRARY)
-  set_target_properties(channel_test
-    PROPERTIES
-    COMPILE_DEFINITIONS "TEST_CHANNEL=1"
-    )
-endif (DHSVM_BUILD_TESTS)
+# if (DHSVM_BUILD_TESTS)
+#   add_executable(channel_test
+#     channel.c
+#     errorhandler.c
+#     ${FLEX_tableio_OUTPUTS}
+#     )
+#   if (MATH_LIBRARY)
+#     target_link_libraries(channel_test
+#       ${MATH_LIBRARY}
+#       )
+#   endif (MATH_LIBRARY)
+#   set_target_properties(channel_test
+#     PROPERTIES
+#     COMPILE_DEFINITIONS "TEST_CHANNEL=1"
+#     )
+# endif (DHSVM_BUILD_TESTS)
 
 # -------------------------------------------------------------
 # channel_grid_test
 # -------------------------------------------------------------
-if (DHSVM_BUILD_TESTS)
-  add_executable(channel_grid_test
-    channel_grid.c
-    )
-  set_target_properties(channel_grid_test
-    PROPERTIES
-    COMPILE_DEFINITIONS "TEST_CHANNEL_GRID=1"
-    )
-endif (DHSVM_BUILD_TESTS)
+# if (DHSVM_BUILD_TESTS)
+#   add_executable(channel_grid_test
+#     channel_grid.c
+#     tableio.c
+#     )
+#   set_target_properties(channel_grid_test
+#     PROPERTIES
+#     COMPILE_DEFINITIONS "TEST_CHANNEL_GRID=1"
+#     )
+# endif (DHSVM_BUILD_TESTS)
 
 # -------------------------------------------------------------
 # report_error_test
