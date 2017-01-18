@@ -10,16 +10,16 @@ If you decide to use DHSVM, please acknowledge <a href="http://onlinelibrary.wil
 
 ## Configuration and Build with CMake ##
 
-DHSVM and related utilities can be configured and built using [CMake]
-(https://cmake.org).  This provides an automated, cross-platform way
-to locate and use system libraries (X11, NetCDF, etc.) and select
-optional features.  Here are some terse instructions:
+DHSVM and related utilities can be configured and built using
+[CMake](https://cmake.org).  This provides an automated,
+cross-platform way to locate and use system libraries (X11, NetCDF,
+etc.) and select optional features.  Here are some terse instructions:
 
   * In the top DHSVM (where `CMakeLists.txt` is located), make a
     directory for the build, called `build` maybe.
     
-  * In the `build` directory, run CMake with appropriate options, for
-    example, 
+  * In the `build` directory, run [CMake](https://cmake.org) with
+    appropriate options, for example,
     
         cmake \
                 -D CMAKE_BUILD_TYPE:STRING=Release \
