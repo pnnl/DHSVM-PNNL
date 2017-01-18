@@ -12,8 +12,9 @@ If you decide to use DHSVM, please acknowledge <a href="http://onlinelibrary.wil
 
 DHSVM and related utilities can be configured and built using
 [CMake](https://cmake.org).  This provides an automated,
-cross-platform way to locate and use system libraries (X11, NetCDF,
-etc.) and select optional features.  Here are some terse instructions:
+cross-platform way to locate and use system libraries (X11,
+[NetCDF](http://www.unidata.ucar.edu/software/netcdf/), etc.) and
+select optional features.  Here are some terse instructions: 
 
   * In the top DHSVM (where `CMakeLists.txt` is located), make a
     directory for the build, called `build` maybe.
@@ -21,18 +22,17 @@ etc.) and select optional features.  Here are some terse instructions:
   * In the `build` directory, run [CMake](https://cmake.org) with
     appropriate options, for example,
     
-        cmake \
-                -D CMAKE_BUILD_TYPE:STRING=Release \
-                -D DHSVM_SNOW_ONLY:BOOL=OFF \
-                -D DHSVM_BUILD_TESTS:BOOL=ON \
-                -D DHSVM_USE_X11:BOOL=OFF \
-                -D DHSVM_USE_NETCDF:BOOL=OFF \
-                -D DHSVM_USE_RBM:BOOL=OFF \
-                ..
+        cmake -D CMAKE_BUILD_TYPE:STRING=Release ..
 
     Look at `example_configuration.sh` for configurations used on
-    several developers' systems.  
+    several developers' systems. Alternatively, just use the script:
 
+        sh ../example_configuration.sh
+
+    This provides a vanilla configuration without X11,
+    [NetCDF](http://www.unidata.ucar.edu/software/netcdf/), or RBM
+    using the default C compiler.
+    
 * If successful, build DHSVM and related programs, using
 
         cmake --build .
