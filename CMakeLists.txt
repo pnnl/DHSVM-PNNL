@@ -9,7 +9,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2016-12-27 14:01:40 d3g096
+# Last Change: 2017-01-23 11:16:16 d3g096
 
 # -------------------------------------------------------------
 # General set up
@@ -38,7 +38,7 @@ option (DHSVM_USE_NETCDF "Look for NetCDF library and require its use" ON)
 
 # Require X11 use on UNIX systems
 if (UNIX)
-  option (DHSVM_USE_X11 "Look for X11 libraries and require their use" ON)
+  option (DHSVM_USE_X11 "Look for X11 libraries and require their use" OFF)
 endif(UNIX)
 
 # Build test programs
@@ -49,6 +49,21 @@ option (DHSVM_SNOW_ONLY "Only simulate snow pack (no ET or infiltration)" OFF)
 if (DHSVM_SNOW_ONLY) 
   add_definitions(-DSNOW_ONLY)
 endif (DHSVM_SNOW_ONLY)
+
+# -------------------------------------------------------------
+# MPI is required
+# -------------------------------------------------------------
+message(STATUS "Checking MPI ...")
+find_package (MPI REQUIRED)
+
+message(STATUS "MPI_C_INCLUDES: ${MPI_C_INCLUDES}")
+message(STATUS "MPI_C_LIBRARIES: ${MPI_C_LIBRARIES}")
+
+# -------------------------------------------------------------
+# Global Arrays is required
+# -------------------------------------------------------------
+message(STATUS "Checking GA ...")
+find_package(GA REQUIRED)
 
 # -------------------------------------------------------------
 # system-specific options

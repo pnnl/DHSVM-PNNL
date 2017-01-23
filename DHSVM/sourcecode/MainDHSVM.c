@@ -30,6 +30,7 @@
 #include "getinit.h"
 #include "DHSVMChannel.h"
 #include "channel.h"
+#include "ParallelDHSVM.h"
 
 /******************************************************************************/
 /*				GLOBAL VARIABLES                              */
@@ -41,10 +42,12 @@ int (*Read2DMatrix) (char *FileName, void *Matrix, int NumberType, int NY, int N
 int (*Write2DMatrix) (char *FileName, void *Matrix, int NumberType, int NY, int NX, ...);
 
 /* global strings */
+
 char *version = "Version 3.1.1";        /* store version string */
 char commandline[BUFSIZE + 1] = "";		/* store command line */
 char fileext[BUFSIZ + 1] = "";			/* file extension */
 char errorstr[BUFSIZ + 1] = "";			/* error message */
+
 /******************************************************************************/
 /*				      MAIN                                    */
 /******************************************************************************/
@@ -93,7 +96,8 @@ int main(int argc, char **argv)
   LAYER Soil;
   LAYER Veg;
   LISTPTR Input = NULL;			/* Linked list with input strings */
-  MAPSIZE Map;					/* Size and location of model area */
+  MAPSIZE Map;					/* Size and location of (local) model area */
+  MAPSIZE GMap;					/* Size and location of (local) model area */
   MAPSIZE Radar;				/* Size and location of area covered by precipitation radar */
   MAPSIZE MM5Map;				/* Size and location of area covered by MM5 input files */
   GRID Grid;
@@ -119,10 +123,16 @@ int main(int argc, char **argv)
   WATERBALANCE Mass =			/* parameter for mass balance calculations */
     { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
 
+  int me, nproc, p;
+
+  ParallelInitialize(&argc, &argv);
+  me = ParallelRank();
+  nproc = ParallelSize();
+
 /*****************************************************************************
   Initialization Procedures 
 *****************************************************************************/
-  if (argc != 2) {
+  if (argc != 2 && me == 0) {
     fprintf(stderr, "\nUsage: %s inputfile\n\n", argv[0]);
     fprintf(stderr, "DHSVM uses two output streams: \n");
     fprintf(stderr, "Standard Out, for the majority of output \n");
@@ -134,23 +144,28 @@ int main(int argc, char **argv)
   }
 
   sprintf(commandline, "%s %s", argv[0], argv[1]);
-  printf("%s \n", commandline);
-  fprintf(stderr, "%s \n", commandline);
+  printf("%d: %s \n", me, commandline);
+  fprintf(stderr, "%d: %s \n", me, commandline);
   strcpy(InFiles.Const, argv[1]);
 
-  printf("\nRunning DHSVM %s\n", version);
-  printf("\nSTARTING INITIALIZATION PROCEDURES\n\n");
+  if (me == 0) {
+    printf("\nRunning DHSVM %s on %d processors\n", version, nproc);
+    printf("\nSTARTING INITIALIZATION PROCEDURES\n\n");
+  }
 
   /* Start recording time */
   start = clock();
 
   ReadInitFile(InFiles.Const, &Input);
-  InitConstants(Input, &Options, &Map, &SolarGeo, &Time);
+  InitConstants(Input, &Options, &GMap, &SolarGeo, &Time);
 
   InitFileIO(Options.FileFormat);
   InitTables(Time.NDaySteps, Input, &Options, &SType, &Soil, &VType, &Veg,
 	     &SnowAlbedo);
 
+  DomainDecomposition(&GMap, &Map);
+
+#if 0
   InitTerrainMaps(Input, &Options, &Map, &Soil, &TopoMap, &SoilMap, &VegMap);
 
   CheckOut(&Options, Veg, Soil, VType, SType, &Map, TopoMap, VegMap, SoilMap);
@@ -380,16 +395,24 @@ int main(int argc, char **argv)
 
   FinalMassBalance(&(Dump.FinalBalance), &Total, &Mass);
 
-  printf("\nEND OF MODEL RUN\n\n");
+#endif
+
+  if (me == 0) {
+    printf("\nEND OF MODEL RUN\n\n");
+  }
 
   /* record the run time at the end of each time loop */
   finish1 = clock ();
   runtime = (finish1-start)/CLOCKS_PER_SEC;
   printf("***********************************************************************************");
   printf("\nRuntime Summary:\n");
-  printf("%6.2f hours elapsed for the simulation period of %d hours (%.1f days) \n", 
-	  runtime/3600, t*Time.Dt/3600, (float)t*Time.Dt/3600/24);
-
+  for (p = 0; p < ParallelSize(); ++p) {
+    if (p == me) {
+      printf("%d: %6.2f hours elapsed for the simulation period of %d hours (%.1f days) \n", 
+             me, runtime/3600, t*Time.Dt/3600, (float)t*Time.Dt/3600/24);
+    }
+    ParallelBarrier();
+  }
   return EXIT_SUCCESS;
 }
 /*****************************************************************************

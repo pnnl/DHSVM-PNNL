@@ -90,6 +90,7 @@ static char *ErrorMessage[] = {
   "The options set in the input file do not support plotting variable ID:", /* 67 */
   "Riparian parameter < 0:", /* 68 */
   "No gridded met file is found within the basin boundary", /* 69 */
+  "MPI/GA Error:",                                          /* 70 */
   NULL
 };
 

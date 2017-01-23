@@ -10,7 +10,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2017-01-18 07:21:47 d3g096
+# Last Change: 2017-01-23 11:09:58 d3g096
 
 set -xue
 
@@ -66,18 +66,25 @@ common_flags="\
 
 if [ $host == "flophouse" ]; then
 
+    prefix="/net/flophouse/files0/perksoft/linux64"
     cmake $options \
+        -D MPI_C_COMPILER:STRING="$prefix/bin/mpicc" \
+        -D MPIEXEC:STRING="$prefix/bin/mpiexec" \
+        -D GA_DIR:STRING="$prefix" \
         -D CMAKE_VERBOSE_MAKEFILE:BOOL=TRUE \
         $common_flags \
         ..
 
 elif [ $host == "WE32673" ]; then
 
-    # this is a Mac system with NetCDF installed using MacPorts
+    # this is a Mac system with MPI and NetCDF installed using MacPorts
 
+    prefix="/opt/local"
     cmake $options \
         -D CMAKE_VERBOSE_MAKEFILE:BOOL=TRUE \
-        -D NETCDF_DIR:PATH=/opt/local/include \
+        -D MPI_C_COMPILER:STRING="$prefix/bin/mpicc" \
+        -D MPIEXEC:STRING="$prefix/bin/mpiexec" \
+        -D NETCDF_DIR:PATH="$prefix/include" \
         -D DHSVM_USE_X11:BOOL=ON \
         -D DHSVM_USE_NETCDF:BOOL=ON \
         -D DHSVM_USE_RBM:BOOL=ON \

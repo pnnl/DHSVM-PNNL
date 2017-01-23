@@ -9,7 +9,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2016-12-27 12:07:37 d3g096
+# Last Change: 2017-01-23 11:17:07 d3g096
 
 # -------------------------------------------------------------
 # Set up for this subdirectory
@@ -19,6 +19,11 @@
 include_directories(BEFORE 
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${CMAKE_CURRENT_BINARY_DIR}
+)
+
+include_directories(AFTER
+  ${MPI_C_INCLUDE_PATH}
+  ${GA_INCLUDE_DIRS}
 )
 
 # tablio.c generation
@@ -109,6 +114,7 @@ add_executable(DHSVM
   MassRelease.c
   MaxRoadInfiltration.c
   NoEvap.c
+  ParallelDHSVM.c
   RadiationBalance.c
   ReadMetRecord.c
   ReadRadarMap.c
@@ -147,6 +153,8 @@ target_link_libraries(DHSVM
   BinIO
   ${NETCDF_LIBRARIES}
   ${X11_LIBRARIES}
+  ${GA_LIBRARIES} 
+  ${MPI_C_LIBRARIES}
   ${MATH_LIBRARY}
 )
 
