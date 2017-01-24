@@ -57,6 +57,7 @@
 #include "settings.h"
 #include "DHSVMerror.h"
 #include "sizeofnt.h"
+#include "varid.h"
 
 static void nc_check_err(const int ncstatus, const int line, const char *file);
 static int GenerateHistory(int argc, char **argv, char *History);
@@ -741,6 +742,7 @@ int main(void)
   DMap.N = 2;			/* Dump for two timesteps */
   DMap.MinVal = 0;		/* Not used for resolution MAP_OUTPUT */
   DMap.MaxVal = 2;		/* Not used for resolution MAP_OUTPUT */
+  GetVarAttr(&DMap);
   strcpy(DMap.FileName, "test_netcdf_out.nc");
   DMap.DumpDate = (DATE *) calloc(DMap.N, sizeof(DATE));
   if (DMap.DumpDate == NULL)
@@ -780,6 +782,7 @@ int main(void)
   cDMap.N = 2;			/* Dump for two timesteps */
   cDMap.MinVal = 0;		/* Not used for resolution MAP_OUTPUT */
   cDMap.MaxVal = 2;		/* Not used for resolution MAP_OUTPUT */
+  GetVarAttr(&cDMap);
   strcpy(cDMap.FileName, "test_netcdf_out.nc");
   cDMap.DumpDate = (DATE *) calloc(cDMap.N, sizeof(DATE));
   if (cDMap.DumpDate == NULL)
