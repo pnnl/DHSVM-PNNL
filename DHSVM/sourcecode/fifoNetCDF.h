@@ -16,17 +16,6 @@
 #ifndef FIFONETCDF_H
 #define FIFONETCDF_H
 
-#define ATT_HISTORY   "history"
-#define ATT_COMMENT   "comment"
-#define ATT_MISSINGVALUE "missing_value"
-#define ATT_LONGNAME  "long_name"
-#define ATT_NAME      "name"
-#define ATT_UNITS     "units"
-#define ATT_FORMAT    "C_format"
-#define TIME_DIM      "time"
-#define X_DIM         "x"
-#define Y_DIM         "y"
-
 void CreateMapFileNetCDF(char *FileName, ...);
 int Read2DMatrixNetCDF(char *FileName, void *Matrix, int NumberType, int NY,
 		       int NX, int NDataSet, ...);

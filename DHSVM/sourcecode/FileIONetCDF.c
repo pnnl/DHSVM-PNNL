@@ -59,6 +59,17 @@
 #include "sizeofnt.h"
 #include "varid.h"
 
+#define ATT_HISTORY   "history"
+#define ATT_COMMENT   "comment"
+#define ATT_MISSINGVALUE "missing_value"
+#define ATT_LONGNAME  "long_name"
+#define ATT_NAME      "name"
+#define ATT_UNITS     "units"
+#define ATT_FORMAT    "C_format"
+#define TIME_DIM      "time"
+#define X_DIM         "x"
+#define Y_DIM         "y"
+
 static void nc_check_err(const int ncstatus, const int line, const char *file);
 static int GenerateHistory(int argc, char **argv, char *History);
 static int ncUpdateGlobalHistory(int argc, char **argv, int ncid);
