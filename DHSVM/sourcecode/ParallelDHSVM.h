@@ -10,7 +10,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2017-01-23 12:23:39 d3g096
+ * LAST CHANGE: 2017-01-24 08:51:07 d3g096
  * COMMENTS:
  */
 
@@ -21,6 +21,7 @@
 
 void ParallelInitialize(int *argc, char ***argv);
 void DomainDecomposition(MAPSIZE *global, MAPSIZE *local);
+void DomainSummary(MAPSIZE *global, MAPSIZE *local);
 int ParallelRank(void);
 int ParallelSize(void);
 void ParallelBarrier(void);

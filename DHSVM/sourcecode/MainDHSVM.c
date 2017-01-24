@@ -397,15 +397,15 @@ int main(int argc, char **argv)
 
 #endif
 
-  if (me == 0) {
-    printf("\nEND OF MODEL RUN\n\n");
-  }
-
   /* record the run time at the end of each time loop */
   finish1 = clock ();
   runtime = (finish1-start)/CLOCKS_PER_SEC;
-  printf("***********************************************************************************");
-  printf("\nRuntime Summary:\n");
+  if (me == 0) {
+    printf("\nEND OF MODEL RUN\n\n");
+    printf("***********************************************************************************");
+    printf("\nRuntime Summary:\n");
+  }
+
   for (p = 0; p < ParallelSize(); ++p) {
     if (p == me) {
       printf("%d: %6.2f hours elapsed for the simulation period of %d hours (%.1f days) \n", 
@@ -413,6 +413,8 @@ int main(int argc, char **argv)
     }
     ParallelBarrier();
   }
+
+  ParallelFinalize();
   return EXIT_SUCCESS;
 }
 /*****************************************************************************

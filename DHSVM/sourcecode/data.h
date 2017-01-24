@@ -155,6 +155,7 @@ typedef struct {
   int OffsetY;					 /* Offset in y-direction compared to basemap */
   int NumCells;                  /* Number of cells within the basin */
   ITEM *OrderedCells;            /* Structure array to hold the ranked elevations; NumCells in size */
+  int dist;                      /* GA handle that provides parallel distribution */
 } MAPSIZE;
 
 typedef struct {
