@@ -830,7 +830,7 @@ int main(void)
 
   printf("Reading %s from %s ...\n", DMap.Name, DMap.FileName);
   Read2DMatrixNetCDF(DMap.FileName, (void *) ReadArray, DMap.NumberType,
-		     Map.NY, Map.NX, 0, DMap.Name);
+		     Map.NY, Map.NX, 0, DMap.Name, 0);
   printf("... read succesfull\n\n");
   for (i = 0; i < Map.NX * Map.NY; i++) {
     if (WriteArray[i] - ReadArray[i] != 0)
@@ -845,7 +845,7 @@ int main(void)
 
   printf("Reading %s from %s ...\n", cDMap.Name, cDMap.FileName);
   Read2DMatrixNetCDF(cDMap.FileName, (void *) cReadArray, cDMap.NumberType,
-		     Map.NY, Map.NX, 0, cDMap.Name);
+		     Map.NY, Map.NX, 0, cDMap.Name, 0);
   printf("... read succesfull\n\n");
   for (i = 0; i < Map.NX * Map.NY; i++) {
     if (cWriteArray[i] - cReadArray[i] != 0)
