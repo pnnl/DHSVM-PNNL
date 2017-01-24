@@ -57,6 +57,18 @@
 #include "settings.h"
 #include "DHSVMerror.h"
 #include "sizeofnt.h"
+#include "varid.h"
+
+#define ATT_HISTORY   "history"
+#define ATT_COMMENT   "comment"
+#define ATT_MISSINGVALUE "missing_value"
+#define ATT_LONGNAME  "long_name"
+#define ATT_NAME      "name"
+#define ATT_UNITS     "units"
+#define ATT_FORMAT    "C_format"
+#define TIME_DIM      "time"
+#define X_DIM         "x"
+#define Y_DIM         "y"
 
 static void nc_check_err(const int ncstatus, const int line, const char *file);
 static int GenerateHistory(int argc, char **argv, char *History);
@@ -741,6 +753,7 @@ int main(void)
   DMap.N = 2;			/* Dump for two timesteps */
   DMap.MinVal = 0;		/* Not used for resolution MAP_OUTPUT */
   DMap.MaxVal = 2;		/* Not used for resolution MAP_OUTPUT */
+  GetVarAttr(&DMap);
   strcpy(DMap.FileName, "test_netcdf_out.nc");
   DMap.DumpDate = (DATE *) calloc(DMap.N, sizeof(DATE));
   if (DMap.DumpDate == NULL)
@@ -780,6 +793,7 @@ int main(void)
   cDMap.N = 2;			/* Dump for two timesteps */
   cDMap.MinVal = 0;		/* Not used for resolution MAP_OUTPUT */
   cDMap.MaxVal = 2;		/* Not used for resolution MAP_OUTPUT */
+  GetVarAttr(&cDMap);
   strcpy(cDMap.FileName, "test_netcdf_out.nc");
   cDMap.DumpDate = (DATE *) calloc(cDMap.N, sizeof(DATE));
   if (cDMap.DumpDate == NULL)
@@ -816,7 +830,7 @@ int main(void)
 
   printf("Reading %s from %s ...\n", DMap.Name, DMap.FileName);
   Read2DMatrixNetCDF(DMap.FileName, (void *) ReadArray, DMap.NumberType,
-		     Map.NY, Map.NX, 0, DMap.Name);
+		     Map.NY, Map.NX, 0, DMap.Name, 0);
   printf("... read succesfull\n\n");
   for (i = 0; i < Map.NX * Map.NY; i++) {
     if (WriteArray[i] - ReadArray[i] != 0)
@@ -831,7 +845,7 @@ int main(void)
 
   printf("Reading %s from %s ...\n", cDMap.Name, cDMap.FileName);
   Read2DMatrixNetCDF(cDMap.FileName, (void *) cReadArray, cDMap.NumberType,
-		     Map.NY, Map.NX, 0, cDMap.Name);
+		     Map.NY, Map.NX, 0, cDMap.Name, 0);
   printf("... read succesfull\n\n");
   for (i = 0; i < Map.NX * Map.NY; i++) {
     if (cWriteArray[i] - cReadArray[i] != 0)

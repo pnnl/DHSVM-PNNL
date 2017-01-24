@@ -9,7 +9,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2017-01-23 11:17:07 d3g096
+# Last Change: 2017-01-24 14:18:47 d3g096
 
 # -------------------------------------------------------------
 # Set up for this subdirectory
@@ -51,6 +51,7 @@ add_library(BinIO STATIC
   InitArray.c 
   ReportError.c
   SizeOfNT.c 
+  VarID.c
 )
 
 # -------------------------------------------------------------
@@ -136,7 +137,6 @@ add_executable(DHSVM
   StoreModelState.c
   SurfaceEnergyBalance.c
   UnsaturatedFlow.c
-  VarID.c
   WaterTableDepth.c
   channel.c
   channel_grid.c
@@ -258,6 +258,7 @@ if (DHSVM_BUILD_TESTS AND NETCDF_FOUND)
   add_executable(netcdf_test
     FileIONetCDF.c
     ReportError.c
+    VarID.c
     )
   target_link_libraries(netcdf_test
     ${NETCDF_LIBRARIES}
