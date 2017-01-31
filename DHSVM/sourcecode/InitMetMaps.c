@@ -265,7 +265,7 @@ void InitWindModelMaps(char *WindPath, int NY, int NX, float ****WindModel)
   for (n = 0; n < NWINDMAPS; n++) {
     sprintf(Str, "%02d", n + 1);
     sprintf(InFileName, "%s%s%s", WindPath, Str, fileext);
-    Read2DMatrix(InFileName, Array, NumberType, NY, NX, 0);
+    Read2DMatrix(InFileName, Array, NumberType, NY, NX, 0, "", 0);
     for (y = 0; y < NY; y++) {
       for (x = 0; x < NX; x++) {
         (*WindModel)[n][y][x] = Array[y * NX + x];
@@ -339,7 +339,7 @@ void InitPrecipLapseMap(char *PrecipLapseFile, int NY, int NX,
     ReportError((char *)Routine, 1);
   NumberType = NC_FLOAT;
 
-  Read2DMatrix(PrecipLapseFile, Array, NumberType, NY, NX, 0);
+  Read2DMatrix(PrecipLapseFile, Array, NumberType, NY, NX, 0, "", 0);
   for (y = 0; y < NY; y++) {
     for (x = 0; x < NX; x++) {
       (*PrecipLapseMap)[y][x] = Array[y * NX + x];

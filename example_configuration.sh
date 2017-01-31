@@ -10,7 +10,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2017-01-23 11:09:58 d3g096
+# Last Change: 2017-01-31 14:24:47 d3g096
 
 set -xue
 
@@ -79,6 +79,10 @@ elif [ $host == "WE32673" ]; then
 
     # this is a Mac system with MPI and NetCDF installed using MacPorts
 
+    CC=gcc-mp-6
+    CXX=g++-mp-6
+    export CC CXX
+
     prefix="/opt/local"
     cmake $options \
         -D CMAKE_VERBOSE_MAKEFILE:BOOL=TRUE \
@@ -87,7 +91,7 @@ elif [ $host == "WE32673" ]; then
         -D NETCDF_DIR:PATH="$prefix/include" \
         -D DHSVM_USE_X11:BOOL=ON \
         -D DHSVM_USE_NETCDF:BOOL=ON \
-        -D DHSVM_USE_RBM:BOOL=ON \
+        -D DHSVM_USE_RBM:BOOL=OFF \
         $common_flags \
         ..
 

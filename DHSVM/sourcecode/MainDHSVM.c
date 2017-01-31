@@ -36,11 +36,6 @@
 /*				GLOBAL VARIABLES                              */
 /******************************************************************************/
 
-/* global function pointers */
-void (*CreateMapFile) (char *FileName, ...);
-int (*Read2DMatrix) (char *FileName, void *Matrix, int NumberType, int NY, int NX, int NDataSet, ...);
-int (*Write2DMatrix) (char *FileName, void *Matrix, int NumberType, int NY, int NX, ...);
-
 /* global strings */
 
 char *version = "Version 3.1.1";        /* store version string */

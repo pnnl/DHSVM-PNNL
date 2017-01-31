@@ -49,7 +49,7 @@ void ReadRadarMap(DATE * Current, DATE * StartRadar, int Dt, MAPSIZE * Radar,
   RadarStep = NumberOfSteps(StartRadar, Current, Dt);
 
   /* Read the precipitation */
-  Read2DMatrix(FileName, Array, NumberType, Radar->NY, Radar->NX, RadarStep);
+  Read2DMatrix(FileName, Array, NumberType, Radar->NY, Radar->NX, RadarStep, "", 0);
 
   for (y = 0, i = 0; y < Radar->NY; y++)
     for (x = 0; x < Radar->NX; x++, i++)

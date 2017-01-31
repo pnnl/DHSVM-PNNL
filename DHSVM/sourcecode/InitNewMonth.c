@@ -234,7 +234,7 @@ void InitNewStep(INPUTFILES *InFiles, MAPSIZE *Map, TIMESTRUCT *Time,
 
     Step = NumberOfSteps(&(Time->StartMM5), &(Time->Current), Time->Dt);
 
-    Read2DMatrix(InFiles->MM5Temp, Array, NumberType, MM5Map->NY, MM5Map->NX, Step);
+    Read2DMatrix(InFiles->MM5Temp, Array, NumberType, MM5Map->NY, MM5Map->NX, Step, "", 0);
     for (y = 0; y < Map->NY; y++)
       for (x = 0; x < Map->NX; x++) {
         MM5Y = (int)((y + MM5Map->OffsetY) * Map->DY / MM5Map->DY);
@@ -242,7 +242,7 @@ void InitNewStep(INPUTFILES *InFiles, MAPSIZE *Map, TIMESTRUCT *Time,
         MM5Input[MM5_temperature - 1][y][x] = Array[MM5Y * MM5Map->NX + MM5X];
       }
 
-    Read2DMatrix(InFiles->MM5Humidity, Array, NumberType, MM5Map->NY, MM5Map->NX, Step);
+    Read2DMatrix(InFiles->MM5Humidity, Array, NumberType, MM5Map->NY, MM5Map->NX, Step, "", 0);
 
     for (y = 0; y < Map->NY; y++)
       for (x = 0; x < Map->NX; x++) {
@@ -252,7 +252,7 @@ void InitNewStep(INPUTFILES *InFiles, MAPSIZE *Map, TIMESTRUCT *Time,
       }
 
     Read2DMatrix(InFiles->MM5Wind, Array, NumberType, MM5Map->NY,
-      MM5Map->NX, Step);
+                 MM5Map->NX, Step, "", 0);
     for (y = 0; y < Map->NY; y++)
       for (x = 0; x < Map->NX; x++) {
         MM5Y = (int)((y + MM5Map->OffsetY) * Map->DY / MM5Map->DY);
@@ -261,7 +261,7 @@ void InitNewStep(INPUTFILES *InFiles, MAPSIZE *Map, TIMESTRUCT *Time,
       }
 
     Read2DMatrix(InFiles->MM5ShortWave, Array, NumberType, MM5Map->NY,
-      MM5Map->NX, Step);
+                 MM5Map->NX, Step, "", 0);
     for (y = 0; y < Map->NY; y++)
       for (x = 0; x < Map->NX; x++) {
         MM5Y = (int)((y + MM5Map->OffsetY) * Map->DY / MM5Map->DY);
@@ -270,7 +270,7 @@ void InitNewStep(INPUTFILES *InFiles, MAPSIZE *Map, TIMESTRUCT *Time,
       }
 
     Read2DMatrix(InFiles->MM5LongWave, Array, NumberType, MM5Map->NY,
-      MM5Map->NX, Step);
+                 MM5Map->NX, Step, "", 0);
     for (y = 0; y < Map->NY; y++)
       for (x = 0; x < Map->NX; x++) {
         MM5Y = (int)((y + MM5Map->OffsetY) * Map->DY / MM5Map->DY);
@@ -279,7 +279,7 @@ void InitNewStep(INPUTFILES *InFiles, MAPSIZE *Map, TIMESTRUCT *Time,
       }
 
     Read2DMatrix(InFiles->MM5Precipitation, Array, NumberType, MM5Map->NY,
-      MM5Map->NX, Step);
+                 MM5Map->NX, Step, "", 0);
     for (y = 0; y < Map->NY; y++)
       for (x = 0; x < Map->NX; x++) {
         MM5Y = (int)((y + MM5Map->OffsetY) * Map->DY / MM5Map->DY);
@@ -292,7 +292,7 @@ void InitNewStep(INPUTFILES *InFiles, MAPSIZE *Map, TIMESTRUCT *Time,
         }
       }
     Read2DMatrix(InFiles->MM5Terrain, Array, NumberType, MM5Map->NY,
-      MM5Map->NX, Step);
+                 MM5Map->NX, Step, "", 0);
     for (y = 0; y < Map->NY; y++)
       for (x = 0; x < Map->NX; x++) {
         MM5Y = (int)((y + MM5Map->OffsetY) * Map->DY / MM5Map->DY);
@@ -300,7 +300,7 @@ void InitNewStep(INPUTFILES *InFiles, MAPSIZE *Map, TIMESTRUCT *Time,
         MM5Input[MM5_terrain - 1][y][x] = Array[MM5Y * MM5Map->NX + MM5X];
       }
     Read2DMatrix(InFiles->MM5Lapse, Array, NumberType, MM5Map->NY,
-      MM5Map->NX, Step);
+                 MM5Map->NX, Step, "", 0);
     for (y = 0; y < Map->NY; y++)
       for (x = 0; x < Map->NX; x++) {
         MM5Y = (int)((y + MM5Map->OffsetY) * Map->DY / MM5Map->DY);
@@ -312,7 +312,7 @@ void InitNewStep(INPUTFILES *InFiles, MAPSIZE *Map, TIMESTRUCT *Time,
 
       for (i = 0, j = MM5_lapse; i < NSoilLayers; i++, j++) {
         Read2DMatrix(InFiles->MM5SoilTemp[i], Array, NumberType, MM5Map->NY,
-          MM5Map->NX, Step);
+                     MM5Map->NX, Step, "", 0);
         for (y = 0; y < Map->NY; y++)
           for (x = 0; x < Map->NX; x++) {
             MM5Y = (int)((y + MM5Map->OffsetY) * Map->DY / MM5Map->DY);

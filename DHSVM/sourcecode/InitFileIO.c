@@ -23,6 +23,11 @@
 #include "fifoNetCDF.h"
 #include "DHSVMerror.h"
 
+/* global function pointers */
+void (*CreateMapFileFmt) (char *FileName, ...);
+int (*Read2DMatrixFmt) (char *FileName, void *Matrix, int NumberType, int NY, int NX, int NDataSet, ...);
+int (*Write2DMatrixFmt) (char *FileName, void *Matrix, int NumberType, int NY, int NX, ...);
+
 /*******************************************************************************
   Function name: InitFileIO()
 
@@ -88,27 +93,80 @@ void InitFileIO(int FileFormat)
   /************************* Binary format **********************/
   if (FileFormat == BIN) {
     strcpy(fileext, ".bin");
-    CreateMapFile = CreateMapFileBin;
-    Read2DMatrix = Read2DMatrixBin;
-    Write2DMatrix = Write2DMatrixBin;
+    CreateMapFileFmt = CreateMapFileBin;
+    Read2DMatrixFmt = Read2DMatrixBin;
+    Write2DMatrixFmt = Write2DMatrixBin;
   }
   else if (FileFormat == BYTESWAP) {
     strcpy(fileext, ".bin");
-    CreateMapFile = CreateMapFileBin;
-    Read2DMatrix = Read2DMatrixByteSwapBin;
-    Write2DMatrix = Write2DMatrixByteSwapBin;
+    CreateMapFileFmt = CreateMapFileBin;
+    Read2DMatrixFmt = Read2DMatrixByteSwapBin;
+    Write2DMatrixFmt = Write2DMatrixByteSwapBin;
   }
   /************* NetCDF File Format (version 3.4) ****************/
   else if (FileFormat == NETCDF) {
 #ifdef HAVE_NETCDF
     strcpy(fileext, ".nc");
-    CreateMapFile = CreateMapFileNetCDF;
-    Read2DMatrix = Read2DMatrixNetCDF;
-    Write2DMatrix = Write2DMatrixNetCDF;
+    CreateMapFileFmt = CreateMapFileNetCDF;
+    Read2DMatrixFmt = Read2DMatrixNetCDF;
+    Write2DMatrixFmt = Write2DMatrixNetCDF;
 #else
     ReportError((char *) Routine, 56);
 #endif
   }
   else
     ReportError((char *) Routine, 38);
+}
+
+/******************************************************************************/
+/*                            CreateMapFile                                   */
+/******************************************************************************/
+void
+CreateMapFile(char *FileName, char *FileLabel, MAPSIZE *Map)
+{
+  CreateMapFileFmt(FileName, FileLabel, Map);
+}
+
+
+
+/******************************************************************************/
+/*                              Read2DMatrix                                  */
+/******************************************************************************/
+/** 
+ * 
+ * 
+ * @param FileName name of file to read
+ * @param Matrix  @e local 2D array (NX, NY) to be filled
+ * @param NumberType 
+ * @param NY 
+ * @param NX 
+ * @param NDataSet 
+ * @param VarName 
+ * @param index 
+ * 
+ * @return 
+ */
+int 
+Read2DMatrix(char *FileName, void *Matrix, int NumberType, int NY, int NX,
+             int NDataSet, char *VarName, int index)
+{
+  const char Routine[] = "Read2DMatrix";
+  int result;
+
+  result = Read2DMatrixFmt(FileName, Matrix, NumberType,
+                           NY, NX, NDataSet, VarName, index);
+  return 0;
+}
+
+/******************************************************************************/
+/*                              Write2DMatrix                                  */
+/******************************************************************************/
+int
+Write2DMatrix(char *FileName, void *Matrix, int NumberType, int NY,
+              int NX, MAPDUMP *DMap, int index)
+{
+  const char Routine[] = "Write2DMatrix";
+  int result;
+  result = Write2DMatrixFmt(FileName, Matrix, NumberType, NY, NX, DMap, index);
+  return result;
 }
