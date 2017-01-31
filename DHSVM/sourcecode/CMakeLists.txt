@@ -9,7 +9,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2017-01-24 14:18:47 d3g096
+# Last Change: 2017-01-31 14:23:44 d3g096
 
 # -------------------------------------------------------------
 # Set up for this subdirectory
@@ -46,7 +46,9 @@ endif(FLEX_FOUND)
 # -------------------------------------------------------------
 add_library(BinIO STATIC
   Calendar.c 
+  InitFileIO.c
   FileIOBin.c 
+  FileIONetCDF.c
   Files.c 
   InitArray.c 
   ReportError.c
@@ -84,7 +86,6 @@ add_executable(DHSVM
   EvalExponentIntegral.c
   EvapoTranspiration.c
   ExecDump.c
-  FileIONetCDF.c
   FinalMassBalance.c
   GetInit.c
   GetMetData.c
@@ -92,7 +93,6 @@ add_executable(DHSVM
   InitAggregated.c
   InitConstants.c
   InitDump.c
-  InitFileIO.c
   InitInterpolationWeights.c
   InitMetMaps.c
   InitMetSources.c
