@@ -523,7 +523,7 @@ void DumpMap(MAPSIZE *Map, DATE *Current, MAPDUMP *DMap, TOPOPIX **TopoMap,
           ((float *)Array)[y * Map->NX + x] = RadMap[y][x].ObsShortIn;
         }
       }
-      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map->NY, Map->NX, Index);
+      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map->NY, Map->NX, DMap, Index);
     }
     else if (DMap->Resolution == IMAGE_OUTPUT) {
       for (y = 0; y < Map->NY; y++)

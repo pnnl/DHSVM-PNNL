@@ -220,6 +220,8 @@ void InitSoilMap(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * Map,
         if (((int)Type[i]) > Soil->NTypes)
           ReportError(StrEnv[soiltype_file].VarStr, 32);
         (*SoilMap)[y][x].Soil = Type[i];
+        if ((x == 324) && (y == 6)) 
+          printf("@ x, y = %d, %d: flag = %d, soil type = %d\n", x, y, flag, Type[i]);
       }
     }
   }
@@ -229,6 +231,8 @@ void InitSoilMap(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * Map,
         if (((int)Type[i]) > Soil->NTypes)
           ReportError(StrEnv[soiltype_file].VarStr, 32);
         (*SoilMap)[y][x].Soil = Type[i];
+        if ((x == 324) && (y == 6)) 
+          printf("@ x, y = %d, %d: flag = %d, soil type = %d\n", x, y, flag, Type[i]);
       }
     }
   }
