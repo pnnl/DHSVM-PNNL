@@ -87,7 +87,7 @@ void InitTopoMap(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * Map,
     SizeOfNumberType(NumberType))))
     ReportError((char *)Routine, 1);
 
-  flag = Read2DMatrix(StrEnv[demfile].VarStr, Elev, NumberType, Map->NY, Map->NX, 0,
+  flag = Read2DMatrix(StrEnv[demfile].VarStr, Elev, NumberType, Map, 0,
     VarName, 0);
 
   /* Assign the attributes to the map pixel */
@@ -125,7 +125,7 @@ void InitTopoMap(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * Map,
   if (!(Mask = (unsigned char *)calloc(Map->NX * Map->NY,
     SizeOfNumberType(NumberType))))
     ReportError((char *)Routine, 1);
-  flag = Read2DMatrix(StrEnv[maskfile].VarStr, Mask, NumberType, Map->NY, Map->NX, 0,
+  flag = Read2DMatrix(StrEnv[maskfile].VarStr, Mask, NumberType, Map, 0,
     VarName, 0);
 
   if ((Options->FileFormat == NETCDF && flag == 0)
@@ -209,8 +209,7 @@ void InitSoilMap(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * Map,
   if (!(Type = (unsigned char *)calloc(Map->NX * Map->NY,
     SizeOfNumberType(NumberType))))
     ReportError((char *)Routine, 1);
-  flag = Read2DMatrix(StrEnv[soiltype_file].VarStr, Type, NumberType, Map->NY,
-    Map->NX, 0, VarName, 0);
+  flag = Read2DMatrix(StrEnv[soiltype_file].VarStr, Type, NumberType, Map, 0, VarName, 0);
 
   if ((Options->FileFormat == NETCDF && flag == 0)
     || (Options->FileFormat == BIN))
@@ -240,8 +239,7 @@ void InitSoilMap(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * Map,
   if (!(Depth = (float *)calloc(Map->NX * Map->NY,
     SizeOfNumberType(NumberType))))
     ReportError((char *)Routine, 1);
-  flag = Read2DMatrix(StrEnv[soildepth_file].VarStr, Depth, NumberType, Map->NY,
-    Map->NX, 0, VarName, 0);
+  flag = Read2DMatrix(StrEnv[soildepth_file].VarStr, Depth, NumberType, Map, 0, VarName, 0);
 
   /* Assign the attributes to the correct map pixel */
   if ((Options->FileFormat == NETCDF && flag == 0)
@@ -319,7 +317,7 @@ void InitVegMap(OPTIONSTRUCT * Options, LISTPTR Input, MAPSIZE * Map, VEGPIX ***
   if (!(Type = (unsigned char *)calloc(Map->NX * Map->NY,
     SizeOfNumberType(NumberType))))
     ReportError((char *)Routine, 1);
-  flag = Read2DMatrix(VegMapFileName, Type, NumberType, Map->NY, Map->NX, 0, VarName, 0);
+  flag = Read2DMatrix(VegMapFileName, Type, NumberType, Map, 0, VarName, 0);
 
   /* Assign the attributes to the correct map pixel */
   if (!(*VegMap = (VEGPIX **)calloc(Map->NY, sizeof(VEGPIX *))))

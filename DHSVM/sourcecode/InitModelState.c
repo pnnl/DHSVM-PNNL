@@ -91,7 +91,7 @@ void InitModelState(DATE *Start, MAPSIZE *Map, OPTIONSTRUCT *Options, PRECIPPIX 
     DMap.Resolution = MAP_OUTPUT;
     strcpy(DMap.FileName, "");
     GetVarAttr(&DMap);
-    Read2DMatrix(FileName, Array, DMap.NumberType, Map->NY, Map->NX, NSet++, DMap.Name, 0);
+    Read2DMatrix(FileName, Array, DMap.NumberType, Map, NSet++, DMap.Name, 0);
     for (y = 0; y < Map->NY; y++) {
       for (x = 0; x < Map->NX; x++) {
         if (INBASIN(TopoMap[y][x].Mask)) {
@@ -117,7 +117,7 @@ void InitModelState(DATE *Start, MAPSIZE *Map, OPTIONSTRUCT *Options, PRECIPPIX 
     DMap.Resolution = MAP_OUTPUT;
     strcpy(DMap.FileName, "");
     GetVarAttr(&DMap);
-    Read2DMatrix(FileName, Array, DMap.NumberType, Map->NY, Map->NX, NSet++, DMap.Name, 0);
+    Read2DMatrix(FileName, Array, DMap.NumberType, Map, NSet++, DMap.Name, 0);
     for (y = 0; y < Map->NY; y++) {
       for (x = 0; x < Map->NX; x++) {
         if (INBASIN(TopoMap[y][x].Mask)) {
@@ -141,7 +141,7 @@ void InitModelState(DATE *Start, MAPSIZE *Map, OPTIONSTRUCT *Options, PRECIPPIX 
   DMap.Resolution = MAP_OUTPUT;
   strcpy(DMap.FileName, "");
   GetVarAttr(&DMap);
-  Read2DMatrix(FileName, Array, DMap.NumberType, Map->NY, Map->NX, NSet++, DMap.Name, 0);
+  Read2DMatrix(FileName, Array, DMap.NumberType, Map, NSet++, DMap.Name, 0);
   for (y = 0; y < Map->NY; y++) {
     for (x = 0; x < Map->NX; x++) {
       if (INBASIN(TopoMap[y][x].Mask)) {
@@ -170,7 +170,7 @@ void InitModelState(DATE *Start, MAPSIZE *Map, OPTIONSTRUCT *Options, PRECIPPIX 
   GetVarAttr(&DMap);
   if (!(Array = (float *)calloc(Map->NY * Map->NX, SizeOfNumberType(DMap.NumberType))))
     ReportError((char *)Routine, 1);
-  Read2DMatrix(FileName, Array, DMap.NumberType, Map->NY, Map->NX, NSet++, DMap.Name, 0);
+  Read2DMatrix(FileName, Array, DMap.NumberType, Map, NSet++, DMap.Name, 0);
   for (y = 0; y < Map->NY; y++) {
     for (x = 0; x < Map->NX; x++) {
       if (INBASIN(TopoMap[y][x].Mask)) {
@@ -183,7 +183,7 @@ void InitModelState(DATE *Start, MAPSIZE *Map, OPTIONSTRUCT *Options, PRECIPPIX 
   DMap.Resolution = MAP_OUTPUT;
   strcpy(DMap.FileName, "");
   GetVarAttr(&DMap);
-  Read2DMatrix(FileName, Array, DMap.NumberType, Map->NY, Map->NX, NSet++, DMap.Name, 0);
+  Read2DMatrix(FileName, Array, DMap.NumberType, Map, NSet++, DMap.Name, 0);
   for (y = 0; y < Map->NY; y++) {
     for (x = 0; x < Map->NX; x++) {
       if (INBASIN(TopoMap[y][x].Mask)) {
@@ -196,7 +196,7 @@ void InitModelState(DATE *Start, MAPSIZE *Map, OPTIONSTRUCT *Options, PRECIPPIX 
   DMap.Resolution = MAP_OUTPUT;
   strcpy(DMap.FileName, "");
   GetVarAttr(&DMap);
-  Read2DMatrix(FileName, Array, DMap.NumberType, Map->NY, Map->NX, NSet++, DMap.Name, 0);
+  Read2DMatrix(FileName, Array, DMap.NumberType, Map, NSet++, DMap.Name, 0);
   for (y = 0; y < Map->NY; y++) {
     for (x = 0; x < Map->NX; x++) {
       if (INBASIN(TopoMap[y][x].Mask)) {
@@ -209,7 +209,7 @@ void InitModelState(DATE *Start, MAPSIZE *Map, OPTIONSTRUCT *Options, PRECIPPIX 
   DMap.Resolution = MAP_OUTPUT;
   strcpy(DMap.FileName, "");
   GetVarAttr(&DMap);
-  Read2DMatrix(FileName, Array, DMap.NumberType, Map->NY, Map->NX, NSet++, DMap.Name, 0);
+  Read2DMatrix(FileName, Array, DMap.NumberType, Map, NSet++, DMap.Name, 0);
   for (y = 0; y < Map->NY; y++) {
     for (x = 0; x < Map->NX; x++) {
       if (INBASIN(TopoMap[y][x].Mask)) {
@@ -222,7 +222,7 @@ void InitModelState(DATE *Start, MAPSIZE *Map, OPTIONSTRUCT *Options, PRECIPPIX 
   DMap.Resolution = MAP_OUTPUT;
   strcpy(DMap.FileName, "");
   GetVarAttr(&DMap);
-  Read2DMatrix(FileName, Array, DMap.NumberType, Map->NY, Map->NX, NSet++, DMap.Name, 0);
+  Read2DMatrix(FileName, Array, DMap.NumberType, Map, NSet++, DMap.Name, 0);
   for (y = 0; y < Map->NY; y++) {
     for (x = 0; x < Map->NX; x++) {
       if (INBASIN(TopoMap[y][x].Mask)) {
@@ -235,7 +235,7 @@ void InitModelState(DATE *Start, MAPSIZE *Map, OPTIONSTRUCT *Options, PRECIPPIX 
   DMap.Resolution = MAP_OUTPUT;
   strcpy(DMap.FileName, "");
   GetVarAttr(&DMap);
-  Read2DMatrix(FileName, Array, DMap.NumberType, Map->NY, Map->NX, NSet++, DMap.Name, 0);
+  Read2DMatrix(FileName, Array, DMap.NumberType, Map, NSet++, DMap.Name, 0);
   for (y = 0; y < Map->NY; y++) {
     for (x = 0; x < Map->NX; x++) {
       if (INBASIN(TopoMap[y][x].Mask)) {
@@ -248,7 +248,7 @@ void InitModelState(DATE *Start, MAPSIZE *Map, OPTIONSTRUCT *Options, PRECIPPIX 
   DMap.Resolution = MAP_OUTPUT;
   strcpy(DMap.FileName, "");
   GetVarAttr(&DMap);
-  Read2DMatrix(FileName, Array, DMap.NumberType, Map->NY, Map->NX, NSet++, DMap.Name, 0);
+  Read2DMatrix(FileName, Array, DMap.NumberType, Map, NSet++, DMap.Name, 0);
 
   for (y = 0; y < Map->NY; y++) {
     for (x = 0; x < Map->NX; x++) {
@@ -262,7 +262,7 @@ void InitModelState(DATE *Start, MAPSIZE *Map, OPTIONSTRUCT *Options, PRECIPPIX 
   DMap.Resolution = MAP_OUTPUT;
   strcpy(DMap.FileName, "");
   GetVarAttr(&DMap);
-  Read2DMatrix(FileName, Array, DMap.NumberType, Map->NY, Map->NX, NSet++, DMap.Name, 0);
+  Read2DMatrix(FileName, Array, DMap.NumberType, Map, NSet++, DMap.Name, 0);
   for (y = 0; y < Map->NY; y++) {
     for (x = 0; x < Map->NX; x++) {
       if (INBASIN(TopoMap[y][x].Mask)) {
@@ -303,7 +303,7 @@ void InitModelState(DATE *Start, MAPSIZE *Map, OPTIONSTRUCT *Options, PRECIPPIX 
     DMap.Resolution = MAP_OUTPUT;
     strcpy(DMap.FileName, "");
     GetVarAttr(&DMap);
-    Read2DMatrix(FileName, Array, DMap.NumberType, Map->NY, Map->NX, NSet++, DMap.Name, 0);
+    Read2DMatrix(FileName, Array, DMap.NumberType, Map, NSet++, DMap.Name, 0);
     for (y = 0; y < Map->NY; y++) {
       for (x = 0; x < Map->NX; x++) {
         if (INBASIN(TopoMap[y][x].Mask)) {
@@ -336,7 +336,7 @@ void InitModelState(DATE *Start, MAPSIZE *Map, OPTIONSTRUCT *Options, PRECIPPIX 
   DMap.Resolution = MAP_OUTPUT;
   strcpy(DMap.FileName, "");
   GetVarAttr(&DMap);
-  Read2DMatrix(FileName, Array, DMap.NumberType, Map->NY, Map->NX, NSet++, DMap.Name, 0);
+  Read2DMatrix(FileName, Array, DMap.NumberType, Map, NSet++, DMap.Name, 0);
   for (y = 0; y < Map->NY; y++) {
     for (x = 0; x < Map->NX; x++) {
       if (INBASIN(TopoMap[y][x].Mask)) {
@@ -351,7 +351,7 @@ void InitModelState(DATE *Start, MAPSIZE *Map, OPTIONSTRUCT *Options, PRECIPPIX 
     DMap.Resolution = MAP_OUTPUT;
     strcpy(DMap.FileName, "");
     GetVarAttr(&DMap);
-    Read2DMatrix(FileName, Array, DMap.NumberType, Map->NY, Map->NX, NSet++, DMap.Name, 0);
+    Read2DMatrix(FileName, Array, DMap.NumberType, Map, NSet++, DMap.Name, 0);
     for (y = 0; y < Map->NY; y++) {
       for (x = 0; x < Map->NX; x++) {
         if (INBASIN(TopoMap[y][x].Mask)) {
@@ -366,7 +366,7 @@ void InitModelState(DATE *Start, MAPSIZE *Map, OPTIONSTRUCT *Options, PRECIPPIX 
   DMap.Resolution = MAP_OUTPUT;
   strcpy(DMap.FileName, "");
   GetVarAttr(&DMap);
-  Read2DMatrix(FileName, Array, DMap.NumberType, Map->NY, Map->NX, NSet++, DMap.Name, 0);
+  Read2DMatrix(FileName, Array, DMap.NumberType, Map, NSet++, DMap.Name, 0);
   for (y = 0; y < Map->NY; y++) {
     for (x = 0; x < Map->NX; x++) {
       if (INBASIN(TopoMap[y][x].Mask)) {
@@ -379,7 +379,7 @@ void InitModelState(DATE *Start, MAPSIZE *Map, OPTIONSTRUCT *Options, PRECIPPIX 
   DMap.Resolution = MAP_OUTPUT;
   strcpy(DMap.FileName, "");
   GetVarAttr(&DMap);
-  Read2DMatrix(FileName, Array, DMap.NumberType, Map->NY, Map->NX, NSet++, DMap.Name, 0);
+  Read2DMatrix(FileName, Array, DMap.NumberType, Map, NSet++, DMap.Name, 0);
   for (y = 0; y < Map->NY; y++) {
     for (x = 0; x < Map->NX; x++) {
       if (INBASIN(TopoMap[y][x].Mask)) {

@@ -147,14 +147,14 @@ CreateMapFile(char *FileName, char *FileLabel, MAPSIZE *Map)
  * @return 
  */
 int 
-Read2DMatrix(char *FileName, void *Matrix, int NumberType, int NY, int NX,
+Read2DMatrix(char *FileName, void *Matrix, int NumberType, MAPSIZE *Map,
              int NDataSet, char *VarName, int index)
 {
   const char Routine[] = "Read2DMatrix";
   int result;
 
   result = Read2DMatrixFmt(FileName, Matrix, NumberType,
-                           NY, NX, NDataSet, VarName, index);
+                           Map->NY, Map->NX, NDataSet, VarName, index);
   return 0;
 }
 
@@ -162,11 +162,12 @@ Read2DMatrix(char *FileName, void *Matrix, int NumberType, int NY, int NX,
 /*                              Write2DMatrix                                  */
 /******************************************************************************/
 int
-Write2DMatrix(char *FileName, void *Matrix, int NumberType, int NY,
-              int NX, MAPDUMP *DMap, int index)
+Write2DMatrix(char *FileName, void *Matrix, int NumberType, MAPSIZE *Map,
+              MAPDUMP *DMap, int index)
 {
   const char Routine[] = "Write2DMatrix";
   int result;
-  result = Write2DMatrixFmt(FileName, Matrix, NumberType, NY, NX, DMap, index);
+  result = Write2DMatrixFmt(FileName, Matrix, NumberType, 
+                            Map->NY, Map->NX, DMap, index);
   return result;
 }

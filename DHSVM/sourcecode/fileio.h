@@ -33,12 +33,10 @@ extern char fileext[];
 void CreateMapFile(char *FileName, char *FileLabel, MAPSIZE *Map);
 
 int Read2DMatrix(char *FileName, void *Matrix, int NumberType, 
-                 int NY,  int NX, int NDataSet, 
-                 char *VarName, int index);
+                 MAPSIZE *Map, int NDataSet, char *VarName, int index);
 
 int Write2DMatrix(char *FileName, void *Matrix, int NumberType, 
-                  int NY, int NX, 
-                  MAPDUMP *DMap, int index);
+                  MAPSIZE *Map, MAPDUMP *DMap, int index);
 
 
 /* generic file functions */
