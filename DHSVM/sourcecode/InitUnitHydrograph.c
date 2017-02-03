@@ -81,8 +81,7 @@ void InitUnitHydrograph(LISTPTR Input, MAPSIZE * Map, TOPOPIX ** TopoMap,
 					   SizeOfNumberType(NumberType))))
     ReportError((char *) Routine, 1);
 
-  Read2DMatrix(StrEnv[travel_file].VarStr, Travel, NumberType, Map->NY,
-	       Map->NX, 0, VarName, 0);
+  Read2DMatrix(StrEnv[travel_file].VarStr, Travel, NumberType, Map, 0, VarName, 0);
 
   /* Assign the travel times to the correct pixels */
   for (y = 0, i = 0; y < Map->NY; y++)

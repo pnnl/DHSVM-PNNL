@@ -187,12 +187,12 @@ int InitPixDump(LISTPTR Input, MAPSIZE *Map, uchar **BasinMask, char *Path,
 
 void InitPrecipLapse(LISTPTR Input, INPUTFILES *InFiles);
 
-void InitPrecipLapseMap(char *PrecipLapseFile, int NY, int NX,
+void InitPrecipLapseMap(char *PrecipLapseFile, MAPSIZE *Map,
 			float ***PrecipLapseMap);
 
 void InitPrismMap(int NY, int NX, float ***PrismMap);
 
-void InitShadeMap(OPTIONSTRUCT *Options, int NDaySteps, int NY, int NX,
+void InitShadeMap(OPTIONSTRUCT *Options, int NDaySteps, MAPSIZE *Map,
 		  unsigned char ****ShadowMap, float ***SkyViewMap);
 
 void InitPrecipMap(MAPSIZE *Map, PRECIPPIX ***PrecipMap, VEGPIX **VegMap,
@@ -248,7 +248,7 @@ float evalexpint(int n, float x);
 void InitWindModel(LISTPTR Input, INPUTFILES *InFiles, int NStats,
 		   METLOCATION *Stat);
 
-void InitWindModelMaps(char *WindPath, int NY, int NX, float ****WindModel);
+void InitWindModelMaps(char *WindPath, MAPSIZE *Map, float ****WindModel);
 
 uchar IsStationLocation(COORD *Loc, int NStats, METLOCATION *Station,
 			int *WhichStation);

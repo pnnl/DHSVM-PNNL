@@ -106,7 +106,7 @@ void StoreModelState(char *Path, DATE * Current, MAPSIZE * Map,
     DMap.Resolution = MAP_OUTPUT;
     strcpy(DMap.FileName, "");
     GetVarAttr(&DMap);
-    Write2DMatrix(FileName, Array, DMap.NumberType, Map->NY, Map->NX, &DMap, 0);
+    Write2DMatrix(FileName, Array, DMap.NumberType, Map, &DMap, 0);
 
     for (y = 0; y < Map->NY; y++) {
       for (x = 0; x < Map->NX; x++) {
@@ -121,7 +121,7 @@ void StoreModelState(char *Path, DATE * Current, MAPSIZE * Map,
     DMap.Resolution = MAP_OUTPUT;
     strcpy(DMap.FileName, "");
     GetVarAttr(&DMap);
-    Write2DMatrix(FileName, Array, DMap.NumberType, Map->NY, Map->NX, &DMap, 0);
+    Write2DMatrix(FileName, Array, DMap.NumberType, Map, &DMap, 0);
 
     for (y = 0; y < Map->NY; y++) {
       for (x = 0; x < Map->NX; x++) {
@@ -136,7 +136,7 @@ void StoreModelState(char *Path, DATE * Current, MAPSIZE * Map,
     DMap.Resolution = MAP_OUTPUT;
     strcpy(DMap.FileName, "");
     GetVarAttr(&DMap);
-    Write2DMatrix(FileName, Array, DMap.NumberType, Map->NY, Map->NX, &DMap, 0);
+    Write2DMatrix(FileName, Array, DMap.NumberType, Map, &DMap, 0);
 
     for (y = 0; y < Map->NY; y++) {
       for (x = 0; x < Map->NX; x++) {
@@ -151,7 +151,7 @@ void StoreModelState(char *Path, DATE * Current, MAPSIZE * Map,
     DMap.Resolution = MAP_OUTPUT;
     strcpy(DMap.FileName, "");
     GetVarAttr(&DMap);
-    Write2DMatrix(FileName, Array, DMap.NumberType, Map->NY, Map->NX, &DMap, 0);
+    Write2DMatrix(FileName, Array, DMap.NumberType, Map, &DMap, 0);
 
     for (y = 0; y < Map->NY; y++) {
       for (x = 0; x < Map->NX; x++) {
@@ -166,7 +166,7 @@ void StoreModelState(char *Path, DATE * Current, MAPSIZE * Map,
     DMap.Resolution = MAP_OUTPUT;
     strcpy(DMap.FileName, "");
     GetVarAttr(&DMap);
-    Write2DMatrix(FileName, Array, DMap.NumberType, Map->NY, Map->NX, &DMap, 0);
+    Write2DMatrix(FileName, Array, DMap.NumberType, Map, &DMap, 0);
 
     free(Array);
   }
@@ -201,7 +201,7 @@ void StoreModelState(char *Path, DATE * Current, MAPSIZE * Map,
     DMap.Resolution = MAP_OUTPUT;
     strcpy(DMap.FileName, "");
     GetVarAttr(&DMap);
-    Write2DMatrix(FileName, Array, DMap.NumberType, Map->NY, Map->NX, &DMap, 0);
+    Write2DMatrix(FileName, Array, DMap.NumberType, Map, &DMap, 0);
   }
 
   for (i = 0; i < Veg->MaxLayers; i++) {
@@ -223,7 +223,7 @@ void StoreModelState(char *Path, DATE * Current, MAPSIZE * Map,
     DMap.Resolution = MAP_OUTPUT;
     strcpy(DMap.FileName, "");
     GetVarAttr(&DMap);
-    Write2DMatrix(FileName, Array, DMap.NumberType, Map->NY, Map->NX, &DMap, 0);
+    Write2DMatrix(FileName, Array, DMap.NumberType, Map, &DMap, 0);
   }
 
   for (y = 0; y < Map->NY; y++) {
@@ -240,7 +240,7 @@ void StoreModelState(char *Path, DATE * Current, MAPSIZE * Map,
   DMap.Resolution = MAP_OUTPUT;
   strcpy(DMap.FileName, "");
   GetVarAttr(&DMap);
-  Write2DMatrix(FileName, Array, DMap.NumberType, Map->NY, Map->NX, &DMap, 0);
+  Write2DMatrix(FileName, Array, DMap.NumberType, Map, &DMap, 0);
 
   free(Array);
 
@@ -265,7 +265,7 @@ void StoreModelState(char *Path, DATE * Current, MAPSIZE * Map,
   DMap.Resolution = MAP_OUTPUT;
   strcpy(DMap.FileName, "");
   GetVarAttr(&DMap);
-  Write2DMatrix(FileName, Array, DMap.NumberType, Map->NY, Map->NX, &DMap, 0);
+  Write2DMatrix(FileName, Array, DMap.NumberType, Map, &DMap, 0);
 
   for (y = 0; y < Map->NY; y++) {
     for (x = 0; x < Map->NX; x++) {
@@ -279,7 +279,7 @@ void StoreModelState(char *Path, DATE * Current, MAPSIZE * Map,
   DMap.Resolution = MAP_OUTPUT;
   strcpy(DMap.FileName, "");
   GetVarAttr(&DMap);
-  Write2DMatrix(FileName, Array, DMap.NumberType, Map->NY, Map->NX, &DMap, 0);
+  Write2DMatrix(FileName, Array, DMap.NumberType, Map, &DMap, 0);
 
   for (y = 0; y < Map->NY; y++) {
     for (x = 0; x < Map->NX; x++) {
@@ -293,7 +293,7 @@ void StoreModelState(char *Path, DATE * Current, MAPSIZE * Map,
   DMap.Resolution = MAP_OUTPUT;
   strcpy(DMap.FileName, "");
   GetVarAttr(&DMap);
-  Write2DMatrix(FileName, Array, DMap.NumberType, Map->NY, Map->NX, &DMap, 0);
+  Write2DMatrix(FileName, Array, DMap.NumberType, Map, &DMap, 0);
 
   for (y = 0; y < Map->NY; y++) {
     for (x = 0; x < Map->NX; x++) {
@@ -307,7 +307,7 @@ void StoreModelState(char *Path, DATE * Current, MAPSIZE * Map,
   DMap.Resolution = MAP_OUTPUT;
   strcpy(DMap.FileName, "");
   GetVarAttr(&DMap);
-  Write2DMatrix(FileName, Array, DMap.NumberType, Map->NY, Map->NX, &DMap, 0);
+  Write2DMatrix(FileName, Array, DMap.NumberType, Map, &DMap, 0);
 
   for (y = 0; y < Map->NY; y++) {
     for (x = 0; x < Map->NX; x++) {
@@ -321,7 +321,7 @@ void StoreModelState(char *Path, DATE * Current, MAPSIZE * Map,
   DMap.Resolution = MAP_OUTPUT;
   strcpy(DMap.FileName, "");
   GetVarAttr(&DMap);
-  Write2DMatrix(FileName, Array, DMap.NumberType, Map->NY, Map->NX, &DMap, 0);
+  Write2DMatrix(FileName, Array, DMap.NumberType, Map, &DMap, 0);
 
   for (y = 0; y < Map->NY; y++) {
     for (x = 0; x < Map->NX; x++) {
@@ -335,7 +335,7 @@ void StoreModelState(char *Path, DATE * Current, MAPSIZE * Map,
   DMap.Resolution = MAP_OUTPUT;
   strcpy(DMap.FileName, "");
   GetVarAttr(&DMap);
-  Write2DMatrix(FileName, Array, DMap.NumberType, Map->NY, Map->NX, &DMap, 0);
+  Write2DMatrix(FileName, Array, DMap.NumberType, Map, &DMap, 0);
 
   for (y = 0; y < Map->NY; y++) {
     for (x = 0; x < Map->NX; x++) {
@@ -349,7 +349,7 @@ void StoreModelState(char *Path, DATE * Current, MAPSIZE * Map,
   DMap.Resolution = MAP_OUTPUT;
   strcpy(DMap.FileName, "");
   GetVarAttr(&DMap);
-  Write2DMatrix(FileName, Array, DMap.NumberType, Map->NY, Map->NX, &DMap, 0);
+  Write2DMatrix(FileName, Array, DMap.NumberType, Map, &DMap, 0);
 
   for (y = 0; y < Map->NY; y++) {
     for (x = 0; x < Map->NX; x++) {
@@ -363,7 +363,7 @@ void StoreModelState(char *Path, DATE * Current, MAPSIZE * Map,
   DMap.Resolution = MAP_OUTPUT;
   strcpy(DMap.FileName, "");
   GetVarAttr(&DMap);
-  Write2DMatrix(FileName, Array, DMap.NumberType, Map->NY, Map->NX, &DMap, 0);
+  Write2DMatrix(FileName, Array, DMap.NumberType, Map, &DMap, 0);
 
   free(Array);
 
@@ -395,7 +395,7 @@ void StoreModelState(char *Path, DATE * Current, MAPSIZE * Map,
     DMap.Resolution = MAP_OUTPUT;
     strcpy(DMap.FileName, "");
     GetVarAttr(&DMap);
-    Write2DMatrix(FileName, Array, DMap.NumberType, Map->NY, Map->NX, &DMap, 0);
+    Write2DMatrix(FileName, Array, DMap.NumberType, Map, &DMap, 0);
   }
 
   for (y = 0; y < Map->NY; y++) {
@@ -410,7 +410,7 @@ void StoreModelState(char *Path, DATE * Current, MAPSIZE * Map,
   DMap.Resolution = MAP_OUTPUT;
   strcpy(DMap.FileName, "");
   GetVarAttr(&DMap);
-  Write2DMatrix(FileName, Array, DMap.NumberType, Map->NY, Map->NX, &DMap, 0);
+  Write2DMatrix(FileName, Array, DMap.NumberType, Map, &DMap, 0);
 
   for (i = 0; i < Soil->MaxLayers; i++) {
     for (y = 0; y < Map->NY; y++) {
@@ -431,7 +431,7 @@ void StoreModelState(char *Path, DATE * Current, MAPSIZE * Map,
     DMap.Resolution = MAP_OUTPUT;
     strcpy(DMap.FileName, "");
     GetVarAttr(&DMap);
-    Write2DMatrix(FileName, Array, DMap.NumberType, Map->NY, Map->NX, &DMap, 0);
+    Write2DMatrix(FileName, Array, DMap.NumberType, Map, &DMap, 0);
   }
 
   for (y = 0; y < Map->NY; y++) {
@@ -446,7 +446,7 @@ void StoreModelState(char *Path, DATE * Current, MAPSIZE * Map,
   DMap.Resolution = MAP_OUTPUT;
   strcpy(DMap.FileName, "");
   GetVarAttr(&DMap);
-  Write2DMatrix(FileName, Array, DMap.NumberType, Map->NY, Map->NX, &DMap, 0);
+  Write2DMatrix(FileName, Array, DMap.NumberType, Map, &DMap, 0);
 
   for (y = 0; y < Map->NY; y++) {
     for (x = 0; x < Map->NX; x++) {
@@ -462,7 +462,7 @@ void StoreModelState(char *Path, DATE * Current, MAPSIZE * Map,
   DMap.Resolution = MAP_OUTPUT;
   strcpy(DMap.FileName, "");
   GetVarAttr(&DMap);
-  Write2DMatrix(FileName, Array, DMap.NumberType, Map->NY, Map->NX, &DMap, 0);
+  Write2DMatrix(FileName, Array, DMap.NumberType, Map, &DMap, 0);
 
   free(Array);
 
