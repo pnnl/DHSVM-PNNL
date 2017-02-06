@@ -19,6 +19,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ga.h>
 #include "settings.h"
 #include "data.h"
 #include "DHSVMerror.h"
@@ -29,6 +30,7 @@
 #include "sizeofnt.h"
 #include "slopeaspect.h"
 #include "varid.h"
+#include "ParallelDHSVM.h"
 
  /*****************************************************************************
    InitTerrainMaps()
@@ -118,6 +120,9 @@ void InitTopoMap(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * Map,
       }
     }
   }
+  printf("%d: local MINELEV = %.3f\n", ParallelRank(), MINELEV);
+  GA_Fgop(&MINELEV, 1, "min");
+  printf("%d: global MINELEV = %.3f\n", ParallelRank(), MINELEV);
 
   /* Read the mask */
   GetVarName(002, 0, VarName);

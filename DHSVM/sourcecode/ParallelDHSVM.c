@@ -10,7 +10,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2017-01-24 09:04:40 d3g096
+ * LAST CHANGE: 2017-02-06 08:21:23 d3g096
  * COMMENTS:
  */
 
@@ -147,8 +147,8 @@ DomainDecomposition(MAPSIZE *global, MAPSIZE *local)
   /* create an appropriate sized GA the default way and use it to
      determine local shares of the domain. */
 
-  dims[0] = global->NX;
-  dims[1] = global->NY;
+  dims[0] = global->NY;
+  dims[1] = global->NX;
   
   chunk[0] = 1;
   chunk[1] = 1;
@@ -161,12 +161,12 @@ DomainDecomposition(MAPSIZE *global, MAPSIZE *local)
   NGA_Distribution(gaid, me, lo, hi);
   global->dist = gaid;
   local->dist = gaid;
-  local->Xorig = global->Xorig + lo[0]*global->DX;
-  local->Yorig = global->Yorig + lo[1]*global->DY;
-  local->OffsetX = lo[0];
-  local->OffsetY = lo[1];
-  local->NX = hi[0] - lo[0] + 1;
-  local->NY = hi[1] - lo[1] + 1;
+  local->Xorig = global->Xorig + lo[1]*global->DX;
+  local->Yorig = global->Yorig + lo[0]*global->DY;
+  local->OffsetX = lo[1];
+  local->OffsetY = lo[0];
+  local->NX = hi[1] - lo[1] + 1;
+  local->NY = hi[0] - lo[0] + 1;
 
   /* report the decomposition (should probably do this somewhere else later) */
 

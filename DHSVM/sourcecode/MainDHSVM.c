@@ -160,10 +160,11 @@ int main(int argc, char **argv)
 
   DomainDecomposition(&GMap, &Map);
 
-#if 0
   InitTerrainMaps(Input, &Options, &Map, &Soil, &TopoMap, &SoilMap, &VegMap);
 
   CheckOut(&Options, Veg, Soil, VType, SType, &Map, TopoMap, VegMap, SoilMap);
+
+#if 0
 
   if (Options.HasNetwork)
     InitChannel(Input, &Map, Time.Dt, &ChannelData, SoilMap, &MaxStreamID, &MaxRoadID, &Options);
