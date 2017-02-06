@@ -10,13 +10,14 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2017-01-24 08:51:07 d3g096
+ * LAST CHANGE: 2017-02-06 11:32:53 d3g096
  * COMMENTS:
  */
 
 #ifndef _ParallelDHSVM_h_
 #define _ParallelDHSVM_h_
 
+#include "sizeofnt.h"
 #include "data.h"
 
 void ParallelInitialize(int *argc, char ***argv);
@@ -25,7 +26,11 @@ void DomainSummary(MAPSIZE *global, MAPSIZE *local);
 int ParallelRank(void);
 int ParallelSize(void);
 void ParallelBarrier(void);
+int GA_Type(int NumberType);
+int GA_Duplicate_type(int oga, char *nname, int ntype);
 void ParallelFinalize(void);
+
+extern const int gaXdim, gaYdim;
 
 #endif
 

@@ -118,6 +118,7 @@ void InitFileIO(int FileFormat)
     ReportError((char *) Routine, 38);
 }
 
+#if 0
 /******************************************************************************/
 /*                            CreateMapFile                                   */
 /******************************************************************************/
@@ -171,3 +172,5 @@ Write2DMatrix(char *FileName, void *Matrix, int NumberType, MAPSIZE *Map,
                             Map->NY, Map->NX, DMap, index);
   return result;
 }
+
+#endif

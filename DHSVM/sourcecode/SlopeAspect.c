@@ -4,7 +4,7 @@
  *
  * AUTHOR:       William A Perkins
  * ORG:          Battelle Memorial Institute Pacific Northwest Laboratory
- * E-MAIL:       perk@clio.muse.pnl.gov
+ * E-MAIL:       william.perkins@pnnl.gov
  * ORIG-DATE:    21-May-96
  * DESCRIPTION:  This module contains two routines to compute "slope" and
  *               "aspect"  (direction of slope): one which uses only terrain
@@ -33,12 +33,14 @@
 #include <stdlib.h>
 #include <math.h>
 #include <assert.h>
+#include <ga.h>
 #include "constants.h"
 #include "settings.h"
 #include "data.h"
 #include "functions.h"
 #include "slopeaspect.h"
 #include "DHSVMerror.h"
+#include "ParallelDHSVM.h"
 
 /* These indices are so neighbors can be looked up quickly */
 int xdirection[NDIRS] = {
@@ -69,7 +71,7 @@ int yneighbor[NNEIGHBORS] = {
    ------------------------------------------------------------- */
 int valid_cell(MAPSIZE *Map, int x, int y)
 {
-  return (x >= 0 && y >= 0 && x < Map->NX && y < Map->NY);
+  return (x >= 0 && y >= 0 && x < Map->gNX && y < Map->gNY);
 }
 
 /* -------------------------------------------------------------
@@ -202,31 +204,71 @@ void ElevationSlopeAspect(MAPSIZE * Map, TOPOPIX ** TopoMap)
   int y;
   int n;
   int k;
+  int i;
   float neighbor_elev[NNEIGHBORS];
   int steepestdirection;
   float min;
   int xn, yn;
+  int gaelev, gamask;
+  float elev, outelev;
+
+  outelev = (float) OUTSIDEBASIN;
+
+  /* find out the minimum grid elevation of the basin (using the mask) */
+  /* Count the number of cells in the basin.  Need this to allocate
+     memory for the new, smaller Elev[] and Coords[][].  */
+  min = 9999;
+  Map->NumCells = 0;
+  for (y = 0, i = 0; y < Map->NY; y++) {
+    for (x = 0; x < Map->NX; x++, i++) {
+      if (INBASIN(TopoMap[y][x].Mask)) {
+        if (TopoMap[y][x].Dem < min) {
+          min = TopoMap[y][x].Dem;
+        }
+	Map->NumCells++;
+      }
+    }
+  }
+  printf("%d: local MINELEV = %.3f\n", ParallelRank(), min);
+  GA_Fgop(&min, 1, "min");
+  printf("%d: global MINELEV = %.3f\n", ParallelRank(), min);
+  MINELEV = min;
+
+  /* make a global array to hold elevation */
+
+  gaelev = GA_Duplicate_type(Map->dist, "ElevationSlopeAspect", GA_Type(NC_FLOAT));
+  GA_Fill(gaelev, &outelev);
+
+  /* put elevations in GA (presumably, all of these puts should be local,
+     so it may be OK do put one value at a time; maybe try
+     non-blocking too) */
+
+  for (x = 0; x < Map->NX; x++) {
+    for (y = 0; y < Map->NY; y++) {
+      if (INBASIN(TopoMap[y][x].Mask)) {
+        elev = TopoMap[y][x].Dem;
+        GA_Put_one(gaelev, Map, x, y, &elev);
+      }
+    }
+  }
+  GA_Sync();
 
   /* fill neighbor array */
   
   for (x = 0; x < Map->NX; x++) {
     for (y = 0; y < Map->NY; y++) {
       if (INBASIN(TopoMap[y][x].Mask)) {
-	/* Count the number of cells in the basin.  
-	   Need this to allocate memory for
-	   the new, smaller Elev[] and Coords[][].  */
-	Map->NumCells++;
 	for (n = 0; n < NNEIGHBORS; n++) {
 	  xn = x + xneighbor[n];
 	  yn = y + yneighbor[n];	  
 	  if (valid_cell(Map, xn, yn)) {
-	    neighbor_elev[n] = ((TopoMap[yn][xn].Mask) ? TopoMap[yn][xn].Dem : (float) OUTSIDEBASIN);
-	  }
-	  else {
-	    neighbor_elev[n] = (float) OUTSIDEBASIN;
-	  }
-	}	
-	slope_aspect(Map->DX, Map->DY, TopoMap[y][x].Dem, neighbor_elev,
+            GA_Get_one(gaelev, Map, xn, yn, &elev);
+          } else {
+	    neighbor_elev[n] = outelev;
+          }
+        }
+
+        slope_aspect(Map->DX, Map->DY, TopoMap[y][x].Dem, neighbor_elev,
 		     &(TopoMap[y][x].Slope), &(TopoMap[y][x].Aspect));	
 
 	/* fill Dirs in TopoMap too */
@@ -234,7 +276,7 @@ void ElevationSlopeAspect(MAPSIZE * Map, TOPOPIX ** TopoMap)
 		       TopoMap[y][x].Aspect,
 		       neighbor_elev, &(TopoMap[y][x].FlowGrad),
 		       TopoMap[y][x].Dir, &(TopoMap[y][x].TotalDir));
-	   
+        
 	/* If there is a sink, check again to see if there 
 	   is a direction of steepest descent. Does not account 
 	   for ties.*/
@@ -246,10 +288,10 @@ void ElevationSlopeAspect(MAPSIZE * Map, TOPOPIX ** TopoMap)
 	    yn = y + ydirection[n];	  
 	    if (valid_cell(Map, xn, yn)) {
 	      if (INBASIN(TopoMap[yn][xn].Mask)) {
-			  if(TopoMap[yn][xn].Dem < min) { 
-				  min = TopoMap[yn][xn].Dem;
-				  steepestdirection = n;}
-		  }
+                if(TopoMap[yn][xn].Dem < min) { 
+                  min = TopoMap[yn][xn].Dem;
+                  steepestdirection = n;}
+              }
 	    }
 	  }	  
 	  if(min < TopoMap[y][x].Dem) {
@@ -266,9 +308,9 @@ void ElevationSlopeAspect(MAPSIZE * Map, TOPOPIX ** TopoMap)
 	    yn = y + ydirection[steepestdirection];
 	  }
 	}
-   } 
-  }
- } 	
+      }
+    }
+  } 	
   /* Create a structure to hold elevations of only those cells
      within the basin and the y,x of those cells.*/
   if (!(Map->OrderedCells = (ITEM *) calloc(Map->NumCells, sizeof(ITEM))))
@@ -289,6 +331,13 @@ void ElevationSlopeAspect(MAPSIZE * Map, TOPOPIX ** TopoMap)
   quick(Map->OrderedCells, Map->NumCells);
 
   /* End of modifications to create ordered cell coordinates.  SRW 10/02, LCB 03/03 */
+
+  n = Map->NumCells;
+  printf("%d: local NumCells = %d\n", ParallelRank(), n);
+  GA_Igop(&n, 1, "+");
+  printf("%d: global NumCells = %d\n", ParallelRank(), n);
+  /* Map->NumCells = n; */
+
   return;
 }
 

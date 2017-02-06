@@ -9,7 +9,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2017-01-31 14:23:44 d3g096
+# Last Change: 2017-02-06 06:43:53 d3g096
 
 # -------------------------------------------------------------
 # Set up for this subdirectory
@@ -116,6 +116,7 @@ add_executable(DHSVM
   MaxRoadInfiltration.c
   NoEvap.c
   ParallelDHSVM.c
+  ParallelIO.c
   RadiationBalance.c
   ReadMetRecord.c
   ReadRadarMap.c
