@@ -4,7 +4,7 @@
  *
  * AUTHOR:       William A Perkins
  * ORG:          Battelle Memorial Institute Pacific Northwest Laboratory
- * E-MAIL:       perk@clio.muse.pnl.gov
+ * E-MAIL:       william.perkins@pnnl.gov
  * ORIG-DATE:    21-May-96
  * DESCRIPTION:  This module contains two routines to compute "slope" and
  *               "aspect"  (direction of slope): one which uses only terrain
@@ -33,12 +33,14 @@
 #include <stdlib.h>
 #include <math.h>
 #include <assert.h>
+#include <ga.h>
 #include "constants.h"
 #include "settings.h"
 #include "data.h"
 #include "functions.h"
 #include "slopeaspect.h"
 #include "DHSVMerror.h"
+#include "ParallelDHSVM.h"
 
 /* These indices are so neighbors can be looked up quickly */
 int xdirection[NDIRS] = {
@@ -202,10 +204,26 @@ void ElevationSlopeAspect(MAPSIZE * Map, TOPOPIX ** TopoMap)
   int y;
   int n;
   int k;
+  int i;
   float neighbor_elev[NNEIGHBORS];
   int steepestdirection;
   float min;
   int xn, yn;
+
+  /* find out the minimum grid elevation of the basin (using the mask) */
+  MINELEV = 9999;
+  for (y = 0, i = 0; y < Map->NY; y++) {
+    for (x = 0; x < Map->NX; x++, i++) {
+      if (INBASIN(TopoMap[y][x].Mask)) {
+        if (TopoMap[y][x].Dem < MINELEV) {
+          MINELEV = TopoMap[y][x].Dem;
+        }
+      }
+    }
+  }
+  printf("%d: local MINELEV = %.3f\n", ParallelRank(), MINELEV);
+  GA_Fgop(&MINELEV, 1, "min");
+  printf("%d: global MINELEV = %.3f\n", ParallelRank(), MINELEV);
 
   /* fill neighbor array */
   

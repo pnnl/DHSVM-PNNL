@@ -19,7 +19,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ga.h>
 #include "settings.h"
 #include "data.h"
 #include "DHSVMerror.h"
@@ -30,7 +29,6 @@
 #include "sizeofnt.h"
 #include "slopeaspect.h"
 #include "varid.h"
-#include "ParallelDHSVM.h"
 
  /*****************************************************************************
    InitTerrainMaps()
@@ -140,21 +138,6 @@ void InitTopoMap(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * Map,
   }
   else ReportError((char *)Routine, 57);
   free(Mask);
-
-  /* find out the minimum grid elevation of the basin (using the mask) */
-  MINELEV = 9999;
-  for (y = 0, i = 0; y < Map->NY; y++) {
-    for (x = 0; x < Map->NX; x++, i++) {
-      if (INBASIN((*TopoMap)[y][x].Mask)) {
-        if ((*TopoMap)[y][x].Dem < MINELEV) {
-          MINELEV = (*TopoMap)[y][x].Dem;
-        }
-      }
-    }
-  }
-  printf("%d: local MINELEV = %.3f\n", ParallelRank(), MINELEV);
-  GA_Fgop(&MINELEV, 1, "min");
-  printf("%d: global MINELEV = %.3f\n", ParallelRank(), MINELEV);
 
   /* Calculate slope, aspect, magnitude of subsurface flow gradient, and
      fraction of flow flowing in each direction based on the land surface
