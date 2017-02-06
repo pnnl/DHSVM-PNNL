@@ -10,7 +10,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2017-02-06 08:31:37 d3g096
+ * LAST CHANGE: 2017-02-06 11:29:38 d3g096
  * COMMENTS:
  */
 
@@ -32,9 +32,6 @@ extern void (*CreateMapFileFmt) (char *FileName, ...);
 extern int (*Read2DMatrixFmt) (char *FileName, void *Matrix, int NumberType, int NY, int NX, int NDataSet, ...);
 extern int (*Write2DMatrixFmt) (char *FileName, void *Matrix, int NumberType, int NY, int NX, ...);
 
-static const gaXdim = 1;
-static const gaYdim = 0;
-
 /******************************************************************************/
 /*                            CreateMapFile                                   */
 /******************************************************************************/
@@ -48,92 +45,7 @@ CreateMapFile(char *FileName, char *FileLabel, MAPSIZE *Map)
   ParallelBarrier();
 }
 
-/******************************************************************************/
-/*                           GlobalMapSize                                    */
-/******************************************************************************/
-void
-GlobalMapSize(MAPSIZE *Map, int *globalNX, int *globalNY)
-{
-  int ndim;
-  int dims[GA_MAX_DIM];
-  int type;
 
-  NGA_Inquire(Map->dist, &type, &ndim, &dims[0]);
-  assert(ndim == 2);
-  *globalNX = dims[gaXdim];
-  *globalNY = dims[gaYdim];
-  return;
-}
-
-
-/******************************************************************************/
-/*                                GA_Type                                     */
-/******************************************************************************/
-static int
-GA_Type(int NumberType)
-{
-  int gatype;
-  switch (NumberType) {
-  case NC_INT:
-    gatype = C_INT;
-    break;
-  case NC_FLOAT:
-    gatype = C_FLOAT;
-    break;
-  case NC_DOUBLE:
-    gatype = C_DBL;
-    break;
-  case NC_BYTE:
-  case NC_CHAR:
-    gatype = C_CHAR;
-    break;
-  default:
-    gatype = 0;
-    ReportError("GAType", 40);
-    break;
-  }
-  return gatype;
-}
-
-/******************************************************************************/
-/*                          GA_Duplicate_type                                 */
-/******************************************************************************/
-/** 
- * 
- * 
- * @param ga_orig handle to existing GA to use as a model
- * @param ntype GA data type for new GA
- * 
- * @return handle to new ga with same dimensions and distribution as
- * @c ga_orig, but with a different type
- */
-static int
-GA_Duplicate_type(int oga, char *nname, int ntype)
-{
-  int nga;
-  int otype;
-  int ndim, dims[GA_MAX_DIM], chunk[GA_MAX_DIM];
-  int nblock, map[GA_MAX_DIM];
-  int i;
-  
-  NGA_Inquire(oga, &otype, &ndim, &dims[0]);
-
-  /* if it's already the correct type, just duplicate */
-
-  if (otype == ntype) {
-    nga = GA_Duplicate(oga, nname);
-  } else {
-    /* FIXME: should actually copy the distribution here */
-    for (i = 0; i < GA_MAX_DIM; ++i) chunk[i] = 1;
-    nga = GA_Create_handle();
-    GA_Set_data(nga, ndim, dims, ntype);
-    GA_Set_array_name(nga, nname);
-    GA_Set_chunk(nga, &chunk[0]);
-    GA_Allocate(nga);
-  }    
-  return nga;
-}
-    
 /******************************************************************************/
 /*                             Distribute2DMatrix                             */
 /******************************************************************************/
@@ -150,7 +62,8 @@ Distribute2DMatrix(void *MatrixZero, void *LocalMatrix,
 
   me = ParallelRank();
 
-  GlobalMapSize(Map, &gNX, &gNY);
+  gNX = Map->gNX;
+  gNY = Map->gNY;
 
   gatype = GA_Type(NumberType);
   ga = GA_Duplicate_type(Map->dist, "Distribute2DMatrix", GA_Type(NumberType));
@@ -204,7 +117,8 @@ Collect2DMatrix(void *MatrixZero, void *LocalMatrix,
   
   me = ParallelRank();
   
-  GlobalMapSize(Map, &gNX, &gNY);
+  gNX = Map->gNX;
+  gNY = Map->gNY;
   
   gatype = GA_Type(NumberType);
   ga = GA_Duplicate_type(Map->dist, "Collect2DMatrix", GA_Type(NumberType));
@@ -261,7 +175,8 @@ Read2DMatrix(char *FileName, void *LocalMatrix, int NumberType, MAPSIZE *Map,
 
   me = ParallelRank();
 
-  GlobalMapSize(Map, &gNX, &gNY);
+  gNX = Map->gNX;
+  gNY = Map->gNY;
 
   if (me == 0) {
     if (!(tmpArray = (void *)calloc(gNY * gNX, SizeOfNumberType(NumberType))))
@@ -292,7 +207,8 @@ Write2DMatrix(char *FileName, void *LocalMatrix, int NumberType,
 
   me = ParallelRank();
 
-  GlobalMapSize(Map, &gNX, &gNY);
+  gNX = Map->gNX;
+  gNY = Map->gNY;
 
   if (me == 0) {
     if (!(tmpArray = (void *)calloc(gNY * gNX, SizeOfNumberType(NumberType))))

@@ -419,9 +419,11 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
 
   if (!CopyInt(&(Map->NY), StrEnv[number_of_rows].VarStr, 1))
     ReportError(StrEnv[number_of_rows].KeyName, 51);
+  Map->gNY = Map->NY;
 
   if (!CopyInt(&(Map->NX), StrEnv[number_of_columns].VarStr, 1))
     ReportError(StrEnv[number_of_columns].KeyName, 51);
+  Map->gNX = Map->NX;
 
   if (!CopyFloat(&(Map->DY), StrEnv[grid_spacing].VarStr, 1))
     ReportError(StrEnv[grid_spacing].KeyName, 51);

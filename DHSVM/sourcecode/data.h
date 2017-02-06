@@ -141,21 +141,23 @@ typedef struct {
 } ITEM;
 
 typedef struct {
-  char System[BUFSIZE + 1];		 /* Coordinate system */
-  double Xorig;					 /* X coordinate of Northwest corner */
-  double Yorig;					 /* Y coordinate of Northwest corner */
-  int X;						 /* Current x position */
-  int Y;						 /* Current y position */
-  int NX;						 /* Number of pixels in x direction */
-  int NY;						 /* Number of pixels in y direction */
-  float DX;						 /* Pixel spacing in x-direction */
-  float DY;						 /* Pixel spacing in y-direction */
-  float DXY;					 /* Pixel spacing in diagonal */
-  int OffsetX;					 /* Offset in x-direction compared to basemap */
-  int OffsetY;					 /* Offset in y-direction compared to basemap */
-  int NumCells;                  /* Number of cells within the basin */
-  ITEM *OrderedCells;            /* Structure array to hold the ranked elevations; NumCells in size */
-  int dist;                      /* GA handle that provides parallel distribution */
+  char System[BUFSIZE + 1];     /* Coordinate system */
+  double Xorig;                 /* X coordinate of Northwest corner */
+  double Yorig;                 /* Y coordinate of Northwest corner */
+  int X;                        /* Current x position */
+  int Y;                        /* Current y position */
+  int NX;                       /* Number of (local) pixels in x direction */
+  int NY;                       /* Number of pixels in y direction */
+  float DX;                     /* Pixel spacing in x-direction */
+  float DY;                     /* Pixel spacing in y-direction */
+  float DXY;                    /* Pixel spacing in diagonal */
+  int OffsetX;                  /* Offset in x-direction compared to basemap */
+  int OffsetY;                  /* Offset in y-direction compared to basemap */
+  int NumCells;                 /* Number of cells within the basin */
+  ITEM *OrderedCells;           /* Structure array to hold the ranked elevations; NumCells in size */
+  int dist;                     /* GA handle that provides parallel distribution */
+  int gNX;                      /* Number of (global) pixels in x direction */
+  int gNY;                      /* Number of (global) pixels in x direction */
 } MAPSIZE;
 
 typedef struct {
