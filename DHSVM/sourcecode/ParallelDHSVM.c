@@ -10,7 +10,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2017-02-06 11:45:32 d3g096
+ * LAST CHANGE: 2017-02-07 10:06:15 d3g096
  * COMMENTS:
  */
 
@@ -192,6 +192,9 @@ DomainSummary(MAPSIZE *global, MAPSIZE *local)
 
   int me, nproc, p;
 
+  ParallelBarrier();
+  fflush(stdout);
+
   me = ParallelRank();
   nproc = ParallelSize();
 
@@ -200,21 +203,24 @@ DomainSummary(MAPSIZE *global, MAPSIZE *local)
     printf("Proc       NX      NY OffsetX OffsetY         Xorig         Yorig NumCells\n");
     printf(bar);
   }
+  ParallelBarrier();
+  fflush(stdout);
   for (p = 0; p < nproc; ++p) {
     if (me == p) {
       printf(fmt, p, 
              local->NX, local->NY, 
-             local->OffsetX, local->OffsetX,
+             local->OffsetX, local->OffsetY,
              local->Xorig, local->Yorig,
              local->NumCells);
     }
     ParallelBarrier();
+    fflush(stdout);
   }
   if (me == 0) {
     printf(bar);
     printf(sfmt, "global",
            global->NX, global->NY, 
-           global->OffsetX, global->OffsetX,
+           global->OffsetX, global->OffsetY,
            global->Xorig, global->Yorig,
            global->NumCells);
     printf(bar);
@@ -225,6 +231,7 @@ DomainSummary(MAPSIZE *global, MAPSIZE *local)
     printf(bar);
   }
   ParallelBarrier();
+  fflush(stdout);
 }
 
 /******************************************************************************/
@@ -235,9 +242,9 @@ DomainDecomposition(MAPSIZE *global, MAPSIZE *local)
 {
   int gaid; 
   int nproc, me, p;
-  int dims[2];
-  int chunk[2];
-  int lo[2], hi[2];
+  int dims[GA_MAX_DIM];
+  int chunk[GA_MAX_DIM], ghosts[GA_MAX_DIM];
+  int lo[GA_MAX_DIM], hi[GA_MAX_DIM];
   int gNX, gNY;
 
   me = ParallelRank();
@@ -255,13 +262,16 @@ DomainDecomposition(MAPSIZE *global, MAPSIZE *local)
   /* create an appropriate sized GA the default way and use it to
      determine local shares of the domain. */
 
-  dims[0] = global->NY;
-  dims[1] = global->NX;
+  dims[gaYdim] = global->NY;
+  dims[gaXdim] = global->NX;
   
-  chunk[0] = 1;
-  chunk[1] = 1;
+  chunk[gaYdim] = 1;
+  chunk[gaXdim] = 1;
+
+  ghosts[gaYdim] = 1;
+  ghosts[gaXdim] = 1;
   
-  gaid = NGA_Create(C_INT, 2, dims, "Domain Decompsition", chunk);
+  gaid = NGA_Create_ghosts(C_INT, 2, dims, ghosts, "Domain Decompsition", chunk);
   if (gaid == 0) {
     ReportError("DomainDecomposition", 70);
   }
@@ -269,16 +279,13 @@ DomainDecomposition(MAPSIZE *global, MAPSIZE *local)
   NGA_Distribution(gaid, me, lo, hi);
   global->dist = gaid;
   local->dist = gaid;
-  local->Xorig = global->Xorig + lo[1]*global->DX;
-  local->Yorig = global->Yorig + lo[0]*global->DY;
-  local->OffsetX = lo[1];
-  local->OffsetY = lo[0];
-  local->NX = hi[1] - lo[1] + 1;
-  local->NY = hi[0] - lo[0] + 1;
+  local->Xorig = global->Xorig + lo[gaXdim]*global->DX;
+  local->Yorig = global->Yorig + lo[gaYdim]*global->DY;
+  local->OffsetX = lo[gaXdim];
+  local->OffsetY = lo[gaYdim];
+  local->NX = hi[gaXdim] - lo[gaXdim] + 1;
+  local->NY = hi[gaYdim] - lo[gaYdim] + 1;
 
-  /* report the decomposition (should probably do this somewhere else later) */
-
-  DomainSummary(global, local);
 }
 
 /******************************************************************************/

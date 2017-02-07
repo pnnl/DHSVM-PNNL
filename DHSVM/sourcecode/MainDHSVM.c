@@ -164,6 +164,10 @@ int main(int argc, char **argv)
 
   CheckOut(&Options, Veg, Soil, VType, SType, &Map, TopoMap, VegMap, SoilMap);
 
+  DumpTopo(&Map, TopoMap);
+
+  DomainSummary(&GMap, &Map);
+
 #if 0
 
   if (Options.HasNetwork)

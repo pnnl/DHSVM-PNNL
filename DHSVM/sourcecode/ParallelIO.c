@@ -10,7 +10,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2017-02-06 11:29:38 d3g096
+ * LAST CHANGE: 2017-02-07 07:47:34 d3g096
  * COMMENTS:
  */
 
@@ -68,13 +68,13 @@ Distribute2DMatrix(void *MatrixZero, void *LocalMatrix,
   gatype = GA_Type(NumberType);
   ga = GA_Duplicate_type(Map->dist, "Distribute2DMatrix", GA_Type(NumberType));
   
-  switch (gatype) {
-  case (C_CHAR):
-    break;
-  default:
-    GA_Print_distribution(ga);
-    break;
-  }
+  /* switch (gatype) { */
+  /* case (C_CHAR): */
+  /*   break; */
+  /* default: */
+  /*   GA_Print_distribution(ga); */
+  /*   break; */
+  /* } */
   
   
   if (me == 0) {
@@ -83,8 +83,8 @@ Distribute2DMatrix(void *MatrixZero, void *LocalMatrix,
     lo[1] = 0;
     hi[gaYdim] = gNY-1;
     hi[gaXdim] = gNX-1;
-    ld[gaYdim] = gNY-1;
-    ld[gaXdim] = gNX-1;
+    ld[gaXdim] = gNY;
+    ld[gaYdim] = gNX;
     NGA_Put(ga, &lo[0], &hi[0], MatrixZero, &ld[0]);
   }
   GA_Sync();
@@ -93,8 +93,8 @@ Distribute2DMatrix(void *MatrixZero, void *LocalMatrix,
   lo[gaXdim] = Map->OffsetX;
   hi[gaYdim] = lo[gaYdim] + Map->NY - 1;
   hi[gaXdim] = lo[gaXdim] + Map->NX - 1;
-  ld[gaYdim] = Map->NY - 1;
-  ld[gaXdim] = Map->NX - 1;
+  ld[gaXdim] = Map->NY;
+  ld[gaYdim] = Map->NX;
   NGA_Get(ga, &lo[0], &hi[0], LocalMatrix, &ld[0]);
 
   GA_Sync();
@@ -122,13 +122,14 @@ Collect2DMatrix(void *MatrixZero, void *LocalMatrix,
   
   gatype = GA_Type(NumberType);
   ga = GA_Duplicate_type(Map->dist, "Collect2DMatrix", GA_Type(NumberType));
+  /* GA_Print_distribution(ga); */
   
   lo[gaYdim] = Map->OffsetY;
   lo[gaXdim] = Map->OffsetX;
-  hi[gaYdim] = lo[gaYdim] + Map->NY;
-  hi[gaXdim] = lo[gaXdim] + Map->NX;
-  ld[gaYdim] = Map->NY;
-  ld[gaXdim] = Map->NX;
+  hi[gaYdim] = lo[gaYdim] + Map->NY - 1;
+  hi[gaXdim] = lo[gaXdim] + Map->NX - 1;
+  ld[gaXdim] = Map->NY;
+  ld[gaYdim] = Map->NX;
   NGA_Put(ga, &lo[0], &hi[0], LocalMatrix, &ld[0]);
   GA_Sync();
 
@@ -136,13 +137,14 @@ Collect2DMatrix(void *MatrixZero, void *LocalMatrix,
 
     lo[gaYdim] = 0;
     lo[gaXdim] = 0;
-    hi[gaYdim] = gNY;
-    hi[gaXdim] = gNX;
-    ld[gaYdim] = gNY;
-    ld[gaXdim] = gNX;
+    hi[gaYdim] = gNY-1;
+    hi[gaXdim] = gNX-1;
+    ld[gaXdim] = gNY;
+    ld[gaYdim] = gNX;
     NGA_Get(ga, &lo[0], &hi[0], MatrixZero, &ld[0]);
   }
   GA_Sync();
+  /* GA_Print(ga); */
   GA_Destroy(ga);
 }
 
@@ -219,7 +221,7 @@ Write2DMatrix(char *FileName, void *LocalMatrix, int NumberType,
   Collect2DMatrix(tmpArray, LocalMatrix, NumberType, Map);
 
   if (me == 0) {
-    Write2DMatrixFmt(FileName, tmpArray, NumberType, Map->NY, Map->NX, DMap, index);
+    Write2DMatrixFmt(FileName, tmpArray, NumberType, Map->gNY, Map->gNX, DMap, index);
     free(tmpArray);
   }
   return 0;

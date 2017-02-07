@@ -25,6 +25,7 @@
 #include "DHSVMerror.h"
 #include "functions.h"
 #include "constants.h"
+#include "ParallelDHSVM.h"
 
 /*****************************************************************************
 ExecDump()
@@ -1129,3 +1130,69 @@ void DumpPix(DATE *Current, int first, FILES *OutFile, EVAPPIX *Evap,
     fprintf(OutFile->FilePtr, " %g", Soil->InfiltAcc);
 
 }
+
+/******************************************************************************/
+/*                                DumpTopo                                    */
+/******************************************************************************/
+void
+DumpTopo(MAPSIZE *Map, TOPOPIX **TopoMap)
+{
+  int x, y;
+  int ntype;
+  float *Array;
+  int numPoints;
+  char FileName[BUFSIZE+1];
+
+  numPoints = Map->NX*Map->NY;
+
+  if (!(Array = calloc(numPoints, SizeOfNumberType(NC_FLOAT))))
+      ReportError("DumpTopo", 1);
+
+  sprintf(FileName, "%s%s", "Proc", fileext);
+  for (y = 0; y < Map->NY; y++) {
+    for (x = 0; x < Map->NX; x++) {
+      Array[y * Map->NX + x] = ParallelRank();
+    }
+  }
+  Write2DMatrix(FileName, Array, NC_FLOAT, Map, NULL, 0);
+  
+  sprintf(FileName, "%s%s", "DEM", fileext);
+  for (y = 0; y < Map->NY; y++) {
+    for (x = 0; x < Map->NX; x++) {
+      if (INBASIN(TopoMap[y][x].Mask)) {
+        Array[y * Map->NX + x] = TopoMap[y][x].Dem;
+      } else {
+        Array[y * Map->NX + x] = NA;
+      }
+    }
+  }
+  Write2DMatrix(FileName, Array, NC_FLOAT, Map, NULL, 0);
+
+  sprintf(FileName, "%s%s", "Slope", fileext);
+  for (y = 0; y < Map->NY; y++) {
+    for (x = 0; x < Map->NX; x++) {
+      if (INBASIN(TopoMap[y][x].Mask)) {
+        Array[y * Map->NX + x] = TopoMap[y][x].Slope;
+      } else {
+        Array[y * Map->NX + x] = NA;
+      }
+    }
+  }
+  Write2DMatrix(FileName, Array, NC_FLOAT, Map, NULL, 0);
+
+
+  sprintf(FileName, "%s%s", "Mask", fileext);
+  for (y = 0; y < Map->NY; y++) {
+    for (x = 0; x < Map->NX; x++) {
+      if (INBASIN(TopoMap[y][x].Mask)) {
+        Array[y * Map->NX + x] = (float) TopoMap[y][x].Mask;
+      } else {
+        Array[y * Map->NX + x] = NA;
+      }
+    }
+  }
+  Write2DMatrix(FileName, Array, NC_FLOAT, Map, NULL, 0);
+
+  free(Array);
+}
+

@@ -71,7 +71,10 @@ int yneighbor[NNEIGHBORS] = {
    ------------------------------------------------------------- */
 int valid_cell(MAPSIZE *Map, int x, int y)
 {
-  return (x >= 0 && y >= 0 && x < Map->gNX && y < Map->gNY);
+  int gx, gy;
+  gx = Map->OffsetX + x;
+  gy = Map->OffsetY + y;
+  return (gx >= 0 && gy >= 0 && gx < Map->gNX && gy < Map->gNY);
 }
 
 /* -------------------------------------------------------------
@@ -211,6 +214,7 @@ void ElevationSlopeAspect(MAPSIZE * Map, TOPOPIX ** TopoMap)
   int xn, yn;
   int gaelev, gamask;
   float elev, outelev;
+  int mask;
 
   outelev = (float) OUTSIDEBASIN;
 
@@ -239,6 +243,14 @@ void ElevationSlopeAspect(MAPSIZE * Map, TOPOPIX ** TopoMap)
   gaelev = GA_Duplicate_type(Map->dist, "ElevationSlopeAspect", GA_Type(NC_FLOAT));
   GA_Fill(gaelev, &outelev);
 
+  /* 
+  gamask = GA_Duplicate_type(Map->dist, "ElevationSlopeAspectMask", GA_Type(NC_INT));
+  mask = (char) OUTSIDEBASIN;
+  GA_Fill(gamask, &mask);
+  */
+
+  GA_Sync();
+
   /* put elevations in GA (presumably, all of these puts should be local,
      so it may be OK do put one value at a time; maybe try
      non-blocking too) */
@@ -247,11 +259,16 @@ void ElevationSlopeAspect(MAPSIZE * Map, TOPOPIX ** TopoMap)
     for (y = 0; y < Map->NY; y++) {
       if (INBASIN(TopoMap[y][x].Mask)) {
         elev = TopoMap[y][x].Dem;
+        mask = TopoMap[y][x].Mask;
         GA_Put_one(gaelev, Map, x, y, &elev);
+        /* GA_Put_one(gamask, Map, x, y, &mask); */
       }
     }
   }
-  GA_Sync();
+  GA_Update_ghosts(gaelev);
+  /*
+  GA_Update_ghosts(gamask);
+  */
 
   /* fill neighbor array */
   
@@ -263,6 +280,7 @@ void ElevationSlopeAspect(MAPSIZE * Map, TOPOPIX ** TopoMap)
 	  yn = y + yneighbor[n];	  
 	  if (valid_cell(Map, xn, yn)) {
             GA_Get_one(gaelev, Map, xn, yn, &elev);
+            neighbor_elev[n] = elev;
           } else {
 	    neighbor_elev[n] = outelev;
           }
@@ -284,15 +302,11 @@ void ElevationSlopeAspect(MAPSIZE * Map, TOPOPIX ** TopoMap)
 	  steepestdirection = -99;
 	  min = DHSVM_HUGE;	       
 	  for (n = 0; n < NDIRS; n++) {
-	    xn = x + xdirection[n];
-	    yn = y + ydirection[n];	  
-	    if (valid_cell(Map, xn, yn)) {
-	      if (INBASIN(TopoMap[yn][xn].Mask)) {
-                if(TopoMap[yn][xn].Dem < min) { 
-                  min = TopoMap[yn][xn].Dem;
-                  steepestdirection = n;}
-              }
-	    }
+            if (INBASIN(neighbor_elev[n])) {
+              if (elev < min) { 
+                min = elev;
+                steepestdirection = n;}
+            }
 	  }	  
 	  if(min < TopoMap[y][x].Dem) {
 	    TopoMap[y][x].Dir[steepestdirection] = (int)(255.0 + 0.5);
