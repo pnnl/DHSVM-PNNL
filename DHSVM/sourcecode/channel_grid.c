@@ -26,6 +26,7 @@
 #include "data.h"
 #include "DHSVMChannel.h"
 #include "constants.h"
+#include "ParallelDHSVM.h"
 
 /* -------------------------------------------------------------
    local function prototype
@@ -40,8 +41,6 @@ char channel_grid_has_intersection(ChannelMapPtr **map, int Currid, int Nextid, 
 /* -------------------------------------------------------------
    local module variables
    ------------------------------------------------------------- */
-static int channel_grid_cols = 0;
-static int channel_grid_rows = 0;
 static char channel_grid_initialized = FALSE;
 
 
@@ -153,11 +152,11 @@ static void free_channel_map_record(ChannelMapRec * cell)
 /* -------------------------------------------------------------
    channel_grid_free_map
    ------------------------------------------------------------- */
-void channel_grid_free_map(ChannelMapPtr ** map)
+void channel_grid_free_map(MAPSIZE *Map, ChannelMapPtr ** map)
 {
   int c, r;
-  for (c = 0; c < channel_grid_cols; c++) {
-    for (r = 0; r < channel_grid_rows; r++) {
+  for (c = 0; c < Map->NX; c++) {
+    for (r = 0; r < Map->NY; r++) {
       if (map[c][r] != NULL) {
 	free_channel_map_record(map[c][r]);
       }
@@ -174,8 +173,9 @@ void channel_grid_free_map(ChannelMapPtr ** map)
 /* -------------------------------------------------------------
    channel_grid_read_map
    ------------------------------------------------------------- */
-ChannelMapPtr **channel_grid_read_map(Channel *net, const char *file,
-				      SOILPIX ** SoilMap)
+ChannelMapPtr **channel_grid_read_map(MAPSIZE *Map, Channel *net, 
+                                      const char *file,
+                                      SOILPIX ** SoilMap)
 {
   ChannelMapPtr **map;
   static const int fields = 8;
@@ -209,12 +209,13 @@ ChannelMapPtr **channel_grid_read_map(Channel *net, const char *file,
     return NULL;
   }
 
-  map = channel_grid_create_map(channel_grid_cols, channel_grid_rows);
+  map = channel_grid_create_map(Map->NX, Map->NY);
 
   done = FALSE;
   while (!done) {
     int i;
     int row = 0, col = 0;
+    int g_row = 0, g_col = 0;
     int rec_err = 0;
     ChannelMapPtr cell;
 
@@ -230,11 +231,11 @@ ChannelMapPtr **channel_grid_read_map(Channel *net, const char *file,
 
     if (map_fields[0].read) {
       if (map_fields[0].value.integer < 0 ||
-	  map_fields[0].value.integer >= channel_grid_cols) {
+	  map_fields[0].value.integer >= Map->gNX) {
 	rec_err++;
       }
       else {
-	col = map_fields[0].value.integer;
+	g_col = map_fields[0].value.integer;
       }
     }
     else {
@@ -242,11 +243,11 @@ ChannelMapPtr **channel_grid_read_map(Channel *net, const char *file,
     }
     if (map_fields[1].read) {
       if (map_fields[1].value.integer < 0 ||
-	  map_fields[1].value.integer >= channel_grid_rows) {
+	  map_fields[1].value.integer >= Map->gNY) {
 	rec_err++;
       }
       else {
-	row = map_fields[1].value.integer;
+	g_row = map_fields[1].value.integer;
       }
     }
     else {
@@ -260,77 +261,83 @@ ChannelMapPtr **channel_grid_read_map(Channel *net, const char *file,
       continue;
     }
 
-    if (map[col][row] != NULL) {
-      cell = map[col][row];
-      while (cell->next != NULL)
-	cell = cell->next;
-      cell->next = alloc_channel_map_record();
-      cell = cell->next;
-    }
-    else {
-      map[col][row] = alloc_channel_map_record();
-      cell = map[col][row];
-    }
+    /* The channel map row and column are global indices. These need
+       to be converted to local indices. We can also ignore any
+       non-local records. */
 
-    for (i = 2; i < fields; i++) {
-      if (map_fields[i].read) {
-	switch (i) {
-	case 2:
-	  if ((cell->channel =
-	       channel_find_segment(net,
-				    map_fields[i].value.integer)) == NULL) {
-	    error_handler(ERRHDL_ERROR,
-			  "%s, line %d: unable to locate segment %d", file,
-			  table_lineno(), map_fields[i].value.integer);
-	    err++;
-	  }
-	  break;
-	case 3:
-	  cell->length = map_fields[i].value.real;
-	  if (cell->length < 0.0) {
-	    error_handler(ERRHDL_ERROR,
-			  "%s, line %d: bad length", file, table_lineno());
-	    err++;
-	  }
-	  break;
-	case 4:
-	  cell->cut_height = map_fields[i].value.real;
-	  if (cell->cut_height > SoilMap[row][col].Depth) {
-	    printf("warning overriding cut depths with 0.95 soil depth \n");
-	    cell->cut_height = SoilMap[row][col].Depth*0.95;
-	  }
-	  if (cell->cut_height < 0.0
-	      || cell->cut_height > SoilMap[row][col].Depth) {
-	    error_handler(ERRHDL_ERROR, "%s, line %d: bad cut_depth", file,
-			  table_lineno());
-	    err++;
-	  }
-	  break;
-	case 5:
-	  cell->cut_width = map_fields[i].value.real;
-	  if (cell->cut_width < 0.0) {
-	    error_handler(ERRHDL_ERROR,
-			  "%s, line %d: bad cut_width", file, table_lineno());
-	    err++;
-	  }
-	  break;
-	case 6:
-	  /* road aspect is read in degrees and
-	     stored in radians */
-	  cell->azimuth = (float)(map_fields[i].value.real);
-	  cell->aspect = map_fields[i].value.real * PI / 180.0;
-	  break;
-	case 7:
-	  cell->sink = TRUE;
-	  break;
-	default:
-	  error_handler(ERRHDL_FATAL,
-			"channel_grid_read_map: this should not happen");
-	  break;
-	}
+    if (Global2Local(Map, g_col, g_row, &col, &row)) {
+      if (map[col][row] != NULL) {
+        cell = map[col][row];
+        while (cell->next != NULL)
+          cell = cell->next;
+        cell->next = alloc_channel_map_record();
+        cell = cell->next;
       }
-    }
+      else {
+        map[col][row] = alloc_channel_map_record();
+        cell = map[col][row];
+      }
 
+      for (i = 2; i < fields; i++) {
+        if (map_fields[i].read) {
+          switch (i) {
+          case 2:
+            if ((cell->channel =
+                 channel_find_segment(net,
+                                      map_fields[i].value.integer)) == NULL) {
+              error_handler(ERRHDL_ERROR,
+                            "%s, line %d: unable to locate segment %d", file,
+                            table_lineno(), map_fields[i].value.integer);
+              err++;
+            }
+            break;
+          case 3:
+            cell->length = map_fields[i].value.real;
+            if (cell->length < 0.0) {
+              error_handler(ERRHDL_ERROR,
+                            "%s, line %d: bad length", file, table_lineno());
+              err++;
+            }
+            break;
+          case 4:
+            cell->cut_height = map_fields[i].value.real;
+            if (cell->cut_height > SoilMap[row][col].Depth) {
+              printf("warning overriding cut depths with 0.95 soil depth \n");
+              cell->cut_height = SoilMap[row][col].Depth*0.95;
+            }
+            if (cell->cut_height < 0.0
+                || cell->cut_height > SoilMap[row][col].Depth) {
+              error_handler(ERRHDL_ERROR, "%s, line %d: bad cut_depth", file,
+                            table_lineno());
+              err++;
+            }
+            break;
+          case 5:
+            cell->cut_width = map_fields[i].value.real;
+            if (cell->cut_width < 0.0) {
+              error_handler(ERRHDL_ERROR,
+                            "%s, line %d: bad cut_width", file, table_lineno());
+              err++;
+            }
+            break;
+          case 6:
+            /* road aspect is read in degrees and
+               stored in radians */
+            cell->azimuth = (float)(map_fields[i].value.real);
+            cell->aspect = map_fields[i].value.real * PI / 180.0;
+            break;
+          case 7:
+            cell->sink = TRUE;
+            break;
+          default:
+            error_handler(ERRHDL_FATAL,
+                          "channel_grid_read_map: this should not happen");
+            break;
+          }
+        }
+      }
+
+    }
   }
 
   table_errors += err;
@@ -346,7 +353,7 @@ ChannelMapPtr **channel_grid_read_map(Channel *net, const char *file,
   if (table_errors) {
     error_handler(ERRHDL_ERROR,
 		  "channel_grid_read_map: %s: too many errors", file);
-    channel_grid_free_map(map);
+    channel_grid_free_map(Map, map);
     map = NULL;
   }
 
@@ -628,8 +635,6 @@ ChannelClass* channel_grid_class(ChannelMapPtr ** map, int col, int row)
    ------------------------------------------------------------- */
 void channel_grid_init(int cols, int rows)
 {
-  channel_grid_cols = cols;
-  channel_grid_rows = rows;
   channel_grid_initialized = 1;
 }
 

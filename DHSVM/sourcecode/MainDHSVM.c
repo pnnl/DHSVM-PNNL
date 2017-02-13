@@ -168,8 +168,6 @@ int main(int argc, char **argv)
 
   DomainSummary(&GMap, &Map);
 
-#if 0
-
   if (Options.HasNetwork)
     InitChannel(Input, &Map, Time.Dt, &ChannelData, SoilMap, &MaxStreamID, &MaxRoadID, &Options);
   else if (Options.Extent != POINT)
@@ -181,6 +179,8 @@ int main(int argc, char **argv)
 
   InitMetSources(Input, &Options, &Map, TopoMap, Soil.MaxLayers, &Time,
 		 &InFiles, &NStats, &Stat, &Radar, &MM5Map, &Grid);
+
+#if 0
 
   /* the following piece of code is for the UW PRISM project */
   /* for real-time verification of SWE at Snotel sites */
@@ -208,6 +208,8 @@ int main(int argc, char **argv)
     }
   }
 
+#endif
+
   InitMetMaps(Time.NDaySteps, &Map, &Radar, &Options, InFiles.WindMapPath,
 	      InFiles.PrecipLapseFile, &PrecipLapseMap, &PrismMap,
 	      &ShadowMap, &SkyViewMap, &EvapMap, &PrecipMap,
@@ -219,12 +221,16 @@ int main(int argc, char **argv)
   InitDump(Input, &Options, &Map, Soil.MaxLayers, Veg.MaxLayers, Time.Dt,
 	   TopoMap, &Dump, &NGraphics, &which_graphics);
 
+#if 0
+
   if (Options.HasNetwork == TRUE) {
     InitChannelDump(&Options, &ChannelData, Dump.Path);
     ReadChannelState(Dump.InitStatePath, &(Time.Start), ChannelData.streams);
 	if (Options.StreamTemp && Options.CanopyShading)
 	  InitChannelRVeg(&Time, ChannelData.streams);
   }
+
+#endif
 
   InitSnowMap(&Map, &SnowMap);
   InitAggregated(Veg.MaxLayers, Soil.MaxLayers, &Total);
@@ -238,10 +244,14 @@ int main(int argc, char **argv)
 
   InitNewDay(Time.Current.JDay, &SolarGeo);
 
+#if 0
+
   if (NGraphics > 0) {
     printf("Initialzing X11 display and graphics \n");
     InitXGraphics(argc, argv, Map.NY, Map.NX, NGraphics, &MetMap);
   }
+
+#endif
 
   shade_offset = FALSE;
   if (Options.Shading == TRUE)
@@ -249,6 +259,8 @@ int main(int argc, char **argv)
 
   /* Done with initialization, delete the list with input strings */
   DeleteList(Input);
+
+#if 0
 
   /* setup for mass balance calculations */
   Aggregate(&Map, &Options, TopoMap, &Soil, &Veg, VegMap, EvapMap, PrecipMap,

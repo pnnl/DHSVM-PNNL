@@ -52,7 +52,7 @@ void channel_grid_done(void);
 
 				/* Input Functions */
 
-ChannelMapPtr **channel_grid_read_map(Channel *net, const char *file,
+ChannelMapPtr **channel_grid_read_map(MAPSIZE *Map, Channel *net, const char *file,
 				      SOILPIX **SoilMap);
 
 				/* Query Functions */
@@ -70,7 +70,7 @@ double channel_grid_flowlength(ChannelMapPtr **map, int col, int row,
 double channel_grid_flowslope(ChannelMapPtr **map, int col, int row);
 ChannelClass* channel_grid_class(ChannelMapPtr **map, int col, int row);
 
-void channel_grid_free_map(ChannelMapPtr **map);
+void channel_grid_free_map(MAPSIZE *Map, ChannelMapPtr **map);
 
 /* new functions for RBM model */
 void channel_grid_inc_other(ChannelMapPtr **map, int col, int row, PIXRAD *LocalRad , 

@@ -76,7 +76,7 @@ InitChannel(LISTPTR Input, MAPSIZE *Map, int deltat, CHANNEL *channel,
       ReportError(StrEnv[stream_network].VarStr, 5);
     }
     if ((channel->stream_map =
-	 channel_grid_read_map(channel->streams,
+	 channel_grid_read_map(Map, channel->streams,
 			       StrEnv[stream_map].VarStr, SoilMap)) == NULL) {
       ReportError(StrEnv[stream_map].VarStr, 5);
     }
@@ -106,7 +106,7 @@ InitChannel(LISTPTR Input, MAPSIZE *Map, int deltat, CHANNEL *channel,
       ReportError(StrEnv[road_network].VarStr, 5);
     }
     if ((channel->road_map =
-	 channel_grid_read_map(channel->roads,
+	 channel_grid_read_map(Map, channel->roads,
 			       StrEnv[road_map].VarStr, SoilMap)) == NULL) {
       ReportError(StrEnv[road_map].VarStr, 5);
     }
