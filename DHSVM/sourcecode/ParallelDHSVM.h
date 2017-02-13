@@ -10,7 +10,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2017-02-06 11:32:53 d3g096
+ * LAST CHANGE: 2017-02-13 10:32:36 d3g096
  * COMMENTS:
  */
 
@@ -20,6 +20,8 @@
 #include "sizeofnt.h"
 #include "data.h"
 
+int Global2Local(MAPSIZE *Map, int globalx, int globaly, int *localx, int *localy);
+void Local2Global(MAPSIZE *Map, int localx, int localy, int *globalx, int *globaly);
 void ParallelInitialize(int *argc, char ***argv);
 void DomainDecomposition(MAPSIZE *global, MAPSIZE *local);
 void DomainSummary(MAPSIZE *global, MAPSIZE *local);

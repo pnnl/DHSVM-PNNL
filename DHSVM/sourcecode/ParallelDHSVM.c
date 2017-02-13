@@ -10,7 +10,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2017-02-07 10:06:15 d3g096
+ * LAST CHANGE: 2017-02-13 10:22:34 d3g096
  * COMMENTS:
  */
 
@@ -313,3 +313,55 @@ ParallelFinalize(void)
 }
 
 
+/******************************************************************************/
+/*                              Global2Local                                  */
+/******************************************************************************/
+/** 
+ * Compute process local cell indexes given the global indexes.  
+ * 
+ * @param Map 
+ * @param globalx 
+ * @param globaly 
+ * @param localx 
+ * @param localy 
+ * 
+ * @return 1 if global coordinate is in local domain
+ */
+int
+Global2Local(MAPSIZE *Map, int globalx, int globaly, int *localx, int *localy)
+{
+  int tmpx, tmpy;
+  int result;
+
+  tmpx = globalx - Map->OffsetX;
+  tmpy = globaly - Map->OffsetY;
+  if (tmpx < 0 || tmpy < 0 || tmpx >= Map->NX || tmpy >= Map->NY) {
+    result = 0;
+  } else {
+    *localx = tmpx;
+    *localy = tmpy;
+    result = 1;
+  }
+  return result;
+}
+
+
+
+/******************************************************************************/
+/*                              Local2Global                                  */
+/******************************************************************************/
+/** 
+ * This computes the global column and row given @em valid local indexes.
+ * 
+ * @param Map local domain description
+ * @param localx @em valid local column index
+ * @param localy @em valid local row index
+ * @param globalx global column index
+ * @param globaly global row index
+ */
+void
+Local2Global(MAPSIZE *Map, int localx, int localy, int *globalx, int *globaly)
+{
+  *globalx = localx + Map->OffsetX;
+  *globaly = localy + Map->OffsetY;
+}
