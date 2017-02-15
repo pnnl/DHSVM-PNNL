@@ -10,7 +10,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2017-01-31 14:24:47 d3g096
+# Last Change: 2017-02-15 13:11:00 d3g096
 
 set -xue
 
@@ -77,19 +77,22 @@ if [ $host == "flophouse" ]; then
 
 elif [ $host == "WE32673" ]; then
 
-    # this is a Mac system with MPI and NetCDF installed using MacPorts
-
-    CC=gcc-mp-6
-    CXX=g++-mp-6
-    export CC CXX
+    # this is a Mac system with MPI and NetCDF installed using
+    # MacPorts.  You cannot use the Apple CLang because Global Arrays
+    # does not work with it.  It's better to use a GNU compiler.
+    # Here, gcc-6 and mpich, installed via MacPorts, are used.
 
     prefix="/opt/local"
+    CC="$prefix/bin/clang-mp-3.8"
+    CXX="$prefix/bin/clang++-mp-3.8"
+    export CC CXX
+
     cmake $options \
         -D CMAKE_VERBOSE_MAKEFILE:BOOL=TRUE \
-        -D MPI_C_COMPILER:STRING="$prefix/bin/mpicc" \
-        -D MPIEXEC:STRING="$prefix/bin/mpiexec" \
+        -D MPI_C_COMPILER:STRING="$prefix/bin/mpicc-openmpi-clang38" \
+        -D MPIEXEC:STRING="$prefix/bin/mpiexec-openmpi-clang38" \
         -D NETCDF_DIR:PATH="$prefix/include" \
-        -D DHSVM_USE_X11:BOOL=ON \
+        -D DHSVM_USE_X11:BOOL=OFF \
         -D DHSVM_USE_NETCDF:BOOL=ON \
         -D DHSVM_USE_RBM:BOOL=OFF \
         $common_flags \

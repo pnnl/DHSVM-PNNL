@@ -365,6 +365,8 @@ uchar ChannelFraction(TOPOPIX * topo, ChannelMapRec * rds)
 void
 DestroyChannel(OPTIONSTRUCT *Options, MAPSIZE *Map, CHANNEL *channel)
 {
+  ParallelBarrier();
+
   if (channel->streams != NULL) {
     channel_free_classes(channel->stream_class);
     channel_free_network(channel->streams);

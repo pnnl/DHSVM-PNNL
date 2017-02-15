@@ -407,7 +407,7 @@ int main(int argc, char **argv)
 
 #endif
 
-  DestroyChannel(&Options, &Map, &ChannelData);
+  /* DestroyChannel(&Options, &Map, &ChannelData); */
 
   /* record the run time at the end of each time loop */
   finish1 = clock ();
