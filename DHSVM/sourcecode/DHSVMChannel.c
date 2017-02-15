@@ -35,7 +35,7 @@ InitChannel(LISTPTR Input, MAPSIZE *Map, int deltat, CHANNEL *channel,
     {"ROUTING", "STREAM NETWORK FILE", "", ""},
     {"ROUTING", "STREAM MAP FILE", "", ""},
     {"ROUTING", "STREAM CLASS FILE", "", ""},
-	{"ROUTING", "RIPARIAN VEG FILE", "", ""},
+    {"ROUTING", "RIPARIAN VEG FILE", "", ""},
     {"ROUTING", "ROAD NETWORK FILE", "", "none"},
     {"ROUTING", "ROAD MAP FILE", "", "none"},
     {"ROUTING", "ROAD CLASS FILE", "", "none"},
@@ -86,10 +86,10 @@ InitChannel(LISTPTR Input, MAPSIZE *Map, int deltat, CHANNEL *channel,
   }
 
   if (Options->StreamTemp) {
-	if (strncmp(StrEnv[riparian_veg].VarStr, "none", 4)) {
-	  printf("\tReading channel riparian vegetation params\n");
-	  channel_read_rveg_param(channel->streams, StrEnv[riparian_veg].VarStr, MaxStreamID);
-	}
+    if (strncmp(StrEnv[riparian_veg].VarStr, "none", 4)) {
+      printf("\tReading channel riparian vegetation params\n");
+      channel_read_rveg_param(channel->streams, StrEnv[riparian_veg].VarStr, MaxStreamID);
+    }
   }
 
   if (strncmp(StrEnv[road_class].VarStr, "none", 4)) {
@@ -120,7 +120,7 @@ InitChannel(LISTPTR Input, MAPSIZE *Map, int deltat, CHANNEL *channel,
    InitChannelDump
    ------------------------------------------------------------- */
 void InitChannelDump(OPTIONSTRUCT *Options, CHANNEL * channel, 
-					 char *DumpPath)
+                     char *DumpPath)
 {
   char buffer[NAMESIZE];
 
@@ -130,7 +130,7 @@ void InitChannelDump(OPTIONSTRUCT *Options, CHANNEL * channel,
     sprintf(buffer, "%sStreamflow.Only", DumpPath);
     OpenFile(&(channel->streamflowout), buffer, "w", TRUE);
     /* output files for John's RBM model */
-	if (Options->StreamTemp) {
+    if (Options->StreamTemp) {
       //inflow to segment
       sprintf(buffer, "%sInflow.Only", DumpPath);
       OpenFile(&(channel->streaminflow), buffer, "w", TRUE);
@@ -140,14 +140,14 @@ void InitChannelDump(OPTIONSTRUCT *Options, CHANNEL * channel,
       // total incoming short wave
       sprintf(buffer, "%sISW.Only", DumpPath);
       OpenFile(&(channel->streamISW), buffer, "w", TRUE);
-	  //net incoming short wave
+      //net incoming short wave
       sprintf(buffer, "%sNSW.Only", DumpPath);
       OpenFile(&(channel->streamNSW), buffer, "w", TRUE);
       // total incoming long wave
       sprintf(buffer, "%sILW.Only", DumpPath);
       OpenFile(&(channel->streamILW), buffer, "w", TRUE);
-	  // net incoming long wave
-	  sprintf(buffer, "%sNLW.Only", DumpPath);
+      // net incoming long wave
+      sprintf(buffer, "%sNLW.Only", DumpPath);
       OpenFile(&(channel->streamNLW), buffer, "w", TRUE);
       //Vapor pressure
       sprintf(buffer, "%sVP.Only", DumpPath);
@@ -158,16 +158,16 @@ void InitChannelDump(OPTIONSTRUCT *Options, CHANNEL * channel,
       //air temperature
       sprintf(buffer, "%sATP.Only", DumpPath);
       OpenFile(&(channel->streamATP), buffer, "w", TRUE);
-	  //beam radiation
+      //beam radiation
       sprintf(buffer, "%sBeam.Only", DumpPath);
       OpenFile(&(channel->streamBeam), buffer, "w", TRUE);
-	  //diffuse radiation
+      //diffuse radiation
       sprintf(buffer, "%sDiffuse.Only", DumpPath);
       OpenFile(&(channel->streamDiffuse), buffer, "w", TRUE);
-	  //skyview
+      //skyview
       sprintf(buffer, "%sSkyview.Only", DumpPath);
       OpenFile(&(channel->streamSkyView), buffer, "w", TRUE);
-	}
+    }
   }
   if (channel->roads != NULL) {
     sprintf(buffer, "%sRoad.Flow", DumpPath);
@@ -198,9 +198,9 @@ double ChannelCulvertFlow(int y, int x, CHANNEL * ChannelData)
    ------------------------------------------------------------- */
 void
 RouteChannel(CHANNEL *ChannelData, TIMESTRUCT *Time, MAPSIZE *Map,
-	    TOPOPIX **TopoMap, SOILPIX **SoilMap, AGGREGATED *Total, 
+             TOPOPIX **TopoMap, SOILPIX **SoilMap, AGGREGATED *Total, 
 	     OPTIONSTRUCT *Options, ROADSTRUCT **Network, SOILTABLE *SType, 
-		 PRECIPPIX **PrecipMap, float Tair, float Rh)
+             PRECIPPIX **PrecipMap, float Tair, float Rh)
 {
   int x, y;
   int flag;
@@ -212,12 +212,12 @@ RouteChannel(CHANNEL *ChannelData, TIMESTRUCT *Time, MAPSIZE *Map,
   for (y = 0; y < Map->NY; y++) {
     for (x = 0; x < Map->NX; x++) {
       if (INBASIN(TopoMap[y][x].Mask)) {
-		if (channel_grid_has_channel(ChannelData->road_map, x, y) && 
-			!channel_grid_has_sink(ChannelData->road_map, x, y)) {	/* road w/o sink */
-	      SoilMap[y][x].RoadInt += SoilMap[y][x].IExcess; 
-		  channel_grid_inc_inflow(ChannelData->road_map, x, y, SoilMap[y][x].IExcess * Map->DX * Map->DY);
-		  SoilMap[y][x].IExcess = 0.0f;
-		}
+        if (channel_grid_has_channel(ChannelData->road_map, x, y) && 
+            !channel_grid_has_sink(ChannelData->road_map, x, y)) {	/* road w/o sink */
+          SoilMap[y][x].RoadInt += SoilMap[y][x].IExcess; 
+          channel_grid_inc_inflow(ChannelData->road_map, x, y, SoilMap[y][x].IExcess * Map->DX * Map->DY);
+          SoilMap[y][x].IExcess = 0.0f;
+        }
       }
     }
   }
@@ -236,21 +236,21 @@ RouteChannel(CHANNEL *ChannelData, TIMESTRUCT *Time, MAPSIZE *Map,
   for (y = 0; y < Map->NY; y++) {
     for (x = 0; x < Map->NX; x++) {
       if (INBASIN(TopoMap[y][x].Mask)) {
-		CulvertFlow = ChannelCulvertFlow(y, x, ChannelData);
-		CulvertFlow /= Map->DX * Map->DY;
+        CulvertFlow = ChannelCulvertFlow(y, x, ChannelData);
+        CulvertFlow /= Map->DX * Map->DY;
 		
-		/* CulvertFlow = (CulvertFlow > 0.0) ? CulvertFlow : 0.0; */
-		if (channel_grid_has_channel(ChannelData->stream_map, x, y)) {
-		  channel_grid_inc_inflow(ChannelData->stream_map, x, y,
+        /* CulvertFlow = (CulvertFlow > 0.0) ? CulvertFlow : 0.0; */
+        if (channel_grid_has_channel(ChannelData->stream_map, x, y)) {
+          channel_grid_inc_inflow(ChannelData->stream_map, x, y,
 				  (SoilMap[y][x].IExcess + CulvertFlow) * Map->DX * Map->DY);
-		  SoilMap[y][x].ChannelInt += SoilMap[y][x].IExcess;
-		  Total->CulvertToChannel += CulvertFlow;
-		  SoilMap[y][x].IExcess = 0.0f;
-		}
-		else {
-		  SoilMap[y][x].IExcess += CulvertFlow;
-		  Total->CulvertReturnFlow += CulvertFlow;
-		}
+          SoilMap[y][x].ChannelInt += SoilMap[y][x].IExcess;
+          Total->CulvertToChannel += CulvertFlow;
+          SoilMap[y][x].IExcess = 0.0f;
+        }
+        else {
+          SoilMap[y][x].IExcess += CulvertFlow;
+          Total->CulvertReturnFlow += CulvertFlow;
+        }
       }
     }
   }
@@ -260,9 +260,9 @@ RouteChannel(CHANNEL *ChannelData, TIMESTRUCT *Time, MAPSIZE *Map,
     channel_save_outflow_text(buffer, ChannelData->streams,
 			      ChannelData->streamout,
 			      ChannelData->streamflowout, flag);
-	/* save parameters for John's RBM model */
-	if (Options->StreamTemp)
-	  channel_save_outflow_text_cplmt(Time, buffer,ChannelData->streams,ChannelData, flag);
+    /* save parameters for John's RBM model */
+    if (Options->StreamTemp)
+      channel_save_outflow_text_cplmt(Time, buffer,ChannelData->streams,ChannelData, flag);
   }
   
 }
