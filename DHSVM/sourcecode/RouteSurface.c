@@ -1,21 +1,21 @@
 /*
-* SUMMARY:      RouteSurface.c - Route surface flow
-* USAGE:        Part of DHSVM
-*
-* AUTHOR:       Bart Nijssen
-* ORG:          University of Washington, Department of Civil Engineering
-* E-MAIL:       nijssen@u.washington.edu
-* ORIG-DATE:    Apr-96
-* DESCRIPTION:  Route surface flow
-* DESCRIP-END.
-* FUNCTIONS:    RouteSurface()
-* Modification: Changes are made to exclude the impervious channel cell (with
-a non-zero impervious fraction) from surface routing. In the original
-code, some impervious channel cells are routed to themselves causing
-overestimated runoff in those cells (Ning, 2013).
+ * SUMMARY:      RouteSurface.c - Route surface flow
+ * USAGE:        Part of DHSVM
+ *
+ * AUTHOR:       Bart Nijssen
+ * ORG:          University of Washington, Department of Civil Engineering
+ * E-MAIL:       nijssen@u.washington.edu
+ * ORIG-DATE:    Apr-96
+ * DESCRIPTION:  Route surface flow
+ * DESCRIP-END.
+ * FUNCTIONS:    RouteSurface()
+ * Modification: Changes are made to exclude the impervious channel cell (with
+ a non-zero impervious fraction) from surface routing. In the original
+ code, some impervious channel cells are routed to themselves causing
+ overestimated runoff in those cells (Ning, 2013).
 
-* $Id: RouteSurface.c, v3.1.2  2013/3/21   Ning Exp $
-*/
+ * $Id: RouteSurface.c, v3.1.2  2013/3/21   Ning Exp $
+ */
 #include <assert.h>
 #include <stdio.h>
 #include <math.h>
@@ -42,9 +42,9 @@ using a infinite difference approximation to the kinematic wave solution of
 the Saint-Venant equations.
 *****************************************************************************/
 void RouteSurface(MAPSIZE * Map, TIMESTRUCT * Time, TOPOPIX ** TopoMap,
-  SOILPIX ** SoilMap, OPTIONSTRUCT *Options,
-  UNITHYDR ** UnitHydrograph, UNITHYDRINFO * HydrographInfo, float *Hydrograph,
-  DUMPSTRUCT *Dump, VEGPIX ** VegMap, VEGTABLE * VType, CHANNEL *ChannelData)
+                  SOILPIX ** SoilMap, OPTIONSTRUCT *Options,
+                  UNITHYDR ** UnitHydrograph, UNITHYDRINFO * HydrographInfo, float *Hydrograph,
+                  DUMPSTRUCT *Dump, VEGPIX ** VegMap, VEGTABLE * VType, CHANNEL *ChannelData)
 {
   const char *Routine = "RouteSurface";
   int Lag;			/* Lag time for hydrograph */
@@ -114,7 +114,7 @@ void RouteSurface(MAPSIZE * Map, TIMESTRUCT * Time, TOPOPIX ** TopoMap,
     }
   }/* end if Options->routing = conventional */
 
-/* MAKE SURE THIS WORKS WITH A TIMESTEP IN SECONDS */
+  /* MAKE SURE THIS WORKS WITH A TIMESTEP IN SECONDS */
   else {			/* No network, so use unit hydrograph method */
     for (y = 0; y < Map->NY; y++) {
       for (x = 0; x < Map->NX; x++) {
