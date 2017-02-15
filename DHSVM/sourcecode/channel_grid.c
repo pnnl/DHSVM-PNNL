@@ -865,6 +865,7 @@ void Init_segment_ncell(TOPOPIX **TopoMap, ChannelMapPtr ** map, int NY,
     }
   }
 
+  /* FIXME: this will fail in parallel */
   // then check all segments
   for (; net != NULL; net = net->next) {
     if (net->Ncells == 0 ) {

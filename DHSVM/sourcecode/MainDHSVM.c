@@ -221,16 +221,12 @@ int main(int argc, char **argv)
   InitDump(Input, &Options, &Map, Soil.MaxLayers, Veg.MaxLayers, Time.Dt,
 	   TopoMap, &Dump, &NGraphics, &which_graphics);
 
-#if 0
-
   if (Options.HasNetwork == TRUE) {
     InitChannelDump(&Options, &ChannelData, Dump.Path);
     ReadChannelState(Dump.InitStatePath, &(Time.Start), ChannelData.streams);
 	if (Options.StreamTemp && Options.CanopyShading)
 	  InitChannelRVeg(&Time, ChannelData.streams);
   }
-
-#endif
 
   InitSnowMap(&Map, &SnowMap);
   InitAggregated(Veg.MaxLayers, Soil.MaxLayers, &Total);
@@ -411,6 +407,8 @@ int main(int argc, char **argv)
 
 #endif
 
+  DestroyChannel(&Options, &Map, &ChannelData);
+
   /* record the run time at the end of each time loop */
   finish1 = clock ();
   runtime = (finish1-start)/CLOCKS_PER_SEC;
@@ -428,6 +426,7 @@ int main(int argc, char **argv)
     ParallelBarrier();
   }
 
+  
   ParallelFinalize();
   return EXIT_SUCCESS;
 }

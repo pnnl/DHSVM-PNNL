@@ -29,6 +29,8 @@ typedef struct {
   Channel *roads;
   ChannelMapPtr **stream_map;
   ChannelMapPtr **road_map;
+  int stream_state_ga;
+  int road_state_ga;
   FILE *streamout;
   FILE *roadout;
   FILE *streamflowout;
@@ -61,5 +63,6 @@ void RouteChannel(CHANNEL *ChannelData, TIMESTRUCT *Time, MAPSIZE *Map,
 		  PRECIPPIX **PrecipMap, float Tair, float Rh);
 void ChannelCut(int y, int x, CHANNEL *ChannelData, ROADSTRUCT *Network);
 uchar ChannelFraction(TOPOPIX *topo, ChannelMapRec *rds);
+void DestroyChannel(OPTIONSTRUCT *Options, MAPSIZE *Map, CHANNEL *channel);
 
 #endif

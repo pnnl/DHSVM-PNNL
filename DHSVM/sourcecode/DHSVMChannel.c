@@ -10,6 +10,7 @@
    $Id: DHSVMChannel.c, v3.1.2  2013/12/20   Ning Exp $
    ------------------------------------------------------------- */
 
+#include <assert.h>
 #include <stdio.h>
 #include <math.h>
 #include <string.h>
@@ -21,6 +22,8 @@
 #include "settings.h"
 #include "errorhandler.h"
 #include "fileio.h"
+#include "ParallelDHSVM.h"
+#include "ParallelChannel.h"
 
 /* -----------------------------------------------------------------------------
    InitChannel
@@ -114,6 +117,17 @@ InitChannel(LISTPTR Input, MAPSIZE *Map, int deltat, CHANNEL *channel,
 		  "InitChannel: computing road network routing coefficients");
     channel_routing_parameters(channel->roads, (double) deltat);
   }
+
+  ParallelBarrier();
+
+  if (channel->streams != NULL) {
+    channel->stream_state_ga = ChannelStateGA(channel->streams);
+  }
+  if (channel->roads != NULL) {
+    channel->road_state_ga = ChannelStateGA(channel->roads);
+  }
+
+  ParallelBarrier();
 }
 
 /* -------------------------------------------------------------
@@ -124,57 +138,60 @@ void InitChannelDump(OPTIONSTRUCT *Options, CHANNEL * channel,
 {
   char buffer[NAMESIZE];
 
-  if (channel->streams != NULL) {
-    sprintf(buffer, "%sStream.Flow", DumpPath);
-    OpenFile(&(channel->streamout), buffer, "w", TRUE);
-    sprintf(buffer, "%sStreamflow.Only", DumpPath);
-    OpenFile(&(channel->streamflowout), buffer, "w", TRUE);
-    /* output files for John's RBM model */
-    if (Options->StreamTemp) {
-      //inflow to segment
-      sprintf(buffer, "%sInflow.Only", DumpPath);
-      OpenFile(&(channel->streaminflow), buffer, "w", TRUE);
-      // outflow ( redundant but it's a check
-      sprintf(buffer, "%sOutflow.Only", DumpPath);
-      OpenFile(&(channel->streamoutflow), buffer, "w", TRUE);
-      // total incoming short wave
-      sprintf(buffer, "%sISW.Only", DumpPath);
-      OpenFile(&(channel->streamISW), buffer, "w", TRUE);
-      //net incoming short wave
-      sprintf(buffer, "%sNSW.Only", DumpPath);
-      OpenFile(&(channel->streamNSW), buffer, "w", TRUE);
-      // total incoming long wave
-      sprintf(buffer, "%sILW.Only", DumpPath);
-      OpenFile(&(channel->streamILW), buffer, "w", TRUE);
-      // net incoming long wave
-      sprintf(buffer, "%sNLW.Only", DumpPath);
-      OpenFile(&(channel->streamNLW), buffer, "w", TRUE);
-      //Vapor pressure
-      sprintf(buffer, "%sVP.Only", DumpPath);
-      OpenFile(&(channel->streamVP), buffer, "w", TRUE);
-      //wind speed
-      sprintf(buffer, "%sWND.Only", DumpPath);
-      OpenFile(&(channel->streamWND), buffer, "w", TRUE);
-      //air temperature
-      sprintf(buffer, "%sATP.Only", DumpPath);
-      OpenFile(&(channel->streamATP), buffer, "w", TRUE);
-      //beam radiation
-      sprintf(buffer, "%sBeam.Only", DumpPath);
-      OpenFile(&(channel->streamBeam), buffer, "w", TRUE);
-      //diffuse radiation
-      sprintf(buffer, "%sDiffuse.Only", DumpPath);
-      OpenFile(&(channel->streamDiffuse), buffer, "w", TRUE);
-      //skyview
-      sprintf(buffer, "%sSkyview.Only", DumpPath);
-      OpenFile(&(channel->streamSkyView), buffer, "w", TRUE);
-    }
-  }
-  if (channel->roads != NULL) {
-    sprintf(buffer, "%sRoad.Flow", DumpPath);
-    OpenFile(&(channel->roadout), buffer, "w", TRUE);
-    sprintf(buffer, "%sRoadflow.Only", DumpPath);
-    OpenFile(&(channel->roadflowout), buffer, "w", TRUE);
+  if (ParallelRank() == 0) {
 
+    if (channel->streams != NULL) {
+      sprintf(buffer, "%sStream.Flow", DumpPath);
+      OpenFile(&(channel->streamout), buffer, "w", TRUE);
+      sprintf(buffer, "%sStreamflow.Only", DumpPath);
+      OpenFile(&(channel->streamflowout), buffer, "w", TRUE);
+      /* output files for John's RBM model */
+      if (Options->StreamTemp) {
+        //inflow to segment
+        sprintf(buffer, "%sInflow.Only", DumpPath);
+        OpenFile(&(channel->streaminflow), buffer, "w", TRUE);
+        // outflow ( redundant but it's a check
+        sprintf(buffer, "%sOutflow.Only", DumpPath);
+        OpenFile(&(channel->streamoutflow), buffer, "w", TRUE);
+        // total incoming short wave
+        sprintf(buffer, "%sISW.Only", DumpPath);
+        OpenFile(&(channel->streamISW), buffer, "w", TRUE);
+        //net incoming short wave
+        sprintf(buffer, "%sNSW.Only", DumpPath);
+        OpenFile(&(channel->streamNSW), buffer, "w", TRUE);
+        // total incoming long wave
+        sprintf(buffer, "%sILW.Only", DumpPath);
+        OpenFile(&(channel->streamILW), buffer, "w", TRUE);
+        // net incoming long wave
+        sprintf(buffer, "%sNLW.Only", DumpPath);
+        OpenFile(&(channel->streamNLW), buffer, "w", TRUE);
+        //Vapor pressure
+        sprintf(buffer, "%sVP.Only", DumpPath);
+        OpenFile(&(channel->streamVP), buffer, "w", TRUE);
+        //wind speed
+        sprintf(buffer, "%sWND.Only", DumpPath);
+        OpenFile(&(channel->streamWND), buffer, "w", TRUE);
+        //air temperature
+        sprintf(buffer, "%sATP.Only", DumpPath);
+        OpenFile(&(channel->streamATP), buffer, "w", TRUE);
+        //beam radiation
+        sprintf(buffer, "%sBeam.Only", DumpPath);
+        OpenFile(&(channel->streamBeam), buffer, "w", TRUE);
+        //diffuse radiation
+        sprintf(buffer, "%sDiffuse.Only", DumpPath);
+        OpenFile(&(channel->streamDiffuse), buffer, "w", TRUE);
+        //skyview
+        sprintf(buffer, "%sSkyview.Only", DumpPath);
+        OpenFile(&(channel->streamSkyView), buffer, "w", TRUE);
+      }
+    }
+    if (channel->roads != NULL) {
+      sprintf(buffer, "%sRoad.Flow", DumpPath);
+      OpenFile(&(channel->roadout), buffer, "w", TRUE);
+      sprintf(buffer, "%sRoadflow.Only", DumpPath);
+      OpenFile(&(channel->roadflowout), buffer, "w", TRUE);
+
+    }
   }
 }
 
@@ -207,64 +224,85 @@ RouteChannel(CHANNEL *ChannelData, TIMESTRUCT *Time, MAPSIZE *Map,
   char buffer[32];
   float CulvertFlow;
 
-
-  /* give any surface water to roads w/o sinks */
-  for (y = 0; y < Map->NY; y++) {
-    for (x = 0; x < Map->NX; x++) {
-      if (INBASIN(TopoMap[y][x].Mask)) {
-        if (channel_grid_has_channel(ChannelData->road_map, x, y) && 
-            !channel_grid_has_sink(ChannelData->road_map, x, y)) {	/* road w/o sink */
-          SoilMap[y][x].RoadInt += SoilMap[y][x].IExcess; 
-          channel_grid_inc_inflow(ChannelData->road_map, x, y, SoilMap[y][x].IExcess * Map->DX * Map->DY);
-          SoilMap[y][x].IExcess = 0.0f;
-        }
-      }
-    }
-  }
-
-  /* route the road network and save results */
+  /* set flag to true if it's time to output channel network results */
   SPrintDate(&(Time->Current), buffer);
   flag = IsEqualTime(&(Time->Current), &(Time->Start));
+
   if (ChannelData->roads != NULL) {
-    channel_route_network(ChannelData->roads, Time->Dt);
-    channel_save_outflow_text(buffer, ChannelData->roads,
-			      ChannelData->roadout, ChannelData->roadflowout, flag);
-  }
-  
-  /* add culvert outflow to surface water */
-  Total->CulvertReturnFlow = 0.0;
-  for (y = 0; y < Map->NY; y++) {
-    for (x = 0; x < Map->NX; x++) {
-      if (INBASIN(TopoMap[y][x].Mask)) {
-        CulvertFlow = ChannelCulvertFlow(y, x, ChannelData);
-        CulvertFlow /= Map->DX * Map->DY;
-		
-        /* CulvertFlow = (CulvertFlow > 0.0) ? CulvertFlow : 0.0; */
-        if (channel_grid_has_channel(ChannelData->stream_map, x, y)) {
-          channel_grid_inc_inflow(ChannelData->stream_map, x, y,
-				  (SoilMap[y][x].IExcess + CulvertFlow) * Map->DX * Map->DY);
-          SoilMap[y][x].ChannelInt += SoilMap[y][x].IExcess;
-          Total->CulvertToChannel += CulvertFlow;
-          SoilMap[y][x].IExcess = 0.0f;
+
+    /* give any surface water to roads w/o sinks */
+    for (y = 0; y < Map->NY; y++) {
+      for (x = 0; x < Map->NX; x++) {
+        if (INBASIN(TopoMap[y][x].Mask)) {
+          if (channel_grid_has_channel(ChannelData->road_map, x, y) && 
+              !channel_grid_has_sink(ChannelData->road_map, x, y)) {	/* road w/o sink */
+            SoilMap[y][x].RoadInt += SoilMap[y][x].IExcess; 
+            channel_grid_inc_inflow(ChannelData->road_map, x, y, SoilMap[y][x].IExcess * Map->DX * Map->DY);
+            SoilMap[y][x].IExcess = 0.0f;
+          }
         }
-        else {
-          SoilMap[y][x].IExcess += CulvertFlow;
-          Total->CulvertReturnFlow += CulvertFlow;
+      }
+    }
+
+    ParallelBarrier();
+
+    ChannelGatherLateralInflow(ChannelData->roads, ChannelData->road_state_ga);
+
+    if (ParallelRank() == 0) {
+      /* route the road network and save results */
+      channel_route_network(ChannelData->roads, Time->Dt);
+      channel_save_outflow_text(buffer, ChannelData->roads,
+                                ChannelData->roadout, ChannelData->roadflowout, flag);
+    }
+
+    ParallelBarrier();
+
+    ChannelDistributeState(ChannelData->roads, ChannelData->road_state_ga);
+  
+    /* add culvert outflow to surface water */
+    Total->CulvertReturnFlow = 0.0;
+    for (y = 0; y < Map->NY; y++) {
+      for (x = 0; x < Map->NX; x++) {
+        if (INBASIN(TopoMap[y][x].Mask)) {
+          CulvertFlow = ChannelCulvertFlow(y, x, ChannelData);
+          CulvertFlow /= Map->DX * Map->DY;
+		
+          /* CulvertFlow = (CulvertFlow > 0.0) ? CulvertFlow : 0.0; */
+          if (channel_grid_has_channel(ChannelData->stream_map, x, y)) {
+            channel_grid_inc_inflow(ChannelData->stream_map, x, y,
+                                    (SoilMap[y][x].IExcess + CulvertFlow) * Map->DX * Map->DY);
+            SoilMap[y][x].ChannelInt += SoilMap[y][x].IExcess;
+            Total->CulvertToChannel += CulvertFlow;
+            SoilMap[y][x].IExcess = 0.0f;
+          }
+          else {
+            SoilMap[y][x].IExcess += CulvertFlow;
+            Total->CulvertReturnFlow += CulvertFlow;
+          }
         }
       }
     }
   }
+
   /* route stream channels */
   if (ChannelData->streams != NULL) {
-    channel_route_network(ChannelData->streams, Time->Dt);
-    channel_save_outflow_text(buffer, ChannelData->streams,
-			      ChannelData->streamout,
-			      ChannelData->streamflowout, flag);
-    /* save parameters for John's RBM model */
-    if (Options->StreamTemp)
-      channel_save_outflow_text_cplmt(Time, buffer,ChannelData->streams,ChannelData, flag);
+    
+    ChannelGatherLateralInflow(ChannelData->streams, ChannelData->stream_state_ga);
+
+    if (ParallelRank() == 0) {
+      channel_route_network(ChannelData->streams, Time->Dt);
+      channel_save_outflow_text(buffer, ChannelData->streams,
+                                ChannelData->streamout,
+                                ChannelData->streamflowout, flag);
+      /* save parameters for John's RBM model */
+      if (Options->StreamTemp)
+        channel_save_outflow_text_cplmt(Time, buffer,ChannelData->streams,ChannelData, flag);
+    }
+
+    ParallelBarrier();
+
+    ChannelDistributeState(ChannelData->streams, ChannelData->stream_state_ga);
   }
-  
 }
 
 /* -------------------------------------------------------------
@@ -318,4 +356,34 @@ uchar ChannelFraction(TOPOPIX * topo, ChannelMapRec * rds)
   fract = (fract > 255.0 ? 255.0 : floor(fract + 0.5));
 
   return (uchar) fract;
+}
+
+/* -------------------------------------------------------------
+   DestroyChannel
+   This completely destroys channel network data.
+   ------------------------------------------------------------- */
+void
+DestroyChannel(OPTIONSTRUCT *Options, MAPSIZE *Map, CHANNEL *channel)
+{
+  if (channel->streams != NULL) {
+    channel_free_classes(channel->stream_class);
+    channel_free_network(channel->streams);
+    channel_grid_free_map(Map, channel->stream_map);
+    GA_Destroy(channel->stream_state_ga);
+    if (ParallelRank() == 0) {
+      fclose(channel->streamout);
+      fclose(channel->streamflowout);
+    }    
+  }
+  if (channel->roads != NULL) {
+    channel_free_classes(channel->road_class);
+    channel_free_network(channel->roads);
+    channel_grid_free_map(Map, channel->road_map);
+    GA_Destroy(channel->road_state_ga);
+    if (ParallelRank() == 0) {
+      fclose(channel->roadout);
+      fclose(channel->roadflowout);
+    }    
+  }
+
 }
