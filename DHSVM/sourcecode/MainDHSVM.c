@@ -269,8 +269,6 @@ int main(int argc, char **argv)
   if (Options.StreamTemp) 
 	Init_segment_ncell(TopoMap, ChannelData.stream_map, Map.NY, Map.NX, ChannelData.streams);
 
-#if 0
-
 /*****************************************************************************
   Perform Calculations 
 *****************************************************************************/
@@ -362,18 +360,19 @@ int main(int argc, char **argv)
 
 #ifndef SNOW_ONLY
     
-    RouteSubSurface(Time.Dt, &Map, TopoMap, VType, VegMap, Network,
-		    SType, SoilMap, &ChannelData, &Time, &Options, Dump.Path,
-		    MaxStreamID, SnowMap);
 
-    if (Options.HasNetwork)
-      RouteChannel(&ChannelData, &Time, &Map, TopoMap, SoilMap, &Total, 
-		   &Options, Network, SType, PrecipMap, LocalMet.Tair, LocalMet.Rh);
+    /* RouteSubSurface(Time.Dt, &Map, TopoMap, VType, VegMap, Network, */
+    /*     	    SType, SoilMap, &ChannelData, &Time, &Options, Dump.Path, */
+    /*     	    MaxStreamID, SnowMap); */
 
-    if (Options.Extent == BASIN)
-      RouteSurface(&Map, &Time, TopoMap, SoilMap, &Options,
-        UnitHydrograph, &HydrographInfo, Hydrograph,
-        &Dump, VegMap, VType, &ChannelData);
+    /* if (Options.HasNetwork) */
+    /*   RouteChannel(&ChannelData, &Time, &Map, TopoMap, SoilMap, &Total, */
+    /*     	   &Options, Network, SType, PrecipMap, LocalMet.Tair, LocalMet.Rh); */
+
+    /* if (Options.Extent == BASIN) */
+    /*   RouteSurface(&Map, &Time, TopoMap, SoilMap, &Options, */
+    /*     UnitHydrograph, &HydrographInfo, Hydrograph, */
+    /*     &Dump, VegMap, VType, &ChannelData); */
 
 #endif
 
@@ -403,11 +402,11 @@ int main(int argc, char **argv)
 	   EvapMap, RadiationMap, PrecipMap, SnowMap, MetMap, VegMap, &Veg, SoilMap,
 	   Network, &ChannelData, &Soil, &Total, &HydrographInfo, Hydrograph);
 
-  FinalMassBalance(&(Dump.FinalBalance), &Total, &Mass);
+  if (ParallelRank()== 0) {
+    FinalMassBalance(&(Dump.FinalBalance), &Total, &Mass);
+  }
 
-#endif
-
-  /* DestroyChannel(&Options, &Map, &ChannelData); */
+  DestroyChannel(&Options, &Map, &ChannelData);
 
   /* record the run time at the end of each time loop */
   finish1 = clock ();
