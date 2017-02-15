@@ -212,7 +212,7 @@ void ElevationSlopeAspect(MAPSIZE * Map, TOPOPIX ** TopoMap)
   int steepestdirection;
   float min;
   int xn, yn;
-  int gaelev, gamask;
+  int gaelev;
   float elev, outelev;
   int mask;
 
@@ -243,12 +243,6 @@ void ElevationSlopeAspect(MAPSIZE * Map, TOPOPIX ** TopoMap)
   gaelev = GA_Duplicate_type(Map->dist, "ElevationSlopeAspect", GA_Type(NC_FLOAT));
   GA_Fill(gaelev, &outelev);
 
-  /* 
-  gamask = GA_Duplicate_type(Map->dist, "ElevationSlopeAspectMask", GA_Type(NC_INT));
-  mask = (char) OUTSIDEBASIN;
-  GA_Fill(gamask, &mask);
-  */
-
   GA_Sync();
 
   /* put elevations in GA (presumably, all of these puts should be local,
@@ -261,14 +255,10 @@ void ElevationSlopeAspect(MAPSIZE * Map, TOPOPIX ** TopoMap)
         elev = TopoMap[y][x].Dem;
         mask = TopoMap[y][x].Mask;
         GA_Put_one(gaelev, Map, x, y, &elev);
-        /* GA_Put_one(gamask, Map, x, y, &mask); */
       }
     }
   }
   GA_Update_ghosts(gaelev);
-  /*
-  GA_Update_ghosts(gamask);
-  */
 
   /* fill neighbor array */
   
@@ -352,6 +342,8 @@ void ElevationSlopeAspect(MAPSIZE * Map, TOPOPIX ** TopoMap)
   printf("%d: global NumCells = %d\n", ParallelRank(), n);
   /* Map->NumCells = n; */
 
+  GA_Destroy(gaelev);
+
   return;
 }
 
@@ -409,31 +401,56 @@ void HeadSlopeAspect(MAPSIZE * Map, TOPOPIX ** TopoMap, SOILPIX ** SoilMap,
   int y;
   int n;
   float neighbor_elev[NNEIGHBORS];
+  float outelev, elev;
+  int gaelev;
+
+  /* make a global array to hold elevation */
+
+  gaelev = GA_Duplicate_type(Map->dist, "WaterLevelSlopeAspect", GA_Type(NC_FLOAT));
+
+  outelev = (float) OUTSIDEBASIN;
+
+  GA_Fill(gaelev, &outelev);
+
+  GA_Sync();
+
+  /* put water levels in GA (presumably, all of these puts should be
+     local, so it may be OK do put one value at a time; maybe try
+     non-blocking too) */
+
+  for (x = 0; x < Map->NX; x++) {
+    for (y = 0; y < Map->NY; y++) {
+      if (INBASIN(TopoMap[y][x].Mask)) {
+        elev = SoilMap[y][x].WaterLevel;
+        GA_Put_one(gaelev, Map, x, y, &elev);
+      }
+    }
+  }
+  GA_Update_ghosts(gaelev);
+
 
   /* let's assume for now that WaterLevel is the SOILPIX map is
      computed elsewhere */
   for (x = 0; x < Map->NX; x++) {
     for (y = 0; y < Map->NY; y++) {
       if (INBASIN(TopoMap[y][x].Mask)) {
-		  float slope, aspect;
-		  for (n = 0; n < NNEIGHBORS; n++) {
-			  int xn = x + xneighbor[n];
-			  int yn = y + yneighbor[n];			  
-			  if (valid_cell(Map, xn, yn)) {
-				  neighbor_elev[n] =
-					  ((TopoMap[yn][xn].Mask) ? SoilMap[yn][xn].WaterLevel : (float) OUTSIDEBASIN);
-			  }
-			  else {
-				  neighbor_elev[n] = (float) OUTSIDEBASIN;
-			  }
-		  }
-		  slope_aspect(Map->DX, Map->DY, SoilMap[y][x].WaterLevel, neighbor_elev,
+        float slope, aspect;
+        for (n = 0; n < NNEIGHBORS; n++) {
+          int xn = x + xneighbor[n];
+          int yn = y + yneighbor[n];			  
+          if (valid_cell(Map, xn, yn)) {
+            GA_Get_one(gaelev, Map, xn, yn, &elev);
+            neighbor_elev[n] = elev;
+          } 
+        }
+        slope_aspect(Map->DX, Map->DY, SoilMap[y][x].WaterLevel, neighbor_elev,
 		     &slope, &aspect);
-		  flow_fractions(Map->DX, Map->DY, slope, aspect, neighbor_elev,
+        flow_fractions(Map->DX, Map->DY, slope, aspect, neighbor_elev,
 		       &(FlowGrad[y][x]), Dir[y][x], &(TotalDir[y][x])); 
       }
     }
   }
+  GA_Destroy(gaelev);
   return;
 }
 
