@@ -365,9 +365,9 @@ int main(int argc, char **argv)
     /*     	    SType, SoilMap, &ChannelData, &Time, &Options, Dump.Path, */
     /*     	    MaxStreamID, SnowMap); */
 
-    /* if (Options.HasNetwork) */
-    /*   RouteChannel(&ChannelData, &Time, &Map, TopoMap, SoilMap, &Total, */
-    /*     	   &Options, Network, SType, PrecipMap, LocalMet.Tair, LocalMet.Rh); */
+    if (Options.HasNetwork)
+      RouteChannel(&ChannelData, &Time, &Map, TopoMap, SoilMap, &Total,
+        	   &Options, Network, SType, PrecipMap, LocalMet.Tair, LocalMet.Rh);
 
     /* if (Options.Extent == BASIN) */
     /*   RouteSurface(&Map, &Time, TopoMap, SoilMap, &Options, */

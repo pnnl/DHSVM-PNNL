@@ -11,7 +11,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2017-02-15 10:42:35 d3g096
+ * LAST CHANGE: 2017-02-15 15:47:02 d3g096
  * COMMENTS:
  *
  *    All processes have a copy of the channel network.  All processes
@@ -64,6 +64,7 @@ ChannelStateGA(Channel *net)
   dims[0] = nsegment;
   dims[1] = NChannelState;
   ga = NGA_Create(C_FLOAT, ndim, &dims[0], "Channel State", NULL);
+  return ga;
 }
 
 /******************************************************************************/

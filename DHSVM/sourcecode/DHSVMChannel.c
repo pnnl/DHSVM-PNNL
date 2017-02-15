@@ -374,7 +374,7 @@ DestroyChannel(OPTIONSTRUCT *Options, MAPSIZE *Map, CHANNEL *channel)
     channel_free_classes(channel->stream_class);
     channel_free_network(channel->streams);
     channel_grid_free_map(Map, channel->stream_map);
-    /* GA_Destroy(channel->stream_state_ga); */
+    GA_Destroy(channel->stream_state_ga);
     if (ParallelRank() == 0) {
       fclose(channel->streamout);
       fclose(channel->streamflowout);
@@ -384,7 +384,7 @@ DestroyChannel(OPTIONSTRUCT *Options, MAPSIZE *Map, CHANNEL *channel)
     channel_free_classes(channel->road_class);
     channel_free_network(channel->roads);
     channel_grid_free_map(Map, channel->road_map);
-    /* GA_Destroy(channel->road_state_ga); */
+    GA_Destroy(channel->road_state_ga);
     if (ParallelRank() == 0) {
       fclose(channel->roadout);
       fclose(channel->roadflowout);
