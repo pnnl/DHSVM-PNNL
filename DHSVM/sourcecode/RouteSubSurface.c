@@ -140,10 +140,10 @@ void RouteSubSurface(int Dt, MAPSIZE *Map, TOPOPIX **TopoMap,
     ReportError((char *) Routine, 1);
   for (i=0; i<Map->NY; i++) {
     if (!((SubDir)[i] = (unsigned char **) calloc(Map->NX, sizeof(unsigned char*))))
-	  ReportError((char *) Routine, 1);
-	for (j=0; j<Map->NX; j++) {
+      ReportError((char *) Routine, 1);
+    for (j=0; j<Map->NX; j++) {
       if (!(SubDir[i][j] = (unsigned char *)calloc(NDIRS, sizeof(unsigned char ))))
-		ReportError((char *) Routine, 1);
+        ReportError((char *) Routine, 1);
     }
   }
 
@@ -158,8 +158,8 @@ void RouteSubSurface(int Dt, MAPSIZE *Map, TOPOPIX **TopoMap,
   for (y = 0; y < Map->NY; y++) {
     for (x = 0; x < Map->NX; x++) {
       if (INBASIN(TopoMap[y][x].Mask)) {
-		SoilMap[y][x].SatFlow = 0;
-		SoilMap[y][x].RoadInt = 0;
+        SoilMap[y][x].SatFlow = 0;
+        SoilMap[y][x].RoadInt = 0;
       }
     }
   }
@@ -173,141 +173,141 @@ void RouteSubSurface(int Dt, MAPSIZE *Map, TOPOPIX **TopoMap,
   for (y = 0; y < Map->NY; y++) {
     for (x = 0; x < Map->NX; x++) {
       if (INBASIN(TopoMap[y][x].Mask)) {
-		if (Options->FlowGradient == TOPOGRAPHY){
-		  SubTotalDir[y][x] = TopoMap[y][x].TotalDir;
-	      SubFlowGrad[y][x] = TopoMap[y][x].FlowGrad;
-		  for (k = 0; k < NDIRS; k++) 
-	        SubDir[y][x][k] = TopoMap[y][x].Dir[k];
-		}
-		BankHeight = (Network[y][x].BankHeight > SoilMap[y][x].Depth) ?
-	    SoilMap[y][x].Depth : Network[y][x].BankHeight;
-	    Adjust = Network[y][x].Adjust;
-	    fract_used = 0.0f;
-		water_out_road = 0.0;
+        if (Options->FlowGradient == TOPOGRAPHY){
+          SubTotalDir[y][x] = TopoMap[y][x].TotalDir;
+          SubFlowGrad[y][x] = TopoMap[y][x].FlowGrad;
+          for (k = 0; k < NDIRS; k++) 
+            SubDir[y][x][k] = TopoMap[y][x].Dir[k];
+        }
+        BankHeight = (Network[y][x].BankHeight > SoilMap[y][x].Depth) ?
+          SoilMap[y][x].Depth : Network[y][x].BankHeight;
+        Adjust = Network[y][x].Adjust;
+        fract_used = 0.0f;
+        water_out_road = 0.0;
 		
-		if (!channel_grid_has_channel(ChannelData->stream_map, x, y)) {
-	      for (k = 0; k < NDIRS; k++) {
-			fract_used += (float) SubDir[y][x][k];
-		  }
-		  if (SubTotalDir[y][x] > 0)
-	        fract_used /= (float) SubTotalDir[y][x];
-		  else
-	        fract_used = 0.;
+        if (!channel_grid_has_channel(ChannelData->stream_map, x, y)) {
+          for (k = 0; k < NDIRS; k++) {
+            fract_used += (float) SubDir[y][x][k];
+          }
+          if (SubTotalDir[y][x] > 0)
+            fract_used /= (float) SubTotalDir[y][x];
+          else
+            fract_used = 0.;
 		  
-		  /* only bother calculating subsurface flow if water table is above bedrock */
-		  if (SoilMap[y][x].TableDepth < SoilMap[y][x].Depth) {
-	        depth = ((SoilMap[y][x].TableDepth > BankHeight) ?
-				SoilMap[y][x].TableDepth : BankHeight);
+          /* only bother calculating subsurface flow if water table is above bedrock */
+          if (SoilMap[y][x].TableDepth < SoilMap[y][x].Depth) {
+            depth = ((SoilMap[y][x].TableDepth > BankHeight) ?
+                     SoilMap[y][x].TableDepth : BankHeight);
 			
-			Transmissivity = CalcTransmissivity(SoilMap[y][x].Depth, depth,
-				 SType[SoilMap[y][x].Soil - 1].KsLat,
-				 SType[SoilMap[y][x].Soil - 1].KsLatExp,
-                 SType[SoilMap[y][x].Soil - 1].DepthThresh);
+            Transmissivity = CalcTransmissivity(SoilMap[y][x].Depth, depth,
+                                                SType[SoilMap[y][x].Soil - 1].KsLat,
+                                                SType[SoilMap[y][x].Soil - 1].KsLatExp,
+                                                SType[SoilMap[y][x].Soil - 1].DepthThresh);
 			
-			OutFlow = 
-				(Transmissivity * fract_used * SubFlowGrad[y][x] * Dt) / (Map->DX * Map->DY);
+            OutFlow = 
+              (Transmissivity * fract_used * SubFlowGrad[y][x] * Dt) / (Map->DX * Map->DY);
 			
-			/* check whether enough water is available for redistribution */
-			AvailableWater =
-				CalcAvailableWater(VType[VegMap[y][x].Veg - 1].NSoilLayers,
+            /* check whether enough water is available for redistribution */
+            AvailableWater =
+              CalcAvailableWater(VType[VegMap[y][x].Veg - 1].NSoilLayers,
 				 SoilMap[y][x].Depth, VType[VegMap[y][x].Veg - 1].RootDepth,
 				 SType[SoilMap[y][x].Soil - 1].Porosity, SType[SoilMap[y][x].Soil - 1].FCap,
 				 SoilMap[y][x].TableDepth, Adjust);
-			OutFlow = (OutFlow > AvailableWater) ? AvailableWater : OutFlow;
-		  }
-		  else {
-	        depth = SoilMap[y][x].Depth;
-	        OutFlow = 0.0f;
-		  }
+            OutFlow = (OutFlow > AvailableWater) ? AvailableWater : OutFlow;
+          }
+          else {
+            depth = SoilMap[y][x].Depth;
+            OutFlow = 0.0f;
+          }
 		  
-		  /* compute road interception if water table is above road cut */
-		  if (SoilMap[y][x].TableDepth < BankHeight &&
-			  channel_grid_has_channel(ChannelData->road_map, x, y)) {
-		    if (SubTotalDir[y][x] > 0)
-	          fract_used = ((float) Network[y][x].fraction /
+          /* compute road interception if water table is above road cut */
+          if (SoilMap[y][x].TableDepth < BankHeight &&
+              channel_grid_has_channel(ChannelData->road_map, x, y)) {
+            if (SubTotalDir[y][x] > 0)
+              fract_used = ((float) Network[y][x].fraction /
 			    (float)SubTotalDir[y][x]);
-			else
-	          fract_used = 0.;
-			Transmissivity =
-				 CalcTransmissivity(BankHeight, SoilMap[y][x].TableDepth,
+            else
+              fract_used = 0.;
+            Transmissivity =
+              CalcTransmissivity(BankHeight, SoilMap[y][x].TableDepth,
 				 SType[SoilMap[y][x].Soil - 1].KsLat,
 				 SType[SoilMap[y][x].Soil - 1].KsLatExp,
-                 SType[SoilMap[y][x].Soil - 1].DepthThresh);
+                                 SType[SoilMap[y][x].Soil - 1].DepthThresh);
 			
-			water_out_road = (Transmissivity * fract_used *
+            water_out_road = (Transmissivity * fract_used *
 			      SubFlowGrad[y][x] * Dt) / (Map->DX * Map->DY);
 			
-			AvailableWater =
-				CalcAvailableWater(VType[VegMap[y][x].Veg - 1].NSoilLayers,
+            AvailableWater =
+              CalcAvailableWater(VType[VegMap[y][x].Veg - 1].NSoilLayers,
 				 BankHeight, VType[VegMap[y][x].Veg - 1].RootDepth,
 				 SType[SoilMap[y][x].Soil - 1].Porosity,
 				 SType[SoilMap[y][x].Soil - 1].FCap,
 				 SoilMap[y][x].TableDepth, Adjust);
 			
-			water_out_road = 
-				(water_out_road > AvailableWater) ? AvailableWater : water_out_road;
+            water_out_road = 
+              (water_out_road > AvailableWater) ? AvailableWater : water_out_road;
 			
-			/* increase lateral inflow to road channel */
-			SoilMap[y][x].RoadInt = water_out_road;
-			channel_grid_inc_inflow(ChannelData->road_map, x, y,
+            /* increase lateral inflow to road channel */
+            SoilMap[y][x].RoadInt = water_out_road;
+            channel_grid_inc_inflow(ChannelData->road_map, x, y,
 				    water_out_road * Map->DX * Map->DY);
-		  }
-		  /* Subsurface Component - Decrease water change by outwater */
-		  SoilMap[y][x].SatFlow -= OutFlow + water_out_road;
+          }
+          /* Subsurface Component - Decrease water change by outwater */
+          SoilMap[y][x].SatFlow -= OutFlow + water_out_road;
 		  
-		  /* Assign the water to appropriate surrounding pixels */
-		  if (SubTotalDir[y][x] > 0)
-	        OutFlow /= (float) SubTotalDir[y][x];
-		  else
-	        OutFlow = 0.;
+          /* Assign the water to appropriate surrounding pixels */
+          if (SubTotalDir[y][x] > 0)
+            OutFlow /= (float) SubTotalDir[y][x];
+          else
+            OutFlow = 0.;
 		  
-		  for (k = 0; k < NDIRS; k++) {
-	        int nx = xdirection[k] + x;
-	        int ny = ydirection[k] + y;
-	        if (valid_cell(Map, nx, ny)) {
-	          SoilMap[ny][nx].SatFlow += OutFlow * SubDir[y][x][k];
-			}
-		  }
-		}
-	    else {			/* cell has a stream channel */
-	      if (SoilMap[y][x].TableDepth < BankHeight &&
-	        channel_grid_has_channel(ChannelData->stream_map, x, y)) {
-			float gradient = 4.0 * (BankHeight - SoilMap[y][x].TableDepth);
-			if (gradient < 0.0)
-	          gradient = 0.0;
-			Transmissivity =
-				CalcTransmissivity(BankHeight, SoilMap[y][x].TableDepth,
+          for (k = 0; k < NDIRS; k++) {
+            int nx = xdirection[k] + x;
+            int ny = ydirection[k] + y;
+            if (valid_cell(Map, nx, ny)) {
+              SoilMap[ny][nx].SatFlow += OutFlow * SubDir[y][x][k];
+            }
+          }
+        }
+        else {			/* cell has a stream channel */
+          if (SoilMap[y][x].TableDepth < BankHeight &&
+              channel_grid_has_channel(ChannelData->stream_map, x, y)) {
+            float gradient = 4.0 * (BankHeight - SoilMap[y][x].TableDepth);
+            if (gradient < 0.0)
+              gradient = 0.0;
+            Transmissivity =
+              CalcTransmissivity(BankHeight, SoilMap[y][x].TableDepth,
 				 SType[SoilMap[y][x].Soil - 1].KsLat,
 				 SType[SoilMap[y][x].Soil - 1].KsLatExp,
-                 SType[SoilMap[y][x].Soil - 1].DepthThresh);
+                                 SType[SoilMap[y][x].Soil - 1].DepthThresh);
 
-			OutFlow = (Transmissivity * gradient * Dt) / (Map->DX * Map->DY);
+            OutFlow = (Transmissivity * gradient * Dt) / (Map->DX * Map->DY);
 			
-			/* check whether enough water is available for redistribution */
-			AvailableWater = 
-				 CalcAvailableWater(VType[VegMap[y][x].Veg - 1].NSoilLayers,
+            /* check whether enough water is available for redistribution */
+            AvailableWater = 
+              CalcAvailableWater(VType[VegMap[y][x].Veg - 1].NSoilLayers,
 				 BankHeight, VType[VegMap[y][x].Veg - 1].RootDepth,
 				 SType[SoilMap[y][x].Soil - 1].Porosity,
 				 SType[SoilMap[y][x].Soil - 1].FCap,
 				 SoilMap[y][x].TableDepth, Adjust);
 			
-			OutFlow = (OutFlow > AvailableWater) ? AvailableWater : OutFlow;
+            OutFlow = (OutFlow > AvailableWater) ? AvailableWater : OutFlow;
 			
-			/* remove water going to channel from the grid cell */
-			SoilMap[y][x].SatFlow -= OutFlow;
+            /* remove water going to channel from the grid cell */
+            SoilMap[y][x].SatFlow -= OutFlow;
 			
-			/* contribute to channel segment lateral inflow */
-			channel_grid_inc_inflow(ChannelData->stream_map, x, y,
+            /* contribute to channel segment lateral inflow */
+            channel_grid_inc_inflow(ChannelData->stream_map, x, y,
 				    OutFlow * Map->DX * Map->DY);
 			
-			SoilMap[y][x].ChannelInt += OutFlow;
-		  }
-		}
+            SoilMap[y][x].ChannelInt += OutFlow;
+          }
+        }
       }
     }
   }
 
- for(i=0; i<Map->NY; i++) { 
+  for(i=0; i<Map->NY; i++) { 
     free(SubTotalDir[i]);
     free(SubFlowGrad[i]);
     for(j=0; j<Map->NX; j++){
@@ -329,10 +329,10 @@ void RouteSubSurface(int Dt, MAPSIZE *Map, TOPOPIX **TopoMap,
   for (y = 0; y < Map->NY; y++) {
     for (x = 0; x < Map->NX; x++) {
       if (INBASIN(TopoMap[y][x].Mask)) {
-	     mgrid = (SoilMap[y][x].Depth - SoilMap[y][x].TableDepth)/SoilMap[y][x].Depth;
-	     if (mgrid > MTHRESH) 
-		   count += 1;
-		 totalcount += 1;
+        mgrid = (SoilMap[y][x].Depth - SoilMap[y][x].TableDepth)/SoilMap[y][x].Depth;
+        if (mgrid > MTHRESH) 
+          count += 1;
+        totalcount += 1;
       }
     }
   }
