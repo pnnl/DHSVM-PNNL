@@ -25,6 +25,7 @@
 #include "sizeofnt.h"
 #include "soilmoisture.h"
 #include "varid.h"
+#include "ParallelDHSVM.h"
 
  /*****************************************************************************
    Function name: InitModelState()
@@ -57,8 +58,8 @@ void InitModelState(DATE *Start, MAPSIZE *Map, OPTIONSTRUCT *Options, PRECIPPIX 
   char FileName[NAMESIZE + 1];
   FILE *HydroStateFile;
   int i;		     /* counter */
-  int x;				 /* counter */
-  int y;				 /* counter */
+  int x, gx;				 /* counter */
+  int y, gy;				 /* counter */
   int NSet;				 /* Number of dataset to be read */
   int NSoil;			 /* Number of soil layers for current pixel */
   int NVeg;				 /* Number of veg layers for current pixel */
@@ -100,7 +101,8 @@ void InitModelState(DATE *Start, MAPSIZE *Map, OPTIONSTRUCT *Options, PRECIPPIX 
           if (i < NVeg) {
             PrecipMap[y][x].IntRain[i] = ((float *)Array)[y * Map->NX + x];
             if (PrecipMap[y][x].IntRain[i] < 0.0) {
-              fprintf(stderr, "InitModelState at (x, y) is (%d, %d):\n", x, y);
+              Local2Global(Map, x, y, &gx, &gy);
+              fprintf(stderr, "InitModelState at (x, y) is (%d, %d):\n", gx, gy);
               fprintf(stderr,
                 "\tRain interception negative on layer %d of max %d ... reset to 0\n", i, Veg.MaxLayers);
               PrecipMap[y][x].IntRain[i] = 0.0;
@@ -126,7 +128,8 @@ void InitModelState(DATE *Start, MAPSIZE *Map, OPTIONSTRUCT *Options, PRECIPPIX 
           if (i < NVeg) {
             PrecipMap[y][x].IntSnow[i] = ((float *)Array)[y * Map->NX + x];
             if (PrecipMap[y][x].IntSnow[i] < 0.0) {
-              fprintf(stderr, "InitModelState at (x, y) is (%d, %d):\n", x, y);
+              Local2Global(Map, x, y, &gx, &gy);
+              fprintf(stderr, "InitModelState at (x, y) is (%d, %d):\n", gx, gy);
               fprintf(stderr,
                 "Snow interception negative on layer %d of max %d ... reset to 0\n", i, Veg.MaxLayers);
               PrecipMap[y][x].IntSnow[i] = 0.0;
@@ -147,7 +150,8 @@ void InitModelState(DATE *Start, MAPSIZE *Map, OPTIONSTRUCT *Options, PRECIPPIX 
       if (INBASIN(TopoMap[y][x].Mask)) {
         PrecipMap[y][x].TempIntStorage = ((float *)Array)[y * Map->NX + x];
         if (PrecipMap[y][x].TempIntStorage < 0.0) {
-          fprintf(stderr, "InitModelState at (x, y) is (%d, %d):\n", x, y);
+          Local2Global(Map, x, y, &gx, &gy);
+          fprintf(stderr, "InitModelState at (x, y) is (%d, %d):\n", gx, gy);
           fprintf(stderr,
             "Total intercepted precipitation negative on layer %d of max %d ... reset to 0\n",
             i, Veg.MaxLayers);
@@ -311,7 +315,8 @@ void InitModelState(DATE *Start, MAPSIZE *Map, OPTIONSTRUCT *Options, PRECIPPIX 
           if (i <= NSoil) {
             SoilMap[y][x].Moist[i] = ((float *)Array)[y * Map->NX + x];
             if (SoilMap[y][x].Moist[i] < 0.0) {
-              fprintf(stderr, "InitModelState at (x, y) is (%d, %d):\n", x, y);
+              Local2Global(Map, x, y, &gx, &gy);
+              fprintf(stderr, "InitModelState at (x, y) is (%d, %d):\n", gx, gy);
               fprintf(stderr,
                 "Soil moisture negative in layer %d of max %d ... reset to 0\n", i, Soil.MaxLayers);
               SoilMap[y][x].Moist[i] = 0.0;

@@ -260,8 +260,6 @@ int main(int argc, char **argv)
   /* Done with initialization, delete the list with input strings */
   DeleteList(Input);
 
-#if 0
-
   /* setup for mass balance calculations */
   Aggregate(&Map, &Options, TopoMap, &Soil, &Veg, VegMap, EvapMap, PrecipMap,
 	      RadiationMap, SnowMap, SoilMap, &Total, VType, Network, &ChannelData, &roadarea);
@@ -274,6 +272,8 @@ int main(int argc, char **argv)
   /* computes the number of grid cell contributing to one segment */
   if (Options.StreamTemp) 
 	Init_segment_ncell(TopoMap, ChannelData.stream_map, Map.NY, Map.NX, ChannelData.streams);
+
+#if 0
 
 /*****************************************************************************
   Perform Calculations 
@@ -306,10 +306,10 @@ int main(int argc, char **argv)
 
     for (y = 0; y < Map.NY; y++) {
       for (x = 0; x < Map.NX; x++) {
-	    if (INBASIN(TopoMap[y][x].Mask)) {
-		  if (Options.Shading)
-	        LocalMet =
-	        MakeLocalMetData(y, x, &Map, Time.DayStep, &Options, NStats,
+        if (INBASIN(TopoMap[y][x].Mask)) {
+          if (Options.Shading)
+            LocalMet =
+              MakeLocalMetData(y, x, &Map, Time.DayStep, &Options, NStats,
 			       Stat, MetWeights[y][x], TopoMap[y][x].Dem,
 			       &(RadiationMap[y][x]), &(PrecipMap[y][x]), &Radar,
 			       RadarMap, PrismMap, &(SnowMap[y][x]),
@@ -317,9 +317,9 @@ int main(int argc, char **argv)
 			       &MetMap, NGraphics, Time.Current.Month,
 			       SkyViewMap[y][x], ShadowMap[Time.DayStep][y][x],
 			       SolarGeo.SunMax, SolarGeo.SineSolarAltitude);
-		  else
-	        LocalMet =
-	        MakeLocalMetData(y, x, &Map, Time.DayStep, &Options, NStats,
+          else
+            LocalMet =
+              MakeLocalMetData(y, x, &Map, Time.DayStep, &Options, NStats,
 			       Stat, MetWeights[y][x], TopoMap[y][x].Dem,
 			       &(RadiationMap[y][x]), &(PrecipMap[y][x]), &Radar,
 			       RadarMap, PrismMap, &(SnowMap[y][x]),
@@ -328,33 +328,33 @@ int main(int argc, char **argv)
 			       0.0, SolarGeo.SunMax,
 			       SolarGeo.SineSolarAltitude);
 
-		  /* get surface tempeature of each soil layer */
-		  for (i = 0; i < Soil.MaxLayers; i++) {
-	        if (Options.HeatFlux == TRUE) {
-	          if (Options.MM5 == TRUE)
-		        SoilMap[y][x].Temp[i] =
-				MM5Input[shade_offset + i + N_MM5_MAPS][y][x];
+          /* get surface tempeature of each soil layer */
+          for (i = 0; i < Soil.MaxLayers; i++) {
+            if (Options.HeatFlux == TRUE) {
+              if (Options.MM5 == TRUE)
+                SoilMap[y][x].Temp[i] =
+                  MM5Input[shade_offset + i + N_MM5_MAPS][y][x];
 
               /* read tempeature of each soil layer from met station input */
-			  else
-		        SoilMap[y][x].Temp[i] = Stat[0].Data.Tsoil[i];
-			}
+              else
+                SoilMap[y][x].Temp[i] = Stat[0].Data.Tsoil[i];
+            }
             /* if heat flux option is turned off, soil temperature of all 3 layers 
-            is taken equal to air tempeature */
-	        else
-	          SoilMap[y][x].Temp[i] = LocalMet.Tair;
-		  }
+               is taken equal to air tempeature */
+            else
+              SoilMap[y][x].Temp[i] = LocalMet.Tair;
+          }
 		  
-		  MassEnergyBalance(&Options, y, x, SolarGeo.SineSolarAltitude, Map.DX, Map.DY, 
+          MassEnergyBalance(&Options, y, x, SolarGeo.SineSolarAltitude, Map.DX, Map.DY, 
 			    Time.Dt, Options.HeatFlux, Options.CanopyRadAtt, Options.Infiltration, 
-				Veg.MaxLayers, &LocalMet, &(Network[y][x]), &(PrecipMap[y][x]), 
+                            Veg.MaxLayers, &LocalMet, &(Network[y][x]), &(PrecipMap[y][x]), 
 			    &(VType[VegMap[y][x].Veg-1]), &(VegMap[y][x]), &(SType[SoilMap[y][x].Soil-1]),
 			    &(SoilMap[y][x]), &(SnowMap[y][x]), &(RadiationMap[y][x]), &(EvapMap[y][x]), 
-                &(Total.Rad), &ChannelData, SkyViewMap);
+                            &(Total.Rad), &ChannelData, SkyViewMap);
 		 
-		  PrecipMap[y][x].SumPrecip += PrecipMap[y][x].Precip;
-		}
-	  }
+          PrecipMap[y][x].SumPrecip += PrecipMap[y][x].Precip;
+        }
+      }
     }
 
 	/* Average all RBM inputs over each segment */
@@ -364,7 +364,7 @@ int main(int argc, char **argv)
 	    CalcCanopyShading(&Time, ChannelData.streams, &SolarGeo);
 	}
 
- #ifndef SNOW_ONLY
+#ifndef SNOW_ONLY
     
     RouteSubSurface(Time.Dt, &Map, TopoMap, VType, VegMap, Network,
 		    SType, SoilMap, &ChannelData, &Time, &Options, Dump.Path,
@@ -381,12 +381,14 @@ int main(int argc, char **argv)
 
 #endif
 
+#if 0
     if (NGraphics > 0)
       draw(&(Time.Current), IsEqualTime(&(Time.Current), &(Time.Start)),
 	   Time.DayStep, &Map, NGraphics, which_graphics, VType,
 	   SType, SnowMap, SoilMap, VegMap, TopoMap, PrecipMap,
 	   PrismMap, SkyViewMap, ShadowMap, EvapMap, RadiationMap, 
 	   MetMap, Network, &Options);
+#endif
     
     Aggregate(&Map, &Options, TopoMap, &Soil, &Veg, VegMap, EvapMap, PrecipMap,
 	      RadiationMap, SnowMap, SoilMap, &Total, VType, Network, &ChannelData, &roadarea);
