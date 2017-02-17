@@ -61,7 +61,7 @@ void InitInterpolationWeights(MAPSIZE *Map, OPTIONSTRUCT *Options,
       for (x = 0; x < Map->NX; x++)
         BasinMask[y][x] = TopoMap[y][x].Mask;
 
-    CalcWeights(Stats, NStats, Map->NX, Map->NY, BasinMask, MetWeights,
+    CalcWeights(Stats, NStats, Map, BasinMask, MetWeights,
       Options);
 
     printf("\nSummary info on met stations used for current model run \n");

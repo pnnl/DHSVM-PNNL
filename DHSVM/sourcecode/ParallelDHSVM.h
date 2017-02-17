@@ -10,7 +10,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2017-02-13 10:32:36 d3g096
+ * LAST CHANGE: 2017-02-16 10:52:36 d3g096
  * COMMENTS:
  */
 
@@ -30,6 +30,10 @@ int ParallelSize(void);
 void ParallelBarrier(void);
 int GA_Type(int NumberType);
 int GA_Duplicate_type(int oga, char *nname, int ntype);
+void GA_Put_one(int ga, MAPSIZE *Map, int x, int y, void *value);
+void GA_Acc_one(int ga, MAPSIZE *Map, int x, int y, void *value, void *alpha);
+void GA_Get_one(int ga, MAPSIZE *Map, int x, int y, void *value);
+
 void ParallelFinalize(void);
 
 extern const int gaXdim, gaYdim;

@@ -13,6 +13,8 @@
  * $Id: RouteSubSurface.c,v3.1.2 2013/08/18 ning Exp $     
  */
 
+#include <ga.h>
+#include <assert.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,6 +26,7 @@
 #include "soilmoisture.h"
 #include "slopeaspect.h"
 #include "DHSVMChannel.h"
+#include "ParallelDHSVM.h"
 
 #ifndef MIN_GRAD
 #define MIN_GRAD .3		/* minimum slope for flow to channel */
@@ -60,7 +63,7 @@
   saturated than it would be if subsurface flow out of the basin would
   be allowed.
 
-  The surrounding grid cells are numbered in the following way
+  `The surrounding grid cells are numbered in the following way
 
                 |-----| DX
 
@@ -124,6 +127,9 @@ void RouteSubSurface(int Dt, MAPSIZE *Map, TOPOPIX **TopoMap,
   char buffer[32];
   char satoutfile[100];         /* Character arrays to hold file name. */ 
   FILE *fs;                     /* File pointer. */
+  int ga;
+  float value;
+  float one = 1.0;
 
   /*****************************************************************************
    Allocate memory 
@@ -164,21 +170,35 @@ void RouteSubSurface(int Dt, MAPSIZE *Map, TOPOPIX **TopoMap,
     }
   }
 
-  if (Options->FlowGradient == WATERTABLE)
-    HeadSlopeAspect(Map, TopoMap, SoilMap, SubFlowGrad, SubDir, SubTotalDir);
+  /* compute subsurface flow directions */
 
-  /* next sweep through all the grid cells, calculate the amount of
-     flow in each direction, and divide the flow over the surrounding
-     pixels */
-  for (y = 0; y < Map->NY; y++) {
-    for (x = 0; x < Map->NX; x++) {
-      if (INBASIN(TopoMap[y][x].Mask)) {
-        if (Options->FlowGradient == TOPOGRAPHY){
+  if (Options->FlowGradient == WATERTABLE) {
+    HeadSlopeAspect(Map, TopoMap, SoilMap, SubFlowGrad, SubDir, SubTotalDir);
+  } else if (Options->FlowGradient == TOPOGRAPHY){ 
+    for (y = 0; y < Map->NY; y++) {
+      for (x = 0; x < Map->NX; x++) {
+        if (INBASIN(TopoMap[y][x].Mask)) {
           SubTotalDir[y][x] = TopoMap[y][x].TotalDir;
           SubFlowGrad[y][x] = TopoMap[y][x].FlowGrad;
           for (k = 0; k < NDIRS; k++) 
             SubDir[y][x][k] = TopoMap[y][x].Dir[k];
         }
+      }
+    }
+  } else {
+    assert(0);
+  }
+
+  ga = GA_Duplicate_type(Map->dist, "Subsurface Routing", C_FLOAT);
+  value = 0.0;
+  GA_Fill(ga, &value);
+
+  /* next sweep through all the grid cells, calculate the amount of
+     flow in each direction, and divide the flow over the surrounding
+     pixels (in the GA) */
+  for (y = 0; y < Map->NY; y++) {
+    for (x = 0; x < Map->NX; x++) {
+      if (INBASIN(TopoMap[y][x].Mask)) {
         BankHeight = (Network[y][x].BankHeight > SoilMap[y][x].Depth) ?
           SoilMap[y][x].Depth : Network[y][x].BankHeight;
         Adjust = Network[y][x].Adjust;
@@ -253,7 +273,9 @@ void RouteSubSurface(int Dt, MAPSIZE *Map, TOPOPIX **TopoMap,
 				    water_out_road * Map->DX * Map->DY);
           }
           /* Subsurface Component - Decrease water change by outwater */
-          SoilMap[y][x].SatFlow -= OutFlow + water_out_road;
+          /* SoilMap[y][x].SatFlow -= OutFlow + water_out_road; */
+          value = -(OutFlow + water_out_road);
+          GA_Acc_one(ga, Map, x, y, &value, (void*)(&one));
 		  
           /* Assign the water to appropriate surrounding pixels */
           if (SubTotalDir[y][x] > 0)
@@ -265,7 +287,9 @@ void RouteSubSurface(int Dt, MAPSIZE *Map, TOPOPIX **TopoMap,
             int nx = xdirection[k] + x;
             int ny = ydirection[k] + y;
             if (valid_cell(Map, nx, ny)) {
-              SoilMap[ny][nx].SatFlow += OutFlow * SubDir[y][x][k];
+              /* SoilMap[ny][nx].SatFlow += OutFlow * SubDir[y][x][k]; */
+              value = OutFlow * SubDir[y][x][k];
+              GA_Acc_one(ga, Map, nx, ny, &value, &one);
             }
           }
         }
@@ -294,7 +318,9 @@ void RouteSubSurface(int Dt, MAPSIZE *Map, TOPOPIX **TopoMap,
             OutFlow = (OutFlow > AvailableWater) ? AvailableWater : OutFlow;
 			
             /* remove water going to channel from the grid cell */
-            SoilMap[y][x].SatFlow -= OutFlow;
+            /* SoilMap[y][x].SatFlow -= OutFlow; */
+            value = -OutFlow;
+            GA_Acc_one(ga, Map, x, y, &value, &one);
 			
             /* contribute to channel segment lateral inflow */
             channel_grid_inc_inflow(ChannelData->stream_map, x, y,
@@ -303,6 +329,19 @@ void RouteSubSurface(int Dt, MAPSIZE *Map, TOPOPIX **TopoMap,
             SoilMap[y][x].ChannelInt += OutFlow;
           }
         }
+      }
+    }
+  }
+
+  GA_Update_ghosts(ga);
+
+  /* get the accumulated subsurface flow back from the GA */
+
+  for (y = 0; y < Map->NY; y++) {
+    for (x = 0; x < Map->NX; x++) {
+      if (INBASIN(TopoMap[y][x].Mask)) {
+        GA_Get_one(ga, Map, x, y, &value);
+        SoilMap[y][x].SatFlow = value;
       }
     }
   }
@@ -318,6 +357,8 @@ void RouteSubSurface(int Dt, MAPSIZE *Map, TOPOPIX **TopoMap,
   free(SubDir);
   free(SubTotalDir);
   free(SubFlowGrad);
+
+  GA_Destroy(ga);
 
   /**********************************************************************/
   /* Dump saturation extent file to screen.

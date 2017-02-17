@@ -24,6 +24,7 @@
 #include "data.h"
 #include "DHSVMerror.h"
 #include "functions.h"
+#include "ParallelDHSVM.h"
 
  /*****************************************************************************
    Function name: CalcWeights()
@@ -48,7 +49,7 @@
 
    Comments     :
  *****************************************************************************/
-void CalcWeights(METLOCATION * Station, int NStats, int NX, int NY,
+void CalcWeights(METLOCATION * Station, int NStats, MAPSIZE *Map,
   uchar ** BasinMask, uchar **** WeightArray,
   OPTIONSTRUCT * Options)
 {
@@ -77,15 +78,15 @@ void CalcWeights(METLOCATION * Station, int NStats, int NX, int NY,
   if (DEBUG)
     printf("Calculating interpolation weights for %d stations\n", NStats);
 
-  if (!((*WeightArray) = (uchar ***)calloc(NY, sizeof(uchar **))))
+  if (!((*WeightArray) = (uchar ***)calloc(Map->NY, sizeof(uchar **))))
     ReportError("CalcWeights()", 1);
 
-  for (y = 0; y < NY; y++)
-    if (!((*WeightArray)[y] = (uchar **)calloc(NX, sizeof(uchar *))))
+  for (y = 0; y < Map->NY; y++)
+    if (!((*WeightArray)[y] = (uchar **)calloc(Map->NX, sizeof(uchar *))))
       ReportError("CalcWeights()", 1);
 
-  for (y = 0; y < NY; y++)
-    for (x = 0; x < NX; x++)
+  for (y = 0; y < Map->NY; y++)
+    for (x = 0; x < Map->NX; x++)
       if (!((*WeightArray)[y][x] = (uchar *)calloc(NStats, sizeof(uchar))))
         ReportError("CalcWeights()", 1);
 
@@ -112,9 +113,9 @@ void CalcWeights(METLOCATION * Station, int NStats, int NX, int NY,
   /* this first scheme is an inverse distance squared scheme */
 
   if (Options->Interpolation == INVDIST) {
-    for (y = 0; y < NY; y++) {
+    for (y = 0; y < Map->NY; y++) {
       Loc.N = y;
-      for (x = 0; x < NX; x++) {
+      for (x = 0; x < Map->NX; x++) {
         Loc.E = x;
         if (INBASIN(BasinMask[y][x])) {
           if (IsStationLocation(&Loc, NStats, Station, &CurrentStation)) {
@@ -149,9 +150,9 @@ void CalcWeights(METLOCATION * Station, int NStats, int NX, int NY,
     /* this next scheme is a nearest station */
     printf("Number of stations is %d \n", NStats);
 
-    for (y = 0; y < NY; y++) {
+    for (y = 0; y < Map->NY; y++) {
       Loc.N = y;
-      for (x = 0; x < NX; x++) {
+      for (x = 0; x < Map->NX; x++) {
         Loc.E = x;
         if (INBASIN(BasinMask[y][x])) {	/*we are inside the basin mask */
           /* find the distance to nearest station */
@@ -196,10 +197,9 @@ void CalcWeights(METLOCATION * Station, int NStats, int NX, int NY,
     crstat = Options->CressStations;
     if (crstat < 2)
       ReportError("CalcWeights.c", 42);
-    for (y = 0; y < NY; y++) {
-      Loc.N = y;
-      for (x = 0; x < NX; x++) {
-        Loc.E = x;
+    for (y = 0; y < Map->NY; y++) {
+      for (x = 0; x < Map->NX; x++) {
+        Local2Global(Map, x, y, &Loc.E, &Loc.N);
         if (INBASIN(BasinMask[y][x])) {	/*we are inside the basin mask */
           /* find the distance to nearest station */
           for (i = 0; i < NStats; i++) {
@@ -259,8 +259,8 @@ void CalcWeights(METLOCATION * Station, int NStats, int NX, int NY,
   printf("Some error is expected due to roundoff \n");
   printf("Errors greater than +/- 2 Percent are: \n");
 
-  for (y = 0; y < NY; y++) {
-    for (x = 0; x < NX; x++) {
+  for (y = 0; y < Map->NY; y++) {
+    for (x = 0; x < Map->NX; x++) {
       if (INBASIN(BasinMask[y][x])) {	/*we are inside the basin mask */
         tempid = 0;
         totalweight = 0;

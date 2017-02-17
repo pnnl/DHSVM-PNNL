@@ -10,7 +10,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2017-02-13 10:22:34 d3g096
+ * LAST CHANGE: 2017-02-16 10:51:47 d3g096
  * COMMENTS:
  */
 
@@ -151,6 +151,22 @@ GA_Put_one(int ga, MAPSIZE *Map, int x, int y, void *value)
   ld[gaXdim] = 1;
   ld[gaYdim] = 1;
   NGA_Put(ga, &lo[0], &hi[0], value, &ld[0]);
+}
+
+/******************************************************************************/
+/*                                GA_Acc_one                                  */
+/******************************************************************************/
+void
+GA_Acc_one(int ga, MAPSIZE *Map, int x, int y, void *value, void *alpha)
+{
+  int lo[GA_MAX_DIM], hi[GA_MAX_DIM], ld[GA_MAX_DIM];
+  lo[gaXdim] = Map->OffsetX + x;
+  hi[gaXdim] = lo[gaXdim];
+  lo[gaYdim] = Map->OffsetY + y;
+  hi[gaYdim] = lo[gaYdim];
+  ld[gaXdim] = 1;
+  ld[gaYdim] = 1;
+  NGA_Acc(ga, &lo[0], &hi[0], value, &ld[0], alpha);
 }
 /******************************************************************************/
 /*                                GA_Get_one                                  */

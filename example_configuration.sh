@@ -10,7 +10,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2017-02-15 13:11:00 d3g096
+# Last Change: 2017-02-16 07:11:28 d3g096
 
 set -xue
 
@@ -75,6 +75,23 @@ if [ $host == "flophouse" ]; then
         $common_flags \
         ..
 
+elif [ $host == "flophouse48" ]; then
+
+    prefix="/net/flophouse/files0/perksoft/linux64/openmpi48"
+    CC="$prefix/bin/gcc"
+    CFLAGS="-pthread -Wall"
+    export CC CFLAGS
+    
+    PATH="${prefix}/bin:${PATH}"
+    export PATH
+    cmake $options \
+        -D MPI_C_COMPILER:STRING="$prefix/bin/mpicc" \
+        -D MPIEXEC:STRING="$prefix/bin/mpiexec" \
+        -D GA_DIR:STRING="$prefix/ga-5-4" \
+        -D CMAKE_VERBOSE_MAKEFILE:BOOL=TRUE \
+        $common_flags \
+        ..
+
 elif [ $host == "WE32673" ]; then
 
     # this is a Mac system with MPI and NetCDF installed using
@@ -84,8 +101,7 @@ elif [ $host == "WE32673" ]; then
 
     prefix="/opt/local"
     CC="$prefix/bin/clang-mp-3.8"
-    CXX="$prefix/bin/clang++-mp-3.8"
-    export CC CXX
+    export CC
 
     cmake $options \
         -D CMAKE_VERBOSE_MAKEFILE:BOOL=TRUE \

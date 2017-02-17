@@ -14,6 +14,7 @@
  * $Id: InitNetwork.c,v 1.8 2004/05/03 03:28:45 colleen Exp $
  */
 
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "constants.h"
@@ -157,6 +158,7 @@ void InitNetwork(int NY, int NX, float DX, float DY, TOPOPIX **TopoMap,
       doimpervious = 1;
 
   if (doimpervious) {
+    assert(0);
     if (!(inputfile = fopen(Options->ImperviousFilePath, "rt"))) {
       fprintf(stderr,
         "User has specified a percentage impervious area \n");

@@ -284,8 +284,10 @@ int main(int argc, char **argv)
 
     if (IsNewDay(Time.DayStep)) {
       InitNewDay(Time.Current.JDay, &SolarGeo);
-      PrintDate(&(Time.Current), stdout);
-      printf("\n");
+      if (ParallelRank() == 0) {
+        PrintDate(&(Time.Current), stdout);
+        printf("\n");
+      }
     }
 
     InitNewStep(&InFiles, &Map, &Time, Soil.MaxLayers, &Options, NStats, Stat,
@@ -361,18 +363,18 @@ int main(int argc, char **argv)
 #ifndef SNOW_ONLY
     
 
-    /* RouteSubSurface(Time.Dt, &Map, TopoMap, VType, VegMap, Network, */
-    /*     	    SType, SoilMap, &ChannelData, &Time, &Options, Dump.Path, */
-    /*     	    MaxStreamID, SnowMap); */
+    RouteSubSurface(Time.Dt, &Map, TopoMap, VType, VegMap, Network,
+        	    SType, SoilMap, &ChannelData, &Time, &Options, Dump.Path,
+        	    MaxStreamID, SnowMap);
 
     if (Options.HasNetwork)
       RouteChannel(&ChannelData, &Time, &Map, TopoMap, SoilMap, &Total,
         	   &Options, Network, SType, PrecipMap, LocalMet.Tair, LocalMet.Rh);
 
-    /* if (Options.Extent == BASIN) */
-    /*   RouteSurface(&Map, &Time, TopoMap, SoilMap, &Options, */
-    /*     UnitHydrograph, &HydrographInfo, Hydrograph, */
-    /*     &Dump, VegMap, VType, &ChannelData); */
+    if (Options.Extent == BASIN)
+      RouteSurface(&Map, &Time, TopoMap, SoilMap, &Options,
+        UnitHydrograph, &HydrographInfo, Hydrograph,
+        &Dump, VegMap, VType, &ChannelData);
 
 #endif
 

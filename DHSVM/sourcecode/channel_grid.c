@@ -277,7 +277,7 @@ ChannelMapPtr **channel_grid_read_map(MAPSIZE *Map, Channel *net,
         map[col][row] = alloc_channel_map_record();
         cell = map[col][row];
       }
-
+      
       for (i = 2; i < fields; i++) {
         if (map_fields[i].read) {
           switch (i) {

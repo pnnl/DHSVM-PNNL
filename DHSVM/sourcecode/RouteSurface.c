@@ -16,6 +16,7 @@
 
  * $Id: RouteSurface.c, v3.1.2  2013/3/21   Ning Exp $
  */
+#include <ga.h>
 #include <assert.h>
 #include <stdio.h>
 #include <math.h>
@@ -26,6 +27,7 @@
 #include "DHSVMerror.h"
 #include "functions.h"
 #include "constants.h"
+#include "ParallelDHSVM.h"
 /*****************************************************************************
 RouteSurface()
 If the watertable calculated in WaterTableDepth() was negative, then water is
@@ -53,6 +55,9 @@ void RouteSurface(MAPSIZE * Map, TIMESTRUCT * Time, TOPOPIX ** TopoMap,
   int TravelTime;
   int WaveLength;
   int i, j, x, y, n, k;         /* Counters */
+  int ga;
+  float value;
+  float one = 1.0;
 
 
   /* Allocate memory for Runon Matrix */
@@ -67,11 +72,17 @@ void RouteSurface(MAPSIZE * Map, TIMESTRUCT * Time, TOPOPIX ** TopoMap,
         }
       }
     }
+
+    ga = GA_Duplicate_type(Map->dist, "Subsurface Routing", C_FLOAT);
+    value = 0.0;
+    GA_Fill(ga, &value);
+
     for (y = 0; y < Map->NY; y++) {
       for (x = 0; x < Map->NX; x++) {
         if (INBASIN(TopoMap[y][x].Mask)) {
           if (!channel_grid_has_channel(ChannelData->stream_map, x, y)) {
             if (VType[VegMap[y][x].Veg - 1].ImpervFrac > 0.0) {
+              assert(0);        /* FIXME: can't suport this now */
               /* Calculate the outflow from impervious portion of urban cell straight to nearest channel cell */
               SoilMap[TopoMap[y][x].drains_y][TopoMap[y][x].drains_x].IExcess +=
                 (1 - VType[VegMap[y][x].Veg - 1].DetentionFrac) *
@@ -87,12 +98,17 @@ void RouteSurface(MAPSIZE * Map, TIMESTRUCT * Time, TOPOPIX ** TopoMap,
               if (SoilMap[y][x].DetentionStorage < 0.0)
                 SoilMap[y][x].DetentionStorage = 0.0;
               /* Route the runoff from pervious portion of urban cell to the neighboring cell */
+              
               for (n = 0; n < NDIRS; n++) {
                 int xn = x + xdirection[n];
                 int yn = y + ydirection[n];
                 if (valid_cell(Map, xn, yn)) {
                   SoilMap[yn][xn].IExcess += (1 - VType[VegMap[y][x].Veg - 1].ImpervFrac) * SoilMap[y][x].Runoff
                     *((float)TopoMap[y][x].Dir[n] / (float)TopoMap[y][x].TotalDir);
+                  /* value =  */
+                  /*   (1 - VType[VegMap[y][x].Veg - 1].ImpervFrac) * SoilMap[y][x].Runoff * */
+                  /*   ((float)TopoMap[y][x].Dir[n] / (float)TopoMap[y][x].TotalDir); */
+                  /* GA_Acc_one(ga, Map, x, y, &value, (void*)(&one)); */
                 }
               }
             }
@@ -101,17 +117,42 @@ void RouteSurface(MAPSIZE * Map, TIMESTRUCT * Time, TOPOPIX ** TopoMap,
                 int xn = x + xdirection[n];
                 int yn = y + ydirection[n];
                 if (valid_cell(Map, xn, yn)) {
-                  SoilMap[yn][xn].IExcess += SoilMap[y][x].Runoff *((float)TopoMap[y][x].Dir[n] / (float)TopoMap[y][x].TotalDir);
+                  /* SoilMap[yn][xn].IExcess += SoilMap[y][x].Runoff * */
+                  /*   ((float)TopoMap[y][x].Dir[n] / (float)TopoMap[y][x].TotalDir); */
+                  value = 
+                    (1 - VType[VegMap[y][x].Veg - 1].ImpervFrac) * SoilMap[y][x].Runoff *
+                    ((float)TopoMap[y][x].Dir[n] / (float)TopoMap[y][x].TotalDir);
+                  GA_Acc_one(ga, Map, x, y, &value, (void*)(&one));
                 }
               }
             }
           }
           else if (channel_grid_has_channel(ChannelData->stream_map, x, y)) {
-            SoilMap[y][x].IExcess += SoilMap[y][x].Runoff;
+            /* SoilMap[y][x].IExcess += SoilMap[y][x].Runoff; */
+            value = SoilMap[y][x].Runoff;
+            GA_Acc_one(ga, Map, x, y, &value, (void*)(&one));
           }
         }
       }
     }
+
+    GA_Update_ghosts(ga);
+
+    /* get the accumulated surface flow back from the GA */
+    
+    for (y = 0; y < Map->NY; y++) {
+      for (x = 0; x < Map->NX; x++) {
+        if (INBASIN(TopoMap[y][x].Mask)) {
+          GA_Get_one(ga, Map, x, y, &value);
+          SoilMap[y][x].IExcess = value;
+        }
+      }
+    }
+
+    GA_Sync();
+
+    GA_Destroy(ga);
+    
   }/* end if Options->routing = conventional */
 
   /* MAKE SURE THIS WORKS WITH A TIMESTEP IN SECONDS */

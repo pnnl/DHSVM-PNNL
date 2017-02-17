@@ -47,7 +47,7 @@ float CalcSnowAlbedo(float TSurf, unsigned short Last, SNOWTABLE *SnowAlbedo);
 float CalcTransmissivity(float SoilDepth, float WaterTable, float LateralKs,
 			 float KsExponent, float DepthThresh);
 
-void CalcWeights(METLOCATION *Station, int NStats, int NX, int NY,
+void CalcWeights(METLOCATION *Station, int NStats, MAPSIZE *Map,
 		 uchar **BasinMask, uchar ****WeightArray,
 		 OPTIONSTRUCT *Options);
 

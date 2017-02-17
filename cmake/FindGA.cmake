@@ -50,7 +50,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-find_path(GA_INCLUDE_DIR ga++.h
+find_path(GA_INCLUDE_DIR ga.h
   HINTS ${GA_INCLUDE_DIR} ENV GA_INCLUDE_DIR ${GA_DIR} ENV GA_DIR
   PATH_SUFFIXES include
   DOC "Directory where the GA header files are located"
@@ -58,13 +58,6 @@ find_path(GA_INCLUDE_DIR ga++.h
 
 find_library(GA_LIBRARY
   NAMES ga GA${GA_LIB_SUFFIX}
-  HINTS ${GA_LIB_DIR} ENV GA_LIB_DIR ${GA_DIR} ENV GA_DIR
-  PATH_SUFFIXES lib
-  DOC "Directory where the GA library is located"
-)
-
-find_library(GA_CXX_LIBRARY
-  NAMES ga++ GA${GA_LIB_SUFFIX}
   HINTS ${GA_LIB_DIR} ENV GA_LIB_DIR ${GA_DIR} ENV GA_DIR
   PATH_SUFFIXES lib
   DOC "Directory where the GA library is located"
@@ -103,46 +96,37 @@ if (GA_INCLUDE_DIR AND GA_LIBRARY AND ARMCI_LIBRARY)
   set(CMAKE_REQUIRED_INCLUDES ${GA_INCLUDE_DIR} ${MPI_INCLUDE_PATH})
   if (NOT MPI_LIBRARY OR NOT MPI_EXTRA_LIBRARY)
     set(CMAKE_REQUIRED_LIBRARIES 
-      ${GA_CXX_LIBRARY} ${GA_LIBRARY} ${ARMCI_LIBRARY} ${GA_EXTRA_LIBS}
+      ${GA_LIBRARY} ${ARMCI_LIBRARY} ${GA_EXTRA_LIBS}
     )
   else()
     set(CMAKE_REQUIRED_LIBRARIES 
-      ${GA_CXX_LIBRARY} ${GA_LIBRARY} ${ARMCI_LIBRARY} ${GA_EXTRA_LIBS} ${MPI_LIBRARIES}
+      ${GA_LIBRARY} ${ARMCI_LIBRARY} ${GA_EXTRA_LIBS} ${MPI_LIBRARIES}
     )
   endif()
 
 # Build and run test program, maybe
 
 set(ga_test_src "
-#include <mpi.h>
-#include <ga++.h>
+#include <ga.h>
 
-int main()
+int main(int argc, char **argv)
 {
+  GA_Initialize_args(&argc, &argv);
+
   // FIXME: Find a simple but sensible test for GA
 
-  // Initialise MPI
-  MPI::Init();
-
-  // Initialize GA
-  GA_Initialize();
-
-  // Terminate GA
   GA_Terminate();
-
-  // Finalize MPI
-  MPI::Finalize();
 
   return 0;
 }
 ")
 
-include(CheckCXXSourceRuns)
-include(CheckCXXSourceCompiles)
+include(CheckCSourceRuns)
+include(CheckCSourceCompiles)
 if (USE_PROGRESS_RANKS OR CHECK_COMPILATION_ONLY) 
-  check_cxx_source_compiles("${ga_test_src}" GA_TEST_RUNS)
+  check_c_source_compiles("${ga_test_src}" GA_TEST_RUNS)
 else()
-  check_cxx_source_runs("${ga_test_src}" GA_TEST_RUNS)
+  check_c_source_runs("${ga_test_src}" GA_TEST_RUNS)
 endif()
 endif()
 
@@ -160,7 +144,7 @@ else()
 endif()
 
 if(GA_FOUND)
-  set(GA_LIBRARIES ${GA_CXX_LIBRARY} ${GA_LIBRARY} ${ARMCI_LIBRARY} ${GA_EXTRA_LIBS})
+  set(GA_LIBRARIES ${GA_LIBRARY} ${ARMCI_LIBRARY} ${GA_EXTRA_LIBS})
   set(GA_INCLUDE_DIRS ${GA_INCLUDE_DIR})
 endif()
 

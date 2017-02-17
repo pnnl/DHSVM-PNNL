@@ -245,9 +245,10 @@ void ElevationSlopeAspect(MAPSIZE * Map, TOPOPIX ** TopoMap)
 
   GA_Sync();
 
-  /* put elevations in GA (presumably, all of these puts should be local,
-     so it may be OK do put one value at a time; maybe try
-     non-blocking too) */
+  /* put elevations in GA (presumably, all of these puts should be
+     local, so it may be OK do put one value at a time; maybe try
+     non-blocking too); an alternative may be to use the GA_Access()
+     to directly access the local patch; check later */
 
   for (x = 0; x < Map->NX; x++) {
     for (y = 0; y < Map->NY; y++) {
@@ -260,7 +261,9 @@ void ElevationSlopeAspect(MAPSIZE * Map, TOPOPIX ** TopoMap)
   }
   GA_Update_ghosts(gaelev);
 
-  /* fill neighbor array */
+  /* fill neighbor array; again, these gets should be local and maybe
+     OK to do one at a time; may need to use GA_Access_ghosts(), but
+     that would require some indexing magic */
   
   for (x = 0; x < Map->NX; x++) {
     for (y = 0; y < Map->NY; y++) {
