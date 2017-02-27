@@ -10,7 +10,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2017-02-16 10:51:47 d3g096
+ * LAST CHANGE: 2017-02-27 09:20:58 d3g096
  * COMMENTS:
  */
 
@@ -24,14 +24,15 @@
 #include <assert.h>
 #include <mpi.h>
 #include <ga.h>
+#include <macdecls.h>
 
 #include "sizeofnt.h"
 #include "DHSVMerror.h"
 #include "ParallelDHSVM.h"
 
 
-const gaXdim = 1;
-const gaYdim = 0;
+const int gaXdim = 1;
+const int gaYdim = 0;
 
 
 /******************************************************************************/
@@ -116,7 +117,6 @@ GA_Duplicate_type(int oga, char *nname, int ntype)
   int nga;
   int otype;
   int ndim, dims[GA_MAX_DIM], chunk[GA_MAX_DIM];
-  int nblock, map[GA_MAX_DIM];
   int i;
   
   NGA_Inquire(oga, &otype, &ndim, &dims[0]);
@@ -204,7 +204,6 @@ DomainSummary(MAPSIZE *global, MAPSIZE *local)
     "%6d %7d %7d %7d %7d %13.2f %13.2f %8d\n";
   static const char sfmt[] = 
     "%6s %7d %7d %7d %7d %13.2f %13.2f %8d\n";
-  static const char b[] = " ";
 
   int me, nproc, p;
 
@@ -257,15 +256,12 @@ void
 DomainDecomposition(MAPSIZE *global, MAPSIZE *local)
 {
   int gaid; 
-  int nproc, me, p;
+  int me;
   int dims[GA_MAX_DIM];
   int chunk[GA_MAX_DIM], ghosts[GA_MAX_DIM];
   int lo[GA_MAX_DIM], hi[GA_MAX_DIM];
-  int gNX, gNY;
 
   me = ParallelRank();
-  nproc = ParallelSize();
-  
 
   /* initialize the local domain */
   memcpy(local, global, sizeof(MAPSIZE));
@@ -380,4 +376,131 @@ Local2Global(MAPSIZE *Map, int localx, int localy, int *globalx, int *globaly)
 {
   *globalx = localx + Map->OffsetX;
   *globaly = localy + Map->OffsetY;
+}
+
+/******************************************************************************/
+/*                                                                    */
+/******************************************************************************/
+static
+float **
+alloc_float_2d(int NY, int NX)
+{
+  static char Routine[] = "alloc_float_2d";
+  int j;
+  float **result;
+  result = (float **)calloc(NY, sizeof(float *));
+  if (result == NULL) {
+    ReportError(Routine, 1);
+  }
+  result[0] = (float *) calloc(NX*NY, sizeof(float));
+  if (result[0] == NULL) {
+    ReportError(Routine, 1);
+  }
+  for (j = 1; j < NY; ++j) {
+    result[j] = result[0] + j*NX;
+  }
+  return result;
+}
+
+/******************************************************************************/
+/*                              GA_Alloc_patch                                */
+/******************************************************************************/
+void
+GA_Alloc_patch(int ga, MAPSIZE *Map, GA_Patch *p)
+{
+  p->ixoff = 0;
+  p->iyoff = 0;
+  p->NX = Map->NX;
+  p->NY = Map->NY;
+  p->patch = alloc_float_2d(Map->NY, Map->NX);
+}
+
+/******************************************************************************/
+/*                              GA_Alloc_patch_ghost                          */
+/******************************************************************************/
+void
+GA_Alloc_patch_ghost(int ga, MAPSIZE *Map, GA_Patch *p)
+{
+  p->ixoff = 0;
+  p->iyoff = 0;
+  p->NX = Map->NX;
+  p->NY = Map->NY;
+
+  if (Map->OffsetX > 0) {
+    p->NX += 1;
+    p->ixoff = 1;
+  }
+
+  if (Map->OffsetY > 0) {
+    p->NY += 1;
+    p->iyoff = 1;
+  }
+
+  if (Map->OffsetX + Map->NX < Map->gNX) {
+    p->NX += 1;
+  } 
+  if (Map->OffsetY + Map->NY < Map->gNY) {
+    p->NY += 1;
+  } 
+  p->patch = alloc_float_2d(p->NY, p->NX);
+}
+
+/******************************************************************************/
+/*                             fill_ga_dims                                   */
+/******************************************************************************/
+static void
+fill_ga_dims(MAPSIZE *Map, GA_Patch *p, int *lo, int *hi, int *ld)
+{
+  lo[gaXdim] = Map->OffsetX - p->ixoff;
+  lo[gaYdim] = Map->OffsetY - p->iyoff;
+  hi[gaXdim] = lo[gaXdim] + p->NX - 1;
+  hi[gaYdim] = lo[gaYdim] + p->NY - 1;
+  ld[gaXdim] = p->NY;
+  ld[gaYdim] = p->NX;
+}
+
+/******************************************************************************/
+/*                               GA_Acc_patch                                 */
+/******************************************************************************/
+void
+GA_Acc_patch(int ga, MAPSIZE *Map, GA_Patch *p)
+{
+  int lo[GA_MAX_DIM], hi[GA_MAX_DIM], ld[GA_MAX_DIM];
+  float alpha;
+  alpha = 1.0;
+  fill_ga_dims(Map, p, &lo[0], &hi[0], &ld[0]);
+  NGA_Acc(ga, &lo[0], &hi[0], &(p->patch[0][0]), &ld[0], &alpha);
+}
+
+/******************************************************************************/
+/*                               GA_Get_patch                                 */
+/******************************************************************************/
+void
+GA_Get_patch(int ga, MAPSIZE *Map, GA_Patch *p)
+{
+  int lo[GA_MAX_DIM], hi[GA_MAX_DIM], ld[GA_MAX_DIM];
+  fill_ga_dims(Map, p, &lo[0], &hi[0], &ld[0]);
+  NGA_Get(ga, &lo[0], &hi[0], &(p->patch[0][0]), &ld[0]);
+}
+
+/******************************************************************************/
+/*                               GA_Put_patch                                 */
+/******************************************************************************/
+void
+GA_Put_patch(int ga, MAPSIZE *Map, GA_Patch *p)
+{
+  int lo[GA_MAX_DIM], hi[GA_MAX_DIM], ld[GA_MAX_DIM];
+  fill_ga_dims(Map, p, &lo[0], &hi[0], &ld[0]);
+  NGA_Put(ga, &lo[0], &hi[0], &(p->patch[0][0]), &ld[0]);
+}
+
+
+/******************************************************************************/
+/*                              GA_Free_patch                                 */
+/******************************************************************************/
+void
+GA_Free_patch(GA_Patch *p)
+{
+  free(p->patch[0]);
+  free(p->patch);
 }

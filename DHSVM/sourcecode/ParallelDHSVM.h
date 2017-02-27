@@ -10,7 +10,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2017-02-16 10:52:36 d3g096
+ * LAST CHANGE: 2017-02-27 08:43:41 d3g096
  * COMMENTS:
  */
 
@@ -33,6 +33,20 @@ int GA_Duplicate_type(int oga, char *nname, int ntype);
 void GA_Put_one(int ga, MAPSIZE *Map, int x, int y, void *value);
 void GA_Acc_one(int ga, MAPSIZE *Map, int x, int y, void *value, void *alpha);
 void GA_Get_one(int ga, MAPSIZE *Map, int x, int y, void *value);
+
+struct ga_patch_ {
+  int NY, NX;                   /**< dimensions of the allocated patch */
+  int ixoff;                    /**< add this to column index, when accessing path */
+  int iyoff;                    /**< add this to row index, when accessing patch */
+  float **patch;                /**< Allocated 2D[y][x] filled with current GA w/ ghosts  */
+};
+typedef struct ga_patch_ GA_Patch;
+void GA_Alloc_patch(int ga, MAPSIZE *Map, GA_Patch *p);
+void GA_Alloc_patch_ghost(int ga, MAPSIZE *Map, GA_Patch *p);
+void GA_Get_patch(int ga, MAPSIZE *Map, GA_Patch *p);
+void GA_Acc_patch(int ga, MAPSIZE *Map, GA_Patch *p);
+void GA_Put_patch(int ga, MAPSIZE *Map, GA_Patch *p);
+void GA_Free_patch(GA_Patch *p);
 
 void ParallelFinalize(void);
 

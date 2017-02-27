@@ -9,7 +9,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2017-02-15 09:54:55 d3g096
+# Last Change: 2017-02-27 08:22:57 d3g096
 
 # -------------------------------------------------------------
 # Set up for this subdirectory
@@ -296,5 +296,21 @@ if (DHSVM_BUILD_TESTS)
   set_target_properties(equal_test
     PROPERTIES
     COMPILE_DEFINITIONS "TEST_EQUAL=1"
+    )
+endif (DHSVM_BUILD_TESTS)
+
+
+# -------------------------------------------------------------
+# patch_test
+# -------------------------------------------------------------
+if (DHSVM_BUILD_TESTS) 
+  add_executable(patch_test 
+    patch_test.c
+    ParallelDHSVM.c
+    )
+  target_link_libraries(patch_test
+    BinIO
+    ${GA_LIBRARIES} 
+    ${MPI_C_LIBRARIES}
     )
 endif (DHSVM_BUILD_TESTS)
