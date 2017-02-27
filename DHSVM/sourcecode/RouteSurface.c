@@ -54,10 +54,10 @@ void RouteSurface(MAPSIZE * Map, TIMESTRUCT * Time, TOPOPIX ** TopoMap,
   float StreamFlow;
   int TravelTime;
   int WaveLength;
-  int i, j, x, y, n, k;         /* Counters */
+  int i, j, x, y, n;         /* Counters */
   int ga;
   float value;
-  float one = 1.0;
+  GA_Patch patch;
 
 
   /* Allocate memory for Runon Matrix */
@@ -76,6 +76,15 @@ void RouteSurface(MAPSIZE * Map, TIMESTRUCT * Time, TOPOPIX ** TopoMap,
     ga = GA_Duplicate_type(Map->dist, "Subsurface Routing", C_FLOAT);
     value = 0.0;
     GA_Fill(ga, &value);
+
+    /* make a local array to store IExcess that covers the locally
+       owned part of the domain plus ghost cells */
+    GA_Alloc_patch_ghost(ga, Map, &patch);
+    for (y = 0; y < patch.NY; ++y) {
+      for (x = 0; x < patch.NX; ++x) {
+        patch.patch[y][x] = 0.0;
+      } 
+    }
 
     for (y = 0; y < Map->NY; y++) {
       for (x = 0; x < Map->NX; x++) {
@@ -119,38 +128,39 @@ void RouteSurface(MAPSIZE * Map, TIMESTRUCT * Time, TOPOPIX ** TopoMap,
                 if (valid_cell(Map, xn, yn)) {
                   /* SoilMap[yn][xn].IExcess += SoilMap[y][x].Runoff * */
                   /*   ((float)TopoMap[y][x].Dir[n] / (float)TopoMap[y][x].TotalDir); */
-                  value = 
-                    (1 - VType[VegMap[y][x].Veg - 1].ImpervFrac) * SoilMap[y][x].Runoff *
+                  xn += patch.ixoff;
+                  yn += patch.iyoff;
+                  patch.patch[yn][xn] += SoilMap[y][x].Runoff *
                     ((float)TopoMap[y][x].Dir[n] / (float)TopoMap[y][x].TotalDir);
-                  GA_Acc_one(ga, Map, x, y, &value, (void*)(&one));
                 }
               }
             }
           }
           else if (channel_grid_has_channel(ChannelData->stream_map, x, y)) {
             /* SoilMap[y][x].IExcess += SoilMap[y][x].Runoff; */
-            value = SoilMap[y][x].Runoff;
-            GA_Acc_one(ga, Map, x, y, &value, (void*)(&one));
+            patch.patch[y+patch.iyoff][x+patch.ixoff] += SoilMap[y][x].Runoff;
           }
         }
       }
     }
 
-    GA_Update_ghosts(ga);
+    GA_Acc_patch(ga, Map, &patch);
+    GA_Sync();
+    
+    /* get the accumulated surface flow back from the GA (local array
+       does not include ghosts) */
 
-    /* get the accumulated surface flow back from the GA */
+    GA_Get_patch(ga, Map, &patch);
     
     for (y = 0; y < Map->NY; y++) {
       for (x = 0; x < Map->NX; x++) {
         if (INBASIN(TopoMap[y][x].Mask)) {
-          GA_Get_one(ga, Map, x, y, &value);
-          SoilMap[y][x].IExcess = value;
+          SoilMap[y][x].IExcess = patch.patch[y+patch.iyoff][x+patch.ixoff];
         }
       }
     }
 
-    GA_Sync();
-
+    GA_Free_patch(&patch);
     GA_Destroy(ga);
     
   }/* end if Options->routing = conventional */

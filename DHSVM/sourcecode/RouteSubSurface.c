@@ -129,7 +129,7 @@ void RouteSubSurface(int Dt, MAPSIZE *Map, TOPOPIX **TopoMap,
   FILE *fs;                     /* File pointer. */
   int ga;
   float value;
-  float one = 1.0;
+  GA_Patch patch;
 
   /*****************************************************************************
    Allocate memory 
@@ -189,9 +189,20 @@ void RouteSubSurface(int Dt, MAPSIZE *Map, TOPOPIX **TopoMap,
     assert(0);
   }
 
+  /* make a global array to store accumulated subsurface "outflow" */
+  
   ga = GA_Duplicate_type(Map->dist, "Subsurface Routing", C_FLOAT);
   value = 0.0;
   GA_Fill(ga, &value);
+
+  /* make a local array to store SatFlow that covers the locally
+     owned part of the domain plus ghost cells */
+  GA_Alloc_patch_ghost(ga, Map, &patch);
+  for (y = 0; y < patch.NY; ++y) {
+    for (x = 0; x < patch.NX; ++x) {
+      patch.patch[y][x] = 0.0;
+    } 
+  }
 
   /* next sweep through all the grid cells, calculate the amount of
      flow in each direction, and divide the flow over the surrounding
@@ -274,9 +285,8 @@ void RouteSubSurface(int Dt, MAPSIZE *Map, TOPOPIX **TopoMap,
           }
           /* Subsurface Component - Decrease water change by outwater */
           /* SoilMap[y][x].SatFlow -= OutFlow + water_out_road; */
-          value = -(OutFlow + water_out_road);
-          GA_Acc_one(ga, Map, x, y, &value, (void*)(&one));
-		  
+          patch.patch[y+patch.iyoff][x+patch.ixoff] -= OutFlow + water_out_road;
+
           /* Assign the water to appropriate surrounding pixels */
           if (SubTotalDir[y][x] > 0)
             OutFlow /= (float) SubTotalDir[y][x];
@@ -288,8 +298,9 @@ void RouteSubSurface(int Dt, MAPSIZE *Map, TOPOPIX **TopoMap,
             int ny = ydirection[k] + y;
             if (valid_cell(Map, nx, ny)) {
               /* SoilMap[ny][nx].SatFlow += OutFlow * SubDir[y][x][k]; */
-              value = OutFlow * SubDir[y][x][k];
-              GA_Acc_one(ga, Map, nx, ny, &value, &one);
+              nx += patch.ixoff;
+              ny += patch.iyoff;
+              patch.patch[ny][nx] += OutFlow * SubDir[y][x][k];
             }
           }
         }
@@ -319,8 +330,7 @@ void RouteSubSurface(int Dt, MAPSIZE *Map, TOPOPIX **TopoMap,
 			
             /* remove water going to channel from the grid cell */
             /* SoilMap[y][x].SatFlow -= OutFlow; */
-            value = -OutFlow;
-            GA_Acc_one(ga, Map, x, y, &value, &one);
+            patch.patch[y+patch.iyoff][x+patch.ixoff] += -OutFlow;
 			
             /* contribute to channel segment lateral inflow */
             channel_grid_inc_inflow(ChannelData->stream_map, x, y,
@@ -333,15 +343,18 @@ void RouteSubSurface(int Dt, MAPSIZE *Map, TOPOPIX **TopoMap,
     }
   }
 
-  GA_Update_ghosts(ga);
+  GA_Acc_patch(ga, Map, &patch);
+  GA_Sync();
+  GA_Get_patch(ga, Map, &patch);
 
-  /* get the accumulated subsurface flow back from the GA */
+  /* get the accumulated subsurface flow back from the GA (local array
+     does not include ghosts) */
 
   for (y = 0; y < Map->NY; y++) {
     for (x = 0; x < Map->NX; x++) {
       if (INBASIN(TopoMap[y][x].Mask)) {
-        GA_Get_one(ga, Map, x, y, &value);
-        SoilMap[y][x].SatFlow = value;
+        SoilMap[y][x].SatFlow = 
+          patch.patch[y+patch.iyoff][x+patch.ixoff];
       }
     }
   }
@@ -358,6 +371,7 @@ void RouteSubSurface(int Dt, MAPSIZE *Map, TOPOPIX **TopoMap,
   free(SubTotalDir);
   free(SubFlowGrad);
 
+  GA_Free_patch(&patch);
   GA_Destroy(ga);
 
   /**********************************************************************/
