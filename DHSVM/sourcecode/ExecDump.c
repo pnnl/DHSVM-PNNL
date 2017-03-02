@@ -1137,7 +1137,7 @@ void DumpPix(DATE *Current, int first, FILES *OutFile, EVAPPIX *Evap,
 void
 DumpTopo(MAPSIZE *Map, TOPOPIX **TopoMap)
 {
-  int x, y;
+  int x, y, k;
   int ntype;
   float *Array;
   int numPoints;
@@ -1192,6 +1192,44 @@ DumpTopo(MAPSIZE *Map, TOPOPIX **TopoMap)
     }
   }
   Write2DMatrix(FileName, Array, NC_FLOAT, Map, NULL, 0);
+
+  sprintf(FileName, "%s%s", "Aspect", fileext);
+  for (y = 0; y < Map->NY; y++) {
+    for (x = 0; x < Map->NX; x++) {
+      if (INBASIN(TopoMap[y][x].Mask)) {
+        Array[y * Map->NX + x] = (float) TopoMap[y][x].Aspect;
+      } else {
+        Array[y * Map->NX + x] = NA;
+      }
+    }
+  }
+  Write2DMatrix(FileName, Array, NC_FLOAT, Map, NULL, 0);
+
+  sprintf(FileName, "%s%s", "TotalDir", fileext);
+  for (y = 0; y < Map->NY; y++) {
+    for (x = 0; x < Map->NX; x++) {
+      if (INBASIN(TopoMap[y][x].Mask)) {
+        Array[y * Map->NX + x] = (float) TopoMap[y][x].TotalDir;
+      } else {
+        Array[y * Map->NX + x] = NA;
+      }
+    }
+  }
+  Write2DMatrix(FileName, Array, NC_FLOAT, Map, NULL, 0);
+
+  for (k = 0; k < NDIRS; k++) {
+    sprintf(FileName, "%s%d%s", "Dir", k, fileext);
+    for (y = 0; y < Map->NY; y++) {
+      for (x = 0; x < Map->NX; x++) {
+        if (INBASIN(TopoMap[y][x].Mask)) {
+          Array[y * Map->NX + x] = (float) TopoMap[y][x].Dir[k];
+        } else {
+          Array[y * Map->NX + x] = NA;
+        }
+      }
+    }
+    Write2DMatrix(FileName, Array, NC_FLOAT, Map, NULL, 0);
+  }
 
   free(Array);
 }
