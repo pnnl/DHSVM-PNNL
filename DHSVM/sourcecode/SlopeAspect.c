@@ -214,7 +214,8 @@ void ElevationSlopeAspect(MAPSIZE * Map, TOPOPIX ** TopoMap)
   int xn, yn;
   int gaelev;
   float elev, outelev;
-  int mask;
+  GA_Patch patch;
+  
 
   outelev = (float) OUTSIDEBASIN;
 
@@ -242,28 +243,32 @@ void ElevationSlopeAspect(MAPSIZE * Map, TOPOPIX ** TopoMap)
 
   gaelev = GA_Duplicate_type(Map->dist, "ElevationSlopeAspect", GA_Type(NC_FLOAT));
   GA_Fill(gaelev, &outelev);
-
   GA_Sync();
 
-  /* put elevations in GA (presumably, all of these puts should be
-     local, so it may be OK do put one value at a time; maybe try
-     non-blocking too); an alternative may be to use the GA_Access()
-     to directly access the local patch; check later */
+  /* make a local array in which to put local elevations ghost cells not needed */
+  GA_Alloc_patch(gaelev, Map, &patch);
+  GA_Get_patch(gaelev, Map, &patch);
+
+  /* put elevations in the GA patch */
 
   for (x = 0; x < Map->NX; x++) {
     for (y = 0; y < Map->NY; y++) {
       if (INBASIN(TopoMap[y][x].Mask)) {
         elev = TopoMap[y][x].Dem;
-        mask = TopoMap[y][x].Mask;
-        GA_Put_one(gaelev, Map, x, y, &elev);
+        patch.patch[y+patch.iyoff][x+patch.ixoff] = elev;
       }
     }
   }
-  GA_Update_ghosts(gaelev);
+  GA_Put_patch(gaelev, Map, &patch);
+  GA_Sync();
+  GA_Free_patch(&patch);
 
-  /* fill neighbor array; again, these gets should be local and maybe
-     OK to do one at a time; may need to use GA_Access_ghosts(), but
-     that would require some indexing magic */
+  /* make a local array and fill it with elevations from GA that
+     includes ghost cells */
+  GA_Alloc_patch_ghost(gaelev, Map, &patch);
+  GA_Get_patch(gaelev, Map, &patch);
+
+  /* for each local, fill neighbor array with elevations from GA patch */
   
   for (x = 0; x < Map->NX; x++) {
     for (y = 0; y < Map->NY; y++) {
@@ -272,7 +277,7 @@ void ElevationSlopeAspect(MAPSIZE * Map, TOPOPIX ** TopoMap)
 	  xn = x + xneighbor[n];
 	  yn = y + yneighbor[n];	  
 	  if (valid_cell(Map, xn, yn)) {
-            GA_Get_one(gaelev, Map, xn, yn, &elev);
+            elev = patch.patch[yn+patch.iyoff][xn+patch.ixoff];
             neighbor_elev[n] = elev;
           } else {
 	    neighbor_elev[n] = outelev;
@@ -317,7 +322,14 @@ void ElevationSlopeAspect(MAPSIZE * Map, TOPOPIX ** TopoMap)
 	}
       }
     }
-  } 	
+  } 
+
+  GA_Free_patch(&patch);  
+  GA_Destroy(gaelev);
+  GA_Sync();
+
+
+  /* FIXME: Are the OrderedCells actually used anywhere? */
   /* Create a structure to hold elevations of only those cells
      within the basin and the y,x of those cells.*/
   if (!(Map->OrderedCells = (ITEM *) calloc(Map->NumCells, sizeof(ITEM))))
@@ -344,8 +356,6 @@ void ElevationSlopeAspect(MAPSIZE * Map, TOPOPIX ** TopoMap)
   GA_Igop(&n, 1, "+");
   printf("%d: global NumCells = %d\n", ParallelRank(), n);
   /* Map->NumCells = n; */
-
-  GA_Destroy(gaelev);
 
   return;
 }
