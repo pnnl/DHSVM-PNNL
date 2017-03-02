@@ -1,4 +1,4 @@
-<h1>Distributed Hydrology Soil Vegetation Model (DHSVM) </h1>
+# Distributed Hydrology Soil Vegetation Model (DHSVM) 
 
 This repository serves as the public source code repository of the Distributed Hydrology Soil Vegetation Model (DHSVM). You can find DHSVM documentation, and selected past and ongoing DHSVM-based research & projects on the <a href="http://dhsvmdev.pnl.gov///">DHSVM website </a>.
 
@@ -8,7 +8,7 @@ DHSVM (<a href="http://onlinelibrary.wiley.com/doi/10.1029/94WR00436/abstract">W
 
 If you decide to use DHSVM, please acknowledge <a href="http://onlinelibrary.wiley.com/doi/10.1029/94WR00436/abstract">Wigmosta et al. [1994]</a> and any other relevant publications. We are very interested in receiving a copy of any manuscripts of studies in which the model is used. Finally, if you do find bugs in the model or if you have improvements to the model code, we are interested in incorporating your suggestions and/or contributions. 
 
-## Configuration and Build with CMake ##
+## Configuration and Build with CMake 
 
 DHSVM and related utilities can be configured and built using
 [CMake](https://cmake.org).  This provides an automated,
@@ -41,5 +41,3 @@ select optional features.  Here are some terse instructions:
     in a tree mirroring the source tree.  For example, DHSVM is
     `build/DHSVM/sourcecode/DHSVM`. 
     
-The original Makefiles are in the source tree and can still be used as
-described in the tutorial if preferred.

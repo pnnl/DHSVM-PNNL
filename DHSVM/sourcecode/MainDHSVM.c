@@ -92,7 +92,7 @@ int main(int argc, char **argv)
   LAYER Veg;
   LISTPTR Input = NULL;			/* Linked list with input strings */
   MAPSIZE Map;					/* Size and location of (local) model area */
-  MAPSIZE GMap;					/* Size and location of (local) model area */
+  MAPSIZE GMap;					/* Size and location of (global) model area */
   MAPSIZE Radar;				/* Size and location of area covered by precipitation radar */
   MAPSIZE MM5Map;				/* Size and location of area covered by MM5 input files */
   GRID Grid;
@@ -284,7 +284,7 @@ int main(int argc, char **argv)
 
     if (IsNewDay(Time.DayStep)) {
       InitNewDay(Time.Current.JDay, &SolarGeo);
-      if (ParallelRank() == 0) {
+      if (me == 0) {
         PrintDate(&(Time.Current), stdout);
         printf("\n");
       }
@@ -404,7 +404,7 @@ int main(int argc, char **argv)
 	   EvapMap, RadiationMap, PrecipMap, SnowMap, MetMap, VegMap, &Veg, SoilMap,
 	   Network, &ChannelData, &Soil, &Total, &HydrographInfo, Hydrograph);
 
-  if (ParallelRank()== 0) {
+  if (me == 0) {
     FinalMassBalance(&(Dump.FinalBalance), &Total, &Mass);
   }
 

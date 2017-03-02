@@ -173,9 +173,10 @@ void channel_grid_free_map(MAPSIZE *Map, ChannelMapPtr ** map)
 /* -------------------------------------------------------------
    channel_grid_read_map
    ------------------------------------------------------------- */
-ChannelMapPtr **channel_grid_read_map(MAPSIZE *Map, Channel *net, 
-                                      const char *file,
-                                      SOILPIX ** SoilMap)
+ChannelMapPtr 
+**channel_grid_read_map(MAPSIZE *Map, Channel *net, 
+                        const char *file,
+                        SOILPIX ** SoilMap)
 {
   ChannelMapPtr **map;
   static const int fields = 8;
