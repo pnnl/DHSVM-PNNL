@@ -196,6 +196,10 @@ struct {
       "Infiltration Accumulation", "%.4g",
       "m", "Accumulated water in top layer",
       NC_FLOAT, FALSE, FALSE, FALSE, 0}, {
+  515, "SoilMap.ChannelInt",
+      "Channel Interception", "%.4g",
+      "m", "Surface/Subsurface flow intercepted by channel network(s)",
+      NC_FLOAT, FALSE, FALSE, FALSE, 0}, {
   601, "WindModel",
       "Wind Direction Multiplier", "%.5f",
       "", "Wind Direction Multiplier", NC_FLOAT, FALSE, FALSE, FALSE, 0}, {
