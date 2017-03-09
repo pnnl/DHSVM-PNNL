@@ -16,6 +16,7 @@
  * $Id: InitTerrainMaps.c,v 3.1 2013/2/3 00:08:33 Ning Exp $
  */
 
+#include <ga.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -29,6 +30,7 @@
 #include "sizeofnt.h"
 #include "slopeaspect.h"
 #include "varid.h"
+#include "ParallelDHSVM.h"
 
  /*****************************************************************************
    InitTerrainMaps()
@@ -150,6 +152,9 @@ void InitTopoMap(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * Map,
       }
     }
   }
+  printf("%d: local MINELEV = %.3f\n", ParallelRank(), MINELEV);
+  GA_Fgop(&MINELEV, 1, "min");
+  printf("%d: global MINELEV = %.3f\n", ParallelRank(), MINELEV);
 
   /* Calculate slope, aspect, magnitude of subsurface flow gradient, and
      fraction of flow flowing in each direction based on the land surface

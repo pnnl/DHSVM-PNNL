@@ -219,25 +219,16 @@ void ElevationSlopeAspect(MAPSIZE * Map, TOPOPIX ** TopoMap)
 
   outelev = (float) OUTSIDEBASIN;
 
-  /* find out the minimum grid elevation of the basin (using the mask) */
   /* Count the number of cells in the basin.  Need this to allocate
      memory for the new, smaller Elev[] and Coords[][].  */
-  min = 9999;
   Map->NumCells = 0;
   for (y = 0, i = 0; y < Map->NY; y++) {
     for (x = 0; x < Map->NX; x++, i++) {
       if (INBASIN(TopoMap[y][x].Mask)) {
-        if (TopoMap[y][x].Dem < min) {
-          min = TopoMap[y][x].Dem;
-        }
 	Map->NumCells++;
       }
     }
   }
-  printf("%d: local MINELEV = %.3f\n", ParallelRank(), min);
-  GA_Fgop(&min, 1, "min");
-  printf("%d: global MINELEV = %.3f\n", ParallelRank(), min);
-  MINELEV = min;
 
   /* make a global array to hold elevation */
 
