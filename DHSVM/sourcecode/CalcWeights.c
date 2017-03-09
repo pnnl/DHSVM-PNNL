@@ -114,9 +114,8 @@ void CalcWeights(METLOCATION * Station, int NStats, MAPSIZE *Map,
 
   if (Options->Interpolation == INVDIST) {
     for (y = 0; y < Map->NY; y++) {
-      Loc.N = y;
       for (x = 0; x < Map->NX; x++) {
-        Loc.E = x;
+        Local2Global(Map, x, y, &Loc.E, &Loc.N);
         if (INBASIN(BasinMask[y][x])) {
           if (IsStationLocation(&Loc, NStats, Station, &CurrentStation)) {
             for (i = 0; i < NStats; i++) {
@@ -151,9 +150,8 @@ void CalcWeights(METLOCATION * Station, int NStats, MAPSIZE *Map,
     printf("Number of stations is %d \n", NStats);
 
     for (y = 0; y < Map->NY; y++) {
-      Loc.N = y;
       for (x = 0; x < Map->NX; x++) {
-        Loc.E = x;
+        Local2Global(Map, x, y, &Loc.E, &Loc.N);
         if (INBASIN(BasinMask[y][x])) {	/*we are inside the basin mask */
           /* find the distance to nearest station */
           mindistance = DHSVM_HUGE;

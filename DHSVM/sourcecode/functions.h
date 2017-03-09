@@ -145,7 +145,7 @@ void InitMetMaps(int NDaySteps, MAPSIZE *Map, MAPSIZE *Radar,
          LAYER *Soil, VEGPIX **VegMap, LAYER *Veg, TOPOPIX **TopoMap, 
          float ****MM5Input, float ****WindModel);
 
-void InitMetSources(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
+void InitMetSources(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *GMap, MAPSIZE *Map,
             TOPOPIX **TopoMap, int NSoilLayers, TIMESTRUCT *Time, 
             INPUTFILES *InFiles, int *NStats, METLOCATION **Stat, MAPSIZE *Radar, 
             MAPSIZE *MM5Map, GRID *Grid);

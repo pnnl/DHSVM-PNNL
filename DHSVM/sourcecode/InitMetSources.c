@@ -58,7 +58,7 @@
 
    Comments     :
  *******************************************************************************/
-void InitMetSources(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
+void InitMetSources(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *GMap, MAPSIZE *Map,
   TOPOPIX **TopoMap, int NSoilLayers, TIMESTRUCT *Time, INPUTFILES *InFiles,
   int *NStats, METLOCATION **Stat, MAPSIZE *Radar, MAPSIZE *MM5Map,
   GRID *Grid)
@@ -83,7 +83,7 @@ void InitMetSources(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
 
   /* otherwise, check and initialize the other options */
   if (Options->QPF == TRUE || (Options->MM5 == FALSE && Options->GRIDMET == FALSE))
-    InitStations(Input, Map, Time->NDaySteps, Options, NStats, Stat);
+    InitStations(Input, GMap, Time->NDaySteps, Options, NStats, Stat);
 
   if (Options->QPF == TRUE || Options->MM5 == FALSE) {
     if (Options->PrecipType == RADAR)

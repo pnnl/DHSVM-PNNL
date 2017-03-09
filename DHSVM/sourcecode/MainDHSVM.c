@@ -177,7 +177,7 @@ int main(int argc, char **argv)
   InitNetwork(Map.NY, Map.NX, Map.DX, Map.DY, TopoMap, SoilMap, 
 	      VegMap, VType, &Network, &ChannelData, Veg, &Options);
 
-  InitMetSources(Input, &Options, &Map, TopoMap, Soil.MaxLayers, &Time,
+  InitMetSources(Input, &Options, &GMap, &Map, TopoMap, Soil.MaxLayers, &Time,
 		 &InFiles, &NStats, &Stat, &Radar, &MM5Map, &Grid);
 
 #if 0

@@ -20,6 +20,7 @@
 #include "DHSVMerror.h"
 #include "functions.h"
 #include "constants.h"
+#include "ParallelDHSVM.h"
 
  /*****************************************************************************
    InitInterpolationWeights()
@@ -61,24 +62,30 @@ void InitInterpolationWeights(MAPSIZE *Map, OPTIONSTRUCT *Options,
       for (x = 0; x < Map->NX; x++)
         BasinMask[y][x] = TopoMap[y][x].Mask;
 
-    CalcWeights(Stats, NStats, Map, BasinMask, MetWeights,
-      Options);
+    CalcWeights(Stats, NStats, Map, BasinMask, MetWeights, Options);
 
-    printf("\nSummary info on met stations used for current model run \n");
-    printf("        Name\t\tY\tX\tIn Mask\tDefined Elev\tActual Elev\n");
+    ParallelBarrier();
+    ParallelBarrier();
+    if (ParallelRank() == 0) {
+      printf("\nSummary info on met stations used for current model run \n");
+      printf("        Name\t\tY\tX\tIn Mask\tDefined Elev\tActual Elev\n");
+    }
     for (i = 0; i < NStats; i++) {
-      if ((Stats[i].Loc.N > Map->NY || Stats[i].Loc.N < 0 ||
-        Stats[i].Loc.E > Map->NX || Stats[i].Loc.E < 0))
+      if ((Stats[i].Loc.N > Map->gNY || Stats[i].Loc.N < 0 ||
+           Stats[i].Loc.E > Map->gNX || Stats[i].Loc.E < 0)) {
         printf("%20s\t%d\t%d\t%5s\t%5.1f\t\t%5s\n",
-          Stats[i].Name, Stats[i].Loc.N, Stats[i].Loc.E,
-          "NA", Stats[i].Elev, "NA");
-      else
-        printf("%20s\t%d\t%d\t%d\t%5.1f\t\t%5.1f\n",
-          Stats[i].Name, Stats[i].Loc.N, Stats[i].Loc.E,
-          BasinMask[Stats[i].Loc.N][Stats[i].Loc.E], Stats[i].Elev,
-          TopoMap[Stats[i].Loc.N][Stats[i].Loc.E].Dem);
+               Stats[i].Name, Stats[i].Loc.N, Stats[i].Loc.E,
+               "NA", Stats[i].Elev, "NA");
+      } else {
+        if (Global2Local(Map, Stats[i].Loc.E, Stats[i].Loc.N, &x, &y)) {
+          printf("%20s\t%d\t%d\t%d\t%5.1f\t\t%5.1f\n",
+                 Stats[i].Name, Stats[i].Loc.N, Stats[i].Loc.E,
+                 BasinMask[y][x], Stats[i].Elev, TopoMap[y][x].Dem);
+        } 
+      }
     }
     printf("\n");
+    ParallelBarrier();
 
     for (y = 0; y < Map->NY; y++)
       free(BasinMask[y]);
