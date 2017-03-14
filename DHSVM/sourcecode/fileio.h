@@ -16,6 +16,8 @@
 #ifndef FILEIO_H
 #define FILEIO_H
 
+#include "data.h"
+
 /* define identifiers for different file formats */
 
 #define BIN 1			/* binary IO */
@@ -28,11 +30,13 @@ extern char fileext[];
 
 /* function pointers for 2D file IO */
 
-extern void (*CreateMapFile) (char *FileName, ...);
-extern int (*Read2DMatrix) (char *FileName, void *Matrix, int NumberType,
-			    int NY, int NX, int NDataSet, ...);
-extern int (*Write2DMatrix) (char *Filename, void *Matrix, int NumberType,
-			     int NY, int NX, ...);
+void CreateMapFile(char *FileName, char *FileLabel, MAPSIZE *Map);
+
+int Read2DMatrix(char *FileName, void *Matrix, int NumberType, 
+                 MAPSIZE *Map, int NDataSet, char *VarName, int index);
+
+int Write2DMatrix(char *FileName, void *Matrix, int NumberType, 
+                  MAPSIZE *Map, MAPDUMP *DMap, int index);
 
 
 /* generic file functions */

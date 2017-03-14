@@ -87,7 +87,7 @@ void InitTopoMap(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * Map,
     SizeOfNumberType(NumberType))))
     ReportError((char *)Routine, 1);
 
-  flag = Read2DMatrix(StrEnv[demfile].VarStr, Elev, NumberType, Map->NY, Map->NX, 0,
+  flag = Read2DMatrix(StrEnv[demfile].VarStr, Elev, NumberType, Map, 0,
     VarName, 0);
 
   /* Assign the attributes to the map pixel */
@@ -109,23 +109,13 @@ void InitTopoMap(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * Map,
   else ReportError((char *)Routine, 57);
   free(Elev);
 
-  /* find out the minimum grid elevation of the basin */
-  MINELEV = 9999;
-  for (y = 0, i = 0; y < Map->NY; y++) {
-    for (x = 0; x < Map->NX; x++, i++) {
-      if ((*TopoMap)[y][x].Dem < MINELEV) {
-        MINELEV = (*TopoMap)[y][x].Dem;
-      }
-    }
-  }
-
   /* Read the mask */
   GetVarName(002, 0, VarName);
   GetVarNumberType(002, &NumberType);
   if (!(Mask = (unsigned char *)calloc(Map->NX * Map->NY,
     SizeOfNumberType(NumberType))))
     ReportError((char *)Routine, 1);
-  flag = Read2DMatrix(StrEnv[maskfile].VarStr, Mask, NumberType, Map->NY, Map->NX, 0,
+  flag = Read2DMatrix(StrEnv[maskfile].VarStr, Mask, NumberType, Map, 0,
     VarName, 0);
 
   if ((Options->FileFormat == NETCDF && flag == 0)
@@ -148,6 +138,19 @@ void InitTopoMap(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * Map,
   }
   else ReportError((char *)Routine, 57);
   free(Mask);
+
+  /* find out the minimum grid elevation of the basin (using the mask) */
+  MINELEV = 9999;
+  for (y = 0, i = 0; y < Map->NY; y++) {
+    for (x = 0; x < Map->NX; x++, i++) {
+      if (INBASIN((*TopoMap)[y][x].Mask)) {
+        if ((*TopoMap)[y][x].Dem < MINELEV) {
+          MINELEV = (*TopoMap)[y][x].Dem;
+        }
+      }
+    }
+  }
+  printf("MINELEV = %.3f\n", MINELEV);
 
   /* Calculate slope, aspect, magnitude of subsurface flow gradient, and
      fraction of flow flowing in each direction based on the land surface
@@ -209,8 +212,7 @@ void InitSoilMap(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * Map,
   if (!(Type = (unsigned char *)calloc(Map->NX * Map->NY,
     SizeOfNumberType(NumberType))))
     ReportError((char *)Routine, 1);
-  flag = Read2DMatrix(StrEnv[soiltype_file].VarStr, Type, NumberType, Map->NY,
-    Map->NX, 0, VarName, 0);
+  flag = Read2DMatrix(StrEnv[soiltype_file].VarStr, Type, NumberType, Map, 0, VarName, 0);
 
   if ((Options->FileFormat == NETCDF && flag == 0)
     || (Options->FileFormat == BIN))
@@ -240,8 +242,7 @@ void InitSoilMap(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * Map,
   if (!(Depth = (float *)calloc(Map->NX * Map->NY,
     SizeOfNumberType(NumberType))))
     ReportError((char *)Routine, 1);
-  flag = Read2DMatrix(StrEnv[soildepth_file].VarStr, Depth, NumberType, Map->NY,
-    Map->NX, 0, VarName, 0);
+  flag = Read2DMatrix(StrEnv[soildepth_file].VarStr, Depth, NumberType, Map, 0, VarName, 0);
 
   /* Assign the attributes to the correct map pixel */
   if ((Options->FileFormat == NETCDF && flag == 0)
@@ -319,7 +320,7 @@ void InitVegMap(OPTIONSTRUCT * Options, LISTPTR Input, MAPSIZE * Map, VEGPIX ***
   if (!(Type = (unsigned char *)calloc(Map->NX * Map->NY,
     SizeOfNumberType(NumberType))))
     ReportError((char *)Routine, 1);
-  flag = Read2DMatrix(VegMapFileName, Type, NumberType, Map->NY, Map->NX, 0, VarName, 0);
+  flag = Read2DMatrix(VegMapFileName, Type, NumberType, Map, 0, VarName, 0);
 
   /* Assign the attributes to the correct map pixel */
   if (!(*VegMap = (VEGPIX **)calloc(Map->NY, sizeof(VEGPIX *))))

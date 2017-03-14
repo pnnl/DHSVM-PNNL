@@ -67,7 +67,7 @@ void InitNewMonth(TIMESTRUCT *Time, OPTIONSTRUCT *Options, MAPSIZE *Map,
     GetVarNumberType(205, &NumberType);
     if (!(Array = (float *)calloc(Map->NY * Map->NX, sizeof(float))))
       ReportError((char *)Routine, 1);
-    flag = Read2DMatrix(FileName, Array, NumberType, Map->NY, Map->NX, 0, VarName, 0);
+    flag = Read2DMatrix(FileName, Array, NumberType, Map, 0, VarName, 0);
 
     if ((Options->FileFormat == NETCDF && flag == 0)
       || (Options->FileFormat == BIN)) {
@@ -94,7 +94,7 @@ void InitNewMonth(TIMESTRUCT *Time, OPTIONSTRUCT *Options, MAPSIZE *Map,
     if (!(Array1 = (unsigned char *)calloc(Map->NY * Map->NX, sizeof(unsigned char))))
       ReportError((char *)Routine, 1);
     for (i = 0; i < Time->NDaySteps; i++) {
-      Read2DMatrix(FileName, Array1, NumberType, Map->NY, Map->NX, i, VarName, i);
+      Read2DMatrix(FileName, Array1, NumberType, Map, i, VarName, i);
       for (y = 0; y < Map->NY; y++) {
         for (x = 0; x < Map->NX; x++) {
           ShadowMap[i][y][x] = Array1[y * Map->NX + x];
@@ -234,7 +234,7 @@ void InitNewStep(INPUTFILES *InFiles, MAPSIZE *Map, TIMESTRUCT *Time,
 
     Step = NumberOfSteps(&(Time->StartMM5), &(Time->Current), Time->Dt);
 
-    Read2DMatrix(InFiles->MM5Temp, Array, NumberType, MM5Map->NY, MM5Map->NX, Step);
+    Read2DMatrix(InFiles->MM5Temp, Array, NumberType, MM5Map, Step, "", 0);
     for (y = 0; y < Map->NY; y++)
       for (x = 0; x < Map->NX; x++) {
         MM5Y = (int)((y + MM5Map->OffsetY) * Map->DY / MM5Map->DY);
@@ -242,7 +242,7 @@ void InitNewStep(INPUTFILES *InFiles, MAPSIZE *Map, TIMESTRUCT *Time,
         MM5Input[MM5_temperature - 1][y][x] = Array[MM5Y * MM5Map->NX + MM5X];
       }
 
-    Read2DMatrix(InFiles->MM5Humidity, Array, NumberType, MM5Map->NY, MM5Map->NX, Step);
+    Read2DMatrix(InFiles->MM5Humidity, Array, NumberType, MM5Map, Step, "", 0);
 
     for (y = 0; y < Map->NY; y++)
       for (x = 0; x < Map->NX; x++) {
@@ -251,8 +251,7 @@ void InitNewStep(INPUTFILES *InFiles, MAPSIZE *Map, TIMESTRUCT *Time,
         MM5Input[MM5_humidity - 1][y][x] = Array[MM5Y * MM5Map->NX + MM5X];
       }
 
-    Read2DMatrix(InFiles->MM5Wind, Array, NumberType, MM5Map->NY,
-      MM5Map->NX, Step);
+    Read2DMatrix(InFiles->MM5Wind, Array, NumberType, MM5Map, Step, "", 0);
     for (y = 0; y < Map->NY; y++)
       for (x = 0; x < Map->NX; x++) {
         MM5Y = (int)((y + MM5Map->OffsetY) * Map->DY / MM5Map->DY);
@@ -260,8 +259,7 @@ void InitNewStep(INPUTFILES *InFiles, MAPSIZE *Map, TIMESTRUCT *Time,
         MM5Input[MM5_wind - 1][y][x] = Array[MM5Y * MM5Map->NX + MM5X];
       }
 
-    Read2DMatrix(InFiles->MM5ShortWave, Array, NumberType, MM5Map->NY,
-      MM5Map->NX, Step);
+    Read2DMatrix(InFiles->MM5ShortWave, Array, NumberType, MM5Map, Step, "", 0);
     for (y = 0; y < Map->NY; y++)
       for (x = 0; x < Map->NX; x++) {
         MM5Y = (int)((y + MM5Map->OffsetY) * Map->DY / MM5Map->DY);
@@ -269,8 +267,7 @@ void InitNewStep(INPUTFILES *InFiles, MAPSIZE *Map, TIMESTRUCT *Time,
         MM5Input[MM5_shortwave - 1][y][x] = Array[MM5Y * MM5Map->NX + MM5X];
       }
 
-    Read2DMatrix(InFiles->MM5LongWave, Array, NumberType, MM5Map->NY,
-      MM5Map->NX, Step);
+    Read2DMatrix(InFiles->MM5LongWave, Array, NumberType, MM5Map, Step, "", 0);
     for (y = 0; y < Map->NY; y++)
       for (x = 0; x < Map->NX; x++) {
         MM5Y = (int)((y + MM5Map->OffsetY) * Map->DY / MM5Map->DY);
@@ -278,8 +275,7 @@ void InitNewStep(INPUTFILES *InFiles, MAPSIZE *Map, TIMESTRUCT *Time,
         MM5Input[MM5_longwave - 1][y][x] = Array[MM5Y * MM5Map->NX + MM5X];
       }
 
-    Read2DMatrix(InFiles->MM5Precipitation, Array, NumberType, MM5Map->NY,
-      MM5Map->NX, Step);
+    Read2DMatrix(InFiles->MM5Precipitation, Array, NumberType, MM5Map, Step, "", 0);
     for (y = 0; y < Map->NY; y++)
       for (x = 0; x < Map->NX; x++) {
         MM5Y = (int)((y + MM5Map->OffsetY) * Map->DY / MM5Map->DY);
@@ -291,16 +287,14 @@ void InitNewStep(INPUTFILES *InFiles, MAPSIZE *Map, TIMESTRUCT *Time,
           MM5Input[MM5_precip - 1][y][x] = 0.0;
         }
       }
-    Read2DMatrix(InFiles->MM5Terrain, Array, NumberType, MM5Map->NY,
-      MM5Map->NX, Step);
+    Read2DMatrix(InFiles->MM5Terrain, Array, NumberType, MM5Map, Step, "", 0);
     for (y = 0; y < Map->NY; y++)
       for (x = 0; x < Map->NX; x++) {
         MM5Y = (int)((y + MM5Map->OffsetY) * Map->DY / MM5Map->DY);
         MM5X = (int)((x - MM5Map->OffsetX) * Map->DX / MM5Map->DY);
         MM5Input[MM5_terrain - 1][y][x] = Array[MM5Y * MM5Map->NX + MM5X];
       }
-    Read2DMatrix(InFiles->MM5Lapse, Array, NumberType, MM5Map->NY,
-      MM5Map->NX, Step);
+    Read2DMatrix(InFiles->MM5Lapse, Array, NumberType, MM5Map, Step, "", 0);
     for (y = 0; y < Map->NY; y++)
       for (x = 0; x < Map->NX; x++) {
         MM5Y = (int)((y + MM5Map->OffsetY) * Map->DY / MM5Map->DY);
@@ -311,8 +305,7 @@ void InitNewStep(INPUTFILES *InFiles, MAPSIZE *Map, TIMESTRUCT *Time,
     if (Options->HeatFlux == TRUE) {
 
       for (i = 0, j = MM5_lapse; i < NSoilLayers; i++, j++) {
-        Read2DMatrix(InFiles->MM5SoilTemp[i], Array, NumberType, MM5Map->NY,
-          MM5Map->NX, Step);
+        Read2DMatrix(InFiles->MM5SoilTemp[i], Array, NumberType, MM5Map, Step, "", 0);
         for (y = 0; y < Map->NY; y++)
           for (x = 0; x < Map->NX; x++) {
             MM5Y = (int)((y + MM5Map->OffsetY) * Map->DY / MM5Map->DY);

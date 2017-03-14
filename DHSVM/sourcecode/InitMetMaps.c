@@ -54,17 +54,17 @@ void InitMetMaps(int NDaySteps, MAPSIZE *Map, MAPSIZE *Radar,
   if (Options->MM5 == TRUE) {
     InitMM5Maps(Soil->MaxLayers, Map->NY, Map->NX, MM5Input, RadMap, Options);
     if (Options->Shading == TRUE)
-      InitShadeMap(Options, NDaySteps, Map->NY, Map->NX, ShadowMap, SkyViewMap);
+      InitShadeMap(Options, NDaySteps, Map, ShadowMap, SkyViewMap);
   }
   else {
     if (Options->PrecipType == RADAR)
       InitRadarMap(Radar, RadarMap);
     if (Options->PrecipLapse == MAP)
-      InitPrecipLapseMap(PrecipLapseFile, Map->NY, Map->NX, PrecipLapseMap);
+      InitPrecipLapseMap(PrecipLapseFile, Map, PrecipLapseMap);
     if (Options->Prism == TRUE)
       InitPrismMap(Map->NY, Map->NX, PrismMap);
     if (Options->Shading == TRUE)
-      InitShadeMap(Options, NDaySteps, Map->NY, Map->NX, ShadowMap, SkyViewMap);
+      InitShadeMap(Options, NDaySteps, Map, ShadowMap, SkyViewMap);
 
     if (!((*SkyViewMap) = (float **)calloc(Map->NY, sizeof(float *))))
       ReportError("InitMetMaps()", 1);
@@ -78,7 +78,7 @@ void InitMetMaps(int NDaySteps, MAPSIZE *Map, MAPSIZE *Radar,
       }
     }
     if (Options->WindSource == MODEL)
-      InitWindModelMaps(WindPath, Map->NY, Map->NX, WindModel);
+      InitWindModelMaps(WindPath, Map, WindModel);
 
     InitRadMap(Map, RadMap);
   }
@@ -234,7 +234,7 @@ void InitMM5Maps(int NSoilLayers, int NY, int NX, float ****MM5Input,
 /*******************************************************************************
   InitWindModelMaps()
 *******************************************************************************/
-void InitWindModelMaps(char *WindPath, int NY, int NX, float ****WindModel)
+void InitWindModelMaps(char *WindPath, MAPSIZE *Map, float ****WindModel)
 {
   char *Routine = "InitWindModelMaps";
   char InFileName[NAMESIZE + 1];
@@ -249,15 +249,15 @@ void InitWindModelMaps(char *WindPath, int NY, int NX, float ****WindModel)
     ReportError(Routine, 1);
 
   for (n = 0; n < NWINDMAPS; n++) {
-    if (!((*WindModel)[n] = (float **)calloc(NY, sizeof(float *))))
+    if (!((*WindModel)[n] = (float **)calloc(Map->NY, sizeof(float *))))
       ReportError(Routine, 1);
-    for (y = 0; y < NY; y++) {
-      if (!((*WindModel)[n][y] = (float *)calloc(NX, sizeof(float))))
+    for (y = 0; y < Map->NY; y++) {
+      if (!((*WindModel)[n][y] = (float *)calloc(Map->NX, sizeof(float))))
         ReportError(Routine, 1);
     }
   }
 
-  if (!(Array = (float *)calloc(NY * NX, sizeof(float))))
+  if (!(Array = (float *)calloc(Map->NY * Map->NX, sizeof(float))))
     ReportError((char *)Routine, 1);
   NumberType = NC_FLOAT;
 
@@ -265,10 +265,10 @@ void InitWindModelMaps(char *WindPath, int NY, int NX, float ****WindModel)
   for (n = 0; n < NWINDMAPS; n++) {
     sprintf(Str, "%02d", n + 1);
     sprintf(InFileName, "%s%s%s", WindPath, Str, fileext);
-    Read2DMatrix(InFileName, Array, NumberType, NY, NX, 0);
-    for (y = 0; y < NY; y++) {
-      for (x = 0; x < NX; x++) {
-        (*WindModel)[n][y][x] = Array[y * NX + x];
+    Read2DMatrix(InFileName, Array, NumberType, Map, 0, "", 0);
+    for (y = 0; y < Map->NY; y++) {
+      for (x = 0; x < Map->NX; x++) {
+        (*WindModel)[n][y][x] = Array[y * Map->NX + x];
       }
     }
   }
@@ -318,8 +318,7 @@ void InitRadMap(MAPSIZE *Map, PIXRAD ***RadMap)
 /******************************************************************************/
 /*			       InitPrecipLapseMap                             */
 /******************************************************************************/
-void InitPrecipLapseMap(char *PrecipLapseFile, int NY, int NX,
-  float ***PrecipLapseMap)
+void InitPrecipLapseMap(char *PrecipLapseFile, MAPSIZE *Map, float ***PrecipLapseMap)
 {
   const char *Routine = "InitPrecipLapseMap";
   int NumberType;
@@ -327,22 +326,22 @@ void InitPrecipLapseMap(char *PrecipLapseFile, int NY, int NX,
   int y;			/* counter */
   float *Array = NULL;
 
-  if (!((*PrecipLapseMap) = (float **)calloc(NY, sizeof(float *))))
+  if (!((*PrecipLapseMap) = (float **)calloc(Map->NY, sizeof(float *))))
     ReportError((char *)Routine, 1);
 
-  for (y = 0; y < NY; y++) {
-    if (!((*PrecipLapseMap)[y] = (float *)calloc(NX, sizeof(float))))
+  for (y = 0; y < Map->NY; y++) {
+    if (!((*PrecipLapseMap)[y] = (float *)calloc(Map->NX, sizeof(float))))
       ReportError((char *)Routine, 1);
   }
 
-  if (!(Array = (float *)calloc(NY * NX, sizeof(float))))
+  if (!(Array = (float *)calloc(Map->NY * Map->NX, sizeof(float))))
     ReportError((char *)Routine, 1);
   NumberType = NC_FLOAT;
 
-  Read2DMatrix(PrecipLapseFile, Array, NumberType, NY, NX, 0);
-  for (y = 0; y < NY; y++) {
-    for (x = 0; x < NX; x++) {
-      (*PrecipLapseMap)[y][x] = Array[y * NX + x];
+  Read2DMatrix(PrecipLapseFile, Array, NumberType, Map, 0, "", 0);
+  for (y = 0; y < Map->NY; y++) {
+    for (x = 0; x < Map->NX; x++) {
+      (*PrecipLapseMap)[y][x] = Array[y * Map->NX + x];
     }
   }
 
@@ -378,7 +377,7 @@ void InitPrismMap(int NY, int NX, float ***PrismMap)
 /******************************************************************************/
 /*				  InitShadeMap                                */
 /******************************************************************************/
-void InitShadeMap(OPTIONSTRUCT * Options, int NDaySteps, int NY, int NX,
+void InitShadeMap(OPTIONSTRUCT * Options, int NDaySteps, MAPSIZE *Map,
   unsigned char ****ShadowMap, float ***SkyViewMap)
 {
   const char *Routine = "InitShadeMap";
@@ -394,37 +393,37 @@ void InitShadeMap(OPTIONSTRUCT * Options, int NDaySteps, int NY, int NX,
     ReportError((char *)Routine, 1);
   for (n = 0; n < NDaySteps; n++) {
     if (!((*ShadowMap)[n] =
-      (unsigned char **)calloc(NY, sizeof(unsigned char *))))
+      (unsigned char **)calloc(Map->NY, sizeof(unsigned char *))))
       ReportError((char *)Routine, 1);
-    for (y = 0; y < NY; y++) {
+    for (y = 0; y < Map->NY; y++) {
       if (!((*ShadowMap)[n][y] =
-        (unsigned char *)calloc(NX, sizeof(unsigned char))))
+        (unsigned char *)calloc(Map->NX, sizeof(unsigned char))))
         ReportError((char *)Routine, 1);
     }
   }
 
-  if (!((*SkyViewMap) = (float **)calloc(NY, sizeof(float *))))
+  if (!((*SkyViewMap) = (float **)calloc(Map->NY, sizeof(float *))))
     ReportError((char *)Routine, 1);
-  for (y = 0; y < NY; y++) {
-    if (!((*SkyViewMap)[y] = (float *)calloc(NX, sizeof(float))))
+  for (y = 0; y < Map->NY; y++) {
+    if (!((*SkyViewMap)[y] = (float *)calloc(Map->NX, sizeof(float))))
       ReportError((char *)Routine, 1);
   }
 
-  for (y = 0; y < NY; y++) {
-    for (x = 0; x < NX; x++) {
+  for (y = 0; y < Map->NY; y++) {
+    for (x = 0; x < Map->NX; x++) {
       (*SkyViewMap)[y][x] = 1.0;
     }
   }
 
   GetVarName(305, 0, VarName);
   GetVarNumberType(305, &NumberType);
-  if (!(Array = (float *)calloc(NY * NX, sizeof(float))))
+  if (!(Array = (float *)calloc(Map->NY * Map->NX, sizeof(float))))
     ReportError((char *)Routine, 1);
-  Read2DMatrix(Options->SkyViewDataPath, Array, NumberType, NY, NX, 0,
+  Read2DMatrix(Options->SkyViewDataPath, Array, NumberType, Map, 0,
     VarName, 0);
-  for (y = 0; y < NY; y++) {
-    for (x = 0; x < NX; x++) {
-      (*SkyViewMap)[y][x] = Array[y * NX + x];
+  for (y = 0; y < Map->NY; y++) {
+    for (x = 0; x < Map->NX; x++) {
+      (*SkyViewMap)[y][x] = Array[y * Map->NX + x];
     }
   }
 

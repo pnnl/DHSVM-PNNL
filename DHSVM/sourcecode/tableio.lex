@@ -395,7 +395,7 @@ table_close(void)
 }
 
 
-#ifdef TEST_MAIN
+#ifdef TEST_TABLE
 
 typedef enum { ONE, TWO, THREE } RecordWord;
 typedef struct _record_ {

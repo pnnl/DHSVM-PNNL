@@ -180,7 +180,7 @@ void DumpMap(MAPSIZE *Map, DATE *Current, MAPDUMP *DMap, TOPOPIX **TopoMap,
       for (y = 0; y < Map->NY; y++)
         for (x = 0; x < Map->NX; x++)
           ((float *)Array)[y * Map->NX + x] = EvapMap[y][x].ETot;
-      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map->NY, Map->NX,
+      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map,
         DMap, Index);
     }
     else if (DMap->Resolution == IMAGE_OUTPUT) {
@@ -188,7 +188,7 @@ void DumpMap(MAPSIZE *Map, DATE *Current, MAPDUMP *DMap, TOPOPIX **TopoMap,
         for (x = 0; x < Map->NX; x++)
           ((unsigned char *)Array)[y * Map->NX + x] =
           (unsigned char)((EvapMap[y][x].ETot - Offset) / Range * MAXUCHAR);
-      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map->NY, Map->NX, DMap,
+      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map, DMap,
         Index);
     }
     else
@@ -216,7 +216,7 @@ void DumpMap(MAPSIZE *Map, DATE *Current, MAPDUMP *DMap, TOPOPIX **TopoMap,
             ((float *)Array)[y * Map->NX + x] = NA;
         }
       }
-      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map->NY, Map->NX,
+      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map,
         DMap, Index);
     }
     else if (DMap->Resolution == IMAGE_OUTPUT) {
@@ -239,8 +239,7 @@ void DumpMap(MAPSIZE *Map, DATE *Current, MAPDUMP *DMap, TOPOPIX **TopoMap,
             ((float *)Array)[y * Map->NX + x] = 0;
         }
       }
-      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map->NY, Map->NX, DMap,
-        Index);
+      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map, DMap, Index);
     }
     else
       ReportError(VarIDStr, 66);
@@ -264,8 +263,7 @@ void DumpMap(MAPSIZE *Map, DATE *Current, MAPDUMP *DMap, TOPOPIX **TopoMap,
             ((float *)Array)[y * Map->NX + x] = NA;
         }
       }
-      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map->NY, Map->NX,
-        DMap, Index);
+      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map, DMap, Index);
     }
     else if (DMap->Resolution == IMAGE_OUTPUT) {
       for (y = 0; y < Map->NY; y++) {
@@ -287,8 +285,7 @@ void DumpMap(MAPSIZE *Map, DATE *Current, MAPDUMP *DMap, TOPOPIX **TopoMap,
             ((unsigned char *)Array)[y * Map->NX + x] = 0;
         }
       }
-      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map->NY, Map->NX, DMap,
-        Index);
+      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map, DMap, Index);
     }
     else
       ReportError(VarIDStr, 66);
@@ -312,8 +309,7 @@ void DumpMap(MAPSIZE *Map, DATE *Current, MAPDUMP *DMap, TOPOPIX **TopoMap,
               ((float *)Array)[y * Map->NX + x] = NA;
           }
         }
-        Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map->NY,
-          Map->NX, DMap, Index);
+        Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map, DMap, Index);
       }
     }
     else if (DMap->Resolution == IMAGE_OUTPUT) {
@@ -333,8 +329,7 @@ void DumpMap(MAPSIZE *Map, DATE *Current, MAPDUMP *DMap, TOPOPIX **TopoMap,
               ((unsigned char *)Array)[y * Map->NX + x] = 0;
           }
         }
-        Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map->NY, Map->NX, DMap,
-          Index);
+        Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map, DMap, Index);
       }
     }
     else
@@ -359,8 +354,7 @@ void DumpMap(MAPSIZE *Map, DATE *Current, MAPDUMP *DMap, TOPOPIX **TopoMap,
             ((float *)Array)[y * Map->NX + x] = NA;
         }
       }
-      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map->NY, Map->NX,
-        DMap, Index);
+      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map, DMap, Index);
     }
     else if (DMap->Resolution == IMAGE_OUTPUT) {
       for (y = 0; y < Map->NY; y++) {
@@ -382,8 +376,7 @@ void DumpMap(MAPSIZE *Map, DATE *Current, MAPDUMP *DMap, TOPOPIX **TopoMap,
             ((unsigned char *)Array)[y * Map->NX + x] = 0;
         }
       }
-      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map->NY, Map->NX, DMap,
-        Index);
+      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map, DMap, Index);
     }
     else
       ReportError(VarIDStr, 66);
@@ -396,8 +389,7 @@ void DumpMap(MAPSIZE *Map, DATE *Current, MAPDUMP *DMap, TOPOPIX **TopoMap,
           ((float *)Array)[y * Map->NX + x] = PrecipMap[y][x].Precip;
         }
       }
-      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map->NY, Map->NX,
-        DMap, Index);
+      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map, DMap, Index);
     }
     else if (DMap->Resolution == IMAGE_OUTPUT) {
       for (y = 0; y < Map->NY; y++)
@@ -405,7 +397,7 @@ void DumpMap(MAPSIZE *Map, DATE *Current, MAPDUMP *DMap, TOPOPIX **TopoMap,
           ((unsigned char *)Array)[y * Map->NX + x] =
           (unsigned char)((PrecipMap[y][x].Precip - Offset) /
             Range * MAXUCHAR);
-      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map->NY, Map->NX, DMap, Index);
+      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map, DMap, Index);
     }
     else
       ReportError(VarIDStr, 66);
@@ -426,8 +418,7 @@ void DumpMap(MAPSIZE *Map, DATE *Current, MAPDUMP *DMap, TOPOPIX **TopoMap,
             ((float *)Array)[y * Map->NX + x] = NA;
         }
       }
-      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map->NY, Map->NX,
-        DMap, Index);
+      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map, DMap, Index);
     }
     else if (DMap->Resolution == IMAGE_OUTPUT) {
       for (y = 0; y < Map->NY; y++) {
@@ -445,7 +436,7 @@ void DumpMap(MAPSIZE *Map, DATE *Current, MAPDUMP *DMap, TOPOPIX **TopoMap,
             ((unsigned char *)Array)[y * Map->NX + x] = 0;
         }
       }
-      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map->NY, Map->NX, DMap, Index);
+      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map, DMap, Index);
     }
     else
       ReportError(VarIDStr, 66);
@@ -467,8 +458,7 @@ void DumpMap(MAPSIZE *Map, DATE *Current, MAPDUMP *DMap, TOPOPIX **TopoMap,
             ((float *)Array)[y * Map->NX + x] = NA;
         }
       }
-      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map->NY, Map->NX,
-        DMap, Index);
+      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map, DMap, Index);
     }
     else if (DMap->Resolution == IMAGE_OUTPUT) {
       for (y = 0; y < Map->NY; y++) {
@@ -486,8 +476,7 @@ void DumpMap(MAPSIZE *Map, DATE *Current, MAPDUMP *DMap, TOPOPIX **TopoMap,
             ((unsigned char *)Array)[y * Map->NX + x] = 0;
         }
       }
-      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map->NY, Map->NX, DMap,
-        Index);
+      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map, DMap, Index);
     }
     else
       ReportError(VarIDStr, 66);
@@ -500,8 +489,7 @@ void DumpMap(MAPSIZE *Map, DATE *Current, MAPDUMP *DMap, TOPOPIX **TopoMap,
           ((float *)Array)[y * Map->NX + x] = PrecipMap[y][x].SumPrecip;
         }
       }
-      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map->NY, Map->NX,
-        DMap, Index);
+      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map, DMap, Index);
     }
     else if (DMap->Resolution == IMAGE_OUTPUT) {
       for (y = 0; y < Map->NY; y++)
@@ -509,7 +497,7 @@ void DumpMap(MAPSIZE *Map, DATE *Current, MAPDUMP *DMap, TOPOPIX **TopoMap,
           ((unsigned char *)Array)[y * Map->NX + x] =
           (unsigned char)((PrecipMap[y][x].Precip - Offset) /
             Range * MAXUCHAR);
-      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map->NY, Map->NX, DMap, Index);
+      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map, DMap, Index);
     }
     else
       ReportError(VarIDStr, 66);
@@ -523,14 +511,14 @@ void DumpMap(MAPSIZE *Map, DATE *Current, MAPDUMP *DMap, TOPOPIX **TopoMap,
           ((float *)Array)[y * Map->NX + x] = RadMap[y][x].ObsShortIn;
         }
       }
-      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map->NY, Map->NX, Index);
+      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map, DMap, Index);
     }
     else if (DMap->Resolution == IMAGE_OUTPUT) {
       for (y = 0; y < Map->NY; y++)
         for (x = 0; x < Map->NX; x++)
           ((unsigned char *)Array)[y * Map->NX + x] =
           (unsigned char)((RadMap[y][x].ObsShortIn - Offset) / Range * MAXUCHAR);
-      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map->NY, Map->NX, DMap, Index);
+      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map, DMap, Index);
     }
     else
       ReportError(VarIDStr, 66);
@@ -542,8 +530,7 @@ void DumpMap(MAPSIZE *Map, DATE *Current, MAPDUMP *DMap, TOPOPIX **TopoMap,
       for (y = 0; y < Map->NY; y++)
         for (x = 0; x < Map->NX; x++)
           ((float *)Array)[y * Map->NX + x] = RadMap[y][x].PixelNetShort;
-      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map->NY, Map->NX,
-        DMap, Index);
+      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map, DMap, Index);
     }
     else if (DMap->Resolution == IMAGE_OUTPUT) {
       for (y = 0; y < Map->NY; y++)
@@ -551,8 +538,7 @@ void DumpMap(MAPSIZE *Map, DATE *Current, MAPDUMP *DMap, TOPOPIX **TopoMap,
           ((unsigned char *)Array)[y * Map->NX + x] =
           (unsigned char)((RadMap[y][x].PixelNetShort - Offset) /
             Range * MAXUCHAR);
-      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map->NY, Map->NX, DMap,
-        Index);
+      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map, DMap, Index);
     }
     else
       ReportError(VarIDStr, 66);
@@ -564,16 +550,14 @@ void DumpMap(MAPSIZE *Map, DATE *Current, MAPDUMP *DMap, TOPOPIX **TopoMap,
       for (y = 0; y < Map->NY; y++)
         for (x = 0; x < Map->NX; x++)
           ((float *)Array)[y * Map->NX + x] = RadMap[y][x].NetRadiation[0]+RadMap[y][x].NetRadiation[1];
-      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map->NY, Map->NX,
-        DMap, Index);
+      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map, DMap, Index);
     }
     else if (DMap->Resolution == IMAGE_OUTPUT) {
       for (y = 0; y < Map->NY; y++)
         for (x = 0; x < Map->NX; x++)
           ((unsigned char *)Array)[y * Map->NX + x] =
           (unsigned char)((RadMap[y][x].NetRadiation[0] + RadMap[y][x].NetRadiation[1] - Offset) / Range * MAXUCHAR);
-      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map->NY, Map->NX, DMap,
-        Index);
+      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map, DMap, Index);
     }
     else
       ReportError(VarIDStr, 66);
@@ -584,15 +568,13 @@ void DumpMap(MAPSIZE *Map, DATE *Current, MAPDUMP *DMap, TOPOPIX **TopoMap,
       for (y = 0; y < Map->NY; y++)
         for (x = 0; x < Map->NX; x++)
           ((unsigned char *)Array)[y * Map->NX + x] = SnowMap[y][x].HasSnow;
-      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map->NY, Map->NX,
-        DMap, Index);
+      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map, DMap, Index);
     }
     else if (DMap->Resolution == IMAGE_OUTPUT) {
       for (y = 0; y < Map->NY; y++)
         for (x = 0; x < Map->NX; x++)
           ((unsigned char *)Array)[y * Map->NX + x] = SnowMap[y][x].HasSnow;
-      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map->NY, Map->NX, DMap,
-        Index);
+      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map, DMap, Index);
     }
     else
       ReportError(VarIDStr, 66);
@@ -604,16 +586,14 @@ void DumpMap(MAPSIZE *Map, DATE *Current, MAPDUMP *DMap, TOPOPIX **TopoMap,
         for (x = 0; x < Map->NX; x++)
           ((unsigned char *)Array)[y * Map->NX + x] =
           SnowMap[y][x].SnowCoverOver;
-      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map->NY, Map->NX,
-        DMap, Index);
+      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map, DMap, Index);
     }
     else if (DMap->Resolution == IMAGE_OUTPUT) {
       for (y = 0; y < Map->NY; y++)
         for (x = 0; x < Map->NX; x++)
           ((unsigned char *)Array)[y * Map->NX + x] =
           SnowMap[y][x].SnowCoverOver;
-      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map->NY, Map->NX, DMap,
-        Index);
+      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map, DMap, Index);
     }
     else
       ReportError(VarIDStr, 66);
@@ -624,8 +604,7 @@ void DumpMap(MAPSIZE *Map, DATE *Current, MAPDUMP *DMap, TOPOPIX **TopoMap,
       for (y = 0; y < Map->NY; y++)
         for (x = 0; x < Map->NX; x++)
           ((unsigned short *)Array)[y * Map->NX + x] = SnowMap[y][x].LastSnow;
-      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map->NY, Map->NX,
-        DMap, Index);
+      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map, DMap, Index);
     }
     else if (DMap->Resolution == IMAGE_OUTPUT) {
       for (y = 0; y < Map->NY; y++)
@@ -633,8 +612,7 @@ void DumpMap(MAPSIZE *Map, DATE *Current, MAPDUMP *DMap, TOPOPIX **TopoMap,
           ((unsigned char *)Array)[y * Map->NX + x] =
           (unsigned char)(((float)SnowMap[y][x].LastSnow - Offset) / Range
             * MAXUCHAR);
-      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map->NY, Map->NX, DMap,
-        Index);
+      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map, DMap, Index);
     }
     else
       ReportError(VarIDStr, 66);
@@ -645,16 +623,14 @@ void DumpMap(MAPSIZE *Map, DATE *Current, MAPDUMP *DMap, TOPOPIX **TopoMap,
       for (y = 0; y < Map->NY; y++)
         for (x = 0; x < Map->NX; x++)
           ((float *)Array)[y * Map->NX + x] = SnowMap[y][x].Swq;
-      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map->NY, Map->NX,
-        DMap, Index);
+      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map, DMap, Index);
     }
     else if (DMap->Resolution == IMAGE_OUTPUT) {
       for (y = 0; y < Map->NY; y++)
         for (x = 0; x < Map->NX; x++)
           ((unsigned char *)Array)[y * Map->NX + x] =
           (unsigned char)((SnowMap[y][x].Swq - Offset) / Range * MAXUCHAR);
-      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map->NY, Map->NX, DMap,
-        Index);
+      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map, DMap, Index);
     }
     else
       ReportError(VarIDStr, 66);
@@ -665,16 +641,14 @@ void DumpMap(MAPSIZE *Map, DATE *Current, MAPDUMP *DMap, TOPOPIX **TopoMap,
       for (y = 0; y < Map->NY; y++)
         for (x = 0; x < Map->NX; x++)
           ((float *)Array)[y * Map->NX + x] = SnowMap[y][x].Melt;
-      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map->NY, Map->NX,
-        DMap, Index);
+      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map, DMap, Index);
     }
     else if (DMap->Resolution == IMAGE_OUTPUT) {
       for (y = 0; y < Map->NY; y++)
         for (x = 0; x < Map->NX; x++)
           ((unsigned char *)Array)[y * Map->NX + x] =
           (unsigned char)((SnowMap[y][x].Melt - Offset) / Range * MAXUCHAR);
-      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map->NY, Map->NX, DMap,
-        Index);
+      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map, DMap, Index);
     }
     else
       ReportError(VarIDStr, 66);
@@ -685,8 +659,7 @@ void DumpMap(MAPSIZE *Map, DATE *Current, MAPDUMP *DMap, TOPOPIX **TopoMap,
       for (y = 0; y < Map->NY; y++)
         for (x = 0; x < Map->NX; x++)
           ((float *)Array)[y * Map->NX + x] = SnowMap[y][x].PackWater;
-      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map->NY, Map->NX,
-        DMap, Index);
+      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map, DMap, Index);
     }
     else if (DMap->Resolution == IMAGE_OUTPUT) {
       for (y = 0; y < Map->NY; y++)
@@ -694,8 +667,7 @@ void DumpMap(MAPSIZE *Map, DATE *Current, MAPDUMP *DMap, TOPOPIX **TopoMap,
           ((unsigned char *)Array)[y * Map->NX + x] =
           (unsigned char)((SnowMap[y][x].PackWater - Offset) /
             Range * MAXUCHAR);
-      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map->NY, Map->NX, DMap,
-        Index);
+      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map, DMap, Index);
     }
     else
       ReportError(VarIDStr, 66);
@@ -706,15 +678,14 @@ void DumpMap(MAPSIZE *Map, DATE *Current, MAPDUMP *DMap, TOPOPIX **TopoMap,
       for (y = 0; y < Map->NY; y++)
         for (x = 0; x < Map->NX; x++)
           ((float *)Array)[y * Map->NX + x] = SnowMap[y][x].TPack;
-      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map->NY, Map->NX,
-        DMap, Index);
+      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map, DMap, Index);
     }
     else if (DMap->Resolution == IMAGE_OUTPUT) {
       for (y = 0; y < Map->NY; y++)
         for (x = 0; x < Map->NX; x++)
           ((unsigned char *)Array)[y * Map->NX + x] =
           (unsigned char)((SnowMap[y][x].TPack - Offset) / Range * MAXUCHAR);
-      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map->NY, Map->NX, DMap,
+      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map, DMap,
         Index);
     }
     else
@@ -726,8 +697,7 @@ void DumpMap(MAPSIZE *Map, DATE *Current, MAPDUMP *DMap, TOPOPIX **TopoMap,
       for (y = 0; y < Map->NY; y++)
         for (x = 0; x < Map->NX; x++)
           ((float *)Array)[y * Map->NX + x] = SnowMap[y][x].SurfWater;
-      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map->NY, Map->NX,
-        DMap, Index);
+      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map, DMap, Index);
     }
     else if (DMap->Resolution == IMAGE_OUTPUT) {
       for (y = 0; y < Map->NY; y++)
@@ -735,8 +705,7 @@ void DumpMap(MAPSIZE *Map, DATE *Current, MAPDUMP *DMap, TOPOPIX **TopoMap,
           ((unsigned char *)Array)[y * Map->NX + x] =
           (unsigned char)((SnowMap[y][x].SurfWater - Offset) /
             Range * MAXUCHAR);
-      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map->NY, Map->NX, DMap,
-        Index);
+      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map, DMap, Index);
     }
     else
       ReportError(VarIDStr, 66);
@@ -747,16 +716,14 @@ void DumpMap(MAPSIZE *Map, DATE *Current, MAPDUMP *DMap, TOPOPIX **TopoMap,
       for (y = 0; y < Map->NY; y++)
         for (x = 0; x < Map->NX; x++)
           ((float *)Array)[y * Map->NX + x] = SnowMap[y][x].TSurf;
-      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map->NY, Map->NX,
-        DMap, Index);
+      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map, DMap, Index);
     }
     else if (DMap->Resolution == IMAGE_OUTPUT) {
       for (y = 0; y < Map->NY; y++)
         for (x = 0; x < Map->NX; x++)
           ((unsigned char *)Array)[y * Map->NX + x] =
           (unsigned char)((SnowMap[y][x].TSurf - Offset) / Range * MAXUCHAR);
-      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map->NY, Map->NX, DMap,
-        Index);
+      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map, DMap, Index);
     }
     else
       ReportError(VarIDStr, 66);
@@ -767,8 +734,7 @@ void DumpMap(MAPSIZE *Map, DATE *Current, MAPDUMP *DMap, TOPOPIX **TopoMap,
       for (y = 0; y < Map->NY; y++)
         for (x = 0; x < Map->NX; x++)
           ((float *)Array)[y * Map->NX + x] = SnowMap[y][x].ColdContent;
-      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map->NY, Map->NX,
-        DMap, Index);
+      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map, DMap, Index);
     }
     else if (DMap->Resolution == IMAGE_OUTPUT) {
       for (y = 0; y < Map->NY; y++)
@@ -776,8 +742,7 @@ void DumpMap(MAPSIZE *Map, DATE *Current, MAPDUMP *DMap, TOPOPIX **TopoMap,
           ((unsigned char *)Array)[y * Map->NX + x] =
           (unsigned char)((SnowMap[y][x].ColdContent - Offset) /
             Range * MAXUCHAR);
-      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map->NY, Map->NX, DMap,
-        Index);
+      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map, DMap, Index);
     }
     else
       ReportError(VarIDStr, 66);
@@ -799,8 +764,7 @@ void DumpMap(MAPSIZE *Map, DATE *Current, MAPDUMP *DMap, TOPOPIX **TopoMap,
             ((float *)Array)[y * Map->NX + x] = NA;
         }
       }
-      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map->NY, Map->NX,
-        DMap, Index);
+      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map, DMap, Index);
     }
     else if (DMap->Resolution == IMAGE_OUTPUT) {
       for (y = 0; y < Map->NY; y++) {
@@ -818,8 +782,7 @@ void DumpMap(MAPSIZE *Map, DATE *Current, MAPDUMP *DMap, TOPOPIX **TopoMap,
             ((unsigned char *)Array)[y * Map->NX + x] = 0;
         }
       }
-      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map->NY, Map->NX, DMap,
-        Index);
+      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map, DMap, Index);
     }
     else
       ReportError(VarIDStr, 66);
@@ -841,8 +804,7 @@ void DumpMap(MAPSIZE *Map, DATE *Current, MAPDUMP *DMap, TOPOPIX **TopoMap,
             ((float *)Array)[y * Map->NX + x] = NA;
         }
       }
-      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map->NY, Map->NX,
-        DMap, Index);
+      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map, DMap, Index);
     }
     else if (DMap->Resolution == IMAGE_OUTPUT) {
       for (y = 0; y < Map->NY; y++) {
@@ -860,8 +822,7 @@ void DumpMap(MAPSIZE *Map, DATE *Current, MAPDUMP *DMap, TOPOPIX **TopoMap,
             ((unsigned char *)Array)[y * Map->NX + x] = 0;
         }
       }
-      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map->NY, Map->NX, DMap,
-        Index);
+      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map, DMap, Index);
     }
     else
       ReportError(VarIDStr, 66);
@@ -872,8 +833,7 @@ void DumpMap(MAPSIZE *Map, DATE *Current, MAPDUMP *DMap, TOPOPIX **TopoMap,
       for (y = 0; y < Map->NY; y++)
         for (x = 0; x < Map->NX; x++)
           ((float *)Array)[y * Map->NX + x] = SoilMap[y][x].TableDepth;
-      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map->NY, Map->NX,
-        DMap, Index);
+      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map, DMap, Index);
     }
     else if (DMap->Resolution == IMAGE_OUTPUT) {
       for (y = 0; y < Map->NY; y++)
@@ -881,8 +841,7 @@ void DumpMap(MAPSIZE *Map, DATE *Current, MAPDUMP *DMap, TOPOPIX **TopoMap,
           ((unsigned char *)Array)[y * Map->NX + x] =
           (unsigned char)((SoilMap[y][x].TableDepth - Offset) /
             Range * MAXUCHAR);
-      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map->NY, Map->NX, DMap,
-        Index);
+      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map, DMap, Index);
     }
     else
       ReportError(VarIDStr, 66);
@@ -893,8 +852,7 @@ void DumpMap(MAPSIZE *Map, DATE *Current, MAPDUMP *DMap, TOPOPIX **TopoMap,
       for (y = 0; y < Map->NY; y++)
         for (x = 0; x < Map->NX; x++)
           ((float *)Array)[y * Map->NX + x] = SoilMap[y][x].SatFlow;
-      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map->NY, Map->NX,
-        DMap, Index);
+      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map, DMap, Index);
     }
     else if (DMap->Resolution == IMAGE_OUTPUT) {
       for (y = 0; y < Map->NY; y++)
@@ -902,8 +860,7 @@ void DumpMap(MAPSIZE *Map, DATE *Current, MAPDUMP *DMap, TOPOPIX **TopoMap,
           ((unsigned char *)Array)[y * Map->NX + x] =
           (unsigned char)((SoilMap[y][x].SatFlow - Offset) /
             Range * MAXUCHAR);
-      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map->NY, Map->NX, DMap,
-        Index);
+      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map, DMap, Index);
     }
     else
       ReportError(VarIDStr, 66);
@@ -914,16 +871,14 @@ void DumpMap(MAPSIZE *Map, DATE *Current, MAPDUMP *DMap, TOPOPIX **TopoMap,
       for (y = 0; y < Map->NY; y++)
         for (x = 0; x < Map->NX; x++)
           ((float *)Array)[y * Map->NX + x] = SoilMap[y][x].TSurf;
-      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map->NY, Map->NX,
-        DMap, Index);
+      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map, DMap, Index);
     }
     else if (DMap->Resolution == IMAGE_OUTPUT) {
       for (y = 0; y < Map->NY; y++)
         for (x = 0; x < Map->NX; x++)
           ((unsigned char *)Array)[y * Map->NX + x] =
           (unsigned char)((SoilMap[y][x].TSurf - Offset) / Range * MAXUCHAR);
-      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map->NY, Map->NX, DMap,
-        Index);
+      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map, DMap, Index);
     }
     else
       ReportError(VarIDStr, 66);
@@ -934,16 +889,14 @@ void DumpMap(MAPSIZE *Map, DATE *Current, MAPDUMP *DMap, TOPOPIX **TopoMap,
       for (y = 0; y < Map->NY; y++)
         for (x = 0; x < Map->NX; x++)
           ((float *)Array)[y * Map->NX + x] = SoilMap[y][x].Qnet;
-      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map->NY, Map->NX,
-        DMap, Index);
+      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map, DMap, Index);
     }
     else if (DMap->Resolution == IMAGE_OUTPUT) {
       for (y = 0; y < Map->NY; y++)
         for (x = 0; x < Map->NX; x++)
           ((unsigned char *)Array)[y * Map->NX + x] =
           (unsigned char)((SoilMap[y][x].Qnet - Offset) / Range * MAXUCHAR);
-      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map->NY, Map->NX, DMap,
-        Index);
+      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map, DMap, Index);
     }
     else
       ReportError(VarIDStr, 66);
@@ -954,16 +907,14 @@ void DumpMap(MAPSIZE *Map, DATE *Current, MAPDUMP *DMap, TOPOPIX **TopoMap,
       for (y = 0; y < Map->NY; y++)
         for (x = 0; x < Map->NX; x++)
           ((float *)Array)[y * Map->NX + x] = SoilMap[y][x].Qs;
-      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map->NY, Map->NX,
-        DMap, Index);
+      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map, DMap, Index);
     }
     else if (DMap->Resolution == IMAGE_OUTPUT) {
       for (y = 0; y < Map->NY; y++)
         for (x = 0; x < Map->NX; x++)
           ((unsigned char *)Array)[y * Map->NX + x] =
           (unsigned char)((SoilMap[y][x].Qs - Offset) / Range * MAXUCHAR);
-      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map->NY, Map->NX, DMap,
-        Index);
+      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map, DMap, Index);
     }
     else
       ReportError(VarIDStr, 66);
@@ -974,16 +925,14 @@ void DumpMap(MAPSIZE *Map, DATE *Current, MAPDUMP *DMap, TOPOPIX **TopoMap,
       for (y = 0; y < Map->NY; y++)
         for (x = 0; x < Map->NX; x++)
           ((float *)Array)[y * Map->NX + x] = SoilMap[y][x].Qe;
-      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map->NY, Map->NX,
-        DMap, Index);
+      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map, DMap, Index);
     }
     else if (DMap->Resolution == IMAGE_OUTPUT) {
       for (y = 0; y < Map->NY; y++)
         for (x = 0; x < Map->NX; x++)
           ((unsigned char *)Array)[y * Map->NX + x] =
           (unsigned char)((SoilMap[y][x].Qe - Offset) / Range * MAXUCHAR);
-      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map->NY, Map->NX, DMap,
-        Index);
+      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map, DMap, Index);
     }
     else
       ReportError(VarIDStr, 66);
@@ -994,16 +943,14 @@ void DumpMap(MAPSIZE *Map, DATE *Current, MAPDUMP *DMap, TOPOPIX **TopoMap,
       for (y = 0; y < Map->NY; y++)
         for (x = 0; x < Map->NX; x++)
           ((float *)Array)[y * Map->NX + x] = SoilMap[y][x].Qg;
-      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map->NY, Map->NX,
-        DMap, Index);
+      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map, DMap, Index);
     }
     else if (DMap->Resolution == IMAGE_OUTPUT) {
       for (y = 0; y < Map->NY; y++)
         for (x = 0; x < Map->NX; x++)
           ((unsigned char *)Array)[y * Map->NX + x] =
           (unsigned char)((SoilMap[y][x].Qg - Offset) / Range * MAXUCHAR);
-      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map->NY, Map->NX, DMap,
-        Index);
+      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map, DMap, Index);
     }
     else
       ReportError(VarIDStr, 66);
@@ -1014,15 +961,14 @@ void DumpMap(MAPSIZE *Map, DATE *Current, MAPDUMP *DMap, TOPOPIX **TopoMap,
       for (y = 0; y < Map->NY; y++)
         for (x = 0; x < Map->NX; x++)
           ((float *)Array)[y * Map->NX + x] = SoilMap[y][x].Qst;
-      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map->NY, Map->NX,
-        DMap, Index);
+      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map, DMap, Index);
     }
     else if (DMap->Resolution == IMAGE_OUTPUT) {
       for (y = 0; y < Map->NY; y++)
         for (x = 0; x < Map->NX; x++)
           ((unsigned char *)Array)[y * Map->NX + x] =
           (unsigned char)((SoilMap[y][x].Qst - Offset) / Range * MAXUCHAR);
-      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map->NY, Map->NX, DMap,
+      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map, DMap,
         Index);
     }
     else
@@ -1034,16 +980,14 @@ void DumpMap(MAPSIZE *Map, DATE *Current, MAPDUMP *DMap, TOPOPIX **TopoMap,
       for (y = 0; y < Map->NY; y++)
         for (x = 0; x < Map->NX; x++)
           ((float *)Array)[y * Map->NX + x] = SoilMap[y][x].IExcess;
-      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map->NY, Map->NX,
-        DMap, Index);
+      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map, DMap, Index);
     }
     else if (DMap->Resolution == IMAGE_OUTPUT) {
       for (y = 0; y < Map->NY; y++)
         for (x = 0; x < Map->NX; x++)
           ((unsigned char *)Array)[y * Map->NX + x] =
           (unsigned char)((SoilMap[y][x].IExcess - Offset) / Range * MAXUCHAR);
-      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map->NY, Map->NX, DMap,
-        Index);
+      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map, DMap, Index);
     }
     else
       ReportError(VarIDStr, 66);
@@ -1057,16 +1001,14 @@ void DumpMap(MAPSIZE *Map, DATE *Current, MAPDUMP *DMap, TOPOPIX **TopoMap,
       for (y = 0; y < Map->NY; y++)
         for (x = 0; x < Map->NX; x++)
           ((float *)Array)[y * Map->NX + x] = SoilMap[y][x].InfiltAcc;
-      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map->NY, Map->NX,
-        DMap, Index);
+      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map, DMap, Index);
     }
     else if (DMap->Resolution == IMAGE_OUTPUT) {
       for (y = 0; y < Map->NY; y++)
         for (x = 0; x < Map->NX; x++)
           ((unsigned char *)Array)[y * Map->NX + x] =
           (unsigned char)((SoilMap[y][x].InfiltAcc - Offset) / Range * MAXUCHAR);
-      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map->NY, Map->NX, DMap,
-        Index);
+      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map, DMap, Index);
     }
     else
       ReportError(VarIDStr, 66);
