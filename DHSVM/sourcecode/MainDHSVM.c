@@ -162,11 +162,11 @@ int main(int argc, char **argv)
 
   InitTerrainMaps(Input, &Options, &Map, &Soil, &TopoMap, &SoilMap, &VegMap);
 
-  CheckOut(&Options, Veg, Soil, VType, SType, &Map, TopoMap, VegMap, SoilMap);
-
   DumpTopo(&Map, TopoMap);
 
   DomainSummary(&GMap, &Map);
+
+  CheckOut(&Options, Veg, Soil, VType, SType, &Map, TopoMap, VegMap, SoilMap);
 
   if (Options.HasNetwork)
     InitChannel(Input, &Map, Time.Dt, &ChannelData, SoilMap, &MaxStreamID, &MaxRoadID, &Options);

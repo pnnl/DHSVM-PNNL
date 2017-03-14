@@ -13,6 +13,7 @@
  * $Id: CheckOut.c,v3.1.2 2013/11/13 Ning Exp $
  */
 
+#include <ga.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -22,6 +23,7 @@
 #include "data.h"
 #include "functions.h"
 #include "constants.h"
+#include "ParallelDHSVM.h"
 
 void CheckOut(OPTIONSTRUCT *Options, LAYER Veg, LAYER Soil, VEGTABLE *VType, SOILTABLE *SType,
   MAPSIZE *Map, TOPOPIX **TopoMap, VEGPIX **VegMap, SOILPIX **SoilMap)
@@ -60,74 +62,74 @@ void CheckOut(OPTIONSTRUCT *Options, LAYER Veg, LAYER Soil, VEGTABLE *VType, SOI
     }
   }
 
-  i = 0;
-  for (y = 0; y < Map->NY; y++) {
-    for (x = 0; x < Map->NX; x++) {
-      if (INBASIN(TopoMap[y][x].Mask)) {
-        i = i + 1;
-      }
-    }
-  }
-  printf("\nBasin has %d active pixels \n", i);
+  GA_Igop(&count[0], Veg.NTypes, "+");
+  GA_Igop(&scount[0], Soil.NTypes, "+");
+
+  i = Map->NumCells;
+  GA_Igop(&i, 1, "+");
   npixels = i;
 
-  printf("\nThe following VEG types are in the current basin \n");
+  
+  if (ParallelRank() == 0) {
+    printf("\nBasin has %d active pixels \n", npixels);
+    printf("\nThe following VEG types are in the current basin \n");
 
-  for (i = 0; i < Veg.NTypes; i++) {
-    if (count[i] > 0)
-      printf
-      ("Class # %d of Type: %s has fraction basin area: %5.3f\n",
-        i + 1, VType[i].Desc, (float)count[i] / (float)npixels);
-    VType[i].TotalDepth = 0.0;
-    for (y = 0; y < VType[i].NSoilLayers; y++) {
-      VType[i].TotalDepth += VType[i].RootDepth[y];
+    for (i = 0; i < Veg.NTypes; i++) {
+      if (count[i] > 0)
+        printf
+          ("Class # %d of Type: %s has fraction basin area: %5.3f\n",
+           i + 1, VType[i].Desc, (float)count[i] / (float)npixels);
+      VType[i].TotalDepth = 0.0;
+      for (y = 0; y < VType[i].NSoilLayers; y++) {
+        VType[i].TotalDepth += VType[i].RootDepth[y];
+      }
     }
-  }
 
-  printf("\nThe following SOIL types are in the current basin \n");
-  for (i = 0; i < Soil.NTypes; i++)
-    if (scount[i] > 0)
-      printf
-      ("Class # %d of Type: %s has fraction basin area: %5.3f\n",
-        i + 1, SType[i].Desc, (float)scount[i] / (float)npixels);
-
-  printf("\nSome estimates for current vegetation specification\n");
-  for (i = 0; i < Veg.NTypes; i++) {
-    if (count[i] > 0) {
-
-      printf("\nVegetation Type: %s\n", VType[i].Desc);
-      printf("2meter    wind speed fraction of ref level %1.3f\n",
-        VType[i].USnow);
-      if (VType[i].OverStory) {
-        for (j = 0; j < 12; j++) {
-          if (fequal(VType[i].LAIMonthly[0][j], 0.0)) {
-            printf("Overstory LAI must be > 0\n");
-            exit(-1);
+    printf("\nThe following SOIL types are in the current basin \n");
+    for (i = 0; i < Soil.NTypes; i++)
+      if (scount[i] > 0)
+        printf
+          ("Class # %d of Type: %s has fraction basin area: %5.3f\n",
+           i + 1, SType[i].Desc, (float)scount[i] / (float)npixels);
+    
+    printf("\nSome estimates for current vegetation specification\n");
+    for (i = 0; i < Veg.NTypes; i++) {
+      if (count[i] > 0) {
+        
+        printf("\nVegetation Type: %s\n", VType[i].Desc);
+        printf("2meter    wind speed fraction of ref level %1.3f\n",
+               VType[i].USnow);
+        if (VType[i].OverStory) {
+          for (j = 0; j < 12; j++) {
+            if (fequal(VType[i].LAIMonthly[0][j], 0.0)) {
+              printf("Overstory LAI must be > 0\n");
+              exit(-1);
+            }
           }
-        }
-        /* printf("Overstory LAI July %2.3f Effective LAI July %2.3f\n", VType[i].LAIMonthly[0][6]);*/
-        if (Options->CanopyRadAtt == VARIABLE) {
-          a = VType[i].LeafAngleA;
-          b = VType[i].LeafAngleB;
-          l = VType[i].LAIMonthly[0][6] / VType[i].ClumpingFactor;
-          if (l == 0)
-            Taud = 1.0;
-          else
-            Taud =
-            exp(-b * l) * ((1 - a * l) * exp(-a * l) +
-              (a * l) * (a * l) * evalexpint(1, a * l));
-          Taub20 = exp(-l * (VType[i].LeafAngleA /
-            0.342 + VType[i].LeafAngleB));
-          Taub40 = exp(-l * (VType[i].LeafAngleA /
-            0.642 + VType[i].LeafAngleB));
-          Taub60 = exp(-l * (VType[i].LeafAngleA /
-            0.866 + VType[i].LeafAngleB));
-          Taub80 = exp(-l * (VType[i].LeafAngleA /
-            0.984 + VType[i].LeafAngleB));
-          printf("Solar Altitude 20 deg Tbeam %f Tdiff %f\n", Taub20, Taud);
-          printf("Solar Altitude 40 deg Tbeam %f Tdiff %f\n", Taub40, Taud);
-          printf("Solar Altitude 60 deg Tbeam %f Tdiff %f\n", Taub60, Taud);
-          printf("Solar Altitude 80 deg Tbeam %f Tdiff %f\n", Taub80, Taud);
+          /* printf("Overstory LAI July %2.3f Effective LAI July %2.3f\n", VType[i].LAIMonthly[0][6]);*/
+          if (Options->CanopyRadAtt == VARIABLE) {
+            a = VType[i].LeafAngleA;
+            b = VType[i].LeafAngleB;
+            l = VType[i].LAIMonthly[0][6] / VType[i].ClumpingFactor;
+            if (l == 0)
+              Taud = 1.0;
+            else
+              Taud =
+                exp(-b * l) * ((1 - a * l) * exp(-a * l) +
+                               (a * l) * (a * l) * evalexpint(1, a * l));
+            Taub20 = exp(-l * (VType[i].LeafAngleA /
+                               0.342 + VType[i].LeafAngleB));
+            Taub40 = exp(-l * (VType[i].LeafAngleA /
+                               0.642 + VType[i].LeafAngleB));
+            Taub60 = exp(-l * (VType[i].LeafAngleA /
+                               0.866 + VType[i].LeafAngleB));
+            Taub80 = exp(-l * (VType[i].LeafAngleA /
+                               0.984 + VType[i].LeafAngleB));
+            printf("Solar Altitude 20 deg Tbeam %f Tdiff %f\n", Taub20, Taud);
+            printf("Solar Altitude 40 deg Tbeam %f Tdiff %f\n", Taub40, Taud);
+            printf("Solar Altitude 60 deg Tbeam %f Tdiff %f\n", Taub60, Taud);
+            printf("Solar Altitude 80 deg Tbeam %f Tdiff %f\n", Taub80, Taud);
+          }
         }
       }
     }
