@@ -6,7 +6,23 @@ DHSVM (<a href="http://onlinelibrary.wiley.com/doi/10.1029/94WR00436/abstract">W
 
 <strong>DHSVM is a research model that does not come with any warrantee or guarantee</strong>. Please be advised that no technical support is available other than the model web page. Because the model is under continous development, there is no guarantee that the newly developed modules or options are exhaustively tested or work properly. 
 
-If you decide to use DHSVM, please acknowledge <a href="http://onlinelibrary.wiley.com/doi/10.1029/94WR00436/abstract">Wigmosta et al. [1994]</a> and any other relevant publications. We are very interested in receiving a copy of any manuscripts of studies in which the model is used. Finally, if you do find bugs in the model or if you have improvements to the model code, we are interested in incorporating your suggestions and/or contributions. 
+If you decide to use DHSVM, please acknowledge <a
+href="http://onlinelibrary.wiley.com/doi/10.1029/94WR00436/abstract">Wigmosta
+et al. [1994]</a> and any other relevant publications. We are very
+interested in receiving a copy of any manuscripts of studies in which
+the model is used. Finally, if you do find bugs in the model or if you
+have improvements to the model code, we are interested in
+incorporating your suggestions and/or contributions. 
+
+## Requirements
+
+### CMake
+
+### Message Passing Interface (MPI)
+
+### Global Arrays
+
+### NetCDF
 
 ## Configuration and Build with CMake 
 

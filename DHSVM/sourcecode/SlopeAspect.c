@@ -246,8 +246,10 @@ void ElevationSlopeAspect(MAPSIZE * Map, TOPOPIX ** TopoMap)
     for (y = 0; y < Map->NY; y++) {
       if (INBASIN(TopoMap[y][x].Mask)) {
         elev = TopoMap[y][x].Dem;
-        patch.patch[y+patch.iyoff][x+patch.ixoff] = elev;
+      } else {
+        elev = outelev;
       }
+      patch.patch[y+patch.iyoff][x+patch.ixoff] = elev;
     }
   }
   GA_Put_patch(gaelev, Map, &patch);
@@ -269,10 +271,10 @@ void ElevationSlopeAspect(MAPSIZE * Map, TOPOPIX ** TopoMap)
 	  yn = y + yneighbor[n];	  
 	  if (valid_cell(Map, xn, yn)) {
             elev = patch.patch[yn+patch.iyoff][xn+patch.ixoff];
-            neighbor_elev[n] = elev;
           } else {
-	    neighbor_elev[n] = outelev;
+            elev = outelev;
           }
+          neighbor_elev[n] = elev;
         }
 
         slope_aspect(Map->DX, Map->DY, TopoMap[y][x].Dem, neighbor_elev,
@@ -287,16 +289,23 @@ void ElevationSlopeAspect(MAPSIZE * Map, TOPOPIX ** TopoMap)
 	/* If there is a sink, check again to see if there 
 	   is a direction of steepest descent. Does not account 
 	   for ties.*/
-	if(TopoMap[y][x].TotalDir == 0) {
+	if(TopoMap[y][x].TotalDir <= 0) {
 	  steepestdirection = -99;
 	  min = DHSVM_HUGE;	       
 	  for (n = 0; n < NDIRS; n++) {
-            if (INBASIN(neighbor_elev[n])) {
-              if (elev < min) { 
-                min = elev;
-                steepestdirection = n;}
+	    xn = x + xdirection[n];
+	    yn = y + ydirection[n];	  
+            if (valid_cell(Map, xn, yn)) {
+              elev = patch.patch[yn+patch.iyoff][xn+patch.ixoff];
+              /* elev = neighbor_elev[n]; */
+              if (INBASIN((int)elev)) {
+                if (elev < min) { 
+                  min = elev;
+                  steepestdirection = n;
+                }
+              }
             }
-	  }	  
+	  }
 	  if(min < TopoMap[y][x].Dem) {
 	    TopoMap[y][x].Dir[steepestdirection] = (int)(255.0 + 0.5);
 	    TopoMap[y][x].TotalDir = (int)(255.0 + 0.5);
@@ -307,8 +316,6 @@ void ElevationSlopeAspect(MAPSIZE * Map, TOPOPIX ** TopoMap)
 		basin outlet, unless the Dem wasn't filled. */	  
 	    TopoMap[y][x].Dir[steepestdirection] = (int)(255.0 + 0.5);
 	    TopoMap[y][x].TotalDir = (int)(255.0 + 0.5);	    
-	    xn = x + xdirection[steepestdirection];
-	    yn = y + ydirection[steepestdirection];
 	  }
 	}
       }
