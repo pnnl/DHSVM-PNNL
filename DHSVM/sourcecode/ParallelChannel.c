@@ -11,7 +11,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2017-02-15 15:47:02 d3g096
+ * LAST CHANGE: 2017-03-30 14:56:34 d3g096
  * COMMENTS:
  *
  *    All processes have a copy of the channel network.  All processes
@@ -78,45 +78,25 @@ ChannelGatherLateralInflow(Channel *net, int ga)
   int idx, nsegment;
   int lo[GA_MAX_DIM], hi[GA_MAX_DIM], ld[GA_MAX_DIM];
   float value;
+  float *lflow;
   Channel *current;
 
-  ld[0] = 1;
-  ld[1] = 1;
 
-  NGA_Inquire(ga, &gatype, &ndim, &dims[0]);
-  nsegment = dims[0];
+  for (idx = 0, current = net; current != NULL; ++idx, current = current->next);
+  nsegment = idx;
+  
+  lflow = (float *)calloc(nsegment, sizeof(float));
+  for (idx = 0, current = net; current != NULL; ++idx, current = current->next) {
+    lflow[idx] = current->lateral_inflow;
+  }
 
-  /* put zero in the lateral_inflow slot in all segments */
-
-  value = 0.0;
-  lo[0] = 0;
-  lo[1] = LateralInflow;
-  hi[0] = nsegment - 1;
-  hi[1] = LateralInflow;
-  NGA_Fill_patch(ga, lo, hi, &value);
-
-  /* go thru the network and accumulate lateral inflow into the GA */
+  GA_Fgop(&lflow[0], nsegment, "+");
 
   for (idx = 0, current = net; current != NULL; ++idx, current = current->next) {
-    lo[0] = idx;
-    lo[1] = LateralInflow;
-    hi[0] = idx;
-    hi[1] = LateralInflow;
-    value = current->lateral_inflow;
-    NGA_Acc(ga, lo, hi, &value, ld, &one);
+    current->lateral_inflow = lflow[idx];
   }
-  GA_Sync();
 
-  /* get the result back in the local network */
-  for (idx = 0, current = net; current != NULL; ++idx, current = current->next) {
-    lo[0] = idx;
-    lo[1] = LateralInflow;
-    hi[0] = idx;
-    hi[1] = LateralInflow;
-    NGA_Get(ga, lo, hi, &value, ld);
-    current->lateral_inflow = value;
-  }
-  GA_Sync();
+  free(lflow);
 }
 
 /******************************************************************************/

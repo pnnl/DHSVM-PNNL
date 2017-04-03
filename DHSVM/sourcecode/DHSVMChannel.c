@@ -230,33 +230,35 @@ RouteChannel(CHANNEL *ChannelData, TIMESTRUCT *Time, MAPSIZE *Map,
 
   ParallelBarrier();
 
-  if (ChannelData->roads != NULL) {
-
-    /* give any surface water to roads w/o sinks */
-    for (y = 0; y < Map->NY; y++) {
-      for (x = 0; x < Map->NX; x++) {
-        if (INBASIN(TopoMap[y][x].Mask)) {
-          if (channel_grid_has_channel(ChannelData->road_map, x, y) && 
-              !channel_grid_has_sink(ChannelData->road_map, x, y)) {	/* road w/o sink */
-            SoilMap[y][x].RoadInt += SoilMap[y][x].IExcess; 
-            channel_grid_inc_inflow(ChannelData->road_map, x, y, SoilMap[y][x].IExcess * Map->DX * Map->DY);
-            SoilMap[y][x].IExcess = 0.0f;
-          }
+  /* give any surface water to roads w/o sinks */
+  for (y = 0; y < Map->NY; y++) {
+    for (x = 0; x < Map->NX; x++) {
+      if (INBASIN(TopoMap[y][x].Mask)) {
+        if (channel_grid_has_channel(ChannelData->road_map, x, y) && 
+            !channel_grid_has_sink(ChannelData->road_map, x, y)) {	/* road w/o sink */
+          SoilMap[y][x].RoadInt += SoilMap[y][x].IExcess; 
+          channel_grid_inc_inflow(ChannelData->road_map, x, y, SoilMap[y][x].IExcess * Map->DX * Map->DY);
+          SoilMap[y][x].IExcess = 0.0f;
         }
       }
     }
+  }
+
+  if (ChannelData->roads != NULL) {
+
+    /* collect lateral inflow from all processes */
     ChannelGatherLateralInflow(ChannelData->roads, ChannelData->road_state_ga);
-    ParallelBarrier();
+
+    /* All processes route the road network */
+    channel_route_network(ChannelData->roads, Time->Dt);
+
+    /* Only the root process saves the results */
     if (ParallelRank() == 0) {
-      /* route the road network and save results */
-      channel_route_network(ChannelData->roads, Time->Dt);
       channel_save_outflow_text(buffer, ChannelData->roads,
                                 ChannelData->roadout, ChannelData->roadflowout, flag);
     }
-    ParallelBarrier();
-    ChannelDistributeState(ChannelData->roads, ChannelData->road_state_ga);
   }
-
+    
   /* add culvert outflow to surface water */
   Total->CulvertReturnFlow = 0.0;
   for (y = 0; y < Map->NY; y++) {
@@ -284,10 +286,14 @@ RouteChannel(CHANNEL *ChannelData, TIMESTRUCT *Time, MAPSIZE *Map,
   /* route stream channels */
   if (ChannelData->streams != NULL) {
     
+    /* collect lateral inflow from all processes */
     ChannelGatherLateralInflow(ChannelData->streams, ChannelData->stream_state_ga);
     
+    /* All processes route the stream network */
+    channel_route_network(ChannelData->streams, Time->Dt);
+
+    /* Only the root process saves the results */
     if (ParallelRank() == 0) {
-      channel_route_network(ChannelData->streams, Time->Dt);
       channel_save_outflow_text(buffer, ChannelData->streams,
                                 ChannelData->streamout,
                                 ChannelData->streamflowout, flag);
@@ -295,10 +301,6 @@ RouteChannel(CHANNEL *ChannelData, TIMESTRUCT *Time, MAPSIZE *Map,
       if (Options->StreamTemp)
         channel_save_outflow_text_cplmt(Time, buffer,ChannelData->streams,ChannelData, flag);
     }
-    
-    ParallelBarrier();
-    
-    ChannelDistributeState(ChannelData->streams, ChannelData->stream_state_ga);
   }
   ParallelBarrier();
 }
