@@ -11,7 +11,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2017-03-30 14:56:34 d3g096
+ * LAST CHANGE: 2017-04-04 10:52:02 d3g096
  * COMMENTS:
  *
  *    All processes have a copy of the channel network.  All processes
@@ -26,6 +26,7 @@
  */
 
 #include <ga.h>
+#include <stdlib.h>
 
 #include "channel.h"
 #include "ParallelDHSVM.h"
@@ -46,9 +47,8 @@ static const int NChannelState = Storage + 1;
 int
 ChannelStateGA(Channel *net)
 {
-  int ga, pg, ndim, dims[GA_MAX_DIM];
+  int ga, ndim, dims[GA_MAX_DIM];
   int nsegment;
-  int lo[GA_MAX_DIM], hi[GA_MAX_DIM];
   Channel *current;
   
   nsegment = 0;
@@ -64,6 +64,7 @@ ChannelStateGA(Channel *net)
   dims[0] = nsegment;
   dims[1] = NChannelState;
   ga = NGA_Create(C_FLOAT, ndim, &dims[0], "Channel State", NULL);
+  GA_Print_distribution(ga);
   return ga;
 }
 
@@ -73,24 +74,51 @@ ChannelStateGA(Channel *net)
 void
 ChannelGatherLateralInflow(Channel *net, int ga)
 {
-  static const one = 1.0;
-  int gatype, ndim, dims[GA_MAX_DIM];
+  static int one = 1.0;
   int idx, nsegment;
   int lo[GA_MAX_DIM], hi[GA_MAX_DIM], ld[GA_MAX_DIM];
-  float value;
-  float *lflow;
+  float *lflow, value;
   Channel *current;
-
 
   for (idx = 0, current = net; current != NULL; ++idx, current = current->next);
   nsegment = idx;
   
+  /* this an all-reduce of channel network's lateral inflow */
+
   lflow = (float *)calloc(nsegment, sizeof(float));
   for (idx = 0, current = net; current != NULL; ++idx, current = current->next) {
     lflow[idx] = current->lateral_inflow;
   }
 
+#if 0
+
+  /* it appears the NGA_Acc call does not work here, not sure why */
+
+  lo[0] = 0;
+  lo[1] = LateralInflow;
+  hi[0] = nsegment - 1;
+  hi[1] = LateralInflow;
+  ld[0] = 1;
+  ld[1] = 1;
+  value = 0.0;
+  NGA_Fill_patch(ga, lo, hi, &value);
+  GA_Sync();
+
+  GA_Print(ga);
+
+  NGA_Acc(ga, lo, hi, &lflow[0], ld, &one);
+  GA_Sync();
+
+  GA_Print(ga);
+
+  NGA_Get(ga, lo, hi, &lflow[0], ld);
+
+#else
+
   GA_Fgop(&lflow[0], nsegment, "+");
+
+#endif
+  
 
   for (idx = 0, current = net; current != NULL; ++idx, current = current->next) {
     current->lateral_inflow = lflow[idx];
@@ -106,7 +134,7 @@ void
 ChannelDistributeState(Channel *net, int ga)
 {
   int gatype, ndim, dims[GA_MAX_DIM];
-  int idx, nsegment;
+  int idx;
   int lo[GA_MAX_DIM], hi[GA_MAX_DIM], ld[GA_MAX_DIM];
   float value[NChannelState];
   Channel *current;
@@ -115,7 +143,6 @@ ChannelDistributeState(Channel *net, int ga)
   ld[1] = 1;
 
   NGA_Inquire(ga, &gatype, &ndim, &dims[0]);
-  nsegment = dims[0];
 
   /* collect state from root process (which presumably did the
      routing) and put it in the channel state GA */
