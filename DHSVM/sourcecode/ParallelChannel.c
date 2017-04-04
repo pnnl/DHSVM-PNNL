@@ -11,7 +11,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2017-04-04 10:52:02 d3g096
+ * LAST CHANGE: 2017-04-04 14:39:27 d3g096
  * COMMENTS:
  *
  *    All processes have a copy of the channel network.  All processes
@@ -100,8 +100,7 @@ ChannelGatherLateralInflow(Channel *net, int ga)
   hi[1] = LateralInflow;
   ld[0] = 1;
   ld[1] = 1;
-  value = 0.0;
-  NGA_Fill_patch(ga, lo, hi, &value);
+  NGA_Zero_patch(ga, lo, hi);
   GA_Sync();
 
   GA_Print(ga);

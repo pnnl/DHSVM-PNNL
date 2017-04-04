@@ -128,7 +128,6 @@ void RouteSubSurface(int Dt, MAPSIZE *Map, TOPOPIX **TopoMap,
   char satoutfile[100];         /* Character arrays to hold file name. */ 
   FILE *fs;                     /* File pointer. */
   int ga;
-  float value;
   GA_Patch patch;
 
   /*****************************************************************************
@@ -191,9 +190,9 @@ void RouteSubSurface(int Dt, MAPSIZE *Map, TOPOPIX **TopoMap,
 
   /* make a global array to store accumulated subsurface "outflow" */
   
-  ga = GA_Duplicate_type(Map->dist, "Subsurface Routing", C_FLOAT);
-  value = 0.0;
-  GA_Fill(ga, &value);
+  /* ga = GA_Duplicate_type(Map->dist, "Subsurface Routing", C_FLOAT); */
+  ga = Map->dist;
+  GA_Zero(ga);
 
   /* make a local array to store SatFlow that covers the locally
      owned part of the domain plus ghost cells */
@@ -372,7 +371,7 @@ void RouteSubSurface(int Dt, MAPSIZE *Map, TOPOPIX **TopoMap,
   free(SubFlowGrad);
 
   GA_Free_patch(&patch);
-  GA_Destroy(ga);
+  /* GA_Destroy(ga); */
 
   /**********************************************************************/
   /* Dump saturation extent file to screen.

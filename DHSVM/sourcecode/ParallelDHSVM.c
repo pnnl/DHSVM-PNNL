@@ -10,7 +10,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2017-02-27 09:20:58 d3g096
+ * LAST CHANGE: 2017-04-04 13:15:28 d3g096
  * COMMENTS:
  */
 
@@ -283,7 +283,7 @@ DomainDecomposition(MAPSIZE *global, MAPSIZE *local)
   ghosts[gaYdim] = 1;
   ghosts[gaXdim] = 1;
   
-  gaid = NGA_Create_ghosts(C_INT, 2, dims, ghosts, "Domain Decompsition", chunk);
+  gaid = NGA_Create(C_FLOAT, 2, dims, "Domain Decompsition", chunk);
   if (gaid == 0) {
     ReportError("DomainDecomposition", 70);
   }
