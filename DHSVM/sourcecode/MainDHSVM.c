@@ -162,7 +162,10 @@ int main(int argc, char **argv)
 
   InitTerrainMaps(Input, &Options, &Map, &Soil, &TopoMap, &SoilMap, &VegMap);
 
-  DumpTopo(&Map, TopoMap);
+  CheckOut(&Options, Veg, Soil, VType, SType, &Map, TopoMap, VegMap, SoilMap);
+
+  /* for debugging */
+  /* DumpTopo(&Map, TopoMap); */
 
   DomainSummary(&GMap, &Map);
 
@@ -174,7 +177,7 @@ int main(int argc, char **argv)
     InitUnitHydrograph(Input, &Map, TopoMap, &UnitHydrograph,
 		       &Hydrograph, &HydrographInfo);
  
-  InitNetwork(Map.NY, Map.NX, Map.DX, Map.DY, TopoMap, SoilMap, 
+  InitNetwork(&Map, TopoMap, SoilMap, 
 	      VegMap, VType, &Network, &ChannelData, Veg, &Options);
 
   InitMetSources(Input, &Options, &GMap, &Map, TopoMap, Soil.MaxLayers, &Time,

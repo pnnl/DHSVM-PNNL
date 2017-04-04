@@ -165,7 +165,7 @@ void InitModelState(DATE *Start, MAPSIZE *Map, OPTIONSTRUCT *Options,
 		    ROADSTRUCT **Network, UNITHYDRINFO *HydrographInfo,
 		    float *Hydrograph);
 
-void InitNetwork(int NY, int NX, float DX, float DY, TOPOPIX **TopoMap, 
+void InitNetwork(MAPSIZE *Map, TOPOPIX **TopoMap, 
 		 SOILPIX **SoilMap, VEGPIX **VegMap, VEGTABLE *VType, 
 		 ROADSTRUCT ***Network, CHANNEL *ChannelData, 
 		 LAYER Veg, OPTIONSTRUCT *Options);
