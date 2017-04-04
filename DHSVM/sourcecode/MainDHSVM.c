@@ -169,8 +169,6 @@ int main(int argc, char **argv)
 
   DomainSummary(&GMap, &Map);
 
-  CheckOut(&Options, Veg, Soil, VType, SType, &Map, TopoMap, VegMap, SoilMap);
-
   if (Options.HasNetwork)
     InitChannel(Input, &Map, Time.Dt, &ChannelData, SoilMap, &MaxStreamID, &MaxRoadID, &Options);
   else if (Options.Extent != POINT)
