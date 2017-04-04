@@ -10,7 +10,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2017-02-16 07:11:28 d3g096
+# Last Change: 2017-04-04 08:40:56 d3g096
 
 set -xue
 
@@ -19,7 +19,7 @@ set -xue
 # -------------------------------------------------------------
 usage="$0 [-d|-r] [name]"
 
-set -- `getopt d $*`
+set -- `getopt dr $*`
 if [ $? != 0 ]; then
     echo $usage >&2
     exit 2

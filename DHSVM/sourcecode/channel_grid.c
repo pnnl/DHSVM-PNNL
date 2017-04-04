@@ -508,14 +508,12 @@ void channel_grid_inc_inflow(ChannelMapPtr ** map, int col, int row, float mass)
   ChannelMapPtr cell = map[col][row];
   float len = channel_grid_cell_length(map, col, row);
 
-  /* 
-     if (mass > 0 && len <= 0.0) {
-     error_handler(ERRHDL_ERROR,
-     "channel_grid_inc_inflow: attempt to add flow in cell with no channels! (col=%d, row=%d)", 
-     col, row);
-     return;
-     }
-   */
+  if (mass > 0 && len <= 0.0) {
+    error_handler(ERRHDL_ERROR,
+                  "channel_grid_inc_inflow: attempt to add flow in cell with no channels! (col=%d, row=%d)", 
+                  col, row);
+    return;
+  }
 
   while (cell != NULL) {
     cell->channel->lateral_inflow += mass * cell->length / len;
