@@ -73,9 +73,10 @@ void RouteSurface(MAPSIZE * Map, TIMESTRUCT * Time, TOPOPIX ** TopoMap,
       }
     }
 
-    ga = GA_Duplicate_type(Map->dist, "Subsurface Routing", C_FLOAT);
+    /* ga = GA_Duplicate_type(Map->dist, "Subsurface Routing", C_FLOAT); */
+    ga = Map->dist;
     value = 0.0;
-    GA_Fill(ga, &value);
+    GA_Zero(ga);
 
     /* make a local array to store IExcess that covers the locally
        owned part of the domain plus ghost cells */
@@ -161,7 +162,7 @@ void RouteSurface(MAPSIZE * Map, TIMESTRUCT * Time, TOPOPIX ** TopoMap,
     }
 
     GA_Free_patch(&patch);
-    GA_Destroy(ga);
+    /* GA_Destroy(ga); */
     
   }/* end if Options->routing = conventional */
 

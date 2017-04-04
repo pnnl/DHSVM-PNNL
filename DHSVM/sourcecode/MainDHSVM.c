@@ -353,12 +353,14 @@ int main(int argc, char **argv)
       }
     }
 
-	/* Average all RBM inputs over each segment */
-	if (Options.StreamTemp) {
-	  channel_grid_avg(ChannelData.streams);
+    ParallelBarrier();
+
+    /* Average all RBM inputs over each segment */
+    if (Options.StreamTemp) {
+      channel_grid_avg(ChannelData.streams);
       if (Options.CanopyShading)
-	    CalcCanopyShading(&Time, ChannelData.streams, &SolarGeo);
-	}
+        CalcCanopyShading(&Time, ChannelData.streams, &SolarGeo);
+    }
 
 #ifndef SNOW_ONLY
     
