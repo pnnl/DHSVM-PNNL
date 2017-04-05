@@ -10,7 +10,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2017-04-04 13:15:28 d3g096
+ * LAST CHANGE: 2017-04-05 14:05:21 d3g096
  * COMMENTS:
  */
 
@@ -99,6 +99,17 @@ GA_Type(int NumberType)
   return gatype;
 }
 
+/* -------------------------------------------------------------
+   compare_int
+   ------------------------------------------------------------- */
+int 
+compare_int(const void *i1ptr, const void *i2ptr)
+{
+  int i1 = *((int *)i1ptr);
+  int i2 = *((int *)i2ptr);
+  return (int) (i1 - i2);
+}
+
 /******************************************************************************/
 /*                          GA_Duplicate_type                                 */
 /******************************************************************************/
@@ -115,10 +126,9 @@ int
 GA_Duplicate_type(int oga, char *nname, int ntype)
 {
   int nga;
+  int ndim, dims[GA_MAX_DIM];
   int otype;
-  int ndim, dims[GA_MAX_DIM], chunk[GA_MAX_DIM];
-  int i;
-  
+
   NGA_Inquire(oga, &otype, &ndim, &dims[0]);
 
   /* if it's already the correct type, just duplicate */
@@ -126,13 +136,53 @@ GA_Duplicate_type(int oga, char *nname, int ntype)
   if (otype == ntype) {
     nga = GA_Duplicate(oga, nname);
   } else {
-    /* FIXME: should actually copy the distribution here */
-    for (i = 0; i < GA_MAX_DIM; ++i) chunk[i] = 1;
+    int np;
+    int *idx;
+    int lo[GA_MAX_DIM], hi[GA_MAX_DIM];
+    int nblk[GA_MAX_DIM], *mapc, *mapcptr;
+    int p; 
+    int i, d;
+
+    np = ParallelSize();
+
+    if (!(idx = (int *)calloc(np, sizeof(int)))) {
+      ReportError("GA_Duplicate_type", 70);
+    }
+    if (!(mapc = (int *)calloc((GA_MAX_DIM-1)*np, sizeof(int)))) {
+      ReportError("GA_Duplicate_type", 70);
+    }
+
+    mapcptr = mapc;
+    for (d = 0; d < ndim; ++d) {
+      for (p = 0; p < np; ++p) {
+        NGA_Distribution(oga, p, &lo[0], &hi[0]);
+        idx[p] = lo[d];
+      }
+      qsort(&idx[0], np, sizeof(int), compare_int);
+      
+      *mapcptr = 0;
+      for (p = 0, i = 0; p < np ; ++p) {
+        if (idx[p] != *mapcptr) {
+          mapcptr++;
+          *mapcptr = idx[p];
+          i++;
+        }
+      }
+      nblk[d] = i+1;
+      mapcptr++;
+    }
+    
     nga = GA_Create_handle();
-    GA_Set_data(nga, ndim, dims, ntype);
     GA_Set_array_name(nga, nname);
-    GA_Set_chunk(nga, &chunk[0]);
+    GA_Set_data(nga, ndim, dims, ntype);
+    GA_Set_irreg_distr(nga, mapc, nblk);
     GA_Allocate(nga);
+
+    if (GA_Compare_distr(oga, nga)) {
+      ReportError("GA_Duplicate_type: distributions differ", 70);
+    }
+
+    free(idx);
   }    
   return nga;
 }
@@ -258,7 +308,7 @@ DomainDecomposition(MAPSIZE *global, MAPSIZE *local)
   int gaid; 
   int me;
   int dims[GA_MAX_DIM];
-  int chunk[GA_MAX_DIM], ghosts[GA_MAX_DIM];
+  int chunk[GA_MAX_DIM];
   int lo[GA_MAX_DIM], hi[GA_MAX_DIM];
 
   me = ParallelRank();
@@ -280,9 +330,6 @@ DomainDecomposition(MAPSIZE *global, MAPSIZE *local)
   chunk[gaYdim] = 1;
   chunk[gaXdim] = 1;
 
-  ghosts[gaYdim] = 1;
-  ghosts[gaXdim] = 1;
-  
   gaid = NGA_Create(C_FLOAT, 2, dims, "Domain Decompsition", chunk);
   if (gaid == 0) {
     ReportError("DomainDecomposition", 70);

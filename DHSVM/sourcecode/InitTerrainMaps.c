@@ -35,12 +35,12 @@
  /*****************************************************************************
    InitTerrainMaps()
  *****************************************************************************/
-void InitTerrainMaps(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * Map,
+void InitTerrainMaps(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * GMap, MAPSIZE * Map,
   LAYER * Soil, TOPOPIX *** TopoMap, SOILPIX *** SoilMap, VEGPIX *** VegMap)
 {
   printf("\nInitializing terrain maps\n");
 
-  InitTopoMap(Input, Options, Map, TopoMap);
+  InitTopoMap(Input, Options, GMap, Map, TopoMap);
   InitSoilMap(Input, Options, Map, Soil, *TopoMap, SoilMap);
   InitVegMap(Options, Input, Map, VegMap);
 }
@@ -48,7 +48,7 @@ void InitTerrainMaps(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * Map,
 /*****************************************************************************
   InitTopoMap()
 *****************************************************************************/
-void InitTopoMap(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * Map,
+void InitTopoMap(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * GMap, MAPSIZE * Map,
   TOPOPIX *** TopoMap)
 {
   const char *Routine = "InitTopoMap";
@@ -66,6 +66,8 @@ void InitTopoMap(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * Map,
     {NULL, NULL, "", NULL}
   };
 
+  DomainDecomposition(GMap, Map);
+  
   /* Process the [TERRAIN] section in the input file */
   if (!(*TopoMap = (TOPOPIX **)calloc(Map->NY, sizeof(TOPOPIX *))))
     ReportError((char *)Routine, 1);

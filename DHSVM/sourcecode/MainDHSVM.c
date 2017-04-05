@@ -158,9 +158,7 @@ int main(int argc, char **argv)
   InitTables(Time.NDaySteps, Input, &Options, &SType, &Soil, &VType, &Veg,
 	     &SnowAlbedo);
 
-  DomainDecomposition(&GMap, &Map);
-
-  InitTerrainMaps(Input, &Options, &Map, &Soil, &TopoMap, &SoilMap, &VegMap);
+  InitTerrainMaps(Input, &Options, &GMap, &Map, &Soil, &TopoMap, &SoilMap, &VegMap);
 
   CheckOut(&Options, Veg, Soil, VType, SType, &Map, TopoMap, VegMap, SoilMap);
 
