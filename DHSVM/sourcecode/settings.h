@@ -152,7 +152,7 @@ enum KEYS {
   number_of_root_zones, root_zone_depth, overstory_fraction, understory_fraction, 
   monextn, vf_adj, overstory_monlai, understory_monlai, overstory_monalb, understory_monalb, 
   /* terrain information */
-  demfile = 0, maskfile,
+  demfile = 0, maskfile, dumptopo,
   soiltype_file = 0, soildepth_file,
   /* DHSVM channel keys */
   stream_network = 0, stream_map, stream_class, riparian_veg,

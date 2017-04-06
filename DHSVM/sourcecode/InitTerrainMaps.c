@@ -60,9 +60,11 @@ void InitTopoMap(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * GMap, MAPSIZE 
   int NumberType;		/* Number type of data set */
   unsigned char *Mask = NULL;	/* Basin mask */
   float *Elev;			/* Surface elevation */
+  int dodump;                   /* Flag to dump topography */
   STRINIENTRY StrEnv[] = {
     {"TERRAIN", "DEM FILE", "", ""},
     {"TERRAIN", "BASIN MASK FILE", "", ""},
+    {"TERRAIN", "DUMP TOPO", "", "FALSE"},
     {NULL, NULL, "", NULL}
   };
 
@@ -143,6 +145,14 @@ void InitTopoMap(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * GMap, MAPSIZE 
   else ReportError((char *)Routine, 57);
   free(Mask);
 
+  /* get flag to dump topography */
+  if (strncmp(StrEnv[dumptopo].VarStr, "TRUE", 4) == 0)
+    dodump = TRUE;
+  else 
+    dodump = FALSE;
+
+
+
   /* find out the minimum grid elevation of the basin (using the basin mask) */
   MINELEV = DHSVM_HUGE;
   for (y = 0, i = 0; y < Map->NY; y++) {
@@ -172,6 +182,10 @@ void InitTopoMap(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * GMap, MAPSIZE 
         (*TopoMap)[y][x].Mask = OUTSIDEBASIN;
     (*TopoMap)[Options->PointY][Options->PointX].Mask = (1 != OUTSIDEBASIN);
   }
+
+  /* for debugging */
+  if (dodump) DumpTopo(Map, *TopoMap);
+
 }
 
 /*****************************************************************************
