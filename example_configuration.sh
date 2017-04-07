@@ -130,6 +130,35 @@ elif [ $host == "pe10900" ]; then
         $common_flags \
         ..
 
+elif [ $host = "constance" ]; then
+
+    # with these modules:
+
+    # module load precision/i4
+    # module load gcc/4.8.2
+    # module load openmpi/1.8.3
+    # module load netcdf/4.3.2
+    # module load cmake
+    
+    # GA installed here:
+
+    prefix=/pic/projects/informed_hydro/dhsvm-gnu
+    CC=/share/apps/gcc/4.8.2/bin/gcc
+    export CC
+
+    cmake $options \
+        -D CMAKE_VERBOSE_MAKEFILE:BOOL=TRUE \
+        -D MPI_C_COMPILER:STRING="/share/apps/openmpi/1.8.3/gcc/4.8.2/bin/mpicc" \
+        -D MPIEXEC:STRING="/share/apps/openmpi/1.8.3/gcc/4.8.2/bin/mpiexec" \
+        -D GA_DIR:STRING="$prefix" \
+        -D DHSVM_USE_X11:BOOL=OFF \
+        -D DHSVM_USE_NETCDF:BOOL=ON \
+        -D NETCDF_INCLUDES:PATH="/share/apps/netcdf/4.3.2/gcc/4.8.2/include" \
+        -D DHSVM_USE_RBM:BOOL=OFF \
+        -D CMAKE_INSTALL_PREFIX:PATH="$prefix" \
+        $common_flags \
+        ..
+
 else
 
     # For an unknown system, turn most options off
