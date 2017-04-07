@@ -178,7 +178,7 @@ void Aggregate(MAPSIZE *Map, OPTIONSTRUCT *Options, TOPOPIX **TopoMap,
   /* calculate average values for all quantities except the surface flow */
 
 #define ALL_REDUCE_AVG_FLOAT(x, npix)           \
-  x /= (float)npix;  GA_Fgop(&(x), 1, "+");
+  GA_Fgop(&(x), 1, "+"); x /= (float)npix;  
 
   /* average evaporation data */
   ALL_REDUCE_AVG_FLOAT(Total->Evap.ETot, NPixels);

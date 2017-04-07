@@ -10,7 +10,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2017-02-27 08:43:41 d3g096
+ * LAST CHANGE: 2017-04-06 08:00:22 d3g096
  * COMMENTS:
  */
 
@@ -23,7 +23,9 @@
 int Global2Local(MAPSIZE *Map, int globalx, int globaly, int *localx, int *localy);
 void Local2Global(MAPSIZE *Map, int localx, int localy, int *globalx, int *globaly);
 void ParallelInitialize(int *argc, char ***argv);
-void DomainDecomposition(MAPSIZE *global, MAPSIZE *local);
+void MaskedDomainDecomposition(MAPSIZE *gmap, MAPSIZE *lmap, MAPSIZE* nmap, 
+                               unsigned char *mask);
+void SimpleDomainDecomposition(MAPSIZE *global, MAPSIZE *local);
 void DomainSummary(MAPSIZE *global, MAPSIZE *local);
 int ParallelRank(void);
 int ParallelSize(void);
@@ -47,6 +49,8 @@ void GA_Get_patch(int ga, MAPSIZE *Map, GA_Patch *p);
 void GA_Acc_patch(int ga, MAPSIZE *Map, GA_Patch *p);
 void GA_Put_patch(int ga, MAPSIZE *Map, GA_Patch *p);
 void GA_Free_patch(GA_Patch *p);
+
+int Collect2DMatrixGA(void *LocalMatrix, int NumberType, MAPSIZE *Map);
 
 void ParallelFinalize(void);
 

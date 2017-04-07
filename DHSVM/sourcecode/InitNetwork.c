@@ -34,7 +34,7 @@
 
    Comments     :
  *****************************************************************************/
-void InitNetwork(int NY, int NX, float DX, float DY, TOPOPIX **TopoMap,
+void InitNetwork(MAPSIZE *Map, TOPOPIX **TopoMap,
   SOILPIX **SoilMap, VEGPIX **VegMap, VEGTABLE *VType,
   ROADSTRUCT ***Network, CHANNEL *ChannelData,
   LAYER Veg, OPTIONSTRUCT *Options)
@@ -53,16 +53,16 @@ void InitNetwork(int NY, int NX, float DX, float DY, TOPOPIX **TopoMap,
   FILE *inputfile;
   /* Allocate memory for network structure */
 
-  if (!(*Network = (ROADSTRUCT **)calloc(NY, sizeof(ROADSTRUCT *))))
+  if (!(*Network = (ROADSTRUCT **)calloc(Map->NY, sizeof(ROADSTRUCT *))))
     ReportError((char *)Routine, 1);
 
-  for (y = 0; y < NY; y++) {
-    if (!((*Network)[y] = (ROADSTRUCT *)calloc(NX, sizeof(ROADSTRUCT))))
+  for (y = 0; y < Map->NY; y++) {
+    if (!((*Network)[y] = (ROADSTRUCT *)calloc(Map->NX, sizeof(ROADSTRUCT))))
       ReportError((char *)Routine, 1);
   }
 
-  for (y = 0; y < NY; y++) {
-    for (x = 0; x < NX; x++) {
+  for (y = 0; y < Map->NY; y++) {
+    for (x = 0; x < Map->NX; x++) {
       if (INBASIN(TopoMap[y][x].Mask)) {
         if (!((*Network)[y][x].Adjust =
           (float *)calloc((VType[VegMap[y][x].Veg - 1].NSoilLayers + 1), sizeof(float))))
@@ -81,14 +81,14 @@ void InitNetwork(int NY, int NX, float DX, float DY, TOPOPIX **TopoMap,
   /* If a road/channel Network is imposed on the area, read the Network
      information, and calculate the storage adjustment factors */
   if (Options->HasNetwork) {
-    for (y = 0; y < NY; y++) {
-      for (x = 0; x < NX; x++) {
+    for (y = 0; y < Map->NY; y++) {
+      for (x = 0; x < Map->NX; x++) {
         if (INBASIN(TopoMap[y][x].Mask)) {
           ChannelCut(y, x, ChannelData, &((*Network)[y][x]));
           AdjustStorage(VType[VegMap[y][x].Veg - 1].NSoilLayers,
             SoilMap[y][x].Depth,
             VType[VegMap[y][x].Veg - 1].RootDepth,
-            (*Network)[y][x].Area, DX, DY,
+            (*Network)[y][x].Area, Map->DX, Map->DY,
             (*Network)[y][x].BankHeight,
             (*Network)[y][x].PercArea,
             (*Network)[y][x].Adjust,
@@ -126,8 +126,8 @@ void InitNetwork(int NY, int NX, float DX, float DY, TOPOPIX **TopoMap,
   /* if no road/channel Network is imposed, set the adjustment factors to the
      values they have in the absence of an imposed network */
   else {
-    for (y = 0; y < NY; y++) {
-      for (x = 0; x < NX; x++) {
+    for (y = 0; y < Map->NY; y++) {
+      for (x = 0; x < Map->NX; x++) {
         if (INBASIN(TopoMap[y][x].Mask)) {
           for (i = 0; i <= VType[VegMap[y][x].Veg - 1].NSoilLayers; i++) {
             (*Network)[y][x].Adjust[i] = 1.0;
@@ -176,8 +176,8 @@ void InitNetwork(int NY, int NX, float DX, float DY, TOPOPIX **TopoMap,
         "The code find_nearest_channel.c will make the file\n");
       ReportError(Options->ImperviousFilePath, 3);
     }
-    for (y = 0; y < NY; y++) {
-      for (x = 0; x < NX; x++) {
+    for (y = 0; y < Map->NY; y++) {
+      for (x = 0; x < Map->NX; x++) {
         if (INBASIN(TopoMap[y][x].Mask)) {
           if (fscanf(inputfile, "%d %d %d %d \n", &sy, &sx, &miny, &minx) !=
             EOF) {

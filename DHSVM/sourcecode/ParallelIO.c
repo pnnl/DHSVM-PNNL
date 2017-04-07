@@ -10,7 +10,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2017-02-07 07:47:34 d3g096
+ * LAST CHANGE: 2017-04-06 08:13:35 d3g096
  * COMMENTS:
  */
 
@@ -24,6 +24,7 @@
 
 #include "data.h"
 #include "sizeofnt.h"
+#include "DHSVMerror.h"
 #include "ParallelDHSVM.h"
 #include "fileio.h"
 
@@ -54,9 +55,7 @@ Distribute2DMatrix(void *MatrixZero, void *LocalMatrix,
                    int NumberType, MAPSIZE *Map)
 {
   int me;
-  int ndim, dims[GA_MAX_DIM];
   int gNX, gNY;
-  int i, j;
   int gatype, ga;
   int lo[2], hi[2], ld[2];
 
@@ -66,7 +65,7 @@ Distribute2DMatrix(void *MatrixZero, void *LocalMatrix,
   gNY = Map->gNY;
 
   gatype = GA_Type(NumberType);
-  ga = GA_Duplicate_type(Map->dist, "Distribute2DMatrix", GA_Type(NumberType));
+  ga = GA_Duplicate_type(Map->dist, "Distribute2DMatrix", gatype);
   
   /* switch (gatype) { */
   /* case (C_CHAR): */
@@ -109,31 +108,17 @@ Collect2DMatrix(void *MatrixZero, void *LocalMatrix,
                 int NumberType, MAPSIZE *Map)
 {
   int me;
-  int ndim, dims[GA_MAX_DIM];
-  int gNX, gNY;
-  int i, j;
-  int gatype, ga;
+  int ga;
   int lo[GA_MAX_DIM], hi[GA_MAX_DIM], ld[GA_MAX_DIM];
-  
+  int gNX, gNY;
+
   me = ParallelRank();
-  
-  gNX = Map->gNX;
-  gNY = Map->gNY;
-  
-  gatype = GA_Type(NumberType);
-  ga = GA_Duplicate_type(Map->dist, "Collect2DMatrix", GA_Type(NumberType));
-  /* GA_Print_distribution(ga); */
-  
-  lo[gaYdim] = Map->OffsetY;
-  lo[gaXdim] = Map->OffsetX;
-  hi[gaYdim] = lo[gaYdim] + Map->NY - 1;
-  hi[gaXdim] = lo[gaXdim] + Map->NX - 1;
-  ld[gaXdim] = Map->NY;
-  ld[gaYdim] = Map->NX;
-  NGA_Put(ga, &lo[0], &hi[0], LocalMatrix, &ld[0]);
-  GA_Sync();
+  ga = Collect2DMatrixGA(LocalMatrix, NumberType, Map);
 
   if (me == 0) {
+
+    gNX = Map->gNX;
+    gNY = Map->gNY;
 
     lo[gaYdim] = 0;
     lo[gaXdim] = 0;
@@ -144,7 +129,6 @@ Collect2DMatrix(void *MatrixZero, void *LocalMatrix,
     NGA_Get(ga, &lo[0], &hi[0], MatrixZero, &ld[0]);
   }
   GA_Sync();
-  /* GA_Print(ga); */
   GA_Destroy(ga);
 }
 

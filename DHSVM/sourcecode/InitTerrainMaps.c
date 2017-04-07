@@ -35,12 +35,12 @@
  /*****************************************************************************
    InitTerrainMaps()
  *****************************************************************************/
-void InitTerrainMaps(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * Map,
+void InitTerrainMaps(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * GMap, MAPSIZE * Map,
   LAYER * Soil, TOPOPIX *** TopoMap, SOILPIX *** SoilMap, VEGPIX *** VegMap)
 {
   printf("\nInitializing terrain maps\n");
 
-  InitTopoMap(Input, Options, Map, TopoMap);
+  InitTopoMap(Input, Options, GMap, Map, TopoMap);
   InitSoilMap(Input, Options, Map, Soil, *TopoMap, SoilMap);
   InitVegMap(Options, Input, Map, VegMap);
 }
@@ -48,7 +48,7 @@ void InitTerrainMaps(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * Map,
 /*****************************************************************************
   InitTopoMap()
 *****************************************************************************/
-void InitTopoMap(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * Map,
+void InitTopoMap(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * GMap, MAPSIZE * Map,
   TOPOPIX *** TopoMap)
 {
   const char *Routine = "InitTopoMap";
@@ -60,19 +60,18 @@ void InitTopoMap(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * Map,
   int NumberType;		/* Number type of data set */
   unsigned char *Mask = NULL;	/* Basin mask */
   float *Elev;			/* Surface elevation */
+  int dodump;                   /* Flag to dump topography */
+  int masked_decomposition;     /* Flag to do domain decomposition using the mask */
+  MAPSIZE TMap;                 /* temporary local domain */
   STRINIENTRY StrEnv[] = {
     {"TERRAIN", "DEM FILE", "", ""},
     {"TERRAIN", "BASIN MASK FILE", "", ""},
+    {"TERRAIN", "DUMP TOPO", "", "FALSE"},
+    {"TERRAIN", "DECOMPOSITION", "", "SIMPLE"},
     {NULL, NULL, "", NULL}
   };
 
   /* Process the [TERRAIN] section in the input file */
-  if (!(*TopoMap = (TOPOPIX **)calloc(Map->NY, sizeof(TOPOPIX *))))
-    ReportError((char *)Routine, 1);
-  for (y = 0; y < Map->NY; y++) {
-    if (!((*TopoMap)[y] = (TOPOPIX *)calloc(Map->NX, sizeof(TOPOPIX))))
-      ReportError((char *)Routine, 1);
-  }
 
   /* Read the key-entry pairs from the input file */
   for (i = 0; StrEnv[i].SectionName; i++) {
@@ -80,6 +79,51 @@ void InitTopoMap(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * Map,
       StrEnv[i].VarStr, (unsigned long)BUFSIZE, Input);
     if (IsEmptyStr(StrEnv[i].VarStr))
       ReportError(StrEnv[i].KeyName, 51);
+  }
+
+  /* determine how to do domain decomposition, then do it */
+  if (strncmp(StrEnv[decompose].VarStr, "SIMPLE", 6) == 0) {
+    masked_decomposition = FALSE;
+  } else if (strncmp(StrEnv[decompose].VarStr, "MASKED", 6) == 0) {
+    masked_decomposition = TRUE;
+  } else {
+    ReportError(StrEnv[decompose].KeyName, 51);
+  }
+
+  /* let GA decide */
+  SimpleDomainDecomposition(GMap, &TMap);
+
+  /* if called for, use the mask to adjust the simple decomposition to
+     hopefully produce a better load balance */ 
+
+  if (masked_decomposition && ParallelSize() > 1) {
+  
+    /* read the mask into an array using the default, simple decomposition */
+
+    GetVarName(002, 0, VarName);
+    GetVarNumberType(002, &NumberType);
+    if (!(Mask = (unsigned char *)calloc(TMap.NX * TMap.NY,
+                                         SizeOfNumberType(NumberType))))
+      ReportError((char *)Routine, 1);
+    flag = Read2DMatrix(StrEnv[maskfile].VarStr, Mask, NumberType, &TMap, 0,
+                        VarName, 0);
+
+    MaskedDomainDecomposition(GMap, &TMap, Map, Mask);
+
+    free(Mask);
+  } else {
+    memcpy(Map, &TMap, sizeof(MAPSIZE));
+  }
+
+
+  /* now allocate the topography data structures with appropriate
+     decomposition */
+
+  if (!(*TopoMap = (TOPOPIX **)calloc(Map->NY, sizeof(TOPOPIX *))))
+    ReportError((char *)Routine, 1);
+  for (y = 0; y < Map->NY; y++) {
+    if (!((*TopoMap)[y] = (TOPOPIX *)calloc(Map->NX, sizeof(TOPOPIX))))
+      ReportError((char *)Routine, 1);
   }
 
   /* Read the elevation data from the DEM dataset */
@@ -141,6 +185,14 @@ void InitTopoMap(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * Map,
   else ReportError((char *)Routine, 57);
   free(Mask);
 
+  /* get flag to dump topography */
+  if (strncmp(StrEnv[dumptopo].VarStr, "TRUE", 4) == 0)
+    dodump = TRUE;
+  else 
+    dodump = FALSE;
+
+
+
   /* find out the minimum grid elevation of the basin (using the basin mask) */
   MINELEV = DHSVM_HUGE;
   for (y = 0, i = 0; y < Map->NY; y++) {
@@ -170,6 +222,10 @@ void InitTopoMap(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * Map,
         (*TopoMap)[y][x].Mask = OUTSIDEBASIN;
     (*TopoMap)[Options->PointY][Options->PointX].Mask = (1 != OUTSIDEBASIN);
   }
+
+  /* for debugging */
+  if (dodump) DumpTopo(Map, *TopoMap);
+
 }
 
 /*****************************************************************************

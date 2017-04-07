@@ -10,7 +10,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2017-02-27 09:20:58 d3g096
+ * LAST CHANGE: 2017-04-07 10:31:03 d3g096
  * COMMENTS:
  */
 
@@ -26,6 +26,7 @@
 #include <ga.h>
 #include <macdecls.h>
 
+#include "constants.h"
 #include "sizeofnt.h"
 #include "DHSVMerror.h"
 #include "ParallelDHSVM.h"
@@ -99,6 +100,66 @@ GA_Type(int NumberType)
   return gatype;
 }
 
+
+/******************************************************************************/
+/*                                compare_int                                    */
+/******************************************************************************/
+static int 
+compare_int(const void *i1ptr, const void *i2ptr)
+{
+  int i1 = *((int *)i1ptr);
+  int i2 = *((int *)i2ptr);
+  return (int) (i1 - i2);
+}
+
+/******************************************************************************/
+/*                             GA_Inquire_irreg_distr                               */
+/******************************************************************************/
+/* the nblk and mapc arrays are filled with the information requried
+   by GA_Irreg_distr.  The length of nblk needs to be greater or equal
+   to ga's number of dimensions. The length of mapc should be the
+   number of processors times the number of dimensions */
+static void
+GA_Inquire_irreg_distr(int ga, int *mapc, int *nblk)
+{
+  int np;
+  int *idx;
+  int lo[GA_MAX_DIM], hi[GA_MAX_DIM];
+  int *mapcptr;
+  int p; 
+  int i, d;
+  int ndim, dims[GA_MAX_DIM];
+  int gatype;
+
+  NGA_Inquire(ga, &gatype, &ndim, &dims[0]);
+
+  np = GA_Nnodes();
+  if (!(idx = (int *)calloc(np, sizeof(int)))) {
+    ReportError("GA_Inquire_irreg_distr", 70);
+  }
+
+  mapcptr = mapc;
+  for (d = 0; d < ndim; ++d) {
+    for (p = 0; p < np; ++p) {
+      NGA_Distribution(ga, p, &lo[0], &hi[0]);
+      idx[p] = lo[d];
+    }
+    qsort(&idx[0], np, sizeof(int), compare_int);
+      
+    *mapcptr = 0;
+    for (p = 0, i = 0; p < np ; ++p) {
+      if (idx[p] != *mapcptr) {
+        mapcptr++;
+        *mapcptr = idx[p];
+        i++;
+      }
+    }
+    nblk[d] = i+1;
+    mapcptr++;
+  }
+  free(idx);
+}
+
 /******************************************************************************/
 /*                          GA_Duplicate_type                                 */
 /******************************************************************************/
@@ -115,10 +176,9 @@ int
 GA_Duplicate_type(int oga, char *nname, int ntype)
 {
   int nga;
+  int ndim, dims[GA_MAX_DIM];
   int otype;
-  int ndim, dims[GA_MAX_DIM], chunk[GA_MAX_DIM];
-  int i;
-  
+
   NGA_Inquire(oga, &otype, &ndim, &dims[0]);
 
   /* if it's already the correct type, just duplicate */
@@ -126,13 +186,28 @@ GA_Duplicate_type(int oga, char *nname, int ntype)
   if (otype == ntype) {
     nga = GA_Duplicate(oga, nname);
   } else {
-    /* FIXME: should actually copy the distribution here */
-    for (i = 0; i < GA_MAX_DIM; ++i) chunk[i] = 1;
+    int np;
+    int nblk[GA_MAX_DIM], *mapc;
+
+    np = ParallelSize();
+
+    if (!(mapc = (int *)calloc((GA_MAX_DIM-1)*np, sizeof(int)))) {
+      ReportError("GA_Duplicate_type", 70);
+    }
+
+    GA_Inquire_irreg_distr(oga, &mapc[0], &nblk[0]);
+
     nga = GA_Create_handle();
-    GA_Set_data(nga, ndim, dims, ntype);
     GA_Set_array_name(nga, nname);
-    GA_Set_chunk(nga, &chunk[0]);
+    GA_Set_data(nga, ndim, dims, ntype);
+    GA_Set_irreg_distr(nga, mapc, nblk);
     GA_Allocate(nga);
+
+    if (GA_Compare_distr(oga, nga)) {
+      ReportError("GA_Duplicate_type: distributions differ", 70);
+    }
+
+    free(mapc);
   }    
   return nga;
 }
@@ -250,18 +325,36 @@ DomainSummary(MAPSIZE *global, MAPSIZE *local)
 }
 
 /******************************************************************************/
+/*                             GA_Mapsize                                     */
+/******************************************************************************/
+static void
+GA_Mapsize(MAPSIZE *global, MAPSIZE *local, int gaid)
+{
+  int me;
+  int lo[GA_MAX_DIM], hi[GA_MAX_DIM];
+
+  me = GA_Nodeid();
+
+  NGA_Distribution(gaid, me, lo, hi);
+  global->dist = gaid;
+  local->dist = gaid;
+  local->Xorig = global->Xorig + lo[gaXdim]*global->DX;
+  local->Yorig = global->Yorig + lo[gaYdim]*global->DY;
+  local->OffsetX = lo[gaXdim];
+  local->OffsetY = lo[gaYdim];
+  local->NX = hi[gaXdim] - lo[gaXdim] + 1;
+  local->NY = hi[gaYdim] - lo[gaYdim] + 1;
+}
+
+/******************************************************************************/
 /*                            DomainDecomposition                             */
 /******************************************************************************/
 void
-DomainDecomposition(MAPSIZE *global, MAPSIZE *local)
+SimpleDomainDecomposition(MAPSIZE *global, MAPSIZE *local)
 {
   int gaid; 
-  int me;
   int dims[GA_MAX_DIM];
-  int chunk[GA_MAX_DIM], ghosts[GA_MAX_DIM];
-  int lo[GA_MAX_DIM], hi[GA_MAX_DIM];
-
-  me = ParallelRank();
+  int chunk[GA_MAX_DIM];
 
   /* initialize the local domain */
   memcpy(local, global, sizeof(MAPSIZE));
@@ -280,25 +373,199 @@ DomainDecomposition(MAPSIZE *global, MAPSIZE *local)
   chunk[gaYdim] = 1;
   chunk[gaXdim] = 1;
 
-  ghosts[gaYdim] = 1;
-  ghosts[gaXdim] = 1;
-  
-  gaid = NGA_Create_ghosts(C_INT, 2, dims, ghosts, "Domain Decompsition", chunk);
+  gaid = NGA_Create(C_FLOAT, 2, dims, "Domain Decompsition", chunk);
   if (gaid == 0) {
     ReportError("DomainDecomposition", 70);
   }
   /* GA_Print_distribution(gaid); */
-  NGA_Distribution(gaid, me, lo, hi);
-  global->dist = gaid;
-  local->dist = gaid;
-  local->Xorig = global->Xorig + lo[gaXdim]*global->DX;
-  local->Yorig = global->Yorig + lo[gaYdim]*global->DY;
-  local->OffsetX = lo[gaXdim];
-  local->OffsetY = lo[gaYdim];
-  local->NX = hi[gaXdim] - lo[gaXdim] + 1;
-  local->NY = hi[gaYdim] - lo[gaYdim] + 1;
+
+  GA_Mapsize(global, local, gaid);
 
 }
+
+/******************************************************************************/
+/*                             find_splits                                    */
+/******************************************************************************/
+/* it's assumed that ga is 1-D float */
+static void
+find_splits(int ga, int nsplit, int *isplit)
+{
+  int me, np;
+  int ga_mask, ga_sum;
+  int gatype, ndim, dim[GA_MAX_DIM];
+  int lo[GA_MAX_DIM], hi[GA_MAX_DIM];
+  int i, f, mylo, myhi, idx0;
+  float value, *ga_data, *frac;
+
+  me = GA_Nodeid();
+  np = GA_Nnodes();
+
+  NGA_Inquire(ga, &gatype, &ndim, &dim[0]);
+
+  ga_mask = GA_Duplicate(ga, "find_splits Mask");
+  GA_Zero(ga_mask);
+
+  if (me == 0) {
+    lo[0] = 0;
+    hi[0] = 0;
+    value = 1;
+    NGA_Put(ga_mask, &lo[0], &hi[0], &value, NULL);
+  }
+  GA_Sync();
+
+  ga_sum = GA_Duplicate(ga, "find_splits Sum");
+  GA_Zero(ga_sum);
+
+  GA_Scan_add(ga, ga_sum, ga_mask, 0, dim[0], 0);
+  NGA_Select_elem(ga_sum, "max", &value, &lo[0]);
+  value = 1.0/value;
+
+  GA_Scale(ga_sum, &value);
+
+  if (!(frac = (float *)calloc(nsplit, sizeof(float)))) {
+    ReportError("find_splits", 70);
+  }
+  for (f = 0; f < nsplit; ++f) {
+    isplit[f] = 0;
+    frac[f] = ((double)f)/((double)nsplit);
+  }
+
+  NGA_Distribution(ga_sum, me, &lo[0], &hi[0]);
+  mylo = lo[0];
+  myhi = hi[0];
+  NGA_Access(ga_sum, &mylo, &myhi, &ga_data, NULL);
+
+  idx0 = mylo;
+  for (f = 1; f < nsplit; ++f) {
+    if (ga_data[idx0 - mylo] <= frac[f] && frac[f] <= ga_data[myhi - mylo]) {
+      for (i = idx0 + 1; i <= myhi; ++i) {
+        if (ga_data[i - mylo] > frac[f]) {
+          isplit[f] = i - 1;
+          break;
+        }
+      }
+    }
+  }
+  NGA_Release(ga_sum, &mylo, &myhi);
+  /* GA_Print(ga_sum); */
+
+  GA_Igop(&isplit[0], nsplit, "+");
+  
+  GA_Destroy(ga_mask);
+  GA_Destroy(ga_sum);
+}
+  
+
+/******************************************************************************/
+/*                            MaskedDomainDecomposition                       */
+/******************************************************************************/
+void 
+MaskedDomainDecomposition(MAPSIZE *gmap, MAPSIZE *lmap, MAPSIZE *nmap, 
+                          unsigned char *mask)
+{
+  static float one = 1.0;
+  int me, np;
+  int ga_xsum, ga_ysum;
+  int gatype;
+  int ndim, dims[GA_MAX_DIM];
+  int nblk[GA_MAX_DIM], *mapc, *mapcptr;
+  int lo[GA_MAX_DIM], hi[GA_MAX_DIM], ld[GA_MAX_DIM];
+  float sum;
+  int x, y, gx, gy, i;
+  int p, d, b;
+  char *nname;
+  int nga;
+
+  me = ParallelRank();
+  np = ParallelSize();
+
+  if (!(mapc = (int *)calloc(GA_MAX_DIM*np, sizeof(int)))) {
+    ReportError("MaskedDomainDecomposition", 70);
+  }
+  NGA_Inquire(gmap->dist, &gatype, &ndim, &dims[0]);
+  GA_Inquire_irreg_distr(gmap->dist, &mapc[0], &nblk[0]);
+
+  if (nblk[gaYdim] > 1) {
+    gy = gmap->NY;
+    ga_ysum = NGA_Create(C_FLOAT, 1, &gmap->NY, "Sum along Y", NULL);
+    NGA_Zero(ga_ysum);
+
+    for (y = 0, i = 0; y < lmap->NY; y++) {
+      sum = 0.0;
+      for (x = 0; x < lmap->NX; x++, i++) {
+        if (INBASIN(mask[i])) {
+          sum += 1.0;
+        }
+      }
+      Local2Global(lmap, 0, y, &gx, &gy);
+      NGA_Acc(ga_ysum, &gy, &gy, &sum, &ld[0], &one);
+    }
+
+    find_splits(ga_ysum, nblk[gaYdim], &mapc[0]);
+    /* GA_Print(ga_ysum); */
+    GA_Destroy(ga_ysum);
+  } else {
+    mapc[0] = 0;
+  }
+  
+  if (nblk[gaYdim] > 1) {
+    gx = gmap->NX;
+    ga_xsum = NGA_Create(C_FLOAT, 1, &gmap->NX, "Sum along X", NULL);
+    NGA_Zero(ga_xsum);
+
+    for (x = 0, i = 0; x < lmap->NX; x++) {
+      sum = 0.0;
+      for (y = 0; y < lmap->NY; y++, i++) {
+        if (INBASIN(mask[i])) {
+          sum += 1.0;
+        }
+      }
+      Local2Global(lmap, x, 0, &gx, &gy);
+      NGA_Acc(ga_xsum, &gx, &gx, &sum, &ld[0], &one);
+    }
+
+    find_splits(ga_xsum, nblk[gaXdim], &mapc[nblk[0]]);
+
+    /* GA_Print(ga_xsum); */
+    GA_Destroy(ga_xsum);
+  } else {
+    mapc[nblk[0]] = 0;
+  }
+
+  for (p = 0; p < np; ++p) {
+    if (me == p) {
+      if (p == 0) {
+        fprintf(stdout, "MaskedDomainDecomposition:\n");
+      }
+      mapcptr = mapc;
+      for (d = 0; d < 2; ++d) {
+        fprintf(stdout, "%d: %d(%d): ", p, d, nblk[d]);
+        for (b = 0; b < nblk[d]; ++b, ++mapcptr) {
+          fprintf(stdout, "%d, ", *mapcptr);
+        }
+        fprintf(stdout, "\n");
+        fflush(stdout);
+      }
+    }
+    GA_Sync();
+  }
+
+  memcpy(nmap, lmap, sizeof(MAPSIZE));
+
+  nname = GA_Inquire_name(gmap->dist);
+
+  nga = GA_Create_handle();
+  GA_Set_array_name(nga, nname);
+  GA_Set_data(nga, ndim, dims, gatype);
+  GA_Set_irreg_distr(nga, mapc, nblk);
+  GA_Allocate(nga);
+
+  GA_Destroy(gmap->dist);
+  GA_Mapsize(gmap, nmap, nga);
+  
+  free(mapc);
+}
+
 
 /******************************************************************************/
 /*                            ParallelBarrier                                 */
@@ -504,3 +771,38 @@ GA_Free_patch(GA_Patch *p)
   free(p->patch[0]);
   free(p->patch);
 }
+
+/******************************************************************************/
+/*                            Collect2DMatrixGA                               */
+/******************************************************************************/
+int
+Collect2DMatrixGA(void *LocalMatrix, int NumberType, MAPSIZE *Map)
+{
+  int me;
+  int ndim, dims[GA_MAX_DIM];
+  int gNX, gNY;
+  int i, j;
+  int ga, gatype;
+  int lo[GA_MAX_DIM], hi[GA_MAX_DIM], ld[GA_MAX_DIM];
+  
+  me = ParallelRank();
+  
+  gNX = Map->gNX;
+  gNY = Map->gNY;
+  
+  gatype = GA_Type(NumberType);
+  ga = GA_Duplicate_type(Map->dist, "Collect2DMatrix", gatype);
+  /* GA_Print_distribution(ga); */
+  
+  lo[gaYdim] = Map->OffsetY;
+  lo[gaXdim] = Map->OffsetX;
+  hi[gaYdim] = lo[gaYdim] + Map->NY - 1;
+  hi[gaXdim] = lo[gaXdim] + Map->NX - 1;
+  ld[gaXdim] = Map->NY;
+  ld[gaYdim] = Map->NX;
+  NGA_Put(ga, &lo[0], &hi[0], LocalMatrix, &ld[0]);
+  GA_Sync();
+  /* GA_Print(ga); */
+  return ga;
+}
+

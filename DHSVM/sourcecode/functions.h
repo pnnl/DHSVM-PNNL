@@ -165,7 +165,7 @@ void InitModelState(DATE *Start, MAPSIZE *Map, OPTIONSTRUCT *Options,
 		    ROADSTRUCT **Network, UNITHYDRINFO *HydrographInfo,
 		    float *Hydrograph);
 
-void InitNetwork(int NY, int NX, float DX, float DY, TOPOPIX **TopoMap, 
+void InitNetwork(MAPSIZE *Map, TOPOPIX **TopoMap, 
 		 SOILPIX **SoilMap, VEGPIX **VegMap, VEGTABLE *VType, 
 		 ROADSTRUCT ***Network, CHANNEL *ChannelData, 
 		 LAYER Veg, OPTIONSTRUCT *Options);
@@ -230,11 +230,11 @@ void InitTables(int StepsPerDay, LISTPTR Input, OPTIONSTRUCT *Options,
 		SOILTABLE **SType, LAYER *Soil, VEGTABLE **VType,
 		LAYER *Veg, SNOWTABLE **SnowAlbedo);
 
-void InitTerrainMaps(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
+void InitTerrainMaps(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *GMap, MAPSIZE *Map,
 		     LAYER *Soil, TOPOPIX ***TopoMap, SOILPIX ***SoilMap,
 		     VEGPIX ***VegMap);
 
-void InitTopoMap(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
+void InitTopoMap(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *GMap, MAPSIZE *Map,
 		 TOPOPIX ***TopoMap);
 
 void InitUnitHydrograph(LISTPTR Input, MAPSIZE *Map, TOPOPIX **TopoMap,
