@@ -61,22 +61,17 @@ void InitTopoMap(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * GMap, MAPSIZE 
   unsigned char *Mask = NULL;	/* Basin mask */
   float *Elev;			/* Surface elevation */
   int dodump;                   /* Flag to dump topography */
+  int masked_decomposition;     /* Flag to do domain decomposition using the mask */
+  MAPSIZE TMap;                 /* temporary local domain */
   STRINIENTRY StrEnv[] = {
     {"TERRAIN", "DEM FILE", "", ""},
     {"TERRAIN", "BASIN MASK FILE", "", ""},
     {"TERRAIN", "DUMP TOPO", "", "FALSE"},
+    {"TERRAIN", "DECOMPOSITION", "", "SIMPLE"},
     {NULL, NULL, "", NULL}
   };
 
-  DomainDecomposition(GMap, Map);
-  
   /* Process the [TERRAIN] section in the input file */
-  if (!(*TopoMap = (TOPOPIX **)calloc(Map->NY, sizeof(TOPOPIX *))))
-    ReportError((char *)Routine, 1);
-  for (y = 0; y < Map->NY; y++) {
-    if (!((*TopoMap)[y] = (TOPOPIX *)calloc(Map->NX, sizeof(TOPOPIX))))
-      ReportError((char *)Routine, 1);
-  }
 
   /* Read the key-entry pairs from the input file */
   for (i = 0; StrEnv[i].SectionName; i++) {
@@ -84,6 +79,51 @@ void InitTopoMap(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * GMap, MAPSIZE 
       StrEnv[i].VarStr, (unsigned long)BUFSIZE, Input);
     if (IsEmptyStr(StrEnv[i].VarStr))
       ReportError(StrEnv[i].KeyName, 51);
+  }
+
+  /* determine how to do domain decomposition, then do it */
+  if (strncmp(StrEnv[decompose].VarStr, "SIMPLE", 6) == 0) {
+    masked_decomposition = FALSE;
+  } else if (strncmp(StrEnv[decompose].VarStr, "MASKED", 6) == 0) {
+    masked_decomposition = TRUE;
+  } else {
+    ReportError(StrEnv[decompose].KeyName, 51);
+  }
+
+  /* let GA decide */
+  SimpleDomainDecomposition(GMap, &TMap);
+
+  /* if called for, use the mask to adjust the simple decomposition to
+     hopefully produce a better load balance */ 
+
+  if (masked_decomposition && ParallelSize() > 1) {
+  
+    /* read the mask into an array using the default, simple decomposition */
+
+    GetVarName(002, 0, VarName);
+    GetVarNumberType(002, &NumberType);
+    if (!(Mask = (unsigned char *)calloc(TMap.NX * TMap.NY,
+                                         SizeOfNumberType(NumberType))))
+      ReportError((char *)Routine, 1);
+    flag = Read2DMatrix(StrEnv[maskfile].VarStr, Mask, NumberType, &TMap, 0,
+                        VarName, 0);
+
+    MaskedDomainDecomposition(GMap, &TMap, Map, Mask);
+
+    free(Mask);
+  } else {
+    memcpy(Map, &TMap, sizeof(MAPSIZE));
+  }
+
+
+  /* now allocate the topography data structures with appropriate
+     decomposition */
+
+  if (!(*TopoMap = (TOPOPIX **)calloc(Map->NY, sizeof(TOPOPIX *))))
+    ReportError((char *)Routine, 1);
+  for (y = 0; y < Map->NY; y++) {
+    if (!((*TopoMap)[y] = (TOPOPIX *)calloc(Map->NX, sizeof(TOPOPIX))))
+      ReportError((char *)Routine, 1);
   }
 
   /* Read the elevation data from the DEM dataset */

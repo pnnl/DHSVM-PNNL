@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <string.h>
+#include <ga.h>
 #include "constants.h"
 #include "getinit.h"
 #include "DHSVMChannel.h"

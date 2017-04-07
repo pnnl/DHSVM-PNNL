@@ -10,7 +10,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2017-02-27 09:28:11 d3g096
+ * LAST CHANGE: 2017-04-06 08:14:32 d3g096
  * COMMENTS:
  */
 
@@ -43,7 +43,7 @@ main(int argc, char **argv)
   gMap.DXY = 0;
   gMap.OffsetX = 0;
   gMap.OffsetY = 0;
-  DomainDecomposition(&gMap, &Map);
+  SimpleDomainDecomposition(&gMap, &Map);
   DomainSummary(&gMap, &Map);
 
   ga = GA_Duplicate_type(Map.dist, "Patch Test", C_FLOAT);

@@ -9,7 +9,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2017-02-27 08:22:57 d3g096
+# Last Change: 2017-04-06 13:29:55 d3g096
 
 # -------------------------------------------------------------
 # Set up for this subdirectory
@@ -307,6 +307,7 @@ if (DHSVM_BUILD_TESTS)
   add_executable(patch_test 
     patch_test.c
     ParallelDHSVM.c
+    globals.c
     )
   target_link_libraries(patch_test
     BinIO
