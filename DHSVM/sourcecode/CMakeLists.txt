@@ -9,7 +9,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2017-04-06 13:29:55 d3g096
+# Last Change: 2017-04-07 12:56:36 d3g096
 
 # -------------------------------------------------------------
 # Set up for this subdirectory
@@ -315,3 +315,11 @@ if (DHSVM_BUILD_TESTS)
     ${MPI_C_LIBRARIES}
     )
 endif (DHSVM_BUILD_TESTS)
+
+# -------------------------------------------------------------
+# Installation
+# -------------------------------------------------------------
+install(TARGETS DHSVM
+  DESTINATION bin
+)
+

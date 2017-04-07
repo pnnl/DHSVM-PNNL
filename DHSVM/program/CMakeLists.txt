@@ -9,7 +9,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2016-12-27 14:27:11 d3g096
+# Last Change: 2017-04-07 13:07:28 d3g096
 
 # -------------------------------------------------------------
 # Set up for this subdirectory
@@ -181,3 +181,29 @@ add_executable(fill_sinks_dhsvm
   FILL_SINKS_DHSVM.c
 )
 
+
+# -------------------------------------------------------------
+# installation
+# -------------------------------------------------------------
+install(TARGETS
+  myconvert
+  MakeModelStateBin
+  skyviewBin
+  average_shadow_bin
+  find_nearest_channel_bin
+  make_shade_maps_bin 
+  fixroads 
+  fill_sinks_dhsvm
+  DESTINATION bin
+)
+
+if (DHSVM_USE_NETCDF)
+  install(TARGETS
+    MakeModelStateNetCDF
+    skyviewNetCDF
+    average_shadow_bin
+    make_shade_maps_netcdf 
+    find_nearest_channel_netcdf
+    DESTINATION bin
+  )
+endif (DHSVM_USE_NETCDF)
