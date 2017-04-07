@@ -10,7 +10,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2017-04-07 10:31:03 d3g096
+ * LAST CHANGE: 2017-04-07 14:07:37 d3g096
  * COMMENTS:
  */
 
@@ -293,8 +293,8 @@ DomainSummary(MAPSIZE *global, MAPSIZE *local)
     printf("Proc       NX      NY OffsetX OffsetY         Xorig         Yorig NumCells\n");
     printf(bar);
   }
-  ParallelBarrier();
   fflush(stdout);
+  ParallelBarrier();
   for (p = 0; p < nproc; ++p) {
     if (me == p) {
       printf(fmt, p, 
@@ -303,8 +303,8 @@ DomainSummary(MAPSIZE *global, MAPSIZE *local)
              local->Xorig, local->Yorig,
              local->NumCells);
     }
-    ParallelBarrier();
     fflush(stdout);
+    ParallelBarrier();
   }
   if (me == 0) {
     printf(bar);
@@ -315,13 +315,14 @@ DomainSummary(MAPSIZE *global, MAPSIZE *local)
            global->NumCells);
     printf(bar);
   }
+  fflush(stdout);
   ParallelBarrier();
   GA_Print_distribution(global->dist);
   if (me == 0) {
     printf(bar);
   }
-  ParallelBarrier();
   fflush(stdout);
+  ParallelBarrier();
 }
 
 /******************************************************************************/
@@ -532,6 +533,7 @@ MaskedDomainDecomposition(MAPSIZE *gmap, MAPSIZE *lmap, MAPSIZE *nmap,
     mapc[nblk[0]] = 0;
   }
 
+  /*
   for (p = 0; p < np; ++p) {
     if (me == p) {
       if (p == 0) {
@@ -549,6 +551,7 @@ MaskedDomainDecomposition(MAPSIZE *gmap, MAPSIZE *lmap, MAPSIZE *nmap,
     }
     GA_Sync();
   }
+  */
 
   memcpy(nmap, lmap, sizeof(MAPSIZE));
 

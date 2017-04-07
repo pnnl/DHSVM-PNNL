@@ -90,9 +90,11 @@ void ExecDump(MAPSIZE *Map, DATE *Current, DATE *Start, OPTIONSTRUCT *Options,
     for (i = 0; i < Dump->NMaps; i++) {
       for (j = 0; j < Dump->DMap[i].N; j++) {
         if (IsEqualTime(Current, &(Dump->DMap[i].DumpDate[j]))) {
-          fprintf(stdout, "Dumping Maps at ");
-          PrintDate(Current, stdout);
-          fprintf(stdout, "\n");
+          if (ParallelRank() == 0) {
+            fprintf(stdout, "Dumping Maps at ");
+            PrintDate(Current, stdout);
+            fprintf(stdout, "\n");
+          }
           DumpMap(Map, Current, &(Dump->DMap[i]), TopoMap, EvapMap,
             PrecipMap, RadMap, SnowMap, SoilMap, Soil, VegMap,
             Veg, Network, Options);

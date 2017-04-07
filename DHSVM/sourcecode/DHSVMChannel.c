@@ -46,7 +46,8 @@ InitChannel(LISTPTR Input, MAPSIZE *Map, int deltat, CHANNEL *channel,
     {NULL, NULL, "", NULL}
   };
 
-  printf("\nInitializing Road/Stream Networks\n");
+  if (ParallelRank() == 0) 
+    printf("\nInitializing Road/Stream Networks\n");
 
   /* Read the key-entry pairs from the ROUTING section in the input file */
   for (i = 0; StrEnv[i].SectionName; i++) {
@@ -68,7 +69,8 @@ InitChannel(LISTPTR Input, MAPSIZE *Map, int deltat, CHANNEL *channel,
 
   if (strncmp(StrEnv[stream_class].VarStr, "none", 4)) {
 
-    printf("\tReading Stream data\n");
+    if (ParallelRank() == 0) 
+      printf("\tReading Stream data\n");
 
     if ((channel->stream_class =
 	 channel_read_classes(StrEnv[stream_class].VarStr, stream_class)) == NULL) {
@@ -91,14 +93,16 @@ InitChannel(LISTPTR Input, MAPSIZE *Map, int deltat, CHANNEL *channel,
 
   if (Options->StreamTemp) {
     if (strncmp(StrEnv[riparian_veg].VarStr, "none", 4)) {
-      printf("\tReading channel riparian vegetation params\n");
+      if (ParallelRank() == 0) 
+        printf("\tReading channel riparian vegetation params\n");
       channel_read_rveg_param(channel->streams, StrEnv[riparian_veg].VarStr, MaxStreamID);
     }
   }
 
   if (strncmp(StrEnv[road_class].VarStr, "none", 4)) {
 
-    printf("\tReading Road data\n");
+    if (ParallelRank() == 0) 
+      printf("\tReading Road data\n");
 
     if ((channel->road_class =
 	 channel_read_classes(StrEnv[road_class].VarStr, road_class) == NULL)) {

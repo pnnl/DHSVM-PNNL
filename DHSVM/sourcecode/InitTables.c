@@ -32,6 +32,7 @@
 #include "constants.h"
 #include "fileio.h"
 #include "getinit.h"
+#include "ParallelDHSVM.h"
 
  /*******************************************************************************/
  /*				  InitTables()                                 */
@@ -41,7 +42,8 @@ void InitTables(int StepsPerDay, LISTPTR Input, OPTIONSTRUCT *Options,
   SOILTABLE **SType, LAYER *Soil, VEGTABLE **VType,
   LAYER *Veg, SNOWTABLE **SnowAlbedo)
 {
-  printf("Initializing tables\n");
+  if (ParallelRank() == 0) 
+    printf("Initializing tables\n");
 
   if ((Soil->NTypes = InitSoilTable(Options, SType, Input, Soil,
     Options->Infiltration)) == 0)

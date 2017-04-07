@@ -46,7 +46,8 @@ void InitMetMaps(int NDaySteps, MAPSIZE *Map, MAPSIZE *Radar,
 {
   int y, x;
 
-  printf("Initializing meteorological maps\n");
+  if (ParallelRank() == 0) 
+    printf("Initializing meteorological maps\n");
 
   InitEvapMap(Map, EvapMap, SoilMap, Soil, VegMap, Veg, TopoMap);
   InitPrecipMap(Map, PrecipMap, VegMap, Veg, TopoMap);

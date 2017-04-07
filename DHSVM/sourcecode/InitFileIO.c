@@ -22,6 +22,7 @@
 #include "fifobin.h"
 #include "fifoNetCDF.h"
 #include "DHSVMerror.h"
+#include "ParallelDHSVM.h"
 
 /* global function pointers */
 void (*CreateMapFileFmt) (char *FileName, ...);
@@ -88,7 +89,8 @@ void InitFileIO(int FileFormat)
 {
   const char *Routine = "InitFileIO";
 
-  printf("Initializing file IO\n");
+  if (ParallelRank() == 0) 
+    printf("Initializing file IO\n");
 
   /************************* Binary format **********************/
   if (FileFormat == BIN) {

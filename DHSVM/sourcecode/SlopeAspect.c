@@ -352,7 +352,8 @@ void ElevationSlopeAspect(MAPSIZE * Map, TOPOPIX ** TopoMap)
   n = Map->NumCells;
   printf("%d: local NumCells = %d\n", ParallelRank(), n);
   GA_Igop(&n, 1, "+");
-  printf("%d: global NumCells = %d\n", ParallelRank(), n);
+  if (ParallelRank() == 0) 
+    printf("%d: global NumCells = %d\n", ParallelRank(), n);
   /* Map->NumCells = n; */
 
   return;

@@ -32,6 +32,7 @@
 #include "constants.h"
 #include "sizeofnt.h"
 #include "channel.h"
+#include "ParallelDHSVM.h"
 
 typedef struct _RECORDSTRUCT {
   SegmentID id;
@@ -109,7 +110,8 @@ void StoreChannelState(char *Path, DATE * Now, Channel * Head)
   Channel *Current = NULL;
   FILE *OutFile = NULL;
 
-  printf("storing channel state \n");
+  if (ParallelRank() == 0) 
+    printf("storing channel state \n");
   /* Create storage file */
   sprintf(Str, "%02d.%02d.%04d.%02d.%02d.%02d", Now->Month, Now->Day,
 	  Now->Year, Now->Hour, Now->Min, Now->Sec);

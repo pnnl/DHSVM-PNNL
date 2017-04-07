@@ -67,7 +67,12 @@ void InitModelState(DATE *Start, MAPSIZE *Map, OPTIONSTRUCT *Options, PRECIPPIX 
   void *Array;
   MAPDUMP DMap;			 /* Dump Info */
 
-  printf("Restoring model state\n");
+  int domsg;
+
+  domsg = 0;
+  if (ParallelRank() == 0) domsg = 1;
+
+  if (domsg) printf("Restoring model state\n");
 
   /* Restore canopy interception */
   NSet = 0;

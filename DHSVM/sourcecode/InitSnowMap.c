@@ -42,7 +42,9 @@ void InitSnowMap(MAPSIZE * Map, SNOWPIX *** SnowMap)
   const char *Routine = "InitSnowMap";
   int y;			/* counter */
 
-  printf("Initializing snow map\n");
+
+  if (ParallelRank() == 0) 
+    printf("Initializing snow map\n");
 
   if (!(*SnowMap = (SNOWPIX **) calloc(Map->NY, sizeof(SNOWPIX *))))
     ReportError((char *) Routine, 1);

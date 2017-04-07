@@ -30,6 +30,7 @@
 #include "slopeaspect.h"
 #include "sizeofnt.h"
 #include "varid.h"
+#include "ParallelDHSVM.h"
 
  /*****************************************************************************
    InitNewMonth()
@@ -52,15 +53,19 @@ void InitNewMonth(TIMESTRUCT *Time, OPTIONSTRUCT *Options, MAPSIZE *Map,
   float *Array = NULL;
   unsigned char *Array1 = NULL;
   int flag;
+  int domsg;
+
+  domsg = 0;
+  if (ParallelRank() == 0) domsg = 1;
 
   if (DEBUG)
-    printf("Initializing new month\n");
+    if (domsg) printf("Initializing new month\n");
 
   /* If PRISM precipitation fields are being used to interpolate the
      observed precipitation fields, then read in the new months field */
 
   if (Options->Prism == TRUE) {
-    printf("reading in new PRISM field for month %d \n", Time->Current.Month);
+    if (domsg) printf("reading in new PRISM field for month %d \n", Time->Current.Month);
     sprintf(FileName, "%s.%02d.%s", Options->PrismDataPath,
       Time->Current.Month, Options->PrismDataExt);
     GetVarName(205, 0, VarName);
@@ -86,7 +91,7 @@ void InitNewMonth(TIMESTRUCT *Time, OPTIONSTRUCT *Options, MAPSIZE *Map,
   }
 
   if (Options->Shading == TRUE) {
-    printf("reading in new shadow map for month %d \n", Time->Current.Month);
+    if (domsg) printf("reading in new shadow map for month %d \n", Time->Current.Month);
     sprintf(FileName, "%s.%02d.%s", Options->ShadingDataPath,
       Time->Current.Month, Options->ShadingDataExt);
     GetVarName(304, 0, VarName);
@@ -104,7 +109,7 @@ void InitNewMonth(TIMESTRUCT *Time, OPTIONSTRUCT *Options, MAPSIZE *Map,
     free(Array1);
   }
 
-  printf("changing LAI, albedo and diffuse transmission parameters\n");
+  if (domsg) printf("changing LAI, albedo and diffuse transmission parameters\n");
   for (i = 0; i < NVegs; i++) {
     if (Options->ImprovRadiation) {
       if (VType[i].OverStory == TRUE) {
