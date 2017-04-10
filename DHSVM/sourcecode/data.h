@@ -191,6 +191,7 @@ typedef struct {
   char Name[BUFSIZE + 1];		/* Station name */
   COORD Loc;					/* Station locations */
   float Elev;					/* Station elevations */
+  float PrismCurrent;                           /* current Prism Precip for this station */
   float PrismPrecip[12];		/* MonthlyPrism Precip for each station if outside=TRUE */
   uchar IsWindModelLocation;	/* Only used in case the wind model option is
 								specified.  In that case this field is TRUE

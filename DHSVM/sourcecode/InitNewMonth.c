@@ -19,6 +19,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <ga.h>
+
 #include "settings.h"
 #include "data.h"
 #include "DHSVMerror.h"
@@ -48,6 +50,7 @@ void InitNewMonth(TIMESTRUCT *Time, OPTIONSTRUCT *Options, MAPSIZE *Map,
   int i;
   int j;
   int y, x;
+  int sy, sx;
   float a, b, l;
   int NumberType;
   float *Array = NULL;
@@ -88,6 +91,30 @@ void InitNewMonth(TIMESTRUCT *Time, OPTIONSTRUCT *Options, MAPSIZE *Map,
     else ReportError((char *)Routine, 57);
 
     free(Array);
+
+    /* gather the Prism values for each station to use later */
+    if (Options->PrecipType == STATION) {
+
+      if (!(Array = (float*) calloc(NStats, sizeof(float)))) {
+        ReportError((char *)Routine, 1);
+      }
+      for (i = 0; i < NStats; i++) {
+        Array[i] = 0.0;
+      }
+      
+      for (i = 0; i < NStats; i++) {
+        sy = Stat[i].Loc.N;
+        sx = Stat[i].Loc.E;
+        if (Global2Local(Map, sx, sy, &x, &y)) {
+          Array[i] = PrismMap[y][x];
+        }
+      }
+      GA_Fgop(Array, NStats, "+");
+      for (i = 0; i < NStats; i++) {
+        Stat[i].PrismCurrent = Array[i];
+      }
+      free(Array);
+    }
   }
 
   if (Options->Shading == TRUE) {
