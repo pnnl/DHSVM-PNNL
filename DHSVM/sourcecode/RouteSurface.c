@@ -104,7 +104,6 @@ void RouteSurface(MAPSIZE * Map, TIMESTRUCT * Time, TOPOPIX ** TopoMap,
 
               theexcess = (1 - VType[VegMap[y][x].Veg - 1].DetentionFrac) *
                 VType[VegMap[y][x].Veg - 1].ImpervFrac * SoilMap[y][x].Runoff;
-              SoilMap[TopoMap[y][x].drains_y][TopoMap[y][x].drains_x].IExcess +=
 
               /* Retained water in detention storage */
 
@@ -127,8 +126,8 @@ void RouteSurface(MAPSIZE * Map, TIMESTRUCT * Time, TOPOPIX ** TopoMap,
                  (drains_x, drains_y) cell, so the GA value is
                  accumulated */
 
-              GA_Acc_one(ga, Map, 
-                         TopoMap[y][x].drains_y, TopoMap[y][x].drains_x, 
+              GA_Acc_one_global(ga, Map, 
+                         TopoMap[y][x].drains_x, TopoMap[y][x].drains_y, 
                          &theexcess, &one);
 
               /* Route the runoff from pervious portion of urban cell

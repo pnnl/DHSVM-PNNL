@@ -10,7 +10,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2017-04-06 08:00:22 d3g096
+ * LAST CHANGE: 2017-04-10 14:08:37 d3g096
  * COMMENTS:
  */
 
@@ -34,6 +34,7 @@ int GA_Type(int NumberType);
 int GA_Duplicate_type(int oga, char *nname, int ntype);
 void GA_Put_one(int ga, MAPSIZE *Map, int x, int y, void *value);
 void GA_Acc_one(int ga, MAPSIZE *Map, int x, int y, void *value, void *alpha);
+void GA_Acc_one_global(int ga, MAPSIZE *Map, int gx, int gy, void *value, void *alpha);
 void GA_Get_one(int ga, MAPSIZE *Map, int x, int y, void *value);
 
 struct ga_patch_ {
