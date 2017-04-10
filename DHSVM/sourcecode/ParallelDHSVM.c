@@ -10,7 +10,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2017-04-07 14:07:37 d3g096
+ * LAST CHANGE: 2017-04-10 08:49:30 d3g096
  * COMMENTS:
  */
 
@@ -364,6 +364,7 @@ SimpleDomainDecomposition(MAPSIZE *global, MAPSIZE *local)
      values */
   local->OrderedCells = NULL;
   local->NumCells = 0;
+  local->AllCells = 0;
   
   /* create an appropriate sized GA the default way and use it to
      determine local shares of the domain. */

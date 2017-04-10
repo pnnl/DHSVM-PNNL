@@ -25,6 +25,7 @@
 #include "settings.h"
 #include "soilmoisture.h"
 #include "DHSVMChannel.h"
+#include "ParallelDHSVM.h"
 
  /*****************************************************************************
    Function name: InitNetwork()
@@ -158,7 +159,6 @@ void InitNetwork(MAPSIZE *Map, TOPOPIX **TopoMap,
       doimpervious = 1;
 
   if (doimpervious) {
-    assert(0);
     if (!(inputfile = fopen(Options->ImperviousFilePath, "rt"))) {
       fprintf(stderr,
         "User has specified a percentage impervious area \n");
@@ -176,20 +176,48 @@ void InitNetwork(MAPSIZE *Map, TOPOPIX **TopoMap,
         "The code find_nearest_channel.c will make the file\n");
       ReportError(Options->ImperviousFilePath, 3);
     }
-    for (y = 0; y < Map->NY; y++) {
-      for (x = 0; x < Map->NX; x++) {
-        if (INBASIN(TopoMap[y][x].Mask)) {
-          if (fscanf(inputfile, "%d %d %d %d \n", &sy, &sx, &miny, &minx) !=
-            EOF) {
+
+    /* when the impervious surface routing file is read by multiple
+       processes, indexes cannot be checked as they are when the
+       entire domain is on one process; so, run serial to check before
+       using in parallel */
+
+    /* Is this really the best approach for reading this information */
+
+    if (ParallelSize() == 1) {
+      for (y = 0; y < Map->NY; y++) {
+        for (x = 0; x < Map->NX; x++) {
+          if (INBASIN(TopoMap[y][x].Mask)) {
+            if (fscanf(inputfile, "%d %d %d %d \n", &sy, &sx, &miny, &minx) !=
+                EOF) {
+              TopoMap[y][x].drains_x = minx;
+              TopoMap[y][x].drains_y = miny;
+            }
+            else {
+              ReportError(Options->ImperviousFilePath, 63);
+            }
+                                /* indexing check */
+            if (sx != x || sy != y) {
+              ReportError(Options->ImperviousFilePath, 64);
+            }
+          }
+        }
+      }
+    } else {
+                                /* there is supposed to be a line for
+                                   each active cell in the domain (for
+                                   some reason), so let's read that
+                                   many lines */
+
+      for (i = 0; i < Map->AllCells; ++i) {
+        if (fscanf(inputfile, "%d %d %d %d \n", &sy, &sx, &miny, &minx) != EOF) {
+          if (Global2Local(Map, sx, sy, &x, &y)) {
+                                /* NOTE minx, miny are global indexes */
             TopoMap[y][x].drains_x = minx;
             TopoMap[y][x].drains_y = miny;
           }
-          else {
-            ReportError(Options->ImperviousFilePath, 63);
-          }
-          if (sx != x || sy != y) {
-            ReportError(Options->ImperviousFilePath, 64);
-          }
+        } else {
+          ReportError(Options->ImperviousFilePath, 63);
         }
       }
     }

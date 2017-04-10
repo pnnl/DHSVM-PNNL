@@ -213,6 +213,8 @@ void InitTopoMap(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * GMap, MAPSIZE 
      fraction of flow flowing in each direction based on the land surface
      slope. */
   ElevationSlopeAspect(Map, *TopoMap);
+  GMap->NumCells = Map->AllCells;
+  GMap->AllCells = Map->AllCells;
 
 
   /* After calculating the slopes and aspects for all the points, reset the

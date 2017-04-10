@@ -49,6 +49,7 @@ void RouteSurface(MAPSIZE * Map, TIMESTRUCT * Time, TOPOPIX ** TopoMap,
                   DUMPSTRUCT *Dump, VEGPIX ** VegMap, VEGTABLE * VType, CHANNEL *ChannelData)
 {
   const char *Routine = "RouteSurface";
+  static int one = 1.0;
   int Lag;			/* Lag time for hydrograph */
   int Step;
   float StreamFlow;
@@ -57,6 +58,7 @@ void RouteSurface(MAPSIZE * Map, TIMESTRUCT * Time, TOPOPIX ** TopoMap,
   int i, j, x, y, n;         /* Counters */
   int ga;
   float value;
+  float theexcess;
   GA_Patch patch;
 
 
@@ -91,34 +93,58 @@ void RouteSurface(MAPSIZE * Map, TIMESTRUCT * Time, TOPOPIX ** TopoMap,
       for (x = 0; x < Map->NX; x++) {
         if (INBASIN(TopoMap[y][x].Mask)) {
           if (!channel_grid_has_channel(ChannelData->stream_map, x, y)) {
+
+            
             if (VType[VegMap[y][x].Veg - 1].ImpervFrac > 0.0) {
-              assert(0);        /* FIXME: can't suport this now */
-              /* Calculate the outflow from impervious portion of urban cell straight to nearest channel cell */
-              SoilMap[TopoMap[y][x].drains_y][TopoMap[y][x].drains_x].IExcess +=
-                (1 - VType[VegMap[y][x].Veg - 1].DetentionFrac) *
+
+              theexcess = 0.0;
+
+              /* Calculate the outflow from impervious portion of
+                 urban cell straight to nearest channel cell */
+
+              theexcess = (1 - VType[VegMap[y][x].Veg - 1].DetentionFrac) *
                 VType[VegMap[y][x].Veg - 1].ImpervFrac * SoilMap[y][x].Runoff;
+              SoilMap[TopoMap[y][x].drains_y][TopoMap[y][x].drains_x].IExcess +=
+
               /* Retained water in detention storage */
+
               SoilMap[y][x].DetentionIn = VType[VegMap[y][x].Veg - 1].DetentionFrac *
                 VType[VegMap[y][x].Veg - 1].ImpervFrac * SoilMap[y][x].Runoff;
+
               /* Retained water in Detention storage routed to channel */
+
               SoilMap[y][x].DetentionStorage += SoilMap[y][x].DetentionIn;
-              SoilMap[y][x].DetentionOut = SoilMap[y][x].DetentionStorage * VType[VegMap[y][x].Veg - 1].DetentionDecay;
-              SoilMap[TopoMap[y][x].drains_y][TopoMap[y][x].drains_x].IExcess += SoilMap[y][x].DetentionOut;
+              SoilMap[y][x].DetentionOut = 
+                SoilMap[y][x].DetentionStorage * VType[VegMap[y][x].Veg - 1].DetentionDecay;
+
+              theexcess += SoilMap[y][x].DetentionOut;
+
               SoilMap[y][x].DetentionStorage -= SoilMap[y][x].DetentionOut;
               if (SoilMap[y][x].DetentionStorage < 0.0)
                 SoilMap[y][x].DetentionStorage = 0.0;
-              /* Route the runoff from pervious portion of urban cell to the neighboring cell */
+
+              /* there is no way to know what process owns the
+                 (drains_x, drains_y) cell, so the GA value is
+                 accumulated */
+
+              GA_Acc_one(ga, Map, 
+                         TopoMap[y][x].drains_y, TopoMap[y][x].drains_x, 
+                         &theexcess, &one);
+
+              /* Route the runoff from pervious portion of urban cell
+                 to the neighboring cell, the local GA patch can be
+                 used for this */
               
               for (n = 0; n < NDIRS; n++) {
                 int xn = x + xdirection[n];
                 int yn = y + ydirection[n];
                 if (valid_cell(Map, xn, yn)) {
-                  SoilMap[yn][xn].IExcess += (1 - VType[VegMap[y][x].Veg - 1].ImpervFrac) * SoilMap[y][x].Runoff
+                  
+                  xn += patch.ixoff;
+                  yn += patch.iyoff;
+                  patch.patch[yn][xn] += 
+                    (1 - VType[VegMap[y][x].Veg - 1].ImpervFrac) * SoilMap[y][x].Runoff
                     *((float)TopoMap[y][x].Dir[n] / (float)TopoMap[y][x].TotalDir);
-                  /* value =  */
-                  /*   (1 - VType[VegMap[y][x].Veg - 1].ImpervFrac) * SoilMap[y][x].Runoff * */
-                  /*   ((float)TopoMap[y][x].Dir[n] / (float)TopoMap[y][x].TotalDir); */
-                  /* GA_Acc_one(ga, Map, x, y, &value, (void*)(&one)); */
                 }
               }
             }
