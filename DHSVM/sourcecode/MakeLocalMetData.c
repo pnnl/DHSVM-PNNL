@@ -250,7 +250,7 @@ PIXMET MakeLocalMetData(int y, int x, MAPSIZE *Map, int DayStep,
         /* note that Y = position from upper boundary, ie # of rows   */
         if (Options->Outside == FALSE)
           PrecipMap->Precip += CurrentWeight * Stat[i].Data.Precip /
-          PrismMap[Stat[i].Loc.N][Stat[i].Loc.E] * PrismMap[y][x];
+          Stat[i].PrismCurrent * PrismMap[y][x];
         else
           PrecipMap->Precip += CurrentWeight * Stat[i].Data.Precip /
           Stat[i].PrismPrecip[Month - 1] * PrismMap[y][x];
