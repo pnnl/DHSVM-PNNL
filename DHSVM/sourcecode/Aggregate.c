@@ -25,6 +25,80 @@
 #include "functions.h"
 #include "constants.h"
 
+#define APPLY_MACRO(aggregate) \
+  { \
+    int i; \
+  MACRO(aggregate->Evap.ETot); \
+  for (i = 0; i < Veg->MaxLayers + 1; i++) { \
+    MACRO(aggregate->Evap.EPot[i]); \
+    MACRO(aggregate->Evap.EAct[i]); \
+  } \
+  for (i = 0; i < Veg->MaxLayers; i++) { \
+    MACRO(aggregate->Evap.EInt[i]); \
+  } \
+  for (i = 0; i < Veg->MaxLayers; i++) { \
+    for (j = 0; j < Soil->MaxLayers; j++) { \
+      MACRO(aggregate->Evap.ESoil[i][j]); \
+    } \
+  } \
+  MACRO(aggregate->Evap.EvapSoil); \
+  MACRO(aggregate->Precip.Precip); \
+  MACRO(aggregate->Precip.SnowFall); \
+  for (i = 0; i < Veg->MaxLayers; i++) { \
+    MACRO(aggregate->Precip.IntRain[i]); \
+    MACRO(aggregate->Precip.IntSnow[i]); \
+  } \
+  MACRO(aggregate->CanopyWater); \
+  MACRO(aggregate->Rad.Tair); \
+  MACRO(aggregate->Rad.ObsShortIn); \
+  MACRO(aggregate->Rad.PixelNetShort); \
+  MACRO(aggregate->NetRad); \
+  MACRO(aggregate->Rad.BeamIn); \
+  MACRO(aggregate->Rad.DiffuseIn); \
+  for (i = 0; i <= 2; i++) { \
+    MACRO(aggregate->Rad.NetShort[i]); \
+  } \
+  MACRO(aggregate->Snow.Swq); \
+  MACRO(aggregate->Snow.Melt); \
+  MACRO(aggregate->Snow.PackWater); \
+  MACRO(aggregate->Snow.TPack); \
+  MACRO(aggregate->Snow.SurfWater); \
+  MACRO(aggregate->Snow.TSurf); \
+  MACRO(aggregate->Snow.ColdContent); \
+  MACRO(aggregate->Snow.Albedo); \
+  MACRO(aggregate->Snow.Depth); \
+  MACRO(aggregate->Snow.VaporMassFlux); \
+  MACRO(aggregate->Snow.CanopyVaporMassFlux); \
+  MACRO(aggregate->Soil.Depth); \
+  for (i = 0; i < Soil->MaxLayers; i++) { \
+    MACRO(aggregate->Soil.Moist[i]); \
+    MACRO(aggregate->Soil.Perc[i]); \
+    MACRO(aggregate->Soil.Temp[i]); \
+  } \
+  MACRO(aggregate->Soil.Moist[Soil->MaxLayers]); \
+  MACRO(aggregate->Soil.TableDepth); \
+  MACRO(aggregate->Soil.WaterLevel); \
+  MACRO(aggregate->Soil.SatFlow); \
+  MACRO(aggregate->Soil.TSurf); \
+  MACRO(aggregate->Soil.Qnet); \
+  MACRO(aggregate->Soil.Qs); \
+  MACRO(aggregate->Soil.Qe); \
+  MACRO(aggregate->Soil.Qg); \
+  MACRO(aggregate->Soil.Qst); \
+  MACRO(aggregate->Soil.IExcess); \
+  MACRO(aggregate->Soil.DetentionStorage); \
+  MACRO(aggregate->Road.IExcess); \
+  if (Options->Infiltration == DYNAMIC) { \
+    MACRO(aggregate->Soil.InfiltAcc); \
+  } \
+  MACRO(aggregate->SoilWater); \
+  MACRO(aggregate->Soil.Runoff); \
+  MACRO(aggregate->ChannelInt); \
+  MACRO(aggregate->RoadInt); \
+  MACRO(aggregate->CulvertReturnFlow); \
+  MACRO(aggregate->CulvertToChannel); \
+  } 
+
 
 /*****************************************************************************
   Aggregate()
@@ -51,15 +125,15 @@ void Aggregate(MAPSIZE *Map, OPTIONSTRUCT *Options, TOPOPIX **TopoMap,
   int j;				/* counter */
   int x;
   int y;
+  int n;
   float DeepDepth;		/* depth to bottom of lowest rooting zone */
 
-  NPixels = 0;
+  NPixels = Map->AllCells;
   *roadarea = 0.;
 
   for (y = 0; y < Map->NY; y++) {
     for (x = 0; x < Map->NX; x++) {
       if (INBASIN(TopoMap[y][x].Mask)) {
-        NPixels++;
         NSoilL = Soil->NLayers[SoilMap[y][x].Soil - 1];
         NVegL = Veg->NLayers[VegMap[y][x].Veg - 1];
 		  
@@ -164,12 +238,6 @@ void Aggregate(MAPSIZE *Map, OPTIONSTRUCT *Options, TOPOPIX **TopoMap,
     }
   }
 
-  /* Aggreation over processors is a series of all-reduce
-     operations. This could get slow. The message sizes are really
-     small */
-
-  GA_Igop(&NPixels, 1, "+");
-
   /* divide road area by pixel area so it can be used to calculate depths
      over the road surface in FinalMassBalancs */
   *roadarea /= Map->DX * Map->DY * NPixels;
@@ -177,89 +245,9 @@ void Aggregate(MAPSIZE *Map, OPTIONSTRUCT *Options, TOPOPIX **TopoMap,
 
   /* calculate average values for all quantities except the surface flow */
 
-#define ALL_REDUCE_AVG_FLOAT(x, npix)           \
-  GA_Fgop(&(x), 1, "+"); x /= (float)npix;  
+#define MACRO(x)           \
+  GA_Fgop(&(x), 1, "+"); x /= (float)NPixels;  
+  APPLY_MACRO(Total);
+#undef MACRO
 
-  /* average evaporation data */
-  ALL_REDUCE_AVG_FLOAT(Total->Evap.ETot, NPixels);
-  for (i = 0; i < Veg->MaxLayers + 1; i++) {
-    ALL_REDUCE_AVG_FLOAT(Total->Evap.EPot[i], NPixels);
-    ALL_REDUCE_AVG_FLOAT(Total->Evap.EAct[i], NPixels);
-  }
-  for (i = 0; i < Veg->MaxLayers; i++) {
-    ALL_REDUCE_AVG_FLOAT(Total->Evap.EInt[i], NPixels);
-  }
-  for (i = 0; i < Veg->MaxLayers; i++) {
-    for (j = 0; j < Soil->MaxLayers; j++) {
-      ALL_REDUCE_AVG_FLOAT(Total->Evap.ESoil[i][j], NPixels);
-    }
-  }
-  ALL_REDUCE_AVG_FLOAT(Total->Evap.EvapSoil, NPixels);
-
-  /* average precipitation data */
-  ALL_REDUCE_AVG_FLOAT(Total->Precip.Precip, NPixels);
-  ALL_REDUCE_AVG_FLOAT(Total->Precip.SnowFall, NPixels);
-  for (i = 0; i < Veg->MaxLayers; i++) {
-    ALL_REDUCE_AVG_FLOAT(Total->Precip.IntRain[i], NPixels);
-    ALL_REDUCE_AVG_FLOAT(Total->Precip.IntSnow[i], NPixels);
-  }
-  ALL_REDUCE_AVG_FLOAT(Total->CanopyWater, NPixels);
-
-  /* average radiation data */
-  ALL_REDUCE_AVG_FLOAT(Total->Rad.Tair, NPixels);
-  ALL_REDUCE_AVG_FLOAT(Total->Rad.ObsShortIn, NPixels);
-  ALL_REDUCE_AVG_FLOAT(Total->Rad.PixelNetShort, NPixels);
-  ALL_REDUCE_AVG_FLOAT(Total->NetRad, NPixels);
-  ALL_REDUCE_AVG_FLOAT(Total->Rad.BeamIn, NPixels);
-  ALL_REDUCE_AVG_FLOAT(Total->Rad.DiffuseIn, NPixels);
-  for (i = 0; i <= 2; i++) {
-    ALL_REDUCE_AVG_FLOAT(Total->Rad.NetShort[i], NPixels);
-  }
-
-  /* average snow data */
-  ALL_REDUCE_AVG_FLOAT(Total->Snow.Swq, NPixels);
-  ALL_REDUCE_AVG_FLOAT(Total->Snow.Melt, NPixels);
-  ALL_REDUCE_AVG_FLOAT(Total->Snow.PackWater, NPixels);
-  ALL_REDUCE_AVG_FLOAT(Total->Snow.TPack, NPixels);
-  ALL_REDUCE_AVG_FLOAT(Total->Snow.SurfWater, NPixels);
-  ALL_REDUCE_AVG_FLOAT(Total->Snow.TSurf, NPixels);
-  ALL_REDUCE_AVG_FLOAT(Total->Snow.ColdContent, NPixels);
-  ALL_REDUCE_AVG_FLOAT(Total->Snow.Albedo, NPixels);
-  ALL_REDUCE_AVG_FLOAT(Total->Snow.Depth, NPixels);
-  ALL_REDUCE_AVG_FLOAT(Total->Snow.VaporMassFlux, NPixels);
-  ALL_REDUCE_AVG_FLOAT(Total->Snow.CanopyVaporMassFlux, NPixels);
-
-  /* average soil moisture data */
-  ALL_REDUCE_AVG_FLOAT(Total->Soil.Depth, NPixels);
-  for (i = 0; i < Soil->MaxLayers; i++) {
-    ALL_REDUCE_AVG_FLOAT(Total->Soil.Moist[i], NPixels);
-    ALL_REDUCE_AVG_FLOAT(Total->Soil.Perc[i], NPixels);
-    ALL_REDUCE_AVG_FLOAT(Total->Soil.Temp[i], NPixels);
-  }
-  ALL_REDUCE_AVG_FLOAT(Total->Soil.Moist[Soil->MaxLayers], NPixels);
-  ALL_REDUCE_AVG_FLOAT(Total->Soil.TableDepth, NPixels);
-  ALL_REDUCE_AVG_FLOAT(Total->Soil.WaterLevel, NPixels);
-  ALL_REDUCE_AVG_FLOAT(Total->Soil.SatFlow, NPixels);
-  ALL_REDUCE_AVG_FLOAT(Total->Soil.TSurf, NPixels);
-  ALL_REDUCE_AVG_FLOAT(Total->Soil.Qnet, NPixels);
-  ALL_REDUCE_AVG_FLOAT(Total->Soil.Qs, NPixels);
-  ALL_REDUCE_AVG_FLOAT(Total->Soil.Qe, NPixels);
-  ALL_REDUCE_AVG_FLOAT(Total->Soil.Qg, NPixels);
-  ALL_REDUCE_AVG_FLOAT(Total->Soil.Qst, NPixels);
-  ALL_REDUCE_AVG_FLOAT(Total->Soil.IExcess, NPixels);
-  ALL_REDUCE_AVG_FLOAT(Total->Soil.DetentionStorage, NPixels);
-  ALL_REDUCE_AVG_FLOAT(Total->Road.IExcess, NPixels);
-  
-  if (Options->Infiltration == DYNAMIC) {
-    ALL_REDUCE_AVG_FLOAT(Total->Soil.InfiltAcc, NPixels);
-  }
-
-  ALL_REDUCE_AVG_FLOAT(Total->SoilWater, NPixels);
-  ALL_REDUCE_AVG_FLOAT(Total->Soil.Runoff, NPixels);
-  ALL_REDUCE_AVG_FLOAT(Total->ChannelInt, NPixels);
-  ALL_REDUCE_AVG_FLOAT(Total->RoadInt, NPixels);
-  ALL_REDUCE_AVG_FLOAT(Total->CulvertReturnFlow, NPixels);
-  ALL_REDUCE_AVG_FLOAT(Total->CulvertToChannel, NPixels);
-
-#undef ALL_REDUCE_AVG_FLOAT
 }
