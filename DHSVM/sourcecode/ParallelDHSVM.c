@@ -299,8 +299,9 @@ DomainSummary(MAPSIZE *global, MAPSIZE *local)
 
   int me, nproc, p;
 
-  ParallelBarrier();
   fflush(stdout);
+  fflush(stderr);
+  ParallelBarrier();
 
   me = ParallelRank();
   nproc = ParallelSize();
