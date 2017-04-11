@@ -25,6 +25,14 @@
 #include "functions.h"
 #include "constants.h"
 
+/* This macro is defined so several different operations can be
+   applied to each field, including summation over processors, without
+   repeating essentially the same code for each operation. Another
+   macro called "MACRO" must be #define'd prior to using this and
+   should be #undef'd afterward. If a new field is added to
+   AGGREGATED, it would have to appear in cell-by-cell summation, in
+   Aggregate(), and here in this macro. */
+
 #define APPLY_MACRO(aggregate) \
   { \
     int i; \
@@ -55,7 +63,7 @@
   MACRO(aggregate->NetRad); \
   MACRO(aggregate->Rad.BeamIn); \
   MACRO(aggregate->Rad.DiffuseIn); \
-  for (i = 0; i <= 2; i++) { \
+  for (i = 0; i < 2; i++) { \
     MACRO(aggregate->Rad.NetShort[i]); \
   } \
   MACRO(aggregate->Snow.Swq); \
@@ -118,7 +126,7 @@ void Aggregate(MAPSIZE *Map, OPTIONSTRUCT *Options, TOPOPIX **TopoMap,
 	       SOILPIX **SoilMap, AGGREGATED *Total, VEGTABLE *VType,
 	       ROADSTRUCT **Network, CHANNEL *ChannelData, float *roadarea)
 {
-  int NPixels, gNPixels;	/* Number of pixels in the basin */
+  int NPixels;                  /* Number of pixels in the basin */
   int NSoilL;			/* Number of soil layers for current pixel */
   int NVegL;			/* Number of vegetation layers for current pixel */
   int i;				/* counter */
@@ -127,6 +135,7 @@ void Aggregate(MAPSIZE *Map, OPTIONSTRUCT *Options, TOPOPIX **TopoMap,
   int y;
   int n;
   float DeepDepth;		/* depth to bottom of lowest rooting zone */
+  float *sums;
 
   NPixels = Map->AllCells;
   *roadarea = 0.;
@@ -238,16 +247,46 @@ void Aggregate(MAPSIZE *Map, OPTIONSTRUCT *Options, TOPOPIX **TopoMap,
     }
   }
 
-  /* divide road area by pixel area so it can be used to calculate depths
-     over the road surface in FinalMassBalancs */
-  *roadarea /= Map->DX * Map->DY * NPixels;
-  GA_Fgop(roadarea, 1, "+");
+  /* At this point each Total field needs to be summed over processors
+     (all-reduce).  This is a very expensive communication
+     operation. In order to reduce the number of messages, it's
+     necessary to do the all-reduce for all fields at once. */
 
-  /* calculate average values for all quantities except the surface flow */
+                                /* count the number of slots we need (roadarea is 0) */
+  n = 1;
 
-#define MACRO(x)           \
-  GA_Fgop(&(x), 1, "+"); x /= (float)NPixels;  
+#define MACRO(x) ++n;
   APPLY_MACRO(Total);
 #undef MACRO
 
+
+                                /* make an array to store the
+                                   aggregate fields from this
+                                   processor */
+
+  if (!(sums = (float *) calloc(n, sizeof(float)))) {
+    ReportError("Aggregate", 1);
+  }
+
+  n = 0;
+  sums[n++] = *roadarea;
+
+                                /* sum aggregated fields across processors */
+
+#define MACRO(x) sums[n++] = x;
+  APPLY_MACRO(Total);
+#undef MACRO
+
+  GA_Fgop(sums, n, "+");
+
+                                /* put aggregated fields back in Total */
+  
+  n = 0;
+  *roadarea = sums[n++] / (Map->DX * Map->DY * NPixels);
+
+#define MACRO(x) x = sums[n++]; x /= (float)NPixels;
+  APPLY_MACRO(Total);
+#undef MACRO
+
+  free(sums);
 }
