@@ -10,7 +10,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2017-04-04 08:40:56 d3g096
+# Last Change: 2017-04-12 06:59:38 d3g096
 
 set -xue
 
@@ -62,6 +62,8 @@ common_flags="\
         -D CMAKE_BUILD_TYPE:STRING=$build \
         -D DHSVM_SNOW_ONLY:BOOL=OFF \
         -D DHSVM_BUILD_TESTS:BOOL=ON \
+        -D DHSVM_USE_RBM:BOOL=OFF \
+        -D CMAKE_VERBOSE_MAKEFILE:BOOL=TRUE \
 "
 
 if [ $host == "flophouse" ]; then
@@ -71,7 +73,6 @@ if [ $host == "flophouse" ]; then
         -D MPI_C_COMPILER:STRING="$prefix/bin/mpicc" \
         -D MPIEXEC:STRING="$prefix/bin/mpiexec" \
         -D GA_DIR:STRING="$prefix" \
-        -D CMAKE_VERBOSE_MAKEFILE:BOOL=TRUE \
         $common_flags \
         ..
 
@@ -88,7 +89,6 @@ elif [ $host == "flophouse48" ]; then
         -D MPI_C_COMPILER:STRING="$prefix/bin/mpicc" \
         -D MPIEXEC:STRING="$prefix/bin/mpiexec" \
         -D GA_DIR:STRING="$prefix/ga-5-4" \
-        -D CMAKE_VERBOSE_MAKEFILE:BOOL=TRUE \
         $common_flags \
         ..
 
@@ -104,13 +104,11 @@ elif [ $host == "WE32673" ]; then
     export CC
 
     cmake $options \
-        -D CMAKE_VERBOSE_MAKEFILE:BOOL=TRUE \
         -D MPI_C_COMPILER:STRING="$prefix/bin/mpicc-openmpi-clang38" \
         -D MPIEXEC:STRING="$prefix/bin/mpiexec-openmpi-clang38" \
         -D NETCDF_DIR:PATH="$prefix/include" \
         -D DHSVM_USE_X11:BOOL=OFF \
         -D DHSVM_USE_NETCDF:BOOL=ON \
-        -D DHSVM_USE_RBM:BOOL=OFF \
         $common_flags \
         ..
 
@@ -122,11 +120,9 @@ elif [ $host == "pe10900" ]; then
     FC=ifort
     export CC FC
     cmake $options \
-        -D CMAKE_VERBOSE_MAKEFILE:BOOL=TRUE \
         -D DHSVM_USE_X11:BOOL=ON \
         -D DHSVM_USE_NETCDF:BOOL=ON \
         -D NETCDF_DIR:PATH=/opt/local/include \
-        -D DHSVM_USE_RBM:BOOL=ON \
         $common_flags \
         ..
 
@@ -147,14 +143,12 @@ elif [ $host = "constance" ]; then
     export CC
 
     cmake $options \
-        -D CMAKE_VERBOSE_MAKEFILE:BOOL=TRUE \
         -D MPI_C_COMPILER:STRING="/share/apps/openmpi/1.8.3/gcc/4.8.2/bin/mpicc" \
         -D MPIEXEC:STRING="/share/apps/openmpi/1.8.3/gcc/4.8.2/bin/mpiexec" \
         -D GA_DIR:STRING="$prefix" \
         -D DHSVM_USE_X11:BOOL=OFF \
         -D DHSVM_USE_NETCDF:BOOL=ON \
         -D NETCDF_INCLUDES:PATH="/share/apps/netcdf/4.3.2/gcc/4.8.2/include" \
-        -D DHSVM_USE_RBM:BOOL=OFF \
         -D CMAKE_INSTALL_PREFIX:PATH="$prefix" \
         $common_flags \
         ..
@@ -163,12 +157,9 @@ else
 
     # For an unknown system, turn most options off
     cmake $options \
-        -D CMAKE_BUILD_TYPE:STRING=$build \
-        -D CMAKE_VERBOSE_MAKEFILE:BOOL=FALSE \
         -D DHSVM_SNOW_ONLY:BOOL=OFF \
         -D DHSVM_USE_X11:BOOL=OFF \
         -D DHSVM_USE_NETCDF:BOOL=OFF \
-        -D DHSVM_USE_RBM:BOOL=OFF \
         -D DHSVM_BUILD_TESTS:BOOL=OFF \
 
 
