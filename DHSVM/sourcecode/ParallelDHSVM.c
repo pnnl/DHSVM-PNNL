@@ -10,7 +10,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2017-04-10 13:29:10 d3g096
+ * LAST CHANGE: 2017-04-12 10:21:28 d3g096
  * COMMENTS:
  */
 
@@ -508,7 +508,7 @@ MaskedDomainDecomposition(MAPSIZE *gmap, MAPSIZE *lmap, MAPSIZE *nmap,
   if (nblk[gaYdim] > 1) {
     gy = gmap->NY;
     ga_ysum = NGA_Create(C_FLOAT, 1, &gmap->NY, "Sum along Y", NULL);
-    NGA_Zero(ga_ysum);
+    GA_Zero(ga_ysum);
 
     for (y = 0, i = 0; y < lmap->NY; y++) {
       sum = 0.0;
@@ -531,7 +531,7 @@ MaskedDomainDecomposition(MAPSIZE *gmap, MAPSIZE *lmap, MAPSIZE *nmap,
   if (nblk[gaYdim] > 1) {
     gx = gmap->NX;
     ga_xsum = NGA_Create(C_FLOAT, 1, &gmap->NX, "Sum along X", NULL);
-    NGA_Zero(ga_xsum);
+    GA_Zero(ga_xsum);
 
     for (x = 0, i = 0; x < lmap->NX; x++) {
       sum = 0.0;
