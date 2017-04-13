@@ -150,17 +150,19 @@ void CheckOut(OPTIONSTRUCT *Options, LAYER Veg, LAYER Soil, VEGTABLE *VType, SOI
   }
 
   if (Options->ImprovRadiation) {
-    printf("\nMonthly attenuation coeff. for the VEG Type with an overstory: \n\n");
-    for (i = 0; i < Veg.NTypes; i++) {
-      if (VType[i].OverStory == TRUE) {
-        printf("\n%s:\n", VType[i].Desc);
-        for (k = 0; k < 12; k++) {
-          printf("%.3f ", VType[i].MonthlyExtnCoeff[k]);
+    if (ParallelRank() == 0) {
+      printf("\nMonthly attenuation coeff. for the VEG Type with an overstory: \n\n");
+      for (i = 0; i < Veg.NTypes; i++) {
+        if (VType[i].OverStory == TRUE) {
+          printf("\n%s:\n", VType[i].Desc);
+          for (k = 0; k < 12; k++) {
+            printf("%.3f ", VType[i].MonthlyExtnCoeff[k]);
+          }
+          printf("\n");
         }
-        printf("\n");
       }
+      printf("\n");
     }
-    printf("\n");
   }
 
   if (count) {
