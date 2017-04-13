@@ -10,12 +10,14 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2017-04-10 14:08:37 d3g096
+ * LAST CHANGE: 2017-04-13 07:08:45 d3g096
  * COMMENTS:
  */
 
 #ifndef _ParallelDHSVM_h_
 #define _ParallelDHSVM_h_
+
+#include <ga.h>
 
 #include "sizeofnt.h"
 #include "data.h"
