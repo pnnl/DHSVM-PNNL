@@ -204,10 +204,10 @@ void InitTopoMap(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * GMap, MAPSIZE 
       }
     }
   }
-  printf("%d: local MINELEV = %.3f\n", ParallelRank(), MINELEV);
+  /* printf("%d: local MINELEV = %.3f\n", ParallelRank(), MINELEV); */
   GA_Fgop(&MINELEV, 1, "min");
   if (ParallelRank() == 0) 
-    printf("%d: global MINELEV = %.3f\n", ParallelRank(), MINELEV);
+    printf("global MINELEV = %.3f\n", MINELEV);
 
   /* Calculate slope, aspect, magnitude of subsurface flow gradient, and
      fraction of flow flowing in each direction based on the land surface
