@@ -51,6 +51,7 @@ typedef struct {
 
   COORD Loc;			/* Location for which to dump */
   FILES OutFile;		/* Files in which to dump */
+  int OK;                       /* A good location on the local processor */
 } PIXDUMP;
 
 typedef struct {

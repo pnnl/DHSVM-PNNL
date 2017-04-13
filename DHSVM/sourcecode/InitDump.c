@@ -29,6 +29,7 @@
 #include "getinit.h"
 #include "sizeofnt.h"
 #include "varid.h"
+#include "ParallelDHSVM.h"
 
  /*******************************************************************************
    Function name: InitDump()
@@ -53,9 +54,9 @@
 
    Comments     :
  *****************************************************************************/
-void InitDump(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map, int MaxSoilLayers, 
-  int MaxVegLayers, int Dt, TOPOPIX **TopoMap, DUMPSTRUCT *Dump, int *NGraphics,
-  int **which_graphics)
+void InitDump(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *GMap, MAPSIZE *Map,
+              int MaxSoilLayers, int MaxVegLayers, int Dt, TOPOPIX **TopoMap,
+              DUMPSTRUCT *Dump, int *NGraphics, int **which_graphics)
 {
   char *Routine = "InitDump";
   int i;
@@ -81,7 +82,8 @@ void InitDump(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map, int MaxSoilLay
     {NULL, NULL, "", NULL},
   };
 
-  printf("Initializing dump procedures\n");
+  if (ParallelRank() == 0)
+    printf("Initializing dump procedures\n");
 
   /* Get the key-entry pairs from the input file */
   for (i = 0; StrEnv[i].SectionName; i++)
@@ -162,7 +164,7 @@ void InitDump(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map, int MaxSoilLay
         BasinMask[y][x] = TopoMap[y][x].Mask;
 
     if (Dump->NPix > 0) {
-      temp_count = InitPixDump(Input, Map, BasinMask, Dump->Path, Dump->NPix,
+      temp_count = InitPixDump(Input, GMap, Map, BasinMask, Dump->Path, Dump->NPix,
         &(Dump->Pix), Options);
 
       if (temp_count == 0) {
@@ -511,8 +513,8 @@ void InitMapDump(LISTPTR Input, MAPSIZE * Map, int MaxSoilLayers,
 
   Comments     :
 *******************************************************************************/
-int InitPixDump(LISTPTR Input, MAPSIZE *Map, uchar **BasinMask, char *Path,
-  int NPix, PIXDUMP **Pix, OPTIONSTRUCT *Options)
+int InitPixDump(LISTPTR Input, MAPSIZE *GMap, MAPSIZE *Map, uchar **BasinMask,
+                char *Path, int NPix, PIXDUMP **Pix, OPTIONSTRUCT *Options)
 {
   char *Routine = "InitPixDump";
   char Str[BUFSIZE + 1];
@@ -530,8 +532,7 @@ int InitPixDump(LISTPTR Input, MAPSIZE *Map, uchar **BasinMask, char *Path,
   };
   char *SectionName = "OUTPUT";
   char VarStr[name + 1][BUFSIZE + 1];
-
-  ok = 0;
+  int x, y;
 
   if (!(*Pix = (PIXDUMP *)calloc(NPix, sizeof(PIXDUMP))))
     ReportError(Routine, 1);
@@ -557,22 +558,29 @@ int InitPixDump(LISTPTR Input, MAPSIZE *Map, uchar **BasinMask, char *Path,
     strcpy(temp_name, VarStr[name]);
 
     /* Convert map coordinates to matrix coordinates */
-    (*Pix)[i].Loc.N = Round(((Map->Yorig - 0.5 * Map->DY) - North) / Map->DY);
-    (*Pix)[i].Loc.E = Round((East - (Map->Xorig + 0.5 * Map->DX)) / Map->DX);
+    (*Pix)[i].Loc.N = Round(((GMap->Yorig - 0.5 * GMap->DY) - North) / GMap->DY);
+    (*Pix)[i].Loc.E = Round((East - (GMap->Xorig + 0.5 * GMap->DX)) / GMap->DX);
 
-    if (!InArea(Map, &((*Pix)[i].Loc)) ||
-      !INBASIN(BasinMask[(*Pix)[i].Loc.N][(*Pix)[i].Loc.E])) {
-      printf("Ignoring dump command for pixel named %s \n", temp_name);
+    (*Pix)[i].OK = 0;
+    if (InArea(GMap, &((*Pix)[i].Loc))) {
+      if (Global2Local(Map, (*Pix)[i].Loc.E, (*Pix)[i].Loc.N, &x, &y)) {
+        if (INBASIN(BasinMask[y][x])) {
+          printf("%d: Accepting dump command for pixel named %s \n",
+                 ParallelRank(), temp_name);
+          sprintf(Str, "%s", temp_name);
+          sprintf((*Pix)[i].OutFile.FileName, "%sPixel.%s", Path, Str);
+          (*Pix)[i].OK = 1;
+          OpenFile(&((*Pix)[i].OutFile.FilePtr), (*Pix)[i].OutFile.FileName, "w", TRUE);
+        }
+      }
     }
-    else {
-      printf("Accepting dump command for pixel named %s \n", temp_name);
-      sprintf(Str, "%s", temp_name);
-      sprintf((*Pix)[ok].OutFile.FileName, "%sPixel.%s", Path, Str);
-      (*Pix)[ok].Loc.N = (*Pix)[i].Loc.N;
-      (*Pix)[ok].Loc.E = (*Pix)[i].Loc.E;
-      OpenFile(&((*Pix)[ok].OutFile.FilePtr), (*Pix)[ok].OutFile.FileName, "w", TRUE);
-      ok++;
+    ok = (*Pix)[i].OK;
+    GA_Igop(&ok, 1, "+");
+    if (!ok) {
+      if (ParallelRank() == 0) {
+        printf("Ignoring dump command for pixel named %s \n", temp_name);
+      }
     }
   }
-  return ok;
+  return NPix;
 }

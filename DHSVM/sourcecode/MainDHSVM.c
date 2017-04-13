@@ -127,24 +127,30 @@ int main(int argc, char **argv)
 /*****************************************************************************
   Initialization Procedures 
 *****************************************************************************/
-  if (argc != 2 && me == 0) {
-    fprintf(stderr, "\nUsage: %s inputfile\n\n", argv[0]);
-    fprintf(stderr, "DHSVM uses two output streams: \n");
-    fprintf(stderr, "Standard Out, for the majority of output \n");
-    fprintf(stderr, "Standard Error, for the final mass balance \n");
-    fprintf(stderr, "\nTo pipe output correctly to files: \n");
-    fprintf(stderr, "(cmd > f1) >& f2 \n");
-    fprintf(stderr, "where f1 is stdout_file and f2 is stderror_file\n");
+  if (argc != 2) {
+    if (me == 0) {
+      fprintf(stderr, "\nUsage: %s inputfile\n\n", argv[0]);
+      fprintf(stderr, "DHSVM uses two output streams: \n");
+      fprintf(stderr, "Standard Out, for the majority of output \n");
+      fprintf(stderr, "Standard Error, for the final mass balance \n");
+      fprintf(stderr, "\nTo pipe output correctly to files: \n");
+      fprintf(stderr, "(cmd > f1) >& f2 \n");
+      fprintf(stderr, "where f1 is stdout_file and f2 is stderror_file\n");
+    }
+    ParallelBarrier();
+    ParallelFinalize();
     exit(EXIT_FAILURE);
   }
 
-  sprintf(commandline, "%s %s", argv[0], argv[1]);
-  printf("%d: %s \n", me, commandline);
-  fprintf(stderr, "%d: %s \n", me, commandline);
   strcpy(InFiles.Const, argv[1]);
 
   if (me == 0) {
-    printf("\nRunning DHSVM %s on %d processors\n", version, nproc);
+    sprintf(commandline, "%s %s", argv[0], argv[1]);
+    printf("%s \n", commandline);
+    fprintf(stderr, "%s \n", commandline);
+    
+    printf("\nRunning DHSVM %s using %d processors on %d nodes\n",
+           version, nproc, GA_Cluster_nnodes());
     printf("\nSTARTING INITIALIZATION PROCEDURES\n\n");
   }
 
@@ -214,7 +220,7 @@ int main(int argc, char **argv)
 
   InitInterpolationWeights(&Map, &Options, TopoMap, &MetWeights, Stat, NStats);
 
-  InitDump(Input, &Options, &Map, Soil.MaxLayers, Veg.MaxLayers, Time.Dt,
+  InitDump(Input, &Options, &GMap, &Map, Soil.MaxLayers, Veg.MaxLayers, Time.Dt,
 	   TopoMap, &Dump, &NGraphics, &which_graphics);
 
   if (Options.HasNetwork == TRUE) {

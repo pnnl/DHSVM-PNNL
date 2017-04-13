@@ -75,15 +75,16 @@ void ExecDump(MAPSIZE *Map, DATE *Current, DATE *Start, OPTIONSTRUCT *Options,
 
     /* check which pixels need to be dumped, and dump if needed */
     for (i = 0; i < Dump->NPix; i++) {
-      y = Dump->Pix[i].Loc.N;
-      x = Dump->Pix[i].Loc.E;
-
-      /* output variable at the pixel */
-      DumpPix(Current, IsEqualTime(Current, Start), &(Dump->Pix[i].OutFile),
-        &(EvapMap[y][x]), &(PrecipMap[y][x]), &(RadMap[y][x]), &(SnowMap[y][x]),
-        &(SoilMap[y][x]), Soil->NLayers[(SoilMap[y][x].Soil - 1)],
-        Veg->NLayers[(VegMap[y][x].Veg - 1)], Options);
-      fprintf(Dump->Pix[i].OutFile.FilePtr, "\n");
+      if (Dump->Pix[i].OK) {
+        Global2Local(Map, Dump->Pix[i].Loc.E, Dump->Pix[i].Loc.N, &x, &y);
+        
+        /* output variable at the pixel */
+        DumpPix(Current, IsEqualTime(Current, Start), &(Dump->Pix[i].OutFile),
+                &(EvapMap[y][x]), &(PrecipMap[y][x]), &(RadMap[y][x]), &(SnowMap[y][x]),
+                &(SoilMap[y][x]), Soil->NLayers[(SoilMap[y][x].Soil - 1)],
+                Veg->NLayers[(VegMap[y][x].Veg - 1)], Options);
+        fprintf(Dump->Pix[i].OutFile.FilePtr, "\n");
+      }
     }
 
     /* check which maps need to be dumped at this timestep, and dump maps if needed */

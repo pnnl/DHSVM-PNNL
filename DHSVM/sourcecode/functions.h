@@ -111,7 +111,7 @@ void InitCharArray(char *Array, int Size);
 void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
 		   SOLARGEOMETRY *SolarGeo, TIMESTRUCT *Time);
 
-void InitDump(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
+void InitDump(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *GMap, MAPSIZE *Map,
 	      int MaxSoilLayers, int MaxVegLayers, int Dt,
 	      TOPOPIX **TopoMap, DUMPSTRUCT *Dump, int *NGraphics,
 	      int **which_graphics);
@@ -184,7 +184,7 @@ void InitNewStep(INPUTFILES *InFiles, MAPSIZE *Map, TIMESTRUCT *Time,
 		 TOPOPIX **TopoMap, SOILPIX **SoilMap, float ***MM5Input, 
          float ***WindModel, MAPSIZE *MM5Map);
 
-int InitPixDump(LISTPTR Input, MAPSIZE *Map, uchar **BasinMask, char *Path,
+int InitPixDump(LISTPTR Input, MAPSIZE *GMap, MAPSIZE *Map, uchar **BasinMask, char *Path,
 		int NPix, PIXDUMP **Pix, OPTIONSTRUCT *Options);
 
 void InitPrecipLapse(LISTPTR Input, INPUTFILES *InFiles);
