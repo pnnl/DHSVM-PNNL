@@ -29,6 +29,7 @@
 #include "rad.h"
 #include "sizeofnt.h"
 #include "varid.h"
+#include "ParallelDHSVM.h"
 
 
  /*****************************************************************************

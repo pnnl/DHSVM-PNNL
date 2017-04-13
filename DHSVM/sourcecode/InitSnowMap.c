@@ -20,6 +20,7 @@
 #include "DHSVMerror.h"
 #include "functions.h"
 #include "constants.h"
+#include "ParallelDHSVM.h"
 
 /*****************************************************************************
   Function name: InitSnowMap()
