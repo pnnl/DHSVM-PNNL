@@ -34,9 +34,15 @@ void InitInterpolationWeights(MAPSIZE *Map, OPTIONSTRUCT *Options,
   int y;			/* counter */
   int i;
 
-  if (Options->GRIDMET)
-    for (i = 0; i < NStats; i++)
-      Stats[i].Elev = TopoMap[Stats[i].Loc.N][Stats[i].Loc.E].Dem;
+  if (Options->GRIDMET) {
+    for (i = 0; i < NStats; i++) {
+      Stats[i].Elev = 0.0;
+      if (Global2Local(Map, Stats[i].Loc.E, Stats[i].Loc.N, &x, &y)) {
+        Stats[i].Elev = TopoMap[y][x].Dem;
+      }
+      GA_Fgop(&Stats[i].Elev, 1, "+");
+    }
+  }
 
   if (Options->MM5 == TRUE && Options->QPF == FALSE) {
     if (!((*MetWeights) = (uchar ***)calloc(Map->NY, sizeof(uchar **))))

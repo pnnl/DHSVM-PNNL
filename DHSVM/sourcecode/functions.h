@@ -133,8 +133,8 @@ void InitMapDump(LISTPTR Input, MAPSIZE *Map, int MaxSoilLayers, int MaxVegLayer
 
 void InitMassWaste(LISTPTR Input, TIMESTRUCT *Time);
 
-void InitGridMet(OPTIONSTRUCT *Options, LISTPTR Input, MAPSIZE *Map, TOPOPIX **TopoMap,  
-         GRID *Grid, METLOCATION **Stat, int *NStats);
+void InitGridMet(OPTIONSTRUCT *Options, LISTPTR Input, MAPSIZE *GMap, MAPSIZE *Map,
+                 TOPOPIX **TopoMap, GRID *Grid, METLOCATION **Stat, int *NStats);
 
 void InitMetMaps(int NDaySteps, MAPSIZE *Map, MAPSIZE *Radar,
 		 OPTIONSTRUCT *Options, char *WindPath, char *PrecipLapsePath,

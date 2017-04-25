@@ -32,8 +32,9 @@
 #include "getinit.h"
 #include "constants.h"
 #include "rad.h"
+#include "ParallelDHSVM.h"
 
- /*******************************************************************************
+/*******************************************************************************
    Function name: InitMetSources()
 
    Purpose      : Initialize and configure the model to process meteorological
@@ -59,9 +60,9 @@
    Comments     :
  *******************************************************************************/
 void InitMetSources(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *GMap, MAPSIZE *Map,
-  TOPOPIX **TopoMap, int NSoilLayers, TIMESTRUCT *Time, INPUTFILES *InFiles,
-  int *NStats, METLOCATION **Stat, MAPSIZE *Radar, MAPSIZE *MM5Map,
-  GRID *Grid)
+                    TOPOPIX **TopoMap, int NSoilLayers, TIMESTRUCT *Time, INPUTFILES *InFiles,
+                    int *NStats, METLOCATION **Stat, MAPSIZE *Radar, MAPSIZE *MM5Map,
+                    GRID *Grid)
 {
   const char *Routine = "InitMetSources";
 
@@ -79,7 +80,7 @@ void InitMetSources(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *GMap, MAPSIZE
 
   /* Use gridded met forcing data */
   if (Options->GRIDMET == TRUE)
-    InitGridMet(Options, Input, Map, TopoMap, Grid, Stat, NStats);
+    InitGridMet(Options, Input, GMap, Map, TopoMap, Grid, Stat, NStats);
 
   /* otherwise, check and initialize the other options */
   if (Options->QPF == TRUE || (Options->MM5 == FALSE && Options->GRIDMET == FALSE))
@@ -118,7 +119,7 @@ void InitMetSources(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *GMap, MAPSIZE
   Comments     :
 *****************************************************************************/
 void InitStations(LISTPTR Input, MAPSIZE *Map, int NDaySteps,
-  OPTIONSTRUCT *Options, int *NStats, METLOCATION **Stat)
+                  OPTIONSTRUCT *Options, int *NStats, METLOCATION **Stat)
 {
   char *Routine = "InitStations";
   int i;
@@ -141,7 +142,7 @@ void InitStations(LISTPTR Input, MAPSIZE *Map, int NDaySteps,
 
   /* Get the number of different stations */
   GetInitString(SectionName, "NUMBER OF STATIONS", "", VarStr[0],
-    (unsigned long)BUFSIZE, Input);
+                (unsigned long)BUFSIZE, Input);
   if (!CopyInt(NStats, VarStr[0], 1))
     ReportError("NUMBER OF STATIONS", 51);
 
@@ -165,7 +166,7 @@ void InitStations(LISTPTR Input, MAPSIZE *Map, int NDaySteps,
     for (j = 0; j <= station_file; j++) {
       sprintf(KeyName[j], "%s %d", KeyStr[j], i + 1);
       GetInitString(SectionName, KeyName[j], "", VarStr[j],
-        (unsigned long)BUFSIZE, Input);
+                    (unsigned long)BUFSIZE, Input);
     }
 
     /* Assign the entries to the variables */
@@ -193,8 +194,8 @@ void InitStations(LISTPTR Input, MAPSIZE *Map, int NDaySteps,
 
     /* check to see if the stations are inside the bounding box */
     if (((*Stat)[k].Loc.N >= Map->NY || (*Stat)[k].Loc.N < 0 ||
-      (*Stat)[k].Loc.E >= Map->NX || (*Stat)[k].Loc.E < 0)
-      && Options->Outside == FALSE)
+         (*Stat)[k].Loc.E >= Map->NX || (*Stat)[k].Loc.E < 0)
+        && Options->Outside == FALSE)
       printf("Station %d outside bounding box: %s ignored\n", i + 1, (*Stat)[k].Name);
     else
       k = k + 1;
@@ -225,8 +226,8 @@ Function name: InitGridMet()
 Purpose      : Read the gridded met file.  This information
 is in the [METEOROLOGY] section
 *****************************************************************************/
-void InitGridMet(OPTIONSTRUCT *Options, LISTPTR Input, MAPSIZE *Map,
-  TOPOPIX **TopoMap, GRID *Grid, METLOCATION **Stat, int *NStats)
+void InitGridMet(OPTIONSTRUCT *Options, LISTPTR Input, MAPSIZE *GMap, MAPSIZE *Map,
+                 TOPOPIX **TopoMap, GRID *Grid, METLOCATION **Stat, int *NStats)
 {
   char *Routine = "InitGridMet";
   char KeyName[BUFSIZE + 1];
@@ -237,6 +238,7 @@ void InitGridMet(OPTIONSTRUCT *Options, LISTPTR Input, MAPSIZE *Map,
   FILE *PrismStatFile;
   char junk[BUFSIZE + 1], infileformat[BUFSIZE + 1];
   DIR *dir;
+  int x, y, inside;
   struct dirent *ent;
 
   STRINIENTRY StrEnv[] = {
@@ -245,7 +247,7 @@ void InitGridMet(OPTIONSTRUCT *Options, LISTPTR Input, MAPSIZE *Map,
     { "METEOROLOGY", "EXTREME EAST LON", "", "" },
     { "METEOROLOGY", "EXTREME WEST LON", "", "" },
     { "METEOROLOGY", "NUMBER OF GRIDS", "", "" },
-	{ "METEOROLOGY", "GRID_DECIMAL", "", "" },
+    { "METEOROLOGY", "GRID_DECIMAL", "", "" },
     { "METEOROLOGY", "MET FILE PATH", "", "" },
     { "METEOROLOGY", "FILE PREFIX", "", "" },
     { NULL, NULL, "", NULL },
@@ -258,11 +260,11 @@ void InitGridMet(OPTIONSTRUCT *Options, LISTPTR Input, MAPSIZE *Map,
   /* Read the key-entry pairs from the input file */
   for (i = 0; StrEnv[i].SectionName; i++)
     GetInitString(StrEnv[i].SectionName, StrEnv[i].KeyName, StrEnv[i].Default,
-      StrEnv[i].VarStr, (unsigned long)BUFSIZE, Input);
+                  StrEnv[i].VarStr, (unsigned long)BUFSIZE, Input);
 
   /* if the outside is FALSE, only the grids within the bounding box defined
-  by the parameters below are included. Else, the grids within the basin mask
-  are include. */
+     by the parameters below are included. Else, the grids within the basin mask
+     are include. */
   if (Options->Outside == TRUE) {
     if (!CopyFloat(&(Grid->LatNorth), StrEnv[grid_ext_north].VarStr, 1))
       ReportError(StrEnv[grid_ext_north].KeyName, 51);
@@ -313,6 +315,7 @@ void InitGridMet(OPTIONSTRUCT *Options, LISTPTR Input, MAPSIZE *Map,
   if ((dir = opendir(Grid->filepath)) != NULL) {
     /* print all the files and directories within directory */
     while ((ent = readdir(dir)) != NULL) {
+      ParallelBarrier();
       if (!strcmp(ent->d_name, ".") || !strcmp(ent->d_name, "..")) {
         continue;
       }
@@ -321,30 +324,48 @@ void InitGridMet(OPTIONSTRUCT *Options, LISTPTR Input, MAPSIZE *Map,
 
         /* convert lat and lon to utm */
         deg2utm(lat, lon, &East, &North);		
-		sprintf((*Stat)[k].Name, "data_%f_%f\n", lat, lon);
+        sprintf((*Stat)[k].Name, "data_%f_%f\n", lat, lon);
 		
-		(*Stat)[k].Loc.N = Round(((Map->Yorig - 0.5 * Map->DY) - North) / Map->DY);
-        (*Stat)[k].Loc.E = Round((East - (Map->Xorig + 0.5 * Map->DX)) / Map->DX);
+        (*Stat)[k].Loc.N = Round(((GMap->Yorig - 0.5 * GMap->DY) - North) / GMap->DY);
+        (*Stat)[k].Loc.E = Round((East - (GMap->Xorig + 0.5 * GMap->DX)) / GMap->DX);
         m += 1;
 
         /* met grids must be with the bounding box of the basin */
-		if (((*Stat)[k].Loc.N >= Map->NY || (*Stat)[k].Loc.N < 0 ||
-          (*Stat)[k].Loc.E >= Map->NX || (*Stat)[k].Loc.E < 0))
-          printf("..... Station %d outside the basin bounding box: %s ignored\n", m, (*Stat)[k].Name);
+        if (((*Stat)[k].Loc.N >= GMap->NY || (*Stat)[k].Loc.N < 0 ||
+             (*Stat)[k].Loc.E >= GMap->NX || (*Stat)[k].Loc.E < 0)) {
+          if (ParallelRank() == 0) {
+            printf("..... Station %d outside the basin bounding box: %s ignored\n",
+                   m, (*Stat)[k].Name);
+          }
+        }
         else {
           /* only include grids within the mask */
           if (Options->Outside == FALSE) {
-            if (INBASIN(TopoMap[(*Stat)[k].Loc.N][(*Stat)[k].Loc.E].Mask)) {
+            if (Global2Local(Map, (*Stat)[k].Loc.E, (*Stat)[k].Loc.N, &x, &y)) {
+              inside = (INBASIN(TopoMap[y][x].Mask) ? 1 : 0);
+            } else {
+              inside = 0;
+            }
+            GA_Igop(&inside, 1, "+");
+            if (inside > 0) {
               
-			  /* open met data file */
-              sprintf((*Stat)[k].MetFile.FileName, infileformat, Grid->filepath, Grid->fileprefix, lat, lon);
+              /* open met data file */
+              sprintf((*Stat)[k].MetFile.FileName, infileformat,
+                      Grid->filepath, Grid->fileprefix, lat, lon);
 
               if (!((*Stat)[k].MetFile.FilePtr = fopen((*Stat)[k].MetFile.FileName, "r"))) {
                 printf("..... %s doesn't exist\n", (*Stat)[k].MetFile.FileName);
                 continue;
               }
-              printf("..... Station %d: %s is selected\n", m, (*Stat)[k].Name);
+              if (ParallelRank() == 0) {
+                printf("..... Station %d: %s is selected\n", m, (*Stat)[k].Name);
+              }
               k = k + 1;
+            } else {
+              if (ParallelRank() == 0) {
+                printf("..... Station %d outside the basin mask: %s ignored\n",
+                       m, (*Stat)[k].Name);
+              }
             }
           }
           else {
@@ -353,7 +374,9 @@ void InitGridMet(OPTIONSTRUCT *Options, LISTPTR Input, MAPSIZE *Map,
                 //printf("..... %s doesn't exist\n", (*Stat)[k].MetFile.FileName);
                 continue;
               }
-              printf("..... Station %d: %s is selected\n", m, (*Stat)[k].Name);
+              if (ParallelRank() == 0) {
+                printf("..... Station %d: %s is selected\n", m, (*Stat)[k].Name);
+              }
               k = k + 1;
             }
           }
@@ -405,7 +428,7 @@ void InitGridMet(OPTIONSTRUCT *Options, LISTPTR Input, MAPSIZE *Map,
   Comments     :
 *****************************************************************************/
 void InitMM5(LISTPTR Input, int NSoilLayers, TIMESTRUCT *Time,
-  INPUTFILES *InFiles, OPTIONSTRUCT *Options, MAPSIZE *MM5Map, MAPSIZE *Map)
+             INPUTFILES *InFiles, OPTIONSTRUCT *Options, MAPSIZE *MM5Map, MAPSIZE *Map)
 {
   DATE Start;
   char *Routine = "InitMM5";
@@ -433,7 +456,7 @@ void InitMM5(LISTPTR Input, int NSoilLayers, TIMESTRUCT *Time,
   /* Read the key-entry pairs from the input file */
   for (i = 0; StrEnv[i].SectionName; i++)
     GetInitString(StrEnv[i].SectionName, StrEnv[i].KeyName, StrEnv[i].Default,
-      StrEnv[i].VarStr, (unsigned long)BUFSIZE, Input);
+                  StrEnv[i].VarStr, (unsigned long)BUFSIZE, Input);
 
   /* Assign the entries to the variables */
   if (!SScanDate(StrEnv[MM5_start].VarStr, &Start))
@@ -479,11 +502,11 @@ void InitMM5(LISTPTR Input, int NSoilLayers, TIMESTRUCT *Time,
 
     for (i = 0; i < NSoilLayers; i++) {
       if (!(InFiles->MM5SoilTemp[i] =
-          (char *)calloc(sizeof(char), BUFSIZE + 1)))
+            (char *)calloc(sizeof(char), BUFSIZE + 1)))
         ReportError(Routine, 1);
       sprintf(KeyName, "MM5 SOIL TEMPERATURE FILE %d", i);
       GetInitString("METEOROLOGY", KeyName, "", VarStr,
-        (unsigned long)BUFSIZE, Input);
+                    (unsigned long)BUFSIZE, Input);
       if (IsEmptyStr(VarStr))
         ReportError(KeyName, 51);
       strcpy(InFiles->MM5SoilTemp[i], VarStr);
@@ -506,17 +529,17 @@ void InitMM5(LISTPTR Input, int NSoilLayers, TIMESTRUCT *Time,
     ReportError(StrEnv[MM5_dy].KeyName, 51);
 
   MM5Map->OffsetX = Round(((float)(MM5Map->Xorig - Map->Xorig)) /
-    ((float)Map->DX));
+                          ((float)Map->DX));
   MM5Map->OffsetY = Round(((float)(MM5Map->Yorig - Map->Yorig)) /
-    ((float)Map->DY));
+                          ((float)Map->DY));
 
   if (MM5Map->OffsetX > 0 || MM5Map->OffsetY < 0)
     ReportError("Input Options File", 31);
 
   printf("MM5 extreme north / south is %f %f \n", MM5Map->Yorig,
-    MM5Map->Yorig - MM5Map->NY * MM5Map->DY);
+         MM5Map->Yorig - MM5Map->NY * MM5Map->DY);
   printf("MM5 extreme west / east is %f %f\n", MM5Map->Xorig,
-    MM5Map->Xorig + MM5Map->NX * MM5Map->DY);
+         MM5Map->Xorig + MM5Map->NX * MM5Map->DY);
   printf("MM5 rows is %d \n", MM5Map->NY);
   printf("MM5 cols is %d \n", MM5Map->NX);
   printf("MM5 dy is %f \n", MM5Map->DY);
@@ -530,18 +553,18 @@ void InitMM5(LISTPTR Input, int NSoilLayers, TIMESTRUCT *Time,
   printf("MM5 offset x is %d \n", MM5Map->OffsetX);
   printf("MM5 offset y is %d \n", MM5Map->OffsetY);
   printf("dhsvm extreme north / south is %f %f \n", Map->Yorig,
-    Map->Yorig - Map->NY * Map->DY);
+         Map->Yorig - Map->NY * Map->DY);
   printf("dhsvm extreme west / east is %f %f \n", Map->Xorig,
-    Map->Xorig + Map->NX * Map->DY);
+         Map->Xorig + Map->NX * Map->DY);
   printf("fail if %d > %d\n",
-    (int)((Map->NY + MM5Map->OffsetY) * Map->DY / MM5Map->DY),
-    MM5Map->NY);
+         (int)((Map->NY + MM5Map->OffsetY) * Map->DY / MM5Map->DY),
+         MM5Map->NY);
   printf("fail if %d > %d\n",
-    (int)((Map->NX - MM5Map->OffsetX) * Map->DX / MM5Map->DY),
-    MM5Map->NX);
+         (int)((Map->NX - MM5Map->OffsetX) * Map->DX / MM5Map->DY),
+         MM5Map->NX);
   if ((int)((Map->NY + MM5Map->OffsetY) * Map->DY / MM5Map->DY) > MM5Map->NY
-    || (int)((Map->NX - MM5Map->OffsetX) * Map->DX / MM5Map->DY) >
-    MM5Map->NX)
+      || (int)((Map->NX - MM5Map->OffsetX) * Map->DX / MM5Map->DY) >
+      MM5Map->NX)
     ReportError("Input Options File", 31);
 
 }
@@ -566,7 +589,7 @@ void InitMM5(LISTPTR Input, int NSoilLayers, TIMESTRUCT *Time,
   Comments     :
 *****************************************************************************/
 void InitRadar(LISTPTR Input, MAPSIZE * Map, TIMESTRUCT * Time,
-  INPUTFILES * InFiles, MAPSIZE * Radar)
+               INPUTFILES * InFiles, MAPSIZE * Radar)
 {
   DATE Start;
   int i;
@@ -584,7 +607,7 @@ void InitRadar(LISTPTR Input, MAPSIZE * Map, TIMESTRUCT * Time,
   /* Read the key-entry pairs from the input file */
   for (i = 0; StrEnv[i].SectionName; i++)
     GetInitString(StrEnv[i].SectionName, StrEnv[i].KeyName, StrEnv[i].Default,
-      StrEnv[i].VarStr, (unsigned long)BUFSIZE, Input);
+                  StrEnv[i].VarStr, (unsigned long)BUFSIZE, Input);
 
   /* Assign the entries to the variables */
   if (!SScanDate(StrEnv[radar_start].VarStr, &Start))
@@ -618,9 +641,9 @@ void InitRadar(LISTPTR Input, MAPSIZE * Map, TIMESTRUCT * Time,
   Radar->X = 0;
   Radar->Y = 0;
   Radar->OffsetX = Round(((float)(Radar->Xorig - Map->Xorig)) /
-    ((float)Map->DX));
+                         ((float)Map->DX));
   Radar->OffsetY = Round(((float)(Radar->Yorig - Map->Yorig)) /
-    ((float)Map->DY));
+                         ((float)Map->DY));
 
   if (Radar->OffsetX > 0 || Radar->OffsetY < 0)
     ReportError("Input Options File", 31);
@@ -646,7 +669,7 @@ void InitRadar(LISTPTR Input, MAPSIZE * Map, TIMESTRUCT * Time,
   Comments     :
 *****************************************************************************/
 void InitWindModel(LISTPTR Input, INPUTFILES * InFiles, int NStats,
-  METLOCATION * Stat)
+                   METLOCATION * Stat)
 {
   int i;
   int WindStation;
@@ -660,7 +683,7 @@ void InitWindModel(LISTPTR Input, INPUTFILES * InFiles, int NStats,
   /* Read the key-entry pairs from the input file */
   for (i = 0; StrEnv[i].SectionName; i++)
     GetInitString(StrEnv[i].SectionName, StrEnv[i].KeyName, StrEnv[i].Default,
-      StrEnv[i].VarStr, (unsigned long)BUFSIZE, Input);
+                  StrEnv[i].VarStr, (unsigned long)BUFSIZE, Input);
 
   /* Assign the entries to the variables */
   if (!CopyInt(&NWINDMAPS, StrEnv[number_of_maps].VarStr, 1))
@@ -709,7 +732,7 @@ void InitPrecipLapse(LISTPTR Input, INPUTFILES * InFiles)
   /* Read the key-entry pairs from the input file */
   for (i = 0; StrEnv[i].SectionName; i++)
     GetInitString(StrEnv[i].SectionName, StrEnv[i].KeyName, StrEnv[i].Default,
-      StrEnv[i].VarStr, (unsigned long)BUFSIZE, Input);
+                  StrEnv[i].VarStr, (unsigned long)BUFSIZE, Input);
 
   /* Assign the entries to the variables */
   if (IsEmptyStr(StrEnv[precip_lapse_rate_file].VarStr))

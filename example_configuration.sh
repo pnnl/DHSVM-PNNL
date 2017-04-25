@@ -10,7 +10,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2017-04-12 06:59:38 d3g096
+# Last Change: 2017-04-25 07:21:55 d3g096
 
 set -xue
 
@@ -101,7 +101,8 @@ elif [ $host == "WE32673" ]; then
 
     prefix="/opt/local"
     CC="$prefix/bin/clang-mp-3.8"
-    export CC
+    CXX="$prefix/bin/clang++-mp-3.8"
+    export CC CXX
 
     cmake $options \
         -D MPI_C_COMPILER:STRING="$prefix/bin/mpicc-openmpi-clang38" \
