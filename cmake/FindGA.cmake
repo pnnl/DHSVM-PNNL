@@ -94,15 +94,9 @@ if (GA_INCLUDE_DIR AND GA_LIBRARY AND ARMCI_LIBRARY)
 
   # Set flags for building test program
   set(CMAKE_REQUIRED_INCLUDES ${GA_INCLUDE_DIR} ${MPI_INCLUDE_PATH})
-  if (NOT MPI_LIBRARY OR NOT MPI_EXTRA_LIBRARY)
-    set(CMAKE_REQUIRED_LIBRARIES 
-      ${GA_LIBRARY} ${ARMCI_LIBRARY} ${GA_EXTRA_LIBS}
-    )
-  else()
-    set(CMAKE_REQUIRED_LIBRARIES 
+  set(CMAKE_REQUIRED_LIBRARIES 
       ${GA_LIBRARY} ${ARMCI_LIBRARY} ${GA_EXTRA_LIBS} ${MPI_C_LIBRARIES}
-    )
-  endif()
+  )
 
 # Build and run test program, maybe
 
