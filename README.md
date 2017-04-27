@@ -14,15 +14,42 @@ the model is used. Finally, if you do find bugs in the model or if you
 have improvements to the model code, we are interested in
 incorporating your suggestions and/or contributions. 
 
+# Parallel Version
+
+This branch of DHSVM has been modified to run in parallel using
+[Global Arrays](http://hpc.pnl.gov/globalarrays/). 
+
+## Hydrologic Processes / Options not Implemented in Parallel 
+
+* `Flow Routing` = `UNIT_HYDROGRAPH`
+* `MM5` = `TRUE`
+* `Precipitation Source` = `RADAR`
+
 ## Requirements
 
-### CMake
+In order to build DHSVM, several third party packages are required.  
 
 ### Message Passing Interface (MPI)
 
+[MPI](https://en.wikipedia.org/wiki/Message_Passing_Interface) is not
+used directly in DHSVM code.  However, an installation is required to
+build Global Arrays and build and run DHSVM.  
+
 ### Global Arrays
 
+All DHSVM inter-process communication is handled by
+[Global Arrays](http://hpc.pnl.gov/globalarrays/).
+[Global Arrays](http://hpc.pnl.gov/globalarrays/) essentially provides
+a distributed multi-dimensional array data structure.  
+
 ### NetCDF
+
+
+### CMake
+
+[CMake](https://cmake.org) provides an automated, cross-platform way
+to locate and use system and third-party libraries, and select optional
+features.  Version 2.8.12 or greater is required.
 
 ## Configuration and Build with CMake 
 
@@ -57,3 +84,4 @@ select optional features.  Here are some terse instructions:
     in a tree mirroring the source tree.  For example, DHSVM is
     `build/DHSVM/sourcecode/DHSVM`. 
     
+
