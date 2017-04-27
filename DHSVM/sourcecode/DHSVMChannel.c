@@ -233,7 +233,7 @@ RouteChannel(CHANNEL *ChannelData, TIMESTRUCT *Time, MAPSIZE *Map,
   SPrintDate(&(Time->Current), buffer);
   flag = IsEqualTime(&(Time->Current), &(Time->Start));
 
-  ParallelBarrier();
+  /* ParallelBarrier(); */
 
   /* give any surface water to roads w/o sinks */
   for (y = 0; y < Map->NY; y++) {
