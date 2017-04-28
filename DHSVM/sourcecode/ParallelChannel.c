@@ -11,7 +11,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2017-04-07 14:09:27 d3g096
+ * LAST CHANGE: 2017-04-28 08:56:17 d3g096
  * COMMENTS:
  *
  *    All processes have a copy of the channel network.  All processes
@@ -74,7 +74,7 @@ ChannelStateGA(Channel *net)
 void
 ChannelGatherLateralInflow(Channel *net, int ga)
 {
-  static int one = 1.0;
+  static float one = 1.0;
   int idx, nsegment;
   int lo[GA_MAX_DIM], hi[GA_MAX_DIM], ld[GA_MAX_DIM];
   float *lflow, value;
@@ -90,7 +90,7 @@ ChannelGatherLateralInflow(Channel *net, int ga)
     lflow[idx] = current->lateral_inflow;
   }
 
-#if 0
+#if 1
 
   /* it appears the NGA_Acc call does not work here, not sure why */
 
@@ -101,14 +101,10 @@ ChannelGatherLateralInflow(Channel *net, int ga)
   ld[0] = 1;
   ld[1] = 1;
   NGA_Zero_patch(ga, lo, hi);
-  GA_Sync();
-
-  GA_Print(ga);
-
   NGA_Acc(ga, lo, hi, &lflow[0], ld, &one);
   GA_Sync();
 
-  GA_Print(ga);
+  /* GA_Print(ga); */
 
   NGA_Get(ga, lo, hi, &lflow[0], ld);
 
