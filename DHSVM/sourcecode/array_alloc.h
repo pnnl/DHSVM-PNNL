@@ -11,7 +11,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2017-05-01 11:19:13 d3g096
+ * LAST CHANGE: 2017-05-01 13:33:17 d3g096
  * COMMENTS:
  */
 
@@ -22,6 +22,11 @@
 
 extern float **calloc_2D_float(int NY, int NX);
 extern void free_2D_float(float **p);
+extern unsigned int **calloc_2D_uint(int NY, int NX);
+extern void free_2D_uint(unsigned int **p);
+
+extern unsigned int *** calloc_3D_uint(int N1, int N2, int N3);
+extern void free_3D_uint(unsigned int ***p);
 
 #endif
 

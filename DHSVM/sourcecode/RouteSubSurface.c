@@ -13,7 +13,6 @@
  * $Id: RouteSubSurface.c,v3.1.2 2013/08/18 ning Exp $     
  */
 
-#include <ga.h>
 #include <assert.h>
 #include <math.h>
 #include <stdio.h>
@@ -134,30 +133,14 @@ void RouteSubSurface(int Dt, MAPSIZE *Map, TOPOPIX **TopoMap,
    Allocate memory 
   ****************************************************************************/
   
-  if (!(SubFlowGrad = (float **)calloc(Map->NY, sizeof(float *))))
+  if (!(SubFlowGrad = calloc_2D_float(Map->NY, Map->NX)))
     ReportError((char *) Routine, 1);
-  for(i=0; i<Map->NY; i++) {
-    if (!(SubFlowGrad[i] = (float *)calloc(Map->NX, sizeof(float))))
-      ReportError((char *) Routine, 1);
-  }
-  
-  if (!((SubDir) = (unsigned char ***) calloc(Map->NY, sizeof(unsigned char **))))
-    ReportError((char *) Routine, 1);
-  for (i=0; i<Map->NY; i++) {
-    if (!((SubDir)[i] = (unsigned char **) calloc(Map->NX, sizeof(unsigned char*))))
-      ReportError((char *) Routine, 1);
-    for (j=0; j<Map->NX; j++) {
-      if (!(SubDir[i][j] = (unsigned char *)calloc(NDIRS, sizeof(unsigned char ))))
-        ReportError((char *) Routine, 1);
-    }
-  }
 
-  if (!(SubTotalDir = (unsigned int **)calloc(Map->NY, sizeof(unsigned int *))))
+  if (!(SubDir = calloc_3D_uint(Map->NY, Map->NX, NDIRS))) 
     ReportError((char *) Routine, 1);
-  for (i=0; i<Map->NY; i++) {
-    if (!(SubTotalDir[i] = (unsigned int *)calloc(Map->NX, sizeof(unsigned int))))
-      ReportError((char *) Routine, 1);
-  }
+  
+  if (!(SubTotalDir = calloc_2D_uint(Map->NY, Map->NX)))
+    ReportError((char *) Routine, 1);
   
   /* reset the saturated subsurface flow to zero */
   for (y = 0; y < Map->NY; y++) {
@@ -358,20 +341,11 @@ void RouteSubSurface(int Dt, MAPSIZE *Map, TOPOPIX **TopoMap,
     }
   }
 
-  for(i=0; i<Map->NY; i++) { 
-    free(SubTotalDir[i]);
-    free(SubFlowGrad[i]);
-    for(j=0; j<Map->NX; j++){
-      free(SubDir[i][j]);
-    }
-    free(SubDir[i]);
-  }
-  free(SubDir);
-  free(SubTotalDir);
-  free(SubFlowGrad);
+  free_2D_float(SubFlowGrad);
+  free_2D_uint(SubTotalDir);
+  free_3D_uint(SubDir);
 
   GA_Free_patch(&patch);
-  /* GA_Destroy(ga); */
 
   /**********************************************************************/
   /* Dump saturation extent file to screen.
