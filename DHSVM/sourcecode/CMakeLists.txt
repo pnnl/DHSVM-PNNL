@@ -9,7 +9,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2017-04-07 12:56:36 d3g096
+# Last Change: 2017-05-01 11:48:57 d3g096
 
 # -------------------------------------------------------------
 # Set up for this subdirectory
@@ -54,6 +54,7 @@ add_library(BinIO STATIC
   ReportError.c
   SizeOfNT.c 
   VarID.c
+  array_alloc.c
 )
 
 # -------------------------------------------------------------

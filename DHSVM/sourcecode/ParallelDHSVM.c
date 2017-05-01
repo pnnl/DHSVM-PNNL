@@ -10,7 +10,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2017-04-27 12:45:08 d3g096
+ * LAST CHANGE: 2017-05-01 11:46:36 d3g096
  * COMMENTS:
  */
 
@@ -30,6 +30,7 @@
 #include "sizeofnt.h"
 #include "DHSVMerror.h"
 #include "ParallelDHSVM.h"
+#include "array_alloc.h"
 
 
 const int gaXdim = 1;
@@ -668,30 +669,6 @@ Local2Global(MAPSIZE *Map, int localx, int localy, int *globalx, int *globaly)
 }
 
 /******************************************************************************/
-/*                                                                    */
-/******************************************************************************/
-static
-float **
-alloc_float_2d(int NY, int NX)
-{
-  static char Routine[] = "alloc_float_2d";
-  int j;
-  float **result;
-  result = (float **)calloc(NY, sizeof(float *));
-  if (result == NULL) {
-    ReportError(Routine, 1);
-  }
-  result[0] = (float *) calloc(NX*NY, sizeof(float));
-  if (result[0] == NULL) {
-    ReportError(Routine, 1);
-  }
-  for (j = 1; j < NY; ++j) {
-    result[j] = result[0] + j*NX;
-  }
-  return result;
-}
-
-/******************************************************************************/
 /*                              GA_Alloc_patch                                */
 /******************************************************************************/
 void
@@ -701,7 +678,7 @@ GA_Alloc_patch(int ga, MAPSIZE *Map, GA_Patch *p)
   p->iyoff = 0;
   p->NX = Map->NX;
   p->NY = Map->NY;
-  p->patch = alloc_float_2d(Map->NY, Map->NX);
+  p->patch = calloc_2D_float(Map->NY, Map->NX);
 }
 
 /******************************************************************************/
@@ -731,7 +708,7 @@ GA_Alloc_patch_ghost(int ga, MAPSIZE *Map, GA_Patch *p)
   if (Map->OffsetY + Map->NY < Map->gNY) {
     p->NY += 1;
   } 
-  p->patch = alloc_float_2d(p->NY, p->NX);
+  p->patch = calloc_2D_float(p->NY, p->NX);
 }
 
 /******************************************************************************/
@@ -790,8 +767,7 @@ GA_Put_patch(int ga, MAPSIZE *Map, GA_Patch *p)
 void
 GA_Free_patch(GA_Patch *p)
 {
-  free(p->patch[0]);
-  free(p->patch);
+  free_2D_float(p->patch);
 }
 
 /******************************************************************************/
