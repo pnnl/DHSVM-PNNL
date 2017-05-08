@@ -87,10 +87,16 @@ void InitTopoMap(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * GMap, MAPSIZE 
     masked_decomposition = FALSE;
   } else if (strncmp(StrEnv[decompose].VarStr, "MASKED", 6) == 0) {
     masked_decomposition = TRUE;
-    striped = FALSE;
+    striped = 0;
   } else if (strncmp(StrEnv[decompose].VarStr, "STRIPED", 7) == 0) {
     masked_decomposition = TRUE;
-    striped = TRUE;
+    striped = 1;
+  } else if (strncmp(StrEnv[decompose].VarStr, "STRIPEX", 7) == 0) {
+    masked_decomposition = TRUE;
+    striped = 2;
+  } else if (strncmp(StrEnv[decompose].VarStr, "STRIPEY", 7) == 0) {
+    masked_decomposition = TRUE;
+    striped = 3;
   } else {
     ReportError(StrEnv[decompose].KeyName, 51);
   }

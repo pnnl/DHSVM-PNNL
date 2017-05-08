@@ -384,5 +384,6 @@ void RouteSubSurface(int Dt, MAPSIZE *Map, TOPOPIX **TopoMap,
     fprintf(fs, "%-20s %.4f \n", buffer, sat); 
     fclose(fs);    
   }
+  ParallelBarrier();
 }
 
