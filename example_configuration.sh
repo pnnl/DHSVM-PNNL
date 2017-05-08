@@ -176,9 +176,9 @@ elif [ $host = "constance-gnu" ]; then
         -D MPI_C_COMPILER:STRING="/share/apps/openmpi/1.8.3/gcc/4.8.2/bin/mpicc" \
         -D MPIEXEC:STRING="/share/apps/openmpi/1.8.3/gcc/4.8.2/bin/mpiexec" \
         -D GA_DIR:STRING="$prefix" \
-	-D GA_EXTRA_LIBS:STRING="-libverbs -lm" \
+	-D GA_EXTRA_LIBS:STRING="-lm" \
         -D DHSVM_USE_X11:BOOL=OFF \
-        -D DHSVM_USE_NETCDF:BOOL=ON \
+        -D DHSVM_USE_NETCDF:BOOL=OFF \
         -D NETCDF_INCLUDES:PATH="${NETCDF_INCLUDE}" \
         -D CMAKE_INSTALL_PREFIX:PATH="$prefix" \
         $common_flags \
