@@ -10,7 +10,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2017-05-01 11:46:36 d3g096
+ * LAST CHANGE: 2017-05-08 09:13:27 d3g096
  * COMMENTS:
  */
 
@@ -468,7 +468,7 @@ find_splits(int ga, int nsplit, int *isplit)
     }
   }
   NGA_Release(ga_sum, &mylo, &myhi);
-  /* GA_Print(ga_sum); */
+  /* GA_Print(ga_sum);  */
 
   GA_Igop(&isplit[0], nsplit, "+");
   
@@ -482,7 +482,7 @@ find_splits(int ga, int nsplit, int *isplit)
 /******************************************************************************/
 void 
 MaskedDomainDecomposition(MAPSIZE *gmap, MAPSIZE *lmap, MAPSIZE *nmap, 
-                          unsigned char *mask)
+                          int just_stripe_it, unsigned char *mask)
 {
   static float one = 1.0;
   int me, np;
@@ -506,14 +506,25 @@ MaskedDomainDecomposition(MAPSIZE *gmap, MAPSIZE *lmap, MAPSIZE *nmap,
   NGA_Inquire(gmap->dist, &gatype, &ndim, &dims[0]);
   GA_Inquire_irreg_distr(gmap->dist, &mapc[0], &nblk[0]);
 
+  if (just_stripe_it) {
+    if (dims[gaYdim] > dims[gaXdim]) {
+      nblk[gaXdim] = 1;
+      nblk[gaYdim] = np;
+    } else {
+      nblk[gaYdim] = 1;
+      nblk[gaXdim] = np;
+    }
+  }
+
   if (nblk[gaYdim] > 1) {
     gy = gmap->NY;
     ga_ysum = NGA_Create(C_FLOAT, 1, &gmap->NY, "Sum along Y", NULL);
     GA_Zero(ga_ysum);
 
-    for (y = 0, i = 0; y < lmap->NY; y++) {
+    for (y = 0; y < lmap->NY; y++) {
       sum = 0.0;
-      for (x = 0; x < lmap->NX; x++, i++) {
+      for (x = 0; x < lmap->NX; x++) {
+        i = y*lmap->NX + x;
         if (INBASIN(mask[i])) {
           sum += 1.0;
         }
@@ -534,9 +545,10 @@ MaskedDomainDecomposition(MAPSIZE *gmap, MAPSIZE *lmap, MAPSIZE *nmap,
     ga_xsum = NGA_Create(C_FLOAT, 1, &gmap->NX, "Sum along X", NULL);
     GA_Zero(ga_xsum);
 
-    for (x = 0, i = 0; x < lmap->NX; x++) {
+    for (x = 0; x < lmap->NX; x++) {
       sum = 0.0;
-      for (y = 0; y < lmap->NY; y++, i++) {
+      for (y = 0; y < lmap->NY; y++) {
+        i = y*lmap->NX + x;
         if (INBASIN(mask[i])) {
           sum += 1.0;
         }
@@ -553,7 +565,6 @@ MaskedDomainDecomposition(MAPSIZE *gmap, MAPSIZE *lmap, MAPSIZE *nmap,
     mapc[nblk[0]] = 0;
   }
 
-  /*
   for (p = 0; p < np; ++p) {
     if (me == p) {
       if (p == 0) {
@@ -571,7 +582,6 @@ MaskedDomainDecomposition(MAPSIZE *gmap, MAPSIZE *lmap, MAPSIZE *nmap,
     }
     GA_Sync();
   }
-  */
 
   memcpy(nmap, lmap, sizeof(MAPSIZE));
 

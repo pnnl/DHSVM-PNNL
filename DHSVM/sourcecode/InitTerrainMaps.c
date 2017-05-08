@@ -62,12 +62,13 @@ void InitTopoMap(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * GMap, MAPSIZE 
   float *Elev;			/* Surface elevation */
   int dodump;                   /* Flag to dump topography */
   int masked_decomposition;     /* Flag to do domain decomposition using the mask */
+  int striped;                  /* Flag to do just stripe the masked domain */
   MAPSIZE TMap;                 /* temporary local domain */
   STRINIENTRY StrEnv[] = {
     {"TERRAIN", "DEM FILE", "", ""},
     {"TERRAIN", "BASIN MASK FILE", "", ""},
     {"TERRAIN", "DUMP TOPO", "", "FALSE"},
-    {"TERRAIN", "DECOMPOSITION", "", "SIMPLE"},
+    {"TERRAIN", "DECOMPOSITION", "", "STRIPED"},
     {NULL, NULL, "", NULL}
   };
 
@@ -86,6 +87,10 @@ void InitTopoMap(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * GMap, MAPSIZE 
     masked_decomposition = FALSE;
   } else if (strncmp(StrEnv[decompose].VarStr, "MASKED", 6) == 0) {
     masked_decomposition = TRUE;
+    striped = FALSE;
+  } else if (strncmp(StrEnv[decompose].VarStr, "STRIPED", 7) == 0) {
+    masked_decomposition = TRUE;
+    striped = TRUE;
   } else {
     ReportError(StrEnv[decompose].KeyName, 51);
   }
@@ -108,7 +113,7 @@ void InitTopoMap(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * GMap, MAPSIZE 
     flag = Read2DMatrix(StrEnv[maskfile].VarStr, Mask, NumberType, &TMap, 0,
                         VarName, 0);
 
-    MaskedDomainDecomposition(GMap, &TMap, Map, Mask);
+    MaskedDomainDecomposition(GMap, &TMap, Map, striped, Mask);
 
     free(Mask);
   } else {
