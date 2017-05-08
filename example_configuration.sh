@@ -127,6 +127,26 @@ elif [ $host == "pe10900" ]; then
         $common_flags \
         ..
 
+elif [ $host = "briareus" ]; then
+
+    # with these modules (default compilers:
+
+    # module load gcc
+    # module load mpi/openmpi/1.4.3/gnu
+
+    prefix=/files0/dhsvm
+
+    CC="/share/apps/gcc/4.5.0/bin/gcc"
+    export CC
+
+    cmake \
+    -D DHSVM_USE_NETCDF:BOOL=OFF \
+    -D MPI_C_COMPILER:STRING="/share/apps/openmpi/1.4.3/gnu/bin/mpicc" \
+    -D GA_DIR:STRING="/files0/dhsvm" \
+    -D CMAKE_INSTALL_PREFIX:PATH="/files0/dhsvm" \
+    ..
+
+
 elif [ $host = "constance" ]; then
 
     # with these modules (default compilers:
