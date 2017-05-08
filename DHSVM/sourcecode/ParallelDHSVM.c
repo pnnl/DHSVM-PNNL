@@ -10,7 +10,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2017-05-08 09:13:27 d3g096
+ * LAST CHANGE: 2017-05-08 10:15:33 d3g096
  * COMMENTS:
  */
 
@@ -480,6 +480,15 @@ find_splits(int ga, int nsplit, int *isplit)
 /******************************************************************************/
 /*                            MaskedDomainDecomposition                       */
 /******************************************************************************/
+/** 
+ * 
+ * 
+ * @param gmap Global map description.
+ * @param lmap Preliminary map description for locally owned domain
+ * @param nmap New map description for locally owned domain
+ * @param just_stripe_it 0=use blocks in lmap; 1=stripe longest dimension; 2=stripe x; 3 stripe y
+ * @param mask Basin mask in one chunk
+ */
 void 
 MaskedDomainDecomposition(MAPSIZE *gmap, MAPSIZE *lmap, MAPSIZE *nmap, 
                           int just_stripe_it, unsigned char *mask)
@@ -506,7 +515,8 @@ MaskedDomainDecomposition(MAPSIZE *gmap, MAPSIZE *lmap, MAPSIZE *nmap,
   NGA_Inquire(gmap->dist, &gatype, &ndim, &dims[0]);
   GA_Inquire_irreg_distr(gmap->dist, &mapc[0], &nblk[0]);
 
-  if (just_stripe_it) {
+  switch (just_stripe_it) {
+  case 1:
     if (dims[gaYdim] > dims[gaXdim]) {
       nblk[gaXdim] = 1;
       nblk[gaYdim] = np;
@@ -514,8 +524,21 @@ MaskedDomainDecomposition(MAPSIZE *gmap, MAPSIZE *lmap, MAPSIZE *nmap,
       nblk[gaYdim] = 1;
       nblk[gaXdim] = np;
     }
+    break;
+  case 2:
+    nblk[gaYdim] = 1;
+    nblk[gaXdim] = np;
+    break;
+  case 3:
+    nblk[gaXdim] = 1;
+    nblk[gaYdim] = np;
+    break;
+  case 0:
+    /* fall thru */
+  default:
+    break;
   }
-
+    
   if (nblk[gaYdim] > 1) {
     gy = gmap->NY;
     ga_ysum = NGA_Create(C_FLOAT, 1, &gmap->NY, "Sum along Y", NULL);
