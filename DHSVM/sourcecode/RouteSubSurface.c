@@ -364,18 +364,25 @@ void RouteSubSurface(int Dt, MAPSIZE *Map, TOPOPIX **TopoMap,
       }
     }
   }
+
+
+  /* FIXME: Is this really necessary? It's a bottleneck. */
+
+  GA_Igop(&count, 1, "+");
+  GA_Igop(&totalcount, 1, "+");
  
   sat = 100.*((float)count/(float)totalcount);
-  
-  sprintf(satoutfile, "%ssaturation_extent.txt", DumpPath);
-  
-  if((fs = fopen(satoutfile,"a")) == NULL){
-    printf("Cannot open saturation extent output file.\n");
-    exit(0);
+
+  if (ParallelRank() == 0) {
+    sprintf(satoutfile, "%ssaturation_extent.txt", DumpPath);
+    if((fs = fopen(satoutfile,"a")) == NULL){
+      printf("Cannot open saturation extent output file.\n");
+      exit(0);
+    }
+    
+    SPrintDate(&(Time->Current), buffer);
+    fprintf(fs, "%-20s %.4f \n", buffer, sat); 
+    fclose(fs);    
   }
-  
-  SPrintDate(&(Time->Current), buffer);
-  fprintf(fs, "%-20s %.4f \n", buffer, sat); 
-  fclose(fs);    
 }
 
