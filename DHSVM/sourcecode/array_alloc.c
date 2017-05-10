@@ -10,7 +10,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2017-05-10 11:23:07 d3g096
+ * LAST CHANGE: 2017-05-10 11:29:29 d3g096
  * COMMENTS:
  */
 
@@ -218,7 +218,7 @@ main(int argc, char **argv)
       printf("%04d: ", i);
       for (j = 0; j < ny; ++j) {
         if (j > 0) printf(", ");
-        printf("%4d", uint2d[i][j]);
+        printf("%4d", uint3d[i][j][k]);
       }
       printf("\n");
     }
