@@ -143,6 +143,7 @@ elif [ $host = "briareus" ]; then
     -D DHSVM_USE_NETCDF:BOOL=OFF \
     -D MPI_C_COMPILER:STRING="/share/apps/openmpi/1.4.3/gnu/bin/mpicc" \
     -D GA_DIR:STRING="/files0/dhsvm" \
+    -D GA_EXTRA_LIBS:STRING="-libverbs" \
     -D CMAKE_INSTALL_PREFIX:PATH="/files0/dhsvm" \
     ..
 
