@@ -136,7 +136,7 @@ void RouteSubSurface(int Dt, MAPSIZE *Map, TOPOPIX **TopoMap,
   if (!(SubFlowGrad = calloc_2D_float(Map->NY, Map->NX)))
     ReportError((char *) Routine, 1);
 
-  if (!(SubDir = calloc_3D_uint(Map->NY, Map->NX, NDIRS))) 
+  if (!(SubDir = calloc_3D_uchar(Map->NY, Map->NX, NDIRS))) 
     ReportError((char *) Routine, 1);
   
   if (!(SubTotalDir = calloc_2D_uint(Map->NY, Map->NX)))
@@ -343,7 +343,7 @@ void RouteSubSurface(int Dt, MAPSIZE *Map, TOPOPIX **TopoMap,
 
   free_2D_float(SubFlowGrad);
   free_2D_uint(SubTotalDir);
-  free_3D_uint(SubDir);
+  free_3D_uchar(SubDir);
 
   GA_Free_patch(&patch);
 

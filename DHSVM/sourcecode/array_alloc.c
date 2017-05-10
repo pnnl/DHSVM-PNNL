@@ -10,7 +10,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2017-05-01 13:49:55 d3g096
+ * LAST CHANGE: 2017-05-10 11:23:07 d3g096
  * COMMENTS:
  */
 
@@ -86,7 +86,7 @@ free_2D_float(float **p)
 unsigned int ** 
 calloc_2D_uint(int NY, int NX)
 {
-  uint **result;
+  unsigned int **result;
   ALLOC_2D_TYPE(NY, NX, unsigned int, result);
   return result;
 }
@@ -137,3 +137,94 @@ free_3D_uint(unsigned int ***p)
   FREE_2D_TYPE(p);
 }
 
+/******************************************************************************/
+/*                              calloc_3D_uchar                               */
+/******************************************************************************/
+unsigned char *** 
+calloc_3D_uchar(int N1, int N2, int N3)
+{
+  unsigned char ***result, *p;
+  int i, j;
+  result = NULL;
+  p = (unsigned char *) calloc(N1*N2*N3, sizeof(unsigned char));
+  if (p != NULL) {
+    ALLOC_2D_TYPE(N1, N2, unsigned char *, result);
+    if (result != NULL) {
+      for (i = 0; i < N1; ++i) {
+        for (j = 0; j < N2; ++j) {
+          int idx = i*N2*N3 + j*N3;
+          result[i][j] = &p[idx];
+        }
+      }
+    } else {
+      free(p);
+    }
+  }
+  return result;
+}
+
+/******************************************************************************/
+/*                             free_2D_uchar                                  */
+/******************************************************************************/
+void
+free_3D_uchar(unsigned char ***p)
+{
+  free(p[0][0]);
+  FREE_2D_TYPE(p);
+}
+
+#ifdef TEST_MAIN
+
+/******************************************************************************/
+/*                           main program                                     */
+/******************************************************************************/
+
+int
+main(int argc, char **argv)
+{
+  unsigned int **uint2d;
+  unsigned int ***uint3d;
+  const nx = 10, ny = 5, nz = 3;
+  int i, j, k, n;
+
+  uint2d = calloc_2D_uint(nx, ny);
+  for (i = 0, n = 0; i < nx; ++i) {
+    for (j = 0; j < ny; ++j, ++n) {
+      uint2d[i][j] = n;
+    }
+  }
+  for (i = 0; i < nx; ++i) {
+    printf("%04d: ", i);
+    for (j = 0; j < ny; ++j) {
+      if (j > 0) printf(", ");
+      printf("%4d", uint2d[i][j]);
+    }
+    printf("\n");
+  }
+
+  free_2D_uint(uint2d);
+
+  uint3d = calloc_3D_uint(nx, ny, nz);
+  for (i = 0, n = 0; i < nx; ++i) {
+    for (j = 0; j < ny; ++j) {
+      for (k = 0; k < nz; ++k, ++n) {
+        uint3d[i][j][k] = n;
+      }
+    }
+  }
+  for (k = 0; k < nz; ++k) {
+    printf("z = %d:\n", k);
+    for (i = 0; i < nx; ++i) {
+      printf("%04d: ", i);
+      for (j = 0; j < ny; ++j) {
+        if (j > 0) printf(", ");
+        printf("%4d", uint2d[i][j]);
+      }
+      printf("\n");
+    }
+  }
+  free_3D_uint(uint3d);
+}
+
+
+#endif
