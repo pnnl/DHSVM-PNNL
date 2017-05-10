@@ -10,7 +10,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2017-04-25 07:21:55 d3g096
+# Last Change: 2017-05-10 13:04:41 d3g096
 
 set -xue
 
@@ -96,9 +96,8 @@ elif [ $host == "WE32673" ]; then
 
     # this is a Mac system with MPI and NetCDF installed using
     # MacPorts.  You cannot use the Apple CLang because Global Arrays
-    # does not work with it.  It's better to use a GNU compiler.
-    # Here, gcc-6 and mpich, installed via MacPorts, are used.
-
+    # does not work with it.
+    
     prefix="/opt/local"
     CC="$prefix/bin/clang-mp-3.8"
     CXX="$prefix/bin/clang++-mp-3.8"
@@ -107,6 +106,25 @@ elif [ $host == "WE32673" ]; then
     cmake $options \
         -D MPI_C_COMPILER:STRING="$prefix/bin/mpicc-openmpi-clang38" \
         -D MPIEXEC:STRING="$prefix/bin/mpiexec-openmpi-clang38" \
+        -D NETCDF_DIR:PATH="$prefix/include" \
+        -D DHSVM_USE_X11:BOOL=OFF \
+        -D DHSVM_USE_NETCDF:BOOL=ON \
+        $common_flags \
+        ..
+
+elif [ $host == "WE32673-gnu" ]; then
+
+    # this is a Mac system with MPI and NetCDF installed using
+    # MacPorts.  
+
+    prefix="/opt/local"
+    CC="$prefix/bin/gcc-mp-6"
+    CXX="$prefix/bin/g++-mp-6"
+    export CC CXX
+
+    cmake $options \
+        -D MPI_C_COMPILER:STRING="$prefix/bin/mpicc-openmpi-gcc6" \
+        -D MPIEXEC:STRING="$prefix/bin/mpicxx-openmpi-gcc6" \
         -D NETCDF_DIR:PATH="$prefix/include" \
         -D DHSVM_USE_X11:BOOL=OFF \
         -D DHSVM_USE_NETCDF:BOOL=ON \
@@ -171,7 +189,7 @@ elif [ $host = "constance" ]; then
         -D GA_DIR:STRING="$prefix" \
 	-D GA_EXTRA_LIBS:STRING="-libverbs -lm" \
         -D DHSVM_USE_X11:BOOL=OFF \
-        -D DHSVM_USE_NETCDF:BOOL=ON \
+        -D DHSVM_USE_NETCDF:BOOL=OFF \
         -D NETCDF_INCLUDES:PATH="${NETCDF_INCLUDE}" \
         -D CMAKE_INSTALL_PREFIX:PATH="$prefix" \
         $common_flags \
@@ -197,9 +215,9 @@ elif [ $host = "constance-gnu" ]; then
         -D MPI_C_COMPILER:STRING="/share/apps/openmpi/1.8.3/gcc/4.8.2/bin/mpicc" \
         -D MPIEXEC:STRING="/share/apps/openmpi/1.8.3/gcc/4.8.2/bin/mpiexec" \
         -D GA_DIR:STRING="$prefix" \
-	-D GA_EXTRA_LIBS:STRING="-libverbs -lm" \
+	-D GA_EXTRA_LIBS:STRING="-libverbs -lm -lpthread" \
         -D DHSVM_USE_X11:BOOL=OFF \
-        -D DHSVM_USE_NETCDF:BOOL=ON \
+        -D DHSVM_USE_NETCDF:BOOL=OFF \
         -D NETCDF_INCLUDES:PATH="${NETCDF_INCLUDE}" \
         -D CMAKE_INSTALL_PREFIX:PATH="$prefix" \
         $common_flags \
