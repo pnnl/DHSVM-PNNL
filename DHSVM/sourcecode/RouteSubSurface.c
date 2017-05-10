@@ -26,6 +26,7 @@
 #include "slopeaspect.h"
 #include "DHSVMChannel.h"
 #include "ParallelDHSVM.h"
+#include "array_alloc.h"
 
 #ifndef MIN_GRAD
 #define MIN_GRAD .3		/* minimum slope for flow to channel */
