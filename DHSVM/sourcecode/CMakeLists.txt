@@ -9,7 +9,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2017-05-01 11:48:57 d3g096
+# Last Change: 2017-05-10 10:56:00 d3g096
 
 # -------------------------------------------------------------
 # Set up for this subdirectory
@@ -316,6 +316,20 @@ if (DHSVM_BUILD_TESTS)
     ${MPI_C_LIBRARIES}
     )
 endif (DHSVM_BUILD_TESTS)
+
+# -------------------------------------------------------------
+# array_alloc_test
+# -------------------------------------------------------------
+if (DHSVM_BUILD_TESTS) 
+  add_executable(array_alloc_test
+    array_alloc.c
+    )
+  set_target_properties(array_alloc_test
+    PROPERTIES
+    COMPILE_DEFINITIONS "TEST_MAIN=1"
+    )
+endif (DHSVM_BUILD_TESTS)
+
 
 # -------------------------------------------------------------
 # Installation
