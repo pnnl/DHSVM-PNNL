@@ -139,8 +139,8 @@ void InitTopoMap(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * Map,
   else ReportError((char *)Routine, 57);
   free(Mask);
 
-  /* find out the minimum grid elevation of the basin (using the mask) */
-  MINELEV = 9999;
+  /* find out the minimum grid elevation of the basin (using the basin mask) */
+  MINELEV = DHSVM_HUGE;
   for (y = 0, i = 0; y < Map->NY; y++) {
     for (x = 0; x < Map->NX; x++, i++) {
       if (INBASIN((*TopoMap)[y][x].Mask)) {
@@ -150,7 +150,6 @@ void InitTopoMap(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * Map,
       }
     }
   }
-  printf("MINELEV = %.3f\n", MINELEV);
 
   /* Calculate slope, aspect, magnitude of subsurface flow gradient, and
      fraction of flow flowing in each direction based on the land surface
