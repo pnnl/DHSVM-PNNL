@@ -10,7 +10,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2017-05-10 13:04:41 d3g096
+# Last Change: 2017-05-31 08:49:41 d3g096
 
 set -xue
 
@@ -68,27 +68,17 @@ common_flags="\
 
 if [ $host == "flophouse" ]; then
 
+    CC=/usr/bin/gcc
+    export CC
+
     prefix="/net/flophouse/files0/perksoft/linux64"
     cmake $options \
-        -D MPI_C_COMPILER:STRING="$prefix/bin/mpicc" \
-        -D MPIEXEC:STRING="$prefix/bin/mpiexec" \
-        -D GA_DIR:STRING="$prefix" \
-        $common_flags \
-        ..
-
-elif [ $host == "flophouse48" ]; then
-
-    prefix="/net/flophouse/files0/perksoft/linux64/openmpi48"
-    CC="$prefix/bin/gcc"
-    CFLAGS="-pthread -Wall"
-    export CC CFLAGS
-    
-    PATH="${prefix}/bin:${PATH}"
-    export PATH
-    cmake $options \
-        -D MPI_C_COMPILER:STRING="$prefix/bin/mpicc" \
-        -D MPIEXEC:STRING="$prefix/bin/mpiexec" \
-        -D GA_DIR:STRING="$prefix/ga-5-4" \
+        -D MPI_C_COMPILER:STRING="/usr/lib64/openmpi/bin/mpicc" \
+        -D MPIEXEC:STRING="/usr/lib64/openmpi/bin/mpiexec" \
+        -D GA_DIR:STRING="$prefix/ga-c++" \
+	-D GA_EXTRA_LIBS:STRING="-lm" \
+        -D DHSVM_USE_NETCDF:BOOL=ON \
+        -D CMAKE_INSTALL_PREFIX:PATH="$prefix/dhsvm" \
         $common_flags \
         ..
 
