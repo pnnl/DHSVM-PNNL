@@ -471,6 +471,14 @@ find_splits(int ga, int nsplit, int *isplit)
   /* GA_Print(ga_sum);  */
 
   GA_Igop(&isplit[0], nsplit, "+");
+
+  /* sort of check for missed splits and sort of fix them */
+
+  for (f = 1; f < nsplit-1; ++f) {
+    if (isplit[f] == 0) {
+      isplit[f] = (isplit[f-1] + isplit[f+1])/2;
+    }
+  }
   
   GA_Destroy(ga_mask);
   GA_Destroy(ga_sum);
