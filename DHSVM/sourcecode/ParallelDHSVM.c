@@ -10,7 +10,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2017-05-08 10:15:33 d3g096
+ * LAST CHANGE: 2017-06-01 08:22:25 d3g096
  * COMMENTS:
  */
 
@@ -416,7 +416,7 @@ find_splits(int ga, int nsplit, int *isplit)
   int gatype, ndim, dim[GA_MAX_DIM];
   int lo[GA_MAX_DIM], hi[GA_MAX_DIM];
   int i, f, mylo, myhi, idx0;
-  float value, *ga_data, *frac;
+  float value, *ga_data, frac;
 
   me = GA_Nodeid();
   np = GA_Nnodes();
@@ -443,43 +443,36 @@ find_splits(int ga, int nsplit, int *isplit)
 
   GA_Scale(ga_sum, &value);
 
-  if (!(frac = (float *)calloc(nsplit, sizeof(float)))) {
-    ReportError("find_splits", 70);
-  }
   for (f = 0; f < nsplit; ++f) {
     isplit[f] = 0;
-    frac[f] = ((double)f)/((double)nsplit);
   }
 
-  NGA_Distribution(ga_sum, me, &lo[0], &hi[0]);
-  mylo = lo[0];
-  myhi = hi[0];
-  NGA_Access(ga_sum, &mylo, &myhi, &ga_data, NULL);
+  if (!(ga_data = (float *)calloc(dim[0], sizeof(float)))) {
+    ReportError("find_splits", 70);
+  }
 
-  idx0 = mylo;
+  lo[0] = 0;
+  hi[0] = dim[0] - 1;
+  NGA_Get(ga_sum, &lo[0], &hi[0], &ga_data[0], NULL);
+
+  idx0 = 0;
   for (f = 1; f < nsplit; ++f) {
-    if (ga_data[idx0 - mylo] <= frac[f] && frac[f] <= ga_data[myhi - mylo]) {
-      for (i = idx0 + 1; i <= myhi; ++i) {
-        if (ga_data[i - mylo] > frac[f]) {
-          isplit[f] = i - 1;
-          break;
-        }
+    frac = ((double)f)/((double)nsplit);
+    /* printf("%d: frac %g: ", me, frac); */
+    for (i = idx0; i < dim[0] - 1; ++i) {
+      if (ga_data[i] > frac) {
+        isplit[f] = i - 1;
+        idx0 = i - 1;
+        /* printf("%d\n", idx0); */
+        break;
       }
     }
   }
-  NGA_Release(ga_sum, &mylo, &myhi);
-  /* GA_Print(ga_sum);  */
 
-  GA_Igop(&isplit[0], nsplit, "+");
+  free(ga_data);
 
-  /* sort of check for missed splits and sort of fix them */
+  /* GA_Print(ga_sum); */
 
-  for (f = 1; f < nsplit-1; ++f) {
-    if (isplit[f] == 0) {
-      isplit[f] = (isplit[f-1] + isplit[f+1])/2;
-    }
-  }
-  
   GA_Destroy(ga_mask);
   GA_Destroy(ga_sum);
 }
@@ -596,23 +589,19 @@ MaskedDomainDecomposition(MAPSIZE *gmap, MAPSIZE *lmap, MAPSIZE *nmap,
     mapc[nblk[0]] = 0;
   }
 
-  for (p = 0; p < np; ++p) {
-    if (me == p) {
-      if (p == 0) {
-        fprintf(stdout, "MaskedDomainDecomposition:\n");
+  if (me == 0) {
+    fprintf(stdout, "MaskedDomainDecomposition split indexes:\n");
+    mapcptr = mapc;
+    for (d = 0; d < 2; ++d) {
+      fprintf(stdout, "%d: %d(%d): ", me, d, nblk[d]);
+      for (b = 0; b < nblk[d]; ++b, ++mapcptr) {
+        fprintf(stdout, "%d, ", *mapcptr);
       }
-      mapcptr = mapc;
-      for (d = 0; d < 2; ++d) {
-        fprintf(stdout, "%d: %d(%d): ", p, d, nblk[d]);
-        for (b = 0; b < nblk[d]; ++b, ++mapcptr) {
-          fprintf(stdout, "%d, ", *mapcptr);
-        }
-        fprintf(stdout, "\n");
-        fflush(stdout);
-      }
+      fprintf(stdout, "\n");
+      fflush(stdout);
     }
-    GA_Sync();
   }
+  GA_Sync();
 
   memcpy(nmap, lmap, sizeof(MAPSIZE));
 
