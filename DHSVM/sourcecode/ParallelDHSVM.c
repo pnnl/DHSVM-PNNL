@@ -10,7 +10,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2017-06-01 08:22:25 d3g096
+ * LAST CHANGE: 2017-06-01 08:48:07 d3g096
  * COMMENTS:
  */
 
@@ -455,12 +455,14 @@ find_splits(int ga, int nsplit, int *isplit)
   hi[0] = dim[0] - 1;
   NGA_Get(ga_sum, &lo[0], &hi[0], &ga_data[0], NULL);
 
-  idx0 = 0;
+  idx0 = 1;
   for (f = 1; f < nsplit; ++f) {
     frac = ((double)f)/((double)nsplit);
     /* printf("%d: frac %g: ", me, frac); */
     for (i = idx0; i < dim[0] - 1; ++i) {
-      if (ga_data[i] > frac) {
+      /* value = 0.5*(ga_data[i] + ga_data[i-1]); */
+      value = ga_data[i];
+      if (value > frac) {
         isplit[f] = i - 1;
         idx0 = i - 1;
         /* printf("%d\n", idx0); */
