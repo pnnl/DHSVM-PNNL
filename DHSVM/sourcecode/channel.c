@@ -16,9 +16,9 @@ $Id: channel.c,v3.1.2 2014/1/2 Ning Exp $
 #include <math.h>
 #include <errno.h>
 #include "errorhandler.h"
-#include "DHSVMerror.h"
+/* #include "DHSVMerror.h" */
 #include "channel.h"
-#include "constants.h"
+/* #include "constants.h" */
 #include "tableio.h"
 #include "settings.h"
 
@@ -255,6 +255,8 @@ static Channel *alloc_channel_segment(void)
   seg->inflow = 0.0;
   seg->outflow = 0.0;
   seg->storage= 0.0;
+  seg->inlet_elevation = 0.0;
+  seg->outlet_elevation = 0.0;
   seg->outlet = NULL;
   seg->next = NULL;
 
@@ -555,29 +557,29 @@ channel_step_initialize_network
 ------------------------------------------------------------- */
 int channel_step_initialize_network(Channel *net)
 {
-  if (net != NULL) {
-    net->last_inflow = net->inflow;
-    net->inflow = 0.0;
-    net->lateral_inflow = 0.0;
-    net->last_outflow = net->outflow;
-    net->last_storage = net->storage;
+  Channel *current;
+
+  for (current = net; current != NULL; current = current->next) {
+    current->last_inflow = current->inflow;
+    current->inflow = 0.0;
+    current->lateral_inflow = 0.0;
+    current->last_outflow = current->outflow;
+    current->last_storage = current->storage;
 
     /* Initialzie variables for John's RBM model */ 
-    net->ILW = 0.; /* incident longwave radiation */
-    net->NLW = 0.; /* net longwave radiation */
-    net->ISW = 0.; /* incident shortwave radiation */
-    net->Beam = 0.;
-    net->Diffuse = 0.;
-    net->NSW = 0.0;            /* net shortwave radiation with both topo and canopy shading */
+    current->ILW = 0.; /* incident longwave radiation */
+    current->NLW = 0.; /* net longwave radiation */
+    current->ISW = 0.; /* incident shortwave radiation */
+    current->Beam = 0.;
+    current->Diffuse = 0.;
+    current->NSW = 0.0;            /* net shortwave radiation with both topo and canopy shading */
 
-    net->VP = 0.;              /* actual vapor pressure */
-    net->WND = 0.;
-    net->ATP = 0.;
-    net->azimuth = 0;
-    net->skyview = 0;
-    //net->Ncells = 0; /* not used for now */
-
-    channel_step_initialize_network(net->next);
+    current->VP = 0.;              /* actual vapor pressure */
+    current->WND = 0.;
+    current->ATP = 0.;
+    current->azimuth = 0;
+    current->skyview = 0;
+    //current->Ncells = 0; /* not used for now */
   }
   return (0);
 }

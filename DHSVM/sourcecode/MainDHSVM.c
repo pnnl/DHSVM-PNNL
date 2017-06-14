@@ -355,8 +355,6 @@ int main(int argc, char **argv)
       }
     }
 
-    ParallelBarrier();
-
     /* Average all RBM inputs over each segment */
     if (Options.StreamTemp) {
       channel_grid_avg(ChannelData.streams);

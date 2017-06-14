@@ -327,7 +327,7 @@ void RouteSubSurface(int Dt, MAPSIZE *Map, TOPOPIX **TopoMap,
   }
 
   GA_Acc_patch(ga, Map, &patch);
-  GA_Sync();
+  ParallelBarrier();
   GA_Get_patch(ga, Map, &patch);
 
   /* get the accumulated subsurface flow back from the GA (local array
