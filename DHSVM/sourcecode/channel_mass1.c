@@ -10,7 +10,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2017-06-13 14:37:41 d3g096
+ * LAST CHANGE: 2017-06-14 07:41:06 d3g096
  * COMMENTS:
  */
 
@@ -210,7 +210,7 @@ mass1_write_bclists(const char *outname, Channel *network)
     return;
   }
   fclose(out);
-
+}
 
 
 /******************************************************************************/
