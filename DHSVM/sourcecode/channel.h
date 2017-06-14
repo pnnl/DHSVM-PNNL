@@ -77,6 +77,10 @@ struct _channel_rec_ {
   float outflow;		/* cubic meters */
   float storage;		/* cubic meters */
   float last_lateral_inflow;
+
+  float inlet_elevation;        /* meter */
+  float outlet_elevation;       /* meter */
+
   /* Added for John's RBM model */
   float ATP;	        /* Avg air temp (C) */
   float ISW;            /* Incident incoming shortwave radiation (W/m2) */

@@ -16,9 +16,9 @@ $Id: channel.c,v3.1.2 2014/1/2 Ning Exp $
 #include <math.h>
 #include <errno.h>
 #include "errorhandler.h"
-#include "DHSVMerror.h"
+/* #include "DHSVMerror.h" */
 #include "channel.h"
-#include "constants.h"
+/* #include "constants.h" */
 #include "tableio.h"
 #include "settings.h"
 
@@ -255,6 +255,8 @@ static Channel *alloc_channel_segment(void)
   seg->inflow = 0.0;
   seg->outflow = 0.0;
   seg->storage= 0.0;
+  seg->inlet_elevation = 0.0;
+  seg->outlet_elevation = 0.0;
   seg->outlet = NULL;
   seg->next = NULL;
 
