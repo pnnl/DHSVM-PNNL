@@ -212,6 +212,34 @@ elif [ $host = "constance-gnu" ]; then
         $common_flags \
         ..
 
+elif [ $host = "constance-gnu-pr" ]; then
+
+    # with these modules (default compilers:
+
+    # module load precision/i4
+    # module load gcc/4.8.2
+    # module load openmpi/1.8.3
+    # module load netcdf/4.3.2
+    
+    # GA installed here:
+
+    prefix=/pic/projects/informed_hydro/dhsvm-gnu-pr
+    CC=/share/apps/gcc/4.8.2/bin/gcc
+    CXX=/share/apps/gcc/4.8.2/bin/g++
+    export CC CXX
+
+    cmake $options \
+        -D MPI_C_COMPILER:STRING="/share/apps/openmpi/1.8.3/gcc/4.8.2/bin/mpicc" \
+        -D MPIEXEC:STRING="/share/apps/openmpi/1.8.3/gcc/4.8.2/bin/mpiexec" \
+        -D GA_DIR:STRING="$prefix" \
+	-D GA_EXTRA_LIBS:STRING="-lm -lpthread" \
+        -D DHSVM_USE_X11:BOOL=OFF \
+        -D DHSVM_USE_NETCDF:BOOL=OFF \
+        -D NETCDF_INCLUDES:PATH="${NETCDF_INCLUDE}" \
+        -D CMAKE_INSTALL_PREFIX:PATH="$prefix" \
+        $common_flags \
+        ..
+
 else
 
     # For an unknown system, turn most options off
