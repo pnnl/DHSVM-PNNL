@@ -176,7 +176,6 @@ void RouteSubSurface(int Dt, MAPSIZE *Map, TOPOPIX **TopoMap,
   
   /* ga = GA_Duplicate_type(Map->dist, "Subsurface Routing", C_FLOAT); */
   ga = Map->dist;
-  GA_Zero(ga);
 
   /* make a local array to store SatFlow that covers the locally
      owned part of the domain plus ghost cells */
@@ -326,6 +325,7 @@ void RouteSubSurface(int Dt, MAPSIZE *Map, TOPOPIX **TopoMap,
     }
   }
 
+  GA_Zero(ga);
   GA_Acc_patch(ga, Map, &patch);
   ParallelBarrier();
   GA_Get_patch(ga, Map, &patch);
