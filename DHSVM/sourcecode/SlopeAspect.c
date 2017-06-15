@@ -234,7 +234,7 @@ void ElevationSlopeAspect(MAPSIZE * Map, TOPOPIX ** TopoMap)
 
   gaelev = GA_Duplicate_type(Map->dist, "ElevationSlopeAspect", GA_Type(NC_FLOAT));
   GA_Fill(gaelev, &outelev);
-  GA_Sync();
+  ParallelBarrier();
 
   /* make a local array in which to put local elevations ghost cells not needed */
   GA_Alloc_patch(gaelev, Map, &patch);
@@ -253,7 +253,7 @@ void ElevationSlopeAspect(MAPSIZE * Map, TOPOPIX ** TopoMap)
     }
   }
   GA_Put_patch(gaelev, Map, &patch);
-  GA_Sync();
+  ParallelBarrier();
   GA_Free_patch(&patch);
 
   /* make a local array and fill it with elevations from GA that
@@ -324,7 +324,7 @@ void ElevationSlopeAspect(MAPSIZE * Map, TOPOPIX ** TopoMap)
 
   GA_Free_patch(&patch);  
   GA_Destroy(gaelev);
-  GA_Sync();
+  ParallelBarrier();
 
 
   /* FIXME: Are the OrderedCells actually used anywhere? */
@@ -351,9 +351,14 @@ void ElevationSlopeAspect(MAPSIZE * Map, TOPOPIX ** TopoMap)
 
   n = Map->NumCells;
   printf("%d: local NumCells = %d\n", ParallelRank(), n);
+
+  i = n;
+  k = n;
   GA_Igop(&n, 1, "+");
+  GA_Igop(&i, 1, "max");
+  GA_Igop(&k, 1, "min");
   if (ParallelRank() == 0) 
-    printf("%d: global NumCells = %d\n", ParallelRank(), n);
+    printf("global NumCells = %d, local Maximum = %d, local Minimum = %d\n", n, i, k);
   Map->AllCells = n;
 
   return;
@@ -424,7 +429,7 @@ void HeadSlopeAspect(MAPSIZE * Map, TOPOPIX ** TopoMap, SOILPIX ** SoilMap,
 
   GA_Fill(gaelev, &outelev);
 
-  GA_Sync();
+  ParallelBarrier();
 
   /* put water levels in GA (presumably, all of these puts should be
      local, so it may be OK do put one value at a time; maybe try

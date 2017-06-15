@@ -9,7 +9,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2017-05-10 10:56:00 d3g096
+# Last Change: 2017-06-12 14:11:43 d3g096
 
 # -------------------------------------------------------------
 # Set up for this subdirectory
@@ -330,6 +330,18 @@ if (DHSVM_BUILD_TESTS)
     )
 endif (DHSVM_BUILD_TESTS)
 
+# -------------------------------------------------------------
+# channel_mass1
+# -------------------------------------------------------------
+add_executable(channel_mass1
+  channel_mass1.c
+  channel.c
+  tableio.c
+  errorhandler.c
+)
+target_link_libraries(channel_mass1
+  ${MATH_LIBRARY}
+  )
 
 # -------------------------------------------------------------
 # Installation

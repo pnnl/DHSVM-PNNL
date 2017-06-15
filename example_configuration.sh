@@ -10,7 +10,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2017-05-10 13:04:41 d3g096
+# Last Change: 2017-06-06 08:21:26 d3g096
 
 set -xue
 
@@ -68,27 +68,19 @@ common_flags="\
 
 if [ $host == "flophouse" ]; then
 
+    CC=/usr/bin/gcc
+    CXX=/usr/bin/g++
+    export CC
+
     prefix="/net/flophouse/files0/perksoft/linux64"
     cmake $options \
-        -D MPI_C_COMPILER:STRING="$prefix/bin/mpicc" \
-        -D MPIEXEC:STRING="$prefix/bin/mpiexec" \
-        -D GA_DIR:STRING="$prefix" \
-        $common_flags \
-        ..
-
-elif [ $host == "flophouse48" ]; then
-
-    prefix="/net/flophouse/files0/perksoft/linux64/openmpi48"
-    CC="$prefix/bin/gcc"
-    CFLAGS="-pthread -Wall"
-    export CC CFLAGS
-    
-    PATH="${prefix}/bin:${PATH}"
-    export PATH
-    cmake $options \
-        -D MPI_C_COMPILER:STRING="$prefix/bin/mpicc" \
-        -D MPIEXEC:STRING="$prefix/bin/mpiexec" \
-        -D GA_DIR:STRING="$prefix/ga-5-4" \
+        -D MPI_C_COMPILER:STRING="/usr/lib64/openmpi/bin/mpicc" \
+        -D MPI_CXX_COMPILER:STRING="/usr/lib64/openmpi/bin/mpicxx" \
+        -D MPIEXEC:STRING="/usr/lib64/openmpi/bin/mpiexec" \
+        -D GA_DIR:STRING="$prefix/ga-c++" \
+	-D GA_EXTRA_LIBS:STRING="-lm" \
+        -D DHSVM_USE_NETCDF:BOOL=ON \
+        -D CMAKE_INSTALL_PREFIX:PATH="$prefix/dhsvm" \
         $common_flags \
         ..
 
@@ -216,6 +208,34 @@ elif [ $host = "constance-gnu" ]; then
         -D MPIEXEC:STRING="/share/apps/openmpi/1.8.3/gcc/4.8.2/bin/mpiexec" \
         -D GA_DIR:STRING="$prefix" \
 	-D GA_EXTRA_LIBS:STRING="-libverbs -lm -lpthread" \
+        -D DHSVM_USE_X11:BOOL=OFF \
+        -D DHSVM_USE_NETCDF:BOOL=OFF \
+        -D NETCDF_INCLUDES:PATH="${NETCDF_INCLUDE}" \
+        -D CMAKE_INSTALL_PREFIX:PATH="$prefix" \
+        $common_flags \
+        ..
+
+elif [ $host = "constance-gnu-pr" ]; then
+
+    # with these modules (default compilers:
+
+    # module load precision/i4
+    # module load gcc/4.8.2
+    # module load openmpi/1.8.3
+    # module load netcdf/4.3.2
+    
+    # GA installed here:
+
+    prefix=/pic/projects/informed_hydro/dhsvm-gnu-pr
+    CC=/share/apps/gcc/4.8.2/bin/gcc
+    CXX=/share/apps/gcc/4.8.2/bin/g++
+    export CC CXX
+
+    cmake $options \
+        -D MPI_C_COMPILER:STRING="/share/apps/openmpi/1.8.3/gcc/4.8.2/bin/mpicc" \
+        -D MPIEXEC:STRING="/share/apps/openmpi/1.8.3/gcc/4.8.2/bin/mpiexec" \
+        -D GA_DIR:STRING="$prefix" \
+	-D GA_EXTRA_LIBS:STRING="-lm -lpthread" \
         -D DHSVM_USE_X11:BOOL=OFF \
         -D DHSVM_USE_NETCDF:BOOL=OFF \
         -D NETCDF_INCLUDES:PATH="${NETCDF_INCLUDE}" \

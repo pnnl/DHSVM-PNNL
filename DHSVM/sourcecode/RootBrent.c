@@ -106,8 +106,6 @@ float RootBrent(int y, int x, float LowerBound, float UpperBound,
   int j;
   int eval = 0;
 
-  sprintf(ErrorString, "%s: y = %d, x = %d", Routine, y, x);
-
   /* initialize variable argument list */
 
   a = LowerBound;
@@ -134,6 +132,7 @@ float RootBrent(int y, int x, float LowerBound, float UpperBound,
     j++;
   }
   if ((fa * fb) >= 0) {
+    sprintf(ErrorString, "%s: y = %d, x = %d", Routine, y, x);
     ReportError(ErrorString, 34);
   }
   fc = fb;
@@ -211,5 +210,6 @@ float RootBrent(int y, int x, float LowerBound, float UpperBound,
       eval++;
     }
   }
+  sprintf(ErrorString, "%s: y = %d, x = %d", Routine, y, x);
   ReportError(ErrorString, 33);
 }

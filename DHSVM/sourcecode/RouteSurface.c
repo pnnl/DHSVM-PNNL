@@ -171,7 +171,7 @@ void RouteSurface(MAPSIZE * Map, TIMESTRUCT * Time, TOPOPIX ** TopoMap,
     }
 
     GA_Acc_patch(ga, Map, &patch);
-    GA_Sync();
+    ParallelBarrier();
     
     /* get the accumulated surface flow back from the GA (local array
        does not include ghosts) */
