@@ -67,6 +67,7 @@ typedef struct {
   PIXDUMP *Pix;						/* Array with info on pixels for which to output timeseries */
   int NMaps;						/* Number of variables for which to output maps */
   MAPDUMP *DMap;					/* Array with info on each map to output */
+  int SatExtent;
 } DUMPSTRUCT;
 
 typedef struct {

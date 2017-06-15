@@ -366,7 +366,7 @@ int main(int argc, char **argv)
     
 
     RouteSubSurface(Time.Dt, &Map, TopoMap, VType, VegMap, Network,
-        	    SType, SoilMap, &ChannelData, &Time, &Options, Dump.Path,
+        	    SType, SoilMap, &ChannelData, &Time, &Options, &Dump,
         	    MaxStreamID, SnowMap);
 
     if (Options.HasNetwork)

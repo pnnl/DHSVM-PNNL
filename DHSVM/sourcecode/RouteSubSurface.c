@@ -103,7 +103,7 @@ void RouteSubSurface(int Dt, MAPSIZE *Map, TOPOPIX **TopoMap,
 		     ROADSTRUCT **Network, SOILTABLE *SType,
 		     SOILPIX **SoilMap, CHANNEL *ChannelData,
 		     TIMESTRUCT *Time, OPTIONSTRUCT *Options, 
-		     char *DumpPath, int MaxStreamID, SNOWPIX **SnowMap)
+		     DUMPSTRUCT *Dump, int MaxStreamID, SNOWPIX **SnowMap)
 {
   const char *Routine = "RouteSubSurface";
   int x;			/* counter */
@@ -368,23 +368,25 @@ void RouteSubSurface(int Dt, MAPSIZE *Map, TOPOPIX **TopoMap,
 
 
   /* FIXME: Is this really necessary? It's a bottleneck. */
+  if (Dump->SatExtent) {
 
-  GA_Igop(&count, 1, "+");
-  GA_Igop(&totalcount, 1, "+");
- 
-  sat = 100.*((float)count/(float)totalcount);
-
-  if (ParallelRank() == 0) {
-    sprintf(satoutfile, "%ssaturation_extent.txt", DumpPath);
-    if((fs = fopen(satoutfile,"a")) == NULL){
-      printf("Cannot open saturation extent output file.\n");
-      exit(0);
-    }
+    GA_Igop(&count, 1, "+");
+    GA_Igop(&totalcount, 1, "+");
     
-    SPrintDate(&(Time->Current), buffer);
-    fprintf(fs, "%-20s %.4f \n", buffer, sat); 
-    fclose(fs);    
+    sat = 100.*((float)count/(float)totalcount);
+    
+    if (ParallelRank() == 0) {
+      sprintf(satoutfile, "%ssaturation_extent.txt", Dump->Path);
+      if((fs = fopen(satoutfile,"a")) == NULL){
+        printf("Cannot open saturation extent output file.\n");
+        exit(0);
+      }
+      
+      SPrintDate(&(Time->Current), buffer);
+      fprintf(fs, "%-20s %.4f \n", buffer, sat); 
+      fclose(fs);    
+    }
+    ParallelBarrier();
   }
-  ParallelBarrier();
 }
 

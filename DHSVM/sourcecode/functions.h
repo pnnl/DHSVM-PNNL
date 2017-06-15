@@ -315,7 +315,7 @@ void RouteSubSurface(int Dt, MAPSIZE *Map, TOPOPIX **TopoMap,
 		     ROADSTRUCT **Network, SOILTABLE *SType,
 		     SOILPIX **SoilMap, CHANNEL *ChannelData, 
 		     TIMESTRUCT *Time, OPTIONSTRUCT *Options, 
-		     char *DumpPath, int MaxStreamID, SNOWPIX **SnowMap);
+		     DUMPSTRUCT *Dump, int MaxStreamID, SNOWPIX **SnowMap);
 
 void RouteSurface(MAPSIZE * Map, TIMESTRUCT * Time, TOPOPIX ** TopoMap,
   SOILPIX ** SoilMap, OPTIONSTRUCT *Options,

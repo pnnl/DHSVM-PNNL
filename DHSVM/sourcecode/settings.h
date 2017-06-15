@@ -159,7 +159,7 @@ enum KEYS {
   road_network, road_map, road_class,
   /* number of each type of output */
   output_path =
-    0, initial_state_path, npixels, nstates, nmapvars, nimagevars, ngraphics,
+  0, initial_state_path, npixels, nstates, nmapvars, nimagevars, ngraphics, satextent,
   /* pixel information */
   north = 0, east, name,
   /* state information */

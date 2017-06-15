@@ -79,6 +79,7 @@ void InitDump(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *GMap, MAPSIZE *Map,
     {"OUTPUT", "NUMBER OF MAP VARIABLES", "", ""},
     {"OUTPUT", "NUMBER OF IMAGE VARIABLES", "", ""},
     {"OUTPUT", "NUMBER OF GRAPHICS", "", ""},
+    {"OUTPUT", "SATURATION EXTENT", "", "FALSE"}, 
     {NULL, NULL, "", NULL},
   };
 
@@ -129,6 +130,14 @@ void InitDump(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *GMap, MAPSIZE *Map,
     *NGraphics = 0;
   else if (!CopyInt(NGraphics, StrEnv[ngraphics].VarStr, 1) || *NGraphics < 0)
     ReportError(StrEnv[ngraphics].KeyName, 51);
+
+  if (strncmp(StrEnv[satextent].VarStr, "TRUE", 4) == 0)
+    Dump->SatExtent = TRUE;
+  else if (strncmp(StrEnv[satextent].VarStr, "FALSE", 5) == 0)
+    Dump->SatExtent = FALSE;
+  else
+    ReportError(StrEnv[satextent].KeyName, 51);
+  
 
   if (Options->Extent == POINT)
     *NGraphics = 0;
