@@ -200,6 +200,7 @@ typedef struct {
 								for one (and only one) station, and FALSE for all others */
   FILES MetFile;				/* File with observations */
   MET Data;
+  int localuse;
 } METLOCATION;
 
 typedef struct {

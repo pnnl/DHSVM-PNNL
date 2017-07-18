@@ -397,6 +397,11 @@ void InitGridMet(OPTIONSTRUCT *Options, LISTPTR Input, MAPSIZE *GMap, MAPSIZE *M
   *NStats = k;
   printf("\n\nFinal number of stations in bounding box is %d \n\n", k);
 
+  /* initially assume the station is not used on this processor */
+  for (i = 0; i < *NStats; i++) {
+    (*Stat)[i].localuse = 0;
+  }
+
   if (Options->Outside == TRUE && Options->Prism == TRUE) {
     for (i = 0; i < *NStats; i++) {
       sprintf(tempfilename, "%s.prism", (*Stat)[i].MetFile.FileName);
