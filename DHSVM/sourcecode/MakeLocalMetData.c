@@ -121,27 +121,31 @@ PIXMET MakeLocalMetData(int y, int x, MAPSIZE *Map, int DayStep,
   else {			/* MM5 is false and we need to interpolate the basic met records */
     WeightSum = 0.0;
     for (i = 0; i < NStats; i++) {
-      WeightSum += (float) MetWeights[i];
-      if (Options->WindSource == MODEL && Stat[i].IsWindModelLocation) {
-        ScaleWind = Stat[i].Data.Wind;
-        WindDirection = Stat[i].Data.WindDirection;
+      if (Stat[i].localuse) {
+        WeightSum += (float) MetWeights[i];
+        if (Options->WindSource == MODEL && Stat[i].IsWindModelLocation) {
+          ScaleWind = Stat[i].Data.Wind;
+          WindDirection = Stat[i].Data.WindDirection;
+        }
       }
     }
     for (i = 0; i < NStats; i++) {
-      CurrentWeight = ((float) MetWeights[i]) / WeightSum;
-      LocalMet.Tair += CurrentWeight *
-        LapseT(Stat[i].Data.Tair, Stat[i].Elev, LocalElev,
-        Stat[i].Data.TempLapse);
-      LocalMet.Rh += CurrentWeight * Stat[i].Data.Rh;
-      if (Options->WindSource == STATION)
-        LocalMet.Wind += CurrentWeight * Stat[i].Data.Wind;
-      LocalMet.Lin += CurrentWeight * Stat[i].Data.Lin;
-      LocalMet.Sin += CurrentWeight * Stat[i].Data.Sin;
-      if (Options->Shading == TRUE) {
-        LocalMet.SinBeam += CurrentWeight * Stat[i].Data.SinBeamObs;
-        LocalMet.SinDiffuse += CurrentWeight * Stat[i].Data.SinDiffuseObs;
+      if (Stat[i].localuse) {
+        CurrentWeight = ((float) MetWeights[i]) / WeightSum;
+        LocalMet.Tair += CurrentWeight *
+          LapseT(Stat[i].Data.Tair, Stat[i].Elev, LocalElev,
+                 Stat[i].Data.TempLapse);
+        LocalMet.Rh += CurrentWeight * Stat[i].Data.Rh;
+        if (Options->WindSource == STATION)
+          LocalMet.Wind += CurrentWeight * Stat[i].Data.Wind;
+        LocalMet.Lin += CurrentWeight * Stat[i].Data.Lin;
+        LocalMet.Sin += CurrentWeight * Stat[i].Data.Sin;
+        if (Options->Shading == TRUE) {
+          LocalMet.SinBeam += CurrentWeight * Stat[i].Data.SinBeamObs;
+          LocalMet.SinDiffuse += CurrentWeight * Stat[i].Data.SinDiffuseObs;
+        }
+        TempLapseRate += CurrentWeight * Stat[i].Data.TempLapse;
       }
-      TempLapseRate += CurrentWeight * Stat[i].Data.TempLapse;
     }
     if (Options->WindSource == MODEL)
       LocalMet.Wind = ScaleWind * WindModel[WindDirection - 1][y][x];
