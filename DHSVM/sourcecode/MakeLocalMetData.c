@@ -130,7 +130,7 @@ PIXMET MakeLocalMetData(int y, int x, MAPSIZE *Map, int DayStep,
       }
     }
     for (i = 0; i < NStats; i++) {
-      if (Stat[i].localuse) {
+      if (Stat[i].localuse && MetWeights[i] > 0) {
         CurrentWeight = ((float) MetWeights[i]) / WeightSum;
         LocalMet.Tair += CurrentWeight *
           LapseT(Stat[i].Data.Tair, Stat[i].Elev, LocalElev,
@@ -235,7 +235,7 @@ PIXMET MakeLocalMetData(int y, int x, MAPSIZE *Map, int DayStep,
     if (Options->PrecipType == STATION && Options->Prism == FALSE) {
       PrecipMap->Precip = 0.0;
       for (i = 0; i < NStats; i++) {
-        if (Stat[i].localuse) {
+        if (Stat[i].localuse && MetWeights[i] > 0) {
           CurrentWeight = ((float) MetWeights[i]) / WeightSum;
           if (Options->PrecipLapse == MAP)
             PrecipMap->Precip += CurrentWeight *
@@ -250,7 +250,7 @@ PIXMET MakeLocalMetData(int y, int x, MAPSIZE *Map, int DayStep,
     else if (Options->PrecipType == STATION && Options->Prism == TRUE) {
       PrecipMap->Precip = 0.0;
       for (i = 0; i < NStats; i++) {
-        if (Stat[i].localuse) {
+        if (Stat[i].localuse && MetWeights[i] > 0) {
           CurrentWeight = ((float) MetWeights[i]) / WeightSum;
           /* this is the real prism interpolation */
           /* note that X = position from left  boundary, ie # of columns */
