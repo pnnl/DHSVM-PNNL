@@ -235,32 +235,36 @@ PIXMET MakeLocalMetData(int y, int x, MAPSIZE *Map, int DayStep,
     if (Options->PrecipType == STATION && Options->Prism == FALSE) {
       PrecipMap->Precip = 0.0;
       for (i = 0; i < NStats; i++) {
-        CurrentWeight = ((float) MetWeights[i]) / WeightSum;
-        if (Options->PrecipLapse == MAP)
-          PrecipMap->Precip += CurrentWeight *
-          LapsePrecip(Stat[i].Data.Precip, 0, 1, PrecipLapseMap[y][x]);
-        else
-          PrecipMap->Precip += CurrentWeight *
-          LapsePrecip(Stat[i].Data.Precip, Stat[i].Elev, LocalElev,
-          Stat[i].Data.PrecipLapse);
+        if (Stat[i].localuse) {
+          CurrentWeight = ((float) MetWeights[i]) / WeightSum;
+          if (Options->PrecipLapse == MAP)
+            PrecipMap->Precip += CurrentWeight *
+              LapsePrecip(Stat[i].Data.Precip, 0, 1, PrecipLapseMap[y][x]);
+          else
+            PrecipMap->Precip += CurrentWeight *
+              LapsePrecip(Stat[i].Data.Precip, Stat[i].Elev, LocalElev,
+                          Stat[i].Data.PrecipLapse);
+        }
       }
     }
     else if (Options->PrecipType == STATION && Options->Prism == TRUE) {
       PrecipMap->Precip = 0.0;
       for (i = 0; i < NStats; i++) {
-        CurrentWeight = ((float) MetWeights[i]) / WeightSum;
-        /* this is the real prism interpolation */
-        /* note that X = position from left  boundary, ie # of columns */
-        /* note that Y = position from upper boundary, ie # of rows   */
-        if (Options->Outside == FALSE)
-          PrecipMap->Precip += CurrentWeight * Stat[i].Data.Precip /
-          Stat[i].PrismCurrent * PrismMap[y][x];
-        else
-          PrecipMap->Precip += CurrentWeight * Stat[i].Data.Precip /
-          Stat[i].PrismPrecip[Month - 1] * PrismMap[y][x];
-        if (PrismMap[y][x] < 0){
-          printf("negative PrismMap value in MakeLocalMetData.c\n");
-          exit(0);
+        if (Stat[i].localuse) {
+          CurrentWeight = ((float) MetWeights[i]) / WeightSum;
+          /* this is the real prism interpolation */
+          /* note that X = position from left  boundary, ie # of columns */
+          /* note that Y = position from upper boundary, ie # of rows   */
+          if (Options->Outside == FALSE)
+            PrecipMap->Precip += CurrentWeight * Stat[i].Data.Precip /
+              Stat[i].PrismCurrent * PrismMap[y][x];
+          else
+            PrecipMap->Precip += CurrentWeight * Stat[i].Data.Precip /
+              Stat[i].PrismPrecip[Month - 1] * PrismMap[y][x];
+          if (PrismMap[y][x] < 0){
+            printf("negative PrismMap value in MakeLocalMetData.c\n");
+            exit(0);
+          }
         }
       }
     }
