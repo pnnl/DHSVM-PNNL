@@ -26,7 +26,7 @@ SlopeAspect.o SnowInterception.o SnowMelt.o SnowPackEnergyBalance.o  \
 SoilEvaporation.o StabilityCorrection.o StoreModelState.o	      \
 SurfaceEnergyBalance.o UnsaturatedFlow.o VarID.o WaterTableDepth.o   \
 channel.o channel_grid.o equal.o errorhandler.o globals.o tableio.o  \
-channel_complt.o RiparianShading.o
+channel_complt.o RiparianShading.o DistributeSatflow.o 
 
 SRCS = $(OBJS:%.o=%.c)
 
