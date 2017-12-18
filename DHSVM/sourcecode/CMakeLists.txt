@@ -9,7 +9,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2017-06-12 14:11:43 d3g096
+# Last Change: 2017-12-18 13:34:06 d3g096
 
 # -------------------------------------------------------------
 # Set up for this subdirectory
@@ -83,6 +83,7 @@ add_executable(DHSVM
   CutBankGeometry.c
   DHSVMChannel.c
   Desorption.c
+  DistributeSatflow.c
   Draw.c
   EvalExponentIntegral.c
   EvapoTranspiration.c

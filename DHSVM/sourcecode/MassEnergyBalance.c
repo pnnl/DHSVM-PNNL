@@ -120,6 +120,17 @@ void MassEnergyBalance(OPTIONSTRUCT *Options, int y, int x,
   LocalEvap->ETot = 0.0;
   MeltEnergy = 0.0;
   MoistureFlux = 0.0;
+  
+  /* Edited by Zhuoran Duan zhuoran.duan@pnnl.gov 06/21/2006*/
+  /*Add a function to modify soil moisture by distributing SatFlow 
+  from previous time step*/
+  DistributeSatflow(Dt, DX, DY, LocalSoil->SatFlow, SType->NLayers,
+		  LocalSoil->Depth, LocalNetwork->Area, VType->RootDepth,
+		  SType->Ks, SType->PoreDist, SType->Porosity, SType->FCap,
+		  LocalSoil->Perc, LocalNetwork->PercArea,
+		  LocalNetwork->Adjust, LocalNetwork->CutBankZone,
+		  LocalNetwork->BankHeight, &(LocalSoil->TableDepth),
+		  &(LocalSoil->IExcess), LocalSoil->Moist, InfiltOption);
 
   /* calculate the radiation balance for the ground/snow surface and the
      vegetation layers above that surface */
