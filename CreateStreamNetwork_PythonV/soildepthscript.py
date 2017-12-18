@@ -1,10 +1,16 @@
+# SUMMARY:      soildepth.py
+# Called by: 	createstreamnetwork.py
+# USAGE:        Part of python version createstreamnetwork. Computes
+#		the aspect and length of stream arc within each DEM 
+#		cell.
+# ORG:          Pacific Northwest National Laboratory
+# E-MAIL:       zhuoran.duan@pnnl.gov
+# ORIG-DATE:    Apr-2017
+# DESCRIPTION:  Python version of original createstreamnetwork aml
+# DESCRIP-END.
+# COMMENTS:     This python script is created based on original 
+#		AML scripts soildepth.aml as part of DHSVM
 
-# Function: soildepth
-# Called by: createstreamnetwork.py
-# Revised from original AML scripts by Zhuoran Duan(zhuoran.duan@pnnl.gov)
-#
-# Original soildepth.aml Kenneth Westrick 12/27/1999
-#
 # This aml creates a soildepth file for DHSVM based on local slope (determined from DEM),
 # upstream source area, and elevation. There are a number of variables that need to be set:
 #
@@ -20,7 +26,8 @@
 # powsource - raise the source area fraction by this power
 # powelev - raise the elevation fraction by this power
 #
-# the below variables can/should be modified by the user
+#
+# Last Change: 2017-08-10 by zduan
 
 import arcpy
 from arcpy import env
@@ -29,6 +36,8 @@ import arcgisscripting
 import os
 
 def soildepthfun(flowacc, elev, mindepth, maxdepth, soildepth):
+
+# the below variables can/should be modified by the user
     wtslope = 0.7
     print('The relative weighting for slope is '+ str(wtslope))
     wtsource = 0.0
@@ -41,6 +50,8 @@ def soildepthfun(flowacc, elev, mindepth, maxdepth, soildepth):
     powslope = .25
     powsource = 1.
     powelev = .75
+# end of variables can/should be modified by the user
+
     print('All value read in')
     totalwt = wtslope + wtsource + wtelev
     print(str(totalwt))
