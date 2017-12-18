@@ -55,6 +55,7 @@ find_path(GA_INCLUDE_DIR ga.h
   PATH_SUFFIXES include
   DOC "Directory where the GA header files are located"
 )
+message(STATUS "GA_INCLUDE_DIR: ${GA_INCLUDE_DIR}")
 
 find_library(GA_LIBRARY
   NAMES ga GA${GA_LIB_SUFFIX}
@@ -62,6 +63,7 @@ find_library(GA_LIBRARY
   PATH_SUFFIXES lib
   DOC "Directory where the GA library is located"
 )
+message(STATUS "GA_LIBRARY: ${GA_LIBRARY}")
 
 find_library(ARMCI_LIBRARY
   NAMES armci GA${ARMCI_LIB_SUFFIX}
@@ -69,6 +71,7 @@ find_library(ARMCI_LIBRARY
   PATH_SUFFIXES lib
   DOC "Directory where the GA library is located"
 )
+message(STATUS "ARMCI_LIBRARY: ${ARMCI_LIBRARY}")
 
 # Get GA version
 if(NOT GA_VERSION_STRING AND GA_INCLUDE_DIR AND EXISTS "${GA_INCLUDE_DIR}/ga.h")
@@ -94,13 +97,20 @@ if (GA_INCLUDE_DIR AND GA_LIBRARY AND ARMCI_LIBRARY)
 
   # Set flags for building test program
   set(CMAKE_REQUIRED_INCLUDES ${GA_INCLUDE_DIR} ${MPI_INCLUDE_PATH})
-  set(CMAKE_REQUIRED_LIBRARIES 
-      ${GA_LIBRARY} ${ARMCI_LIBRARY} ${GA_EXTRA_LIBS} ${MPI_C_LIBRARIES}
-  )
+  if (NOT MPI_LIBRARY OR NOT MPI_EXTRA_LIBRARY)
+    set(CMAKE_REQUIRED_LIBRARIES 
+      ${GA_LIBRARY} ${ARMCI_LIBRARY} ${GA_EXTRA_LIBS}
+    )
+  else()
+    set(CMAKE_REQUIRED_LIBRARIES 
+      ${GA_LIBRARY} ${ARMCI_LIBRARY} ${GA_EXTRA_LIBS} ${MPI_LIBRARIES}
+    )
+  endif()
 
 # Build and run test program, maybe
 
 set(ga_test_src "
+#include <mpi.h>
 #include <ga.h>
 
 int main(int argc, char **argv)

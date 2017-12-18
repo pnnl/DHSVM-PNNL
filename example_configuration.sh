@@ -10,7 +10,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2017-06-06 08:21:26 d3g096
+# Last Change: 2017-12-18 13:49:51 d3g096
 
 set -xue
 
@@ -98,6 +98,7 @@ elif [ $host == "WE32673" ]; then
     cmake $options \
         -D MPI_C_COMPILER:STRING="$prefix/bin/mpicc-openmpi-clang38" \
         -D MPIEXEC:STRING="$prefix/bin/mpiexec-openmpi-clang38" \
+        -D GA_DIR:PATH="/Users/d3g096/Projects/GridPACK" \
         -D NETCDF_DIR:PATH="$prefix/include" \
         -D DHSVM_USE_X11:BOOL=OFF \
         -D DHSVM_USE_NETCDF:BOOL=ON \
