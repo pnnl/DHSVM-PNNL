@@ -10,7 +10,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2017-01-31 07:02:17 d3g096
+# Last Change: 2017-12-18 14:00:40 d3g096
 
 set -xue
 
@@ -115,7 +115,7 @@ else
         -D DHSVM_USE_NETCDF:BOOL=OFF \
         -D DHSVM_USE_RBM:BOOL=OFF \
         -D DHSVM_BUILD_TESTS:BOOL=OFF \
-
+        ..
 
     echo "Unknown host: $host"
     exit 2
