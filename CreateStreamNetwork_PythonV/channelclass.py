@@ -1,3 +1,18 @@
+# SUMMARY:      channelclass.py
+# USAGE:        Part of python version createstreamnetwork. Classify
+#		channel based on slope and average contributing area.
+#		Requires mannual modification of channel classification   
+#		criteria.
+# ORG:          Pacific Northwest National Laboratory
+# E-MAIL:       zhuoran.duan@pnnl.gov
+# ORIG-DATE:    Apr-2017
+# DESCRIPTION:  Python version of original createstreamnetwork aml
+# DESCRIP-END.
+# COMMENTS:     This python script is created based on original 
+#		AML scripts createstreamnetwork.aml as part of DHSVM
+#
+# Last Change: 2017-08-10 by zduan
+
 import arcpy
 from arcpy import env
 from arcpy.sa import *
@@ -8,11 +23,9 @@ def channelclassfun(streamnet):
     fields=['slope','meanmsq','chanclass','hyddepth','hydwidth','effwidth']
     
     with arcpy.da.UpdateCursor(streamnet, fields) as cursor:
-        # For each row, evaluate the WELL_YIELD value (index position 
-        # of 0), and update WELL_CLASS (index position of 1)
 
         # row[0] - 'slope'
-        # row[1] - 'meanmsq' - mean of upstream area and downstream area
+        # row[1] - 'meanmsq' - mean contributing area to channel segment
         # row[2] - 'chanclass' - channel class reference number
         # row[3] - 'hyddepth'
         # row[4] - 'hydwidth'

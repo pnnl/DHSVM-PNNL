@@ -1,6 +1,17 @@
-#!/usr/bin/env python
-## roadaspect
-# Computes the aspecta and length of roads arc within each DEM cell
+# SUMMARY:      roadaspect.py
+# USAGE:        Part of python version createstreamnetwork. Computes
+#		the aspect and length of stream arc within each DEM 
+#		cell.
+# ORG:          Pacific Northwest National Laboratory
+# E-MAIL:       zhuoran.duan@pnnl.gov
+# ORIG-DATE:    Apr-2017
+# DESCRIPTION:  Python version of original createstreamnetwork aml
+# DESCRIP-END.
+# COMMENTS:     This python script is created based on original 
+#		AML scripts roadaspect.aml as part of DHSVM
+#
+# Last Change: 2017-08-10 by zduan
+
 
 import arcpy
 import math
@@ -11,15 +22,6 @@ def roadaspectfun(outcover):
     arcpy.AddField_management (outcover, "rd_efflen", "FLOAT", 12, 5)
     
     expression1 = "GetGeographicalDegrees( !SHAPE! )"
-##    codeblock1 = """def GetGeographicalDegrees(shape):
-##                      radian = math.atan2(shape.lastpoint.y - shape.firstpoint.y, 
-##                                          shape.lastpoint.x - shape.firstpoint.x)
-##                      radian = radian - (math.pi /2 ) # turn minus 90
-##                      if (radian > 0):
-##                         degrees = 360 - ( radian  *  360) / ( 2 * math.pi  ) 
-##                      else:
-##                         degrees = 360 - ((2* math.pi + radian  ) * 360) / ( 2 * math.pi  ) 
-##                      return degrees """
     
     codeblock1 = """def GetGeographicalDegrees(shape):				
                       radian = math.atan2(shape.firstpoint.x - shape.lastpoint.x ,

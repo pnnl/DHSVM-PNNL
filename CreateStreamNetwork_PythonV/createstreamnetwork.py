@@ -1,4 +1,20 @@
-#Import system modules
+# SUMMARY:      createstreamnetwork.py
+# USAGE:        Main code for python version createstreamnetwork
+# ORG:          Pacific Northwest National Laboratory
+# AUTHOR:       Zhuoran Duan
+# E-MAIL:       zhuoran.duan@pnnl.gov
+# ORIG-DATE:    Apr-2017
+# DESCRIPTION:  Python version of original createstreamnetwork aml
+# DESCRIP-END.
+# COMMENTS:     This python script is created based on original 
+#		AML scripts createstreamnetwork.aml as part of DHSVM
+#
+# Last Change: 2017-08-10 
+
+# -------------------------------------------------------------
+#	Import system modules
+# -------------------------------------------------------------
+
 import arcpy
 from arcpy import env
 from arcpy.sa import *
@@ -9,24 +25,23 @@ import math
 import numpy as np
 import csv 
 
-
 #-------------------------------------------------------------------#
 #--------------------------- WorkSpace  ----------------------------#    
 #-------------------------------------------------------------------#
-env.workspace = "C:\\Users\\username\\Documents\\foldername"   
-path = "C:/Users/username/Documents/foldername/"
+env.workspace = "C:\\Users\\Documents\\input_folder"   
+path = "C:/Users/Documents/input_folder/"
 
 #-------------------------------------------------------------------#
 ###########           Setup Input          
 #-------------------------------------------------------------------#
-elev = "dem"                          # name of DEM GRID file
-wshed = "mask"                        # name of MASK file
-soildepth = "soild"                   # name of soil depth file
-streamfile = "streamfile"             # name of stream arc file
-key = 'MASK'                          # Enter 'MASK' or 'MOUTH'
-source = 4860000                      # Min source area to initiate stream
-mindepth = 0.76                       # Minimum Soil Depth                        
-maxdepth = 2.01                       # Maximum Soil Depth
+elev = "dem"                       # name of DEM GRID, unclipped DEM recommended
+wshed = "mask"                     # name of MASK file
+soildepth = "soild"                # name of soil depth file
+streamfile = "streamfile"          # name of stream arc file
+key = 'MASK'                       # Enter 'MASK' or 'MOUTH'
+source =                           # Min source area to initiate stream (sq. meter)
+mindepth =                         # Minimum Soil Depth (meter)                    
+maxdepth =                         # Maximum Soil Depth (meter)
 
 #-------------------------------------------------------------------#
 #------------------------   End of Edits ---------------------------#
@@ -350,6 +365,7 @@ arcpy.CalculateField_management (streamnet, "effdepth", "0.95*float(!segdepth!)"
 #-------------------------------------------------------------------#
     
 if os.path.exists("stream.network.dat"):
+    print('stream.network.dat already exists, delete and create new')
     os.remove("stream.network.dat")
     print('stream.network.dat sucessfully deleted')
 
@@ -412,11 +428,16 @@ arcpy.Delete_management(flowacc)
 arcpy.Delete_management(slope)
 arcpy.Delete_management(aspect)
 arcpy.Delete_management(tmpelev)
-
+arcpy.Delete_management(MaskExt)
+arcpy.Delete_management(local)
+arcpy.Delete_management(soild_table)
+arcpy.Delete_management(outcover)
+arcpy.Delete_management("rowcolpoly.shp")
+arcpy.Delete_management("streaml_time1")
+arcpy.Delete_management("ifthe_ras")
 
 arcpy.Delete_management(nodestart)
 arcpy.Delete_management(nodeend)
-
 
 arcpy.Delete_management(tmpacc)
 arcpy.Delete_management(stmlineras)

@@ -1,9 +1,19 @@
-#!/usr/bin/env python
-## wshdslop
-# Compute watershed slope and aspect using four neighbirs.
-# Reason for 4 neighbour  make the computation of surface and subsurface
-# flow pathways consistent with the digital elevation model networks (DEMON)
-# described by Costa-Cabral and Burges (1994)
+# SUMMARY:      wshdslop.py
+# USAGE:        Part of python version createstreamnetwork. Compute 
+#		watershed slope and aspect using four neighbours.  
+# ORG:          Pacific Northwest National Laboratory
+# E-MAIL:       zhuoran.duan@pnnl.gov
+# ORIG-DATE:    Apr-2017
+# DESCRIPTION:  Python version of original createstreamnetwork aml
+# DESCRIP-END.
+# COMMENTS:     This python script is created based on original 
+#		AML scripts createstreamnetwork.aml as part of DHSVM.
+# 		Reason for 4 neighbour: make the computation of surface 
+# 		and subsurface flow pathways consistent with the digital 
+# 		elevation model networks (DEMON) described by Costa-Cabral
+#		and Burges (1994)
+# Last Change: 2017-08-10 by zduan
+
 
 import arcpy
 from arcpy import env
