@@ -1,6 +1,16 @@
+# SUMMARY:      streammapfile.py
+# USAGE:        Part of python version createstreamnetwork. Assign
+#		row and col information to road/channel coverage   
+# ORG:          Pacific Northwest National Laboratory
+# E-MAIL:       zhuoran.duan@pnnl.gov
+# ORIG-DATE:    Apr-2017
+# DESCRIPTION:  Python version of original createstreamnetwork aml
+# DESCRIP-END.
+# COMMENTS:     This python script is created based on original 
+#		AML scripts as part of DHSVM
+#
+# Last Change: 2017-08-10 by zduan
 
-## roadmap
-# Assign row and col information to road/channel coverage
 
 import arcpy
 import numpy as np
