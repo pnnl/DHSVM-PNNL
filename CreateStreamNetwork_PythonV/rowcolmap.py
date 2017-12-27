@@ -1,6 +1,18 @@
-## rowcolmap
-# Prodice a polygone coverage with polygones for each cell in a grid, and
-# attach row and column number to each polygon
+# SUMMARY:      rowcolmap.py
+# USAGE:        Part of python version createstreamnetwork. 
+#               Original Description: It is a simple script used to produce a
+#               polygon representation of a grid. Each polygon in outcover
+#               represents a single cell, and is assigned row and column 
+#               numbers.
+# ORG:          Pacific Northwest National Laboratory
+# E-MAIL:       zhuoran.duan@pnnl.gov
+# ORIG-DATE:    Apr-2017
+# DESCRIPTION:  Python version of original createstreamnetwork aml
+# DESCRIP-END.
+# COMMENTS:     This python script is created based on original 
+#		AML scripts roadaspect.aml as part of DHSVM.
+#
+# Last Change: 2017-08-10 by zduan
 
 
 import arcpy
