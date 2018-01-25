@@ -77,7 +77,9 @@ void DumpPix(DATE *Current, int first, FILES *OutFile, EVAPPIX *Evap,
 	     PRECIPPIX *Precip, PIXRAD *Rad, SNOWPIX *Snow, SOILPIX *Soil, int NSoil,
          int NVeg, OPTIONSTRUCT *Options);
 
+#ifdef TOPO_DUMP
 void DumpTopo(MAPSIZE *Map, TOPOPIX **TopoMap);
+#endif
 
 void ExecDump(MAPSIZE *Map, DATE *Current, DATE *Start, OPTIONSTRUCT *Options,
 	      DUMPSTRUCT *Dump, TOPOPIX **TopoMap, EVAPPIX **EvapMap, PIXRAD **RadiMap,

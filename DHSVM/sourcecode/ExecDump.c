@@ -1130,6 +1130,8 @@ void DumpPix(DATE *Current, int first, FILES *OutFile, EVAPPIX *Evap,
 
 }
 
+#ifdef TOPO_DUMP
+
 /******************************************************************************/
 /*                                DumpTopo                                    */
 /******************************************************************************/
@@ -1224,3 +1226,5 @@ DumpTopo(MAPSIZE *Map, TOPOPIX **TopoMap)
 
   free(Array);
 }
+
+#endif

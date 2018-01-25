@@ -9,7 +9,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2017-12-18 12:41:28 d3g096
+# Last Change: 2018-01-25 09:11:42 d3g096
 
 # -------------------------------------------------------------
 # Set up for this subdirectory
@@ -19,7 +19,16 @@
 include_directories(BEFORE 
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${CMAKE_CURRENT_BINARY_DIR}
-)
+  )
+
+# Flags for build options
+if (DHSVM_DUMP_TOPO)
+  add_definitions(-DTOPO_DUMP)
+endif (DHSVM_DUMP_TOPO)
+
+if (DHSVM_SNOW_ONLY) 
+  add_definitions(-DSNOW_ONLY)
+endif (DHSVM_SNOW_ONLY)
 
 # tablio.c generation
 if (FLEX_FOUND)
