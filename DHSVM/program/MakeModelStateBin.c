@@ -215,7 +215,7 @@ void StoreModelState(char *Path, DATE Current, int NY, int NX,
 
   /* print a message to stdout that state is being stored */
 
-  printf("Storing model state\n");
+  printf("Storing model state (%dx%d)\n", NX, NY);
  
   /* Store the canopy interception */
 
@@ -237,8 +237,9 @@ void StoreModelState(char *Path, DATE Current, int NY, int NX,
     NumberType = NT_FLOAT32;
     sprintf(DataLabel, "Rain interception for vegetation Layer %d", i+1);
     strcpy(Units, "mm");
+    printf("Writing %s, %s (%f)\n", DataLabel, Units, RainInt[i]);
     Write2DMatrixBin(NY, NX, NumberType, DataLabel, Units, Array, 
-                  FileName);
+                     FileName);
   }
   
   for (i = 0; i < NVegLayers; i++) {
@@ -248,8 +249,9 @@ void StoreModelState(char *Path, DATE Current, int NY, int NX,
     NumberType = NT_FLOAT32;
     sprintf(DataLabel, "Snow interception for vegetation Layer %d", i+1);
     strcpy(Units, "mm");
+    printf("Writing %s, %s (%f)\n", DataLabel, Units, SnowInt[i]);
     Write2DMatrixBin(NY, NX, NumberType, DataLabel, Units, Array, 
-                  FileName);
+                     FileName);
   }
 
   for (y = 0; y < NY; y++) 
@@ -258,6 +260,7 @@ void StoreModelState(char *Path, DATE Current, int NY, int NX,
   NumberType = NT_FLOAT32;
   sprintf(DataLabel, "Temporary snow interception for vegetation Layer %d", i+1);
   strcpy(Units, "mm");
+  printf("Writing %s, %s (%f)\n", DataLabel, Units, TempIntStorage);
   Write2DMatrixBin(NY, NX, NumberType, DataLabel, Units, Array, 
                    FileName);
   
@@ -281,8 +284,9 @@ void StoreModelState(char *Path, DATE Current, int NY, int NX,
   
   strcpy(DataLabel, "Snow Cover Mask");
   strcpy(Units, "");
+  printf("Writing %s, %s (%d)\n", DataLabel, Units, SnowMask);
   Write2DMatrixBin(NY, NX, NumberType, DataLabel, Units, Array, 
-                FileName);
+                   FileName);
 
 
   for (y = 0; y < NY; y++)
@@ -291,8 +295,9 @@ void StoreModelState(char *Path, DATE Current, int NY, int NX,
 
   strcpy(DataLabel, "Number of Days Since Last Snowfall");
   strcpy(Units, "Days");
+  printf("Writing %s, %s (%d)\n", DataLabel, Units, LastSnow);
   Write2DMatrixBin(NY, NX, NumberType, DataLabel, Units, Array, 
-                FileName);
+                   FileName);
 
   for (y = 0; y < NY; y++)
     for (x = 0; x < NX; x++)
@@ -300,8 +305,9 @@ void StoreModelState(char *Path, DATE Current, int NY, int NX,
 
   strcpy(DataLabel, "Snow Water Equivalent");
   strcpy(Units, "mm");
+  printf("Writing %s, %s (%f)\n", DataLabel, Units, Swq);
   Write2DMatrixBin(NY, NX, NumberType, DataLabel, Units, Array, 
-                FileName);
+                   FileName);
 
   for (y = 0; y < NY; y++)
     for (x = 0; x < NX; x++)
@@ -309,8 +315,9 @@ void StoreModelState(char *Path, DATE Current, int NY, int NX,
 
   strcpy(DataLabel, "Liquid Water Content of Bottom Layer");
   strcpy(Units, "mm");
+  printf("Writing %s, %s (%f)\n", DataLabel, Units, LwBottom);
   Write2DMatrixBin(NY, NX, NumberType, DataLabel, Units, Array, 
-                FileName);
+                   FileName);
     
   for (y = 0; y < NY; y++)
     for (x = 0; x < NX; x++)
@@ -318,8 +325,9 @@ void StoreModelState(char *Path, DATE Current, int NY, int NX,
 
   strcpy(DataLabel, "Temperature of Bottom Layer");
   strcpy(Units, "C");
+  printf("Writing %s, %s (%f)\n", DataLabel, Units, TBottom);
   Write2DMatrixBin(NY, NX, NumberType, DataLabel, Units, Array, 
-                FileName);
+                   FileName);
 
   for (y = 0; y < NY; y++)
     for (x = 0; x < NX; x++)
@@ -327,8 +335,9 @@ void StoreModelState(char *Path, DATE Current, int NY, int NX,
 
   strcpy(DataLabel, "Liquid Water Content of Surface Layer");
   strcpy(Units, "mm");
+  printf("Writing %s, %s (%f)\n", DataLabel, Units, LwTop);
   Write2DMatrixBin(NY, NX, NumberType, DataLabel, Units, Array, 
-                FileName);
+                   FileName);
 
   for (y = 0; y < NY; y++)
     for (x = 0; x < NX; x++)
@@ -336,8 +345,9 @@ void StoreModelState(char *Path, DATE Current, int NY, int NX,
 
   strcpy(DataLabel, "Temperature of Surface Layer");
   strcpy(Units, "mm");
+  printf("Writing %s, %s (%f)\n", DataLabel, Units, TTop);
   Write2DMatrixBin(NY, NX, NumberType, DataLabel, Units, Array, 
-                FileName);
+                   FileName);
 
   for (y = 0; y < NY; y++)
     for (x = 0; x < NX; x++)
@@ -345,8 +355,9 @@ void StoreModelState(char *Path, DATE Current, int NY, int NX,
 
   strcpy(DataLabel, "Cold Content of Snow Pack");
   strcpy(Units, "");
+  printf("Writing %s, %s (%f)\n", DataLabel, Units, Cold);
   Write2DMatrixBin(NY, NX, NumberType, DataLabel, Units, Array, 
-                FileName);
+                   FileName);
 
   free(Array);
 
@@ -370,8 +381,9 @@ void StoreModelState(char *Path, DATE Current, int NY, int NX,
     NumberType = NT_FLOAT32;
     sprintf(DataLabel, "Soil Moisture Content of Layer %d", i);
     strcpy(Units, "");
+    printf("Writing %s, %s (%f)\n", DataLabel, Units, Moist[i]);
     Write2DMatrixBin(NY, NX, NumberType, DataLabel, Units, Array, 
-                  FileName);
+                     FileName);
   }
   
   for (y = 0; y < NY; y++)
@@ -381,8 +393,9 @@ void StoreModelState(char *Path, DATE Current, int NY, int NX,
   NumberType = NT_FLOAT32;
   strcpy(DataLabel, "Temperature of Soil Surface");
   strcpy(Units, "C");
+  printf("Writing %s, %s (%f)\n", DataLabel, Units, SoilTSurf);
   Write2DMatrixBin(NY, NX, NumberType, DataLabel, Units, Array, 
-                FileName);
+                   FileName);
 
   for (i = 0; i < NSoilLayers; i++) {
 
@@ -393,8 +406,9 @@ void StoreModelState(char *Path, DATE Current, int NY, int NX,
     NumberType = NT_FLOAT32;
     sprintf(DataLabel, "Soil Temperature of Layer %d", i);
     strcpy(Units, "");
+    printf("Writing %s, %s (%f)\n", DataLabel, Units, Temp[i]);
     Write2DMatrixBin(NY, NX, NumberType, DataLabel, Units, Array, 
-                  FileName);
+                     FileName);
   }
   
   for (y = 0; y < NY; y++)
@@ -404,8 +418,9 @@ void StoreModelState(char *Path, DATE Current, int NY, int NX,
   NumberType = NT_FLOAT32;
   strcpy(DataLabel, "Ground Heat Storage");
   strcpy(Units, "");
+  printf("Writing %s, %s (%f)\n", DataLabel, Units, GroundHeat);
   Write2DMatrixBin(NY, NX, NumberType, DataLabel, Units, Array, 
-                FileName);
+                   FileName);
 
   for (y = 0; y < NY; y++)
     for (x = 0; x < NX; x++)
@@ -414,8 +429,9 @@ void StoreModelState(char *Path, DATE Current, int NY, int NX,
   NumberType = NT_FLOAT32;
   strcpy(DataLabel, "Runoff");
   strcpy(Units, "");
+  printf("Writing %s, %s (%f)\n", DataLabel, Units, Runoff);
   Write2DMatrixBin(NY, NX, NumberType, DataLabel, Units, Array, 
-                FileName);
+                   FileName);
 
   free(Array);
 }

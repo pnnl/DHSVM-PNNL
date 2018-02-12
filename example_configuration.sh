@@ -10,7 +10,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2017-01-31 07:02:17 d3g096
+# Last Change: 2018-01-25 11:10:17 d3g096
 
 set -xue
 
@@ -62,6 +62,7 @@ common_flags="\
         -D CMAKE_BUILD_TYPE:STRING=$build \
         -D DHSVM_SNOW_ONLY:BOOL=OFF \
         -D DHSVM_BUILD_TESTS:BOOL=ON \
+        -D DHSVM_DUMP_TOPO:BOOL=OFF \
 "
 
 if [ $host == "flophouse" ]; then
@@ -115,7 +116,7 @@ else
         -D DHSVM_USE_NETCDF:BOOL=OFF \
         -D DHSVM_USE_RBM:BOOL=OFF \
         -D DHSVM_BUILD_TESTS:BOOL=OFF \
-
+        ..
 
     echo "Unknown host: $host"
     exit 2
