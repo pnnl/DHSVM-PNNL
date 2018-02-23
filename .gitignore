@@ -25,8 +25,6 @@ i#OS junk files
 *.sdf
 *.pyc
 *.xml
-*.bin
-*txt
 *NARR_Morr*
 ipch/
 obj/
@@ -49,10 +47,14 @@ _ReSharper*/
 output/
 *develop/
 *gitignore
-input/
+
 program/
 **/program/
-modelstate/
+
 
 #input file
-INPUT.*
+#INPUT.*
+#modelstate/
+#input/
+#*.bin
+#*txt
