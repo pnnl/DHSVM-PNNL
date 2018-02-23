@@ -27,6 +27,7 @@ i#OS junk files
 *.xml
 *.bin
 *txt
+*NARR_Morr*
 ipch/
 obj/
 [Bb]in

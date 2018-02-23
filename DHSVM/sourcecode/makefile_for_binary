@@ -2,7 +2,7 @@
 # SUMMARY:      makefile for DHSVM
 # USAGE:        make DHSVM
 
-#	$Id: makefile,v3.1.2 2015/11/12 Ning Exp $	
+#	$Id: makefile,v3.2  2018/2/22 Ning Exp $	
 
 OBJS = AdjustStorage.o Aggregate.o AggregateRadiation.o	CalcAerodynamic.o \
 CalcAvailableWater.o CalcDistance.o CalcEffectiveKh.o CalcKhDry.o   \
@@ -26,7 +26,8 @@ SlopeAspect.o SnowInterception.o SnowMelt.o SnowPackEnergyBalance.o \
 SoilEvaporation.o StabilityCorrection.o StoreModelState.o	     \
 SurfaceEnergyBalance.o UnsaturatedFlow.o VarID.o WaterTableDepth.o  \
 channel.o channel_grid.o equal.o errorhandler.o globals.o tableio.o \
-channel_complt.o RiparianShading.o deg2utm.o DistributeSatflow.o 
+channel_complt.o RiparianShading.o CanopyGapEnergyBalance.o deg2utm.o \
+CanopyGapRadiation.o Avalanche.o DistributeSatflow.o
 
 SRCS = $(OBJS:%.o=%.c)
 
@@ -55,7 +56,7 @@ LIBS = -lm -L/usr/X11R6/lib -lX11 -L/sw/lib -L/usr/local/lib
 #LIBS = -lm -L/usr/X11R6/lib -lX11 -L/sw/lib -L/usr/local/lib -lnetcdf
 
 DHSVM: $(OBJS)
-	$(CC) $(OBJS) $(CFLAGS) -o DHSVM3.1.3 $(LIBS)
+	$(CC) $(OBJS) $(CFLAGS) -o DHSVM3.2 $(LIBS)
 
 clean::
 	rm -f DHSVM
@@ -73,6 +74,7 @@ libBinIO.a: $(BINIOLIBOBJ)
 
 clean::
 	rm -f libBinIO.a
+
 
 # -------------------------------------------------------------
 # rules for individual objects (created with make depend)
@@ -111,6 +113,10 @@ CalcWeights.o: CalcWeights.c constants.h settings.h data.h Calendar.h \
  channel_grid.h
 Calendar.o: Calendar.c settings.h functions.h data.h Calendar.h \
  DHSVMChannel.h getinit.h channel.h channel_grid.h DHSVMerror.h
+CanopyGapEnergyBalance.o: CanopyGapEnergyBalance.c settings.h massenergy.h data.h \
+ constants.h DHSVMerror.h snow.h functions.h
+CanopyGapRadiation.o: CanopyGapRadiation.c settings.h massenergy.h data.h \
+ constants.h DHSVMerror.h functions.h
 RiparianShading.o: RiparianShading.c channel.h channel_grid.h constants.h \
  functions.h settings.h
 CanopyResistance.o: CanopyResistance.c settings.h massenergy.h data.h \
@@ -124,7 +130,7 @@ CheckOut.o: CheckOut.c DHSVMerror.h settings.h data.h Calendar.h \
  functions.h DHSVMChannel.h getinit.h channel.h channel_grid.h \
  constants.h
 CutBankGeometry.o: CutBankGeometry.c settings.h soilmoisture.h
-deg2utm.o: deg2utm.c settings.h constants.h
+deg2utm.o: deg2utm.c settings.h functions.h constants.h
 DHSVMChannel.o: DHSVMChannel.c constants.h getinit.h DHSVMChannel.h \
  settings.h data.h Calendar.h channel.h channel_grid.h DHSVMerror.h \
  functions.h errorhandler.h fileio.h
@@ -276,7 +282,7 @@ SurfaceEnergyBalance.o: SurfaceEnergyBalance.c settings.h massenergy.h \
  data.h Calendar.h constants.h
 UnsaturatedFlow.o: UnsaturatedFlow.c constants.h settings.h \
  functions.h data.h Calendar.h DHSVMChannel.h getinit.h channel.h \
- channel_grid.h soilmoisture.h
+ channel_grid.h soilmoisture.h 
 VarID.o: VarID.c settings.h data.h Calendar.h DHSVMerror.h sizeofnt.h \
  varid.h
 WaterTableDepth.o: WaterTableDepth.c settings.h soilmoisture.h

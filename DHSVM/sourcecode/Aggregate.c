@@ -11,7 +11,7 @@
  * DESCRIP-END.
  * FUNCTIONS:    Aggregate()
  * COMMENTS:
- * $Id: Aggregate.c,v 1.17 2004/08/18 01:01:25 colleen Exp $
+ * $Id: Aggregate.c,v 1.17 2018/02/18 ning Exp $
  */
 
 #include <assert.h>
@@ -37,7 +37,7 @@
   which is executed at the beginning of each time step.
 *****************************************************************************/
 void Aggregate(MAPSIZE *Map, OPTIONSTRUCT *Options, TOPOPIX **TopoMap,
-	       LAYER *Soil, LAYER * Veg, VEGPIX **VegMap, EVAPPIX **Evap,
+	       LAYER *Soil, LAYER *Veg, VEGPIX **VegMap, EVAPPIX **Evap,
 	       PRECIPPIX **Precip, PIXRAD **RadMap, SNOWPIX **Snow,
 	       SOILPIX **SoilMap, AGGREGATED *Total, VEGTABLE *VType,
 	       ROADSTRUCT **Network, CHANNEL *ChannelData, float *roadarea)
@@ -116,9 +116,25 @@ void Aggregate(MAPSIZE *Map, OPTIONSTRUCT *Options, TOPOPIX **TopoMap,
 		Total->Snow.ColdContent += Snow[y][x].ColdContent;
 		Total->Snow.Albedo += Snow[y][x].Albedo;
 		Total->Snow.Depth += Snow[y][x].Depth;
+		Total->Snow.Qe += Snow[y][x].Qe;
+		Total->Snow.Qs += Snow[y][x].Qs;
+		Total->Snow.Qsw += Snow[y][x].Qsw;
+		Total->Snow.Qlw += Snow[y][x].Qlw;
+		Total->Snow.Qp += Snow[y][x].Qp;
+		Total->Snow.MeltEnergy += Snow[y][x].MeltEnergy;
 		Total->Snow.VaporMassFlux += Snow[y][x].VaporMassFlux;
 		Total->Snow.CanopyVaporMassFlux += Snow[y][x].CanopyVaporMassFlux;
 
+		if (VegMap[y][x].Gapping) {
+		  Total->Veg.Type[Opening].Qsw += VegMap[y][x].Type[Opening].Qsw;
+		  Total->Veg.Type[Opening].Qlin += VegMap[y][x].Type[Opening].Qlin;
+		  Total->Veg.Type[Opening].Qlw += VegMap[y][x].Type[Opening].Qlw;
+		  Total->Veg.Type[Opening].Qe += VegMap[y][x].Type[Opening].Qe;
+		  Total->Veg.Type[Opening].Qs += VegMap[y][x].Type[Opening].Qs;
+		  Total->Veg.Type[Opening].Qp += VegMap[y][x].Type[Opening].Qp;
+		  Total->Veg.Type[Opening].Swq += VegMap[y][x].Type[Opening].Swq;
+		  Total->Veg.Type[Opening].MeltEnergy += VegMap[y][x].Type[Opening].MeltEnergy;
+		}
 		/* aggregate soil moisture data */
 		Total->Soil.Depth += SoilMap[y][x].Depth;
 		DeepDepth = 0.0;
@@ -200,6 +216,8 @@ void Aggregate(MAPSIZE *Map, OPTIONSTRUCT *Options, TOPOPIX **TopoMap,
   Total->Rad.DiffuseIn /= NPixels;
   for (i = 0; i <= 2; i++) {
     Total->Rad.NetShort[i] /= NPixels;
+	Total->Rad.LongIn[i] /= NPixels;
+	Total->Rad.LongOut[i] /= NPixels;
   }
 
   /* average snow data */
@@ -212,9 +230,25 @@ void Aggregate(MAPSIZE *Map, OPTIONSTRUCT *Options, TOPOPIX **TopoMap,
   Total->Snow.ColdContent /= NPixels;
   Total->Snow.Albedo /= NPixels;
   Total->Snow.Depth /= NPixels;
+  Total->Snow.Qe /= NPixels;
+  Total->Snow.Qs /= NPixels;
+  Total->Snow.Qsw /= NPixels;
+  Total->Snow.Qlw /= NPixels;
+  Total->Snow.Qp /= NPixels;
+  Total->Snow.MeltEnergy /= NPixels;
   Total->Snow.VaporMassFlux /= NPixels;
   Total->Snow.CanopyVaporMassFlux /= NPixels;
 
+  if (TotNumGap > 0) {
+	Total->Veg.Type[Opening].Qsw /= TotNumGap;
+	Total->Veg.Type[Opening].Qlin /= TotNumGap;
+	Total->Veg.Type[Opening].Qlw /= TotNumGap;
+	Total->Veg.Type[Opening].Qe /= TotNumGap;
+	Total->Veg.Type[Opening].Qs /= TotNumGap;
+	Total->Veg.Type[Opening].Qp /= TotNumGap;
+	Total->Veg.Type[Opening].Swq /= TotNumGap;
+	Total->Veg.Type[Opening].MeltEnergy /= TotNumGap;
+  }
   /* average soil moisture data */
   Total->Soil.Depth /= NPixels;
   for (i = 0; i < Soil->MaxLayers; i++) {

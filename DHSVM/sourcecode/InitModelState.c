@@ -56,7 +56,8 @@ void InitModelState(DATE *Start, MAPSIZE *Map, OPTIONSTRUCT *Options, PRECIPPIX 
   char Str[NAMESIZE + 1];
   char FileName[NAMESIZE + 1];
   FILE *HydroStateFile;
-  int i;		     /* counter */
+  int i, j;		         /* counter */
+  int CountGap, Count;
   int x;				 /* counter */
   int y;				 /* counter */
   int NSet;				 /* Number of dataset to be read */
@@ -100,9 +101,9 @@ void InitModelState(DATE *Start, MAPSIZE *Map, OPTIONSTRUCT *Options, PRECIPPIX 
           if (i < NVeg) {
             PrecipMap[y][x].IntRain[i] = ((float *)Array)[y * Map->NX + x];
             if (PrecipMap[y][x].IntRain[i] < 0.0) {
-              fprintf(stderr, "InitModelState at (x, y) is (%d, %d):\n", x, y);
+              /* fprintf(stderr, "InitModelState at (x, y) is (%d, %d):\n", x, y);
               fprintf(stderr,
-                "\tRain interception negative on layer %d of max %d ... reset to 0\n", i, Veg.MaxLayers);
+                "\tRain interception negative on layer %d of max %d ... reset to 0\n", i, Veg.MaxLayers); */
               PrecipMap[y][x].IntRain[i] = 0.0;
             }
           }
@@ -126,9 +127,9 @@ void InitModelState(DATE *Start, MAPSIZE *Map, OPTIONSTRUCT *Options, PRECIPPIX 
           if (i < NVeg) {
             PrecipMap[y][x].IntSnow[i] = ((float *)Array)[y * Map->NX + x];
             if (PrecipMap[y][x].IntSnow[i] < 0.0) {
-              fprintf(stderr, "InitModelState at (x, y) is (%d, %d):\n", x, y);
+              /* fprintf(stderr, "InitModelState at (x, y) is (%d, %d):\n", x, y);
               fprintf(stderr,
-                "Snow interception negative on layer %d of max %d ... reset to 0\n", i, Veg.MaxLayers);
+                "Snow interception negative on layer %d of max %d ... reset to 0\n", i, Veg.MaxLayers); */
               PrecipMap[y][x].IntSnow[i] = 0.0;
             }
           }
@@ -147,10 +148,10 @@ void InitModelState(DATE *Start, MAPSIZE *Map, OPTIONSTRUCT *Options, PRECIPPIX 
       if (INBASIN(TopoMap[y][x].Mask)) {
         PrecipMap[y][x].TempIntStorage = ((float *)Array)[y * Map->NX + x];
         if (PrecipMap[y][x].TempIntStorage < 0.0) {
-          fprintf(stderr, "InitModelState at (x, y) is (%d, %d):\n", x, y);
+          /* fprintf(stderr, "InitModelState at (x, y) is (%d, %d):\n", x, y);
           fprintf(stderr,
             "Total intercepted precipitation negative on layer %d of max %d ... reset to 0\n",
-            i, Veg.MaxLayers);
+            i, Veg.MaxLayers); */
           PrecipMap[y][x].TempIntStorage = 0.0;
         }
       }
@@ -273,14 +274,22 @@ void InitModelState(DATE *Start, MAPSIZE *Map, OPTIONSTRUCT *Options, PRECIPPIX 
   free(Array);
 
   for (y = 0; y < Map->NY; y++) {
-    for (x = 0; x < Map->NX; x++) {
-      if (INBASIN(TopoMap[y][x].Mask)) {
-        if (SnowMap[y][x].HasSnow)
-          SnowMap[y][x].Albedo = CalcSnowAlbedo(SnowMap[y][x].TSurf, SnowMap[y][x].LastSnow, SnowAlbedo);
-        else
-          SnowMap[y][x].Albedo = 0;
-      }
-    }
+	for (x = 0; x < Map->NX; x++) {
+	  if (INBASIN(TopoMap[y][x].Mask)) {
+		if (Options->CanopyGapping) {
+		  for (i = 0; i < CELL_PARTITION; i++)
+			VegMap[y][x].Type[i].Albedo =
+			CalcSnowAlbedo(SnowMap[y][x].TSurf, SnowMap[y][x].LastSnow, SnowAlbedo);
+		}
+		else {
+		  if (SnowMap[y][x].HasSnow)
+			SnowMap[y][x].Albedo = CalcSnowAlbedo(SnowMap[y][x].TSurf, SnowMap[y][x].LastSnow, SnowAlbedo);
+		  else
+			SnowMap[y][x].Albedo = 0;
+		}
+	  }
+
+	}
   }
 
   /* Restore soil conditions */
@@ -311,9 +320,9 @@ void InitModelState(DATE *Start, MAPSIZE *Map, OPTIONSTRUCT *Options, PRECIPPIX 
           if (i <= NSoil) {
             SoilMap[y][x].Moist[i] = ((float *)Array)[y * Map->NX + x];
             if (SoilMap[y][x].Moist[i] < 0.0) {
-              fprintf(stderr, "InitModelState at (x, y) is (%d, %d):\n", x, y);
+              /* fprintf(stderr, "InitModelState at (x, y) is (%d, %d):\n", x, y);
               fprintf(stderr,
-                "Soil moisture negative in layer %d of max %d ... reset to 0\n", i, Soil.MaxLayers);
+                "Soil moisture negative in layer %d of max %d ... reset to 0\n", i, Soil.MaxLayers); */
               SoilMap[y][x].Moist[i] = 0.0;
             }
           }
@@ -432,6 +441,43 @@ void InitModelState(DATE *Start, MAPSIZE *Map, OPTIONSTRUCT *Options, PRECIPPIX 
       SoilMap[y][x].DetentionIn = 0.0;
       SoilMap[y][x].DetentionOut = 0.0;
     }
+  }
+  
+  /* Initialize gap/opening snowpack states if gap is present */
+  TotNumGap = 0.;
+  if (Options->CanopyGapping) {
+	CountGap = 0;
+	Count = 0;
+	for (y = 0; y < Map->NY; y++) {
+	  for (x = 0; x < Map->NX; x++) {
+		if (INBASIN(TopoMap[y][x].Mask)) {
+		  Count += 1;
+		  if (VegMap[y][x].Gapping) {
+			CountGap += 1;
+			for (i = 0; i < CELL_PARTITION; i++) {
+			  VegMap[y][x].Type[i].TPack = SnowMap[y][x].TPack;
+			  VegMap[y][x].Type[i].SurfWater = SnowMap[y][x].SurfWater;
+			  VegMap[y][x].Type[i].LastSnow = SnowMap[y][x].LastSnow;
+			  VegMap[y][x].Type[i].HasSnow = SnowMap[y][x].HasSnow;
+			  for (j = 0; j < Soil.MaxLayers + 1; j++) {
+				if (j < NSoil)
+				  VegMap[y][x].Type[i].Moist[j] = SoilMap[y][x].Moist[j];
+			  }
+			}
+			VegMap[y][x].Type[Opening].Swq = SnowMap[y][x].Swq;
+			VegMap[y][x].Type[Forest].Swq = SnowMap[y][x].Swq;
+
+			VegMap[y][x].Type[Opening].GapView =
+			  CalcGapView(0.5 * VType[VegMap[y][x].Veg - 1].GapDiam,
+				VType[VegMap[y][x].Veg - 1].Height[0],
+				VType[VegMap[y][x].Veg - 1].Vf);
+		  }
+		}
+	  }
+	}
+	/* total number of grid cells with a gap structure */
+    TotNumGap = CountGap;
+    printf("\n****Canopy Gap****\n%d out of %d cells have a gap structure\n\n", TotNumGap, Count);
   }
 }
 
