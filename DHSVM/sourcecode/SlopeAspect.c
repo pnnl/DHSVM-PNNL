@@ -376,7 +376,47 @@ void HeadSlopeAspect(MAPSIZE * Map, TOPOPIX ** TopoMap, SOILPIX ** SoilMap,
 
 
 
+/* -------------------------------------------------------------
+SnowSlopeAspect
+This computes slope and aspect using the SnowSurface Elevation.
+------------------------------------------------------------- */
+void SnowSlopeAspect(MAPSIZE *Map, TOPOPIX **TopoMap, SNOWPIX **Snow,
+  float **SubSnowGrad, unsigned char ***Dir, unsigned int **TotalDir)
+{
+  int x;
+  int y;
+  int n;
+  float neighbor_elev[NNEIGHBORS];
 
+  for (x = 0; x < Map->NX; x++) {
+    for (y = 0; y < Map->NY; y++) {
+      if (INBASIN(TopoMap[y][x].Mask)) {
+        float slope, aspect;
+        for (n = 0; n < NNEIGHBORS; n++) {
+          int xn = x + xneighbor[n];
+          int yn = y + yneighbor[n];
+          if (valid_cell(Map, xn, yn)) {
+            /* snow elevation (swq+dem) of neighboring cells */
+            neighbor_elev[n] =
+              ((TopoMap[yn][xn].Mask) ? (TopoMap[yn][xn].Dem + Snow[yn][xn].Swq) : (float)OUTSIDEBASIN);
+          }
+          else {
+            neighbor_elev[n] = (float)OUTSIDEBASIN;
+          }
+        }
+
+        slope_aspect(Map->DX, Map->DY, (TopoMap[y][x].Dem + Snow[y][x].Swq), neighbor_elev,
+          &slope, &aspect);
+        flow_fractions(Map->DX, Map->DY, slope, aspect, neighbor_elev,
+          &(SubSnowGrad[y][x]), Dir[y][x], &(TotalDir[y][x]));
+
+        /* Reset SubSnowGrad to slope, don't want width in computation */
+        SubSnowGrad[y][x] = slope;
+      }
+    }
+  }
+  return;
+}
 
 
 
