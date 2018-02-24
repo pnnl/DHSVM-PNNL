@@ -28,6 +28,9 @@ void Aggregate(MAPSIZE *Map, OPTIONSTRUCT *Options, TOPOPIX **TopoMap,
 
 void Alloc_Chan_Sed_Mem(float ** DummyVar);
 
+void Avalanche(MAPSIZE *Map, TOPOPIX **TopoMap, TIMESTRUCT *Time, OPTIONSTRUCT *Options,
+  SNOWPIX **SnowMap);
+
 void CalcAerodynamic(int NVegLayers, unsigned char OverStory,
 		     float n, float *Height, float Trunk, float *U,
 		     float *U2mSnow, float *Ra, float *RaSnow);
