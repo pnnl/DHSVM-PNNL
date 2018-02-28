@@ -8,6 +8,25 @@ DHSVM (<a href="http://onlinelibrary.wiley.com/doi/10.1029/94WR00436/abstract">W
 
 If you decide to use DHSVM, please acknowledge <a href="http://onlinelibrary.wiley.com/doi/10.1029/94WR00436/abstract">Wigmosta et al. [1994]</a> and any other relevant publications. We are very interested in receiving a copy of any manuscripts of studies in which the model is used. Finally, if you do find bugs in the model or if you have improvements to the model code, we are interested in incorporating your suggestions and/or contributions. 
 
+
+## DHSVM v 3.2 ##
+### _Release date: February 23, 2018_ ###
+
+This is a major release from DHSVM 3.1.2. It includes several new features, function enhancements and bug fixes.<br />
+The tutorial and sample data to run DHSVM v 3.2 will be made available on the <a href="http://dhsvmdev.pnl.gov//tutorials.stm">DHSVM website </a>.
+
+__New Capabilities__
+  * Variable radiation transmittance (with solar position and tree characteristics) 
+  * Canopy gap (Sun et al., _under review_)
+  * Snow sliding 
+  * Python scripts to create stream network
+  * Support of gridded meteorological data input
+
+__Enhancement & Fixes__
+  * Negative soil moisture 
+  * Configuration and Build with CMake
+<br />
+
 ## Configuration and Build with CMake ##
 
 DHSVM and related utilities can be configured and built using
