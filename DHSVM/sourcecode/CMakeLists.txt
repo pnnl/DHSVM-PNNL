@@ -9,7 +9,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2018-01-25 09:11:42 d3g096
+# Last Change: 2018-03-22 13:02:21 d3g096
 
 # -------------------------------------------------------------
 # Set up for this subdirectory
@@ -80,6 +80,8 @@ add_executable(DHSVM
   CalcTotalWater.c
   CalcTransmissivity.c
   CalcWeights.c
+  CanopyGapEnergyBalance.c
+  CanopyGapRadiation.c
   CanopyResistance.c
   ChannelState.c
   CheckOut.c
