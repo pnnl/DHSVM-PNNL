@@ -11,7 +11,7 @@
 * DESCRIP-END.
 * FUNCTIONS:    WaterTableDepth()
 * COMMENTS:
- * $Id: WaterTableDepth.c,v 3.1.3 2017/10/01 Ning Exp $     
+* $Id: WaterTableDepth.c,v 3.2 2018/2/2 Ning Exp $     
 */
 
 #include <assert.h>

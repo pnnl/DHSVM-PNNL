@@ -10,7 +10,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2017-12-18 14:01:57 d3g096
+# Last Change: 2018-03-27 12:59:52 d3g096
 
 set -xue
 
@@ -63,6 +63,7 @@ common_flags="\
         -D DHSVM_SNOW_ONLY:BOOL=OFF \
         -D DHSVM_BUILD_TESTS:BOOL=ON \
         -D DHSVM_USE_RBM:BOOL=OFF \
+        -D DHSVM_DUMP_TOPO:BOOL=OFF \
         -D CMAKE_VERBOSE_MAKEFILE:BOOL=TRUE \
 "
 

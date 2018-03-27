@@ -14,6 +14,24 @@ the model is used. Finally, if you do find bugs in the model or if you
 have improvements to the model code, we are interested in
 incorporating your suggestions and/or contributions. 
 
+## DHSVM v 3.2 ##
+### _Release date: February 23, 2018_ ###
+
+This is a major release from DHSVM 3.1.2. It includes several new features, function enhancements and bug fixes.<br />
+The tutorial and sample data to run DHSVM v 3.2 will be made available on the <a href="http://dhsvmdev.pnl.gov//tutorials.stm">DHSVM website </a>.
+
+__New Capabilities__
+  * Variable radiation transmittance (with solar position and tree characteristics) 
+  * Canopy gap (Sun et al., _under review_)
+  * Snow sliding 
+  * Python scripts to create stream network
+  * Support of gridded meteorological data input
+
+__Enhancement & Fixes__
+  * Negative soil moisture 
+  * Configuration and Build with CMake
+<br />
+
 # Parallel Version
 
 This branch of DHSVM has been modified to run in parallel using

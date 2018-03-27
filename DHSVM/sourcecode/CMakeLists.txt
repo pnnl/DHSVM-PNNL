@@ -9,7 +9,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2017-12-18 13:34:06 d3g096
+# Last Change: 2018-03-27 12:56:04 d3g096
 
 # -------------------------------------------------------------
 # Set up for this subdirectory
@@ -19,7 +19,16 @@
 include_directories(BEFORE 
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${CMAKE_CURRENT_BINARY_DIR}
-)
+  )
+
+# Flags for build options
+if (DHSVM_DUMP_TOPO)
+  add_definitions(-DTOPO_DUMP)
+endif (DHSVM_DUMP_TOPO)
+
+if (DHSVM_SNOW_ONLY) 
+  add_definitions(-DSNOW_ONLY)
+endif (DHSVM_SNOW_ONLY)
 
 include_directories(AFTER
   ${MPI_C_INCLUDE_PATH}
@@ -77,6 +86,8 @@ add_executable(DHSVM
   CalcTotalWater.c
   CalcTransmissivity.c
   CalcWeights.c
+  CanopyGapEnergyBalance.c
+  CanopyGapRadiation.c
   CanopyResistance.c
   ChannelState.c
   CheckOut.c

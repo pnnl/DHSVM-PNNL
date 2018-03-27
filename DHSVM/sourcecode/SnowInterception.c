@@ -1,18 +1,18 @@
 /*
- * SUMMARY:      SnowInterception.c - simulates snow interception and release
- * USAGE:
- *
- * AUTHOR:       Pascal Storck
- * ORG:          University of Washington, Department of Civil Engineering
- * E-MAIL:       pstorck@u.washington.edu
- * ORIG-DATE:    29-Aug-1996 at 13:42:17
- * DESCRIPTION:  Calculates the interception and subsequent release of
- *               by the forest canopy using an energy balance approach
- * DESCRIP-END.
- * FUNCTIONS:    SnowInterception()
- * COMMENTS:
- * $Id: SnowInterception.c,v 1.5 2003/11/12 20:01:52 colleen Exp $
- */
+* SUMMARY:      SnowInterception.c - simulates snow interception and release
+* USAGE:
+*
+* AUTHOR:       Pascal Storck
+* ORG:          University of Washington, Department of Civil Engineering
+* E-MAIL:       pstorck@u.washington.edu
+* ORIG-DATE:    29-Aug-1996 at 13:42:17
+* DESCRIPTION:  Calculates the interception and subsequent release of
+*               by the forest canopy using an energy balance approach
+* DESCRIP-END.
+* FUNCTIONS:    SnowInterception()
+* COMMENTS:
+* $Id: SnowInterception.c,v 1.5 2003/11/12 20:01:52 colleen Exp $
+*/
 
 #include <math.h>
 #include <stdarg.h>
@@ -25,82 +25,77 @@
 #include "snow.h"
 #include "functions.h"
 
- /*****************************************************************************
-   Function name: SnowInterception()
+/*****************************************************************************
+Function name: SnowInterception()
 
-   Purpose      : Calculate snow interception and release by the canopy
+Purpose      : Calculate snow interception and release by the canopy
 
-   Required     :
-     int y                  - Row counter
-     int x                  - Column counter
-     int Dt                 - Model timestep (seconds)
-     float F                - Fractional coverage
-     float LAI              - Leaf Area Index
-     float MaxInt           - Maximum rainfall interception storage (m)
-     float BaseRa           - Aerodynamic resistance (uncorrected for
-                              stability) (s/m)
-     float AirDens          - Density of air (kg/m3)
-     float EactAir          - Actual vapor pressure of air (Pa)
-     float Lv               - Latent heat of vaporization (J/kg3)
-     PIXRAD *LocalRad       - Components of radiation balance for current pixel
-                              (W/m2)
-     float Press            - Air pressure (Pa)
-     float Tair             - Air temperature (C)
-     float Vpd	           - Vapor pressure deficit (Pa)
-     float Wind             - Wind speed (m/s)
-     float *RainFall        - Amount of rain (m)
-     float *Snowfall        - Amount of snow (m)
-     float *IntRain         - Intercepted rain (m)
-     float *IntSnow         - Snow water equivalent of intercepted snow (m)
-     float *TempIntStorage  - Temporary storage for snowmelt and rainfall
-                              involved in mass release calculations (m)
-     float *VaporMassFlux   - Vapor mass flux to/from intercepted snow
-                              (m/timestep)
-     float *Tcanopy         - Canopy temperature (C)
-     float *MeltEnergy      - Energy used in heating and melting of the snow
-                              (W/m2)
-     float *MomentSq        - Momentum squared for rain (kg* m/s)^2 /m^2*s)
-      float *Height          - Height of vegetation (m)
-      float MS_Rainfall      - Momentum for direct rainfall () COD
-      float LD_FallVelocity  - Leaf drip fall velocity corresponding to the
-                 canopy height in vegetation map (m/s)
+Required     :
+int y                  - Row counter
+int x                  - Column counter
+int Dt                 - Model timestep (seconds)
+float F                - Fractional coverage
+float LAI              - Leaf Area Index
+float MaxInt           - Maximum rainfall interception storage (m)
+float BaseRa           - Aerodynamic resistance (uncorrected for
+stability) (s/m)
+float AirDens          - Density of air (kg/m3)
+float EactAir          - Actual vapor pressure of air (Pa)
+float Lv               - Latent heat of vaporization (J/kg3)
+PIXRAD *LocalRad       - Components of radiation balance for current pixel
+(W/m2)
+float Press            - Air pressure (Pa)
+float Tair             - Air temperature (C)
+float Vpd	           - Vapor pressure deficit (Pa)
+float Wind             - Wind speed (m/s)
+float *RainFall        - Amount of rain (m)
+float *Snowfall        - Amount of snow (m)
+float *IntRain         - Intercepted rain (m)
+float *IntSnow         - Snow water equivalent of intercepted snow (m)
+float *TempIntStorage  - Temporary storage for snowmelt and rainfall
+involved in mass release calculations (m)
+float *VaporMassFlux   - Vapor mass flux to/from intercepted snow
+(m/timestep)
+float *Tcanopy         - Canopy temperature (C)
+float *MeltEnergy      - Energy used in heating and melting of the snow
+(W/m2)
+float *Height          - Height of vegetation (m)
 
-   Returns      : none
+Returns      : none
 
-   Modifies     :
-     float *RainFall        - Amount of rain (m)
-     float *Snowfall        - Amount of snow (m)
-     float *IntRain         - Intercepted rain (m)
-     float *IntSnow         - Snow water equivalent of intercepted snow (m)
-     float *TempIntStorage  - Temporary storage for snowmelt and rainfall
-                              involved in mass release calculations (m)
-     float *VaporMassFlux   - Vapor mass flux to/from intercepted snow
-                              (m/timestep)
-     float *Tcanopy         - Canopy temperature (C)
+Modifies     :
+float *RainFall        - Amount of rain (m)
+float *Snowfall        - Amount of snow (m)
+float *IntRain         - Intercepted rain (m)
+float *IntSnow         - Snow water equivalent of intercepted snow (m)
+float *TempIntStorage  - Temporary storage for snowmelt and rainfall
+involved in mass release calculations (m)
+float *VaporMassFlux   - Vapor mass flux to/from intercepted snow
+(m/timestep)
+float *Tcanopy         - Canopy temperature (C)
 
-   Comments     : Only the top canopy layer is taken into account for snow
-                  interception.  Snow interception by lower canopy is
-                  disregarded.  Rain water CAN be intercepted by lower canopy
-                  layers (similar to InterceptionStorage()).
-                  Of course:  NO vegetation -> NO interception
- *****************************************************************************/
-void SnowInterception(OPTIONSTRUCT *Options, int y, int x, int Dt, float F, 
+Comments     : Only the top canopy layer is taken into account for snow
+interception.  Snow interception by lower canopy is
+disregarded.  Rain water CAN be intercepted by lower canopy
+layers (similar to InterceptionStorage()).
+Of course:  NO vegetation -> NO interception
+*****************************************************************************/
+void SnowInterception(OPTIONSTRUCT *Options, int y, int x, int Dt, float F,
   float Vf, float LAI, float MaxInt, float MaxSnowIntCap, float MDRatio,
   float SnowIntEff, float Ra, float AirDens, float EactAir,
   float Lv, PIXRAD *LocalRad, float Press, float Tair,
   float Vpd, float Wind, float *RainFall, float *SnowFall,
   float *IntRain, float *IntSnow, float *TempIntStorage,
   float *VaporMassFlux, float *Tcanopy, float *MeltEnergy,
-  float *MomentSq, float *Height, unsigned char Understory,
-  float MS_Rainfall, float LD_FallVelocity)
+  float *Height, unsigned char Understory)
 {
   float AdvectedEnergy;		/* Energy advected by the rain (W/m2) */
   float DeltaSnowInt;		/* Change in the physical swe of snow
-                               interceped on the branches. (m) */
+                            interceped on the branches. (m) */
   float Drip;			    /* Amount of drip from intercepted snow as a
-                               result of snowmelt (m) */
+                            result of snowmelt (m) */
   float ExcessSnowMelt;		/* Snowmelt in excess of the water holding
-                               capacity of the tree (m) */
+                            capacity of the tree (m) */
   float EsSnow;			    /* saturated vapor pressure in the snow pack (Pa)  */
   float InitialSnowInt;		/* Initial intercepted snow (m) */
   float InitialWaterInt;	/* Initial intercepted water (snow and rain) (m) */
@@ -108,7 +103,7 @@ void SnowInterception(OPTIONSTRUCT *Options, int y, int x, int Dt, float F,
   float LongOut;		    /* Longwave radiation emitted by canopy (W/m2) */
   float Ls;			        /* Latent heat of sublimation (J/(kg K) */
   float MassBalanceError;	/* Mass blalnce to make sure no water is
-                               being destroyed/created (m) */
+                            being destroyed/created (m) */
   float MaxWaterInt;		/* Water interception capacity (m) */
   float MaxSnowInt;		    /* Snow interception capacity (m) - multiplier w/ temp */
   float NetRadiation;
@@ -121,7 +116,7 @@ void SnowInterception(OPTIONSTRUCT *Options, int y, int x, int Dt, float F,
   float Tmp;			    /* Temporary variable */
   float MaxIntercept;		/* max snow interception - regardless of temp */
   float overload;		    /* overload of intercepted snow due to rainfall
-                               or condensation */
+                            or condensation */
   float intrainfrac;		/* fraction of intercepted water which is liquid */
   float intsnowfrac;		/*fraction of intercepted water which is solid */
   float OriginalRainfall;
@@ -140,22 +135,22 @@ void SnowInterception(OPTIONSTRUCT *Options, int y, int x, int Dt, float F,
   ReleasedMass = 0.0;
 
   /* Determine the maximum snow interception water equivalent.
-     Kobayashi, D., 1986, Snow Accumulation on a Narrow Board,
-     Cold Regions Science and Technology, (13), pp. 239-245. Figure 4. */
+  Kobayashi, D., 1986, Snow Accumulation on a Narrow Board,
+  Cold Regions Science and Technology, (13), pp. 239-245. Figure 4. */
   if (Tair > -5.0)
     MaxSnowInt = 1.0;
   else
     MaxSnowInt = 0.25;
 
   /* Adjust snow interception capacity (unit: m) to the user-provided input
-     parameter, maximum snow interception capacity (%), which varies with
-     vegetation type */
+  parameter, maximum snow interception capacity (%), which varies with
+  vegetation type */
   MaxSnowInt *= MaxSnowIntCap;
   /* max snow interception - regardless of temp */
   MaxIntercept = MaxSnowIntCap;
 
   /* Calculate snow interception from snowfall of current timestep limited
-     by max snow interception capacity */
+  by max snow interception capacity */
   DeltaSnowInt = SnowIntEff * *SnowFall;
   if (DeltaSnowInt + *IntSnow > MaxSnowInt)
     DeltaSnowInt = MaxSnowInt - *IntSnow;
@@ -163,16 +158,16 @@ void SnowInterception(OPTIONSTRUCT *Options, int y, int x, int Dt, float F,
     DeltaSnowInt = 0.0;
 
   /* pixel snow fall depth -- compposed of throughfall through canopy
-     and snowfall on open space */
+  and snowfall on open space */
   SnowThroughFall = (*SnowFall - DeltaSnowInt) * F + (*SnowFall) * (1 - F);
 
   /* update total intercepted snow depth */
   *IntSnow += DeltaSnowInt;
 
   /* Calculate amount of water/rain intercepted on branches and stored in
-     intercepted snow.
-     MaxInt = LAI * F * Rain LAI Multiplier (input constant -- around 0.0001)
-     LAI Multiplier for rain interception */
+  intercepted snow.
+  MaxInt = LAI * F * Rain LAI Multiplier (input constant -- around 0.0001)
+  LAI Multiplier for rain interception */
   MaxWaterInt = LIQUID_WATER_CAPACITY * (*IntSnow) + MaxInt;
 
   if ((*IntRain + *RainFall) <= MaxWaterInt) {
@@ -186,10 +181,10 @@ void SnowInterception(OPTIONSTRUCT *Options, int y, int x, int Dt, float F,
   }
 
   /* Now that total intercepted water has been calculated, allow for structural
-     unloading of branches i.e. if absolute maximum capacity is reached then
-     allow sliding due to branch bending. Of course, if chunks of snow are
-     falling, they can contain both ice and liquid water - Let both of these
-     come off in the correct proportions */
+  unloading of branches i.e. if absolute maximum capacity is reached then
+  allow sliding due to branch bending. Of course, if chunks of snow are
+  falling, they can contain both ice and liquid water - Let both of these
+  come off in the correct proportions */
   if (*IntRain + *IntSnow > MaxIntercept) {
     overload = (*IntRain + *IntSnow) - MaxIntercept;
     intsnowfrac = *IntSnow / (*IntSnow + *IntRain);
@@ -201,33 +196,34 @@ void SnowInterception(OPTIONSTRUCT *Options, int y, int x, int Dt, float F,
   }
 
   /* The canopy temperature is assumed to be equal to the air temperature if
-     the air temperature is below 0 deg C, otherwise the canopy temperature is
-     equal to 0 deg C */
+  the air temperature is below 0 deg C, otherwise the canopy temperature is
+  equal to 0 deg C */
   if (Tair > 0.)
     *Tcanopy = 0.;
   else
     *Tcanopy = Tair;
 
   /* Calculate the net radiation at the canopy surface, using the canopy
-     temperature. The outgoing longwave is subtracted twice, because the
-     canopy radiates in two directions */
+  temperature. The outgoing longwave is subtracted twice, because the
+  canopy radiates in two directions */
   Tmp = *Tcanopy + 273.15;
   LongOut = STEFAN * (Tmp * Tmp * Tmp * Tmp);
-  
+
   /* If the improved radiation scheme, the forested cell is considered continuous with
   small canopy gaps. This assumption is valid for the typical DHSVM implmentation on the
   spatial scale of 30-150 m. As such,  F is not needed for weighting radiation  */
   if (Options->ImprovRadiation) {
-    NetRadiation = LocalRad->NetShort[0] + LocalRad->LongIn[0] - 2 * Vf * LongOut;
+    NetRadiation = LocalRad->NetShort[0] + LocalRad->LongIn[0] - 2 * Vf*LongOut;
+    NetRadiation /= F;
   }
   else {
-    NetRadiation = LocalRad->NetShort[0] + LocalRad->LongIn[0] - 2 * F * LongOut;
+    NetRadiation = LocalRad->NetShort[0] + LocalRad->LongIn[0] - 2 * F*LongOut;
     NetRadiation /= F;
   }
 
   /* Calculate the vapor mass flux between the canopy and the surrounding air mass
-     - snow covered aerodynamic resistance is assumed to increase by an order
-     of magnitude based on Lunderg et al 1998, Journal of Hydrological Processes */
+  - snow covered aerodynamic resistance is assumed to increase by an order
+  of magnitude based on Lunderg et al 1998, Journal of Hydrological Processes */
   EsSnow = SatVaporPressure(*Tcanopy);
   *VaporMassFlux = AirDens * (EPS / Press) * (EactAir - EsSnow) / (Ra * 10.0);
   *VaporMassFlux /= WATER_DENSITY;
@@ -249,8 +245,8 @@ void SnowInterception(OPTIONSTRUCT *Options, int y, int x, int Dt, float F,
   RefreezeEnergy *= Dt;
 
   /* if RefreezeEnergy is positive it means energy is available to melt the
-     intercepted snow in the canopy.  If it is negative, it means that
-     intercepted water will be refrozen */
+  intercepted snow in the canopy.  If it is negative, it means that
+  intercepted water will be refrozen */
 
   /* Update maximum water interception storage */
   MaxWaterInt = LIQUID_WATER_CAPACITY * (*IntSnow) + MaxInt;
@@ -289,11 +285,11 @@ void SnowInterception(OPTIONSTRUCT *Options, int y, int x, int Dt, float F,
 
       if (SnowThroughFall > 0.0 && InitialSnowInt <= MIN_INTERCEPTION_STORAGE) {
         /* Water in excess of MaxWaterInt has been generated.  If it is
-           snowing and there was little intercepted snow at the beginning of the
-           time step ( <= MIN_INTERCEPTION_STORAGE), then allow the snow to melt
-           as it is intercepted.  Also, enforce that the following holds true:
-           if Intercpeted snow is below minimum thresold then it can only be
-           removed via melting */
+        snowing and there was little intercepted snow at the beginning of the
+        time step ( <= MIN_INTERCEPTION_STORAGE), then allow the snow to melt
+        as it is intercepted.  Also, enforce that the following holds true:
+        if Intercpeted snow is below minimum thresold then it can only be
+        removed via melting */
         Drip += ExcessSnowMelt;
         *IntSnow -= ExcessSnowMelt;
         if (*IntSnow < 0.0)
@@ -302,8 +298,8 @@ void SnowInterception(OPTIONSTRUCT *Options, int y, int x, int Dt, float F,
       }
       else
         /* Else, SnowThroughFall = 0.0 or SnowThroughFall > 0.0 and there is a
-           substantial amount of intercepted snow at the beginning of the time
-           step ( > MIN_INTERCEPTION_STORAGE).  Snow melt may generate mass release. */
+        substantial amount of intercepted snow at the beginning of the time
+        step ( > MIN_INTERCEPTION_STORAGE).  Snow melt may generate mass release. */
         *TempIntStorage += ExcessSnowMelt;
       MassRelease(IntSnow, TempIntStorage, &ReleasedMass, &Drip, MDRatio);
     }
@@ -316,7 +312,7 @@ void SnowInterception(OPTIONSTRUCT *Options, int y, int x, int Dt, float F,
   }
   else {			/* else (RefreezeEnergy <= 0.0) */
 
-    /* Reset *TempIntStorage to 0.0 when energy balance is negative */
+                    /* Reset *TempIntStorage to 0.0 when energy balance is negative */
     *TempIntStorage = 0.0;
 
     /* Refreeze as much surface water as you can */
@@ -332,7 +328,7 @@ void SnowInterception(OPTIONSTRUCT *Options, int y, int x, int Dt, float F,
       *IntSnow += *IntRain;
 
       /* Energy released by freezing of intercepted water is added
-         to the MeltEnergy */
+      to the MeltEnergy */
       *MeltEnergy += (LF * *IntRain * WATER_DENSITY) / Dt;
       *IntRain = 0.0;
     }
@@ -345,8 +341,8 @@ void SnowInterception(OPTIONSTRUCT *Options, int y, int x, int Dt, float F,
   }
 
   /* Convert drip, mass, *IntSnow, *IntRain, *MeltEnergy and
-   *int_vapor_flux from physical depths to pixel depths.  Update p0 and
-   snow_fract. */
+  *int_vapor_flux from physical depths to pixel depths.  Update p0 and
+  snow_fract. */
   *IntSnow *= F;
   *IntRain *= F;
   *MeltEnergy *= F;
@@ -360,15 +356,4 @@ void SnowInterception(OPTIONSTRUCT *Options, int y, int x, int Dt, float F,
 
   *RainFall = RainThroughFall + Drip;
   *SnowFall = SnowThroughFall + ReleasedMass;
-
-  /* Find momentum squared of rainfall. */
-  if (Understory)
-    /* Since the understory is assumed to cover the entire grid cell, all
-       momentum is associated with leaf drip, eq. 2, Wicks and Bathurst (1996) */
-    *MomentSq = pow(LD_FallVelocity * WATER_DENSITY, 2) * PI / 6 *
-    pow(LEAF_DRIP_DIA, 3) * (*RainFall) / Dt;
-  else
-    /* If no understory, part of the rainfall reaches the ground as direct throughfall. */
-    *MomentSq = pow(LD_FallVelocity * WATER_DENSITY, 2) * PI / 6 *
-    pow(LEAF_DRIP_DIA, 3) * Drip / Dt + (1 - F) * MS_Rainfall;
 }

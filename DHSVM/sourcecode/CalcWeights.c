@@ -289,8 +289,10 @@ void CalcWeights(METLOCATION * Station, int NStats, MAPSIZE *Map,
     if (stationid[i] > 0) {
       Station[i].localuse = 1;
       j += 1;
-      printf("%d: %s station used in interpolation \n",
-             ParallelRank(), Station[i].Name);
+      /*
+        printf("%d: %s station used in interpolation \n",
+        ParallelRank(), Station[i].Name);
+      */
     } else {
       Station[i].localuse = 0;
     }

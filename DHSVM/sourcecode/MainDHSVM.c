@@ -11,7 +11,7 @@
  * DESCRIP-END.cd
  * FUNCTIONS:    main()
  * COMMENTS:
- * $Id: MainDHSVM.c,v 1.42 2006/10/12 20:38:11 nathalie Exp $
+ * $Id: MainDHSVM.c,v 3.2 2018/2/22 16:58 ning Exp $
  */
 
 /******************************************************************************/
@@ -37,8 +37,7 @@
 /******************************************************************************/
 
 /* global strings */
-
-char *version = "Version 3.1.1";        /* store version string */
+char *version = "Version 3.2";        /* store version string */
 char commandline[BUFSIZE + 1] = "";		/* store command line */
 char fileext[BUFSIZ + 1] = "";			/* file extension */
 char errorstr[BUFSIZ + 1] = "";			/* error message */
@@ -77,9 +76,11 @@ int main(int argc, char **argv)
     {{0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, 0.0, {0.0, 0.0}, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
                                                                                     /* PIXRAD */
     {0.0, 0.0, 0, NULL, NULL, 0.0, 0, 0.0, 0.0, 0.0, 0.0, NULL, NULL},				/* ROADSTRUCT*/
-    {0, 0, 0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},		/* SNOWPIX */
+    {0, 0, 0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },		                                            /* SNOWPIX */
     {0, 0.0, NULL, NULL, NULL, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
     0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},			                /* SOILPIX */
+    {0, 0, 0.0, 0.0, 0.0, NULL },                                                    /* VEGPIX */
     0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0l, 0.0, 0.0
   };
   CHANNEL ChannelData = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, 
@@ -164,11 +165,15 @@ int main(int argc, char **argv)
   InitTables(Time.NDaySteps, Input, &Options, &SType, &Soil, &VType, &Veg,
 	     &SnowAlbedo);
 
-  InitTerrainMaps(Input, &Options, &GMap, &Map, &Soil, &TopoMap, &SoilMap, &VegMap);
+  InitTerrainMaps(Input, &Options, &GMap, &Map, &Soil, &Veg, &TopoMap, SType, &SoilMap, VType, &VegMap);
 
   CheckOut(&Options, Veg, Soil, VType, SType, &Map, TopoMap, VegMap, SoilMap);
 
   DomainSummary(&GMap, &Map);
+
+#ifdef TOPO_DUMP
+  DumpTopo(&Map, TopoMap);
+#endif
 
   if (Options.HasNetwork)
     InitChannel(Input, &Map, Time.Dt, &ChannelData, SoilMap, &MaxStreamID, &MaxRoadID, &Options);
@@ -231,7 +236,7 @@ int main(int argc, char **argv)
   }
 
   InitSnowMap(&Map, &SnowMap);
-  InitAggregated(Veg.MaxLayers, Soil.MaxLayers, &Total);
+  InitAggregated(&Options, Veg.MaxLayers, Soil.MaxLayers, &Total);
 
   InitModelState(&(Time.Start), &Map, &Options, PrecipMap, SnowMap, SoilMap,
 		 Soil, SType, VegMap, Veg, VType, Dump.InitStatePath,
@@ -311,7 +316,8 @@ int main(int argc, char **argv)
 			       Stat, MetWeights[y][x], TopoMap[y][x].Dem,
 			       &(RadiationMap[y][x]), &(PrecipMap[y][x]), &Radar,
 			       RadarMap, PrismMap, &(SnowMap[y][x]),
-			       SnowAlbedo, MM5Input, WindModel, PrecipLapseMap,
+			       SnowAlbedo, &(VegMap[y][x].Type), &(VegMap[y][x]), 
+                   MM5Input, WindModel, PrecipLapseMap,
 			       &MetMap, NGraphics, Time.Current.Month,
 			       SkyViewMap[y][x], ShadowMap[Time.DayStep][y][x],
 			       SolarGeo.SunMax, SolarGeo.SineSolarAltitude);
@@ -321,7 +327,8 @@ int main(int argc, char **argv)
 			       Stat, MetWeights[y][x], TopoMap[y][x].Dem,
 			       &(RadiationMap[y][x]), &(PrecipMap[y][x]), &Radar,
 			       RadarMap, PrismMap, &(SnowMap[y][x]),
-			       SnowAlbedo, MM5Input, WindModel, PrecipLapseMap,
+			       SnowAlbedo, &(VegMap[y][x].Type), &(VegMap[y][x]), 
+                   MM5Input, WindModel, PrecipLapseMap,
 			       &MetMap, NGraphics, Time.Current.Month, 0.0,
 			       0.0, SolarGeo.SunMax,
 			       SolarGeo.SineSolarAltitude);
@@ -343,16 +350,16 @@ int main(int argc, char **argv)
               SoilMap[y][x].Temp[i] = LocalMet.Tair;
           }
 		  
-          MassEnergyBalance(&Options, y, x, SolarGeo.SineSolarAltitude, Map.DX, Map.DY, 
-			    Time.Dt, Options.HeatFlux, Options.CanopyRadAtt, Options.Infiltration, 
-                            Veg.MaxLayers, &LocalMet, &(Network[y][x]), &(PrecipMap[y][x]), 
-			    &(VType[VegMap[y][x].Veg-1]), &(VegMap[y][x]), &(SType[SoilMap[y][x].Soil-1]),
-			    &(SoilMap[y][x]), &(SnowMap[y][x]), &(RadiationMap[y][x]), &(EvapMap[y][x]), 
-                            &(Total.Rad), &ChannelData, SkyViewMap);
-		 
-          PrecipMap[y][x].SumPrecip += PrecipMap[y][x].Precip;
-        }
-      }
+          MassEnergyBalance(&Options, y, x, SolarGeo.SineSolarAltitude, Map.DX, Map.DY,
+            Time.Dt, Options.HeatFlux, Options.CanopyRadAtt, Options.Infiltration, Soil.MaxLayers,
+            Veg.MaxLayers, &LocalMet, &(Network[y][x]), &(PrecipMap[y][x]),
+            &(VType[VegMap[y][x].Veg - 1]), &(VegMap[y][x]), &(SType[SoilMap[y][x].Soil - 1]),
+            &(SoilMap[y][x]), &(SnowMap[y][x]), &(RadiationMap[y][x]), &(EvapMap[y][x]),
+            &(Total.Rad), &ChannelData, SkyViewMap);
+	 
+		  PrecipMap[y][x].SumPrecip += PrecipMap[y][x].Precip;
+		}
+	  }
     }
 
     /* Average all RBM inputs over each segment */

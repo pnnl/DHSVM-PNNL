@@ -91,7 +91,9 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
     {"OPTIONS", "SKYVIEW DATA PATH", "", ""},
 	{"OPTIONS", "STREAM TEMPERATURE", "", ""}, 
 	{"OPTIONS", "RIPARIAN SHADING", "", ""}, 
-    {"OPTIONS", "IMPROVED RADIATION SCHEME", "", "" },
+    {"OPTIONS", "VARIABLE LIGHT TRANSMITTANCE", "", "" },
+    { "OPTIONS", "CANOPY GAPPING", "", "" },
+    { "OPTIONS", "SNOW SLIDING", "", "" },
     {"AREA", "COORDINATE SYSTEM", "", ""},
     {"AREA", "EXTREME NORTH", "", ""},
     {"AREA", "EXTREME WEST", "", ""},
@@ -123,6 +125,9 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
     { "CONSTANTS", "ALBEDO MELTING LAMBDA", "", "" },
     { "CONSTANTS", "ALBEDO ACCUMULATION MIN", "", "" },
     { "CONSTANTS", "ALBEDO MELTING MIN", "", "" },
+    { "CONSTANTS", "SNOWSLIDE PARAMETER1", "", "" },
+    { "CONSTANTS", "SNOWSLIDE PARAMETER2", "", "" },
+    { "CONSTANTS", "GAP WIND ADJ FACTOR", "", "" },
     {NULL, NULL, "", NULL}
   };
 
@@ -307,6 +312,26 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
   else
     ReportError(StrEnv[improv_radiation].KeyName, 51);
 
+  /* Determine if canopy gapping will be modeled */
+  if (strncmp(StrEnv[gapping].VarStr, "TRUE", 4) == 0)
+    Options->CanopyGapping = TRUE;
+  else if (strncmp(StrEnv[gapping].VarStr, "FALSE", 5) == 0)
+    Options->CanopyGapping = FALSE;
+  else
+    ReportError(StrEnv[gapping].KeyName, 51);
+
+  /* Determine if snow sliding will be modeled */
+  if (strncmp(StrEnv[snowslide].VarStr, "TRUE", 4) == 0)
+    Options->SnowSlide = TRUE;
+  else if (strncmp(StrEnv[snowslide].VarStr, "FALSE", 5) == 0)
+    Options->SnowSlide = FALSE;
+  else
+    ReportError(StrEnv[snowslide].KeyName, 51);
+
+  /* If canopy gapping option is true, the improved radiation scheme must be true */
+  if (Options->CanopyGapping == TRUE && Options->ImprovRadiation == FALSE) {
+    ReportError(StrEnv[gapping].KeyName, 71);
+  }
   /* Determine if listed met stations outside bounding box are used */
   if (strncmp(StrEnv[outside].VarStr, "TRUE", 4) == 0)
     Options->Outside = TRUE;
@@ -530,4 +555,19 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
   if (!CopyFloat(&ALB_MELT_MIN,
     StrEnv[alb_melt_min].VarStr, 1))
     ReportError(StrEnv[alb_melt_min].KeyName, 51);
+
+  /* if turn on canopy gap module */
+  if (Options->CanopyGapping) {
+    if (!CopyFloat(&GAPWIND_FACTOR, StrEnv[gapwind_adj].VarStr, 1))
+      ReportError(StrEnv[gapwind_adj].KeyName, 51);
+    if (GAPWIND_FACTOR <= 0 || GAPWIND_FACTOR>1)
+      ReportError(StrEnv[gapwind_adj].KeyName, 74);
+  }
+  if (Options->SnowSlide) {
+    if (!CopyFloat(&SNOWSLIDE1, StrEnv[snowslide_parameter1].VarStr, 1))
+      ReportError(StrEnv[snowslide_parameter1].KeyName, 51);
+
+    if (!CopyFloat(&SNOWSLIDE2, StrEnv[snowslide_parameter2].VarStr, 1))
+      ReportError(StrEnv[snowslide_parameter2].KeyName, 51);
+  }
 }

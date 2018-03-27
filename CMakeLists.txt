@@ -9,7 +9,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2017-01-23 11:16:16 d3g096
+# Last Change: 2018-03-27 12:43:24 d3g096
 
 # -------------------------------------------------------------
 # General set up
@@ -26,6 +26,11 @@ list (APPEND CMAKE_MODULE_PATH "${DHSVM_SOURCE_DIR}/cmake")
 # -------------------------------------------------------------
 
 enable_language(C)
+
+# Option to dump topography maps, for debugging
+option (DHSVM_DUMP_TOPO
+  "Make DHSVM dump input topography maps (in a non-standard way) for debugging"
+)
 
 # Build RBM if desired
 option (DHSVM_USE_RBM "Build RBM and related programs" OFF)
@@ -46,9 +51,6 @@ option (DHSVM_BUILD_TESTS "Build several module test programs in addition to DHS
 
 # Limit calculations to snow pack only
 option (DHSVM_SNOW_ONLY "Only simulate snow pack (no ET or infiltration)" OFF)
-if (DHSVM_SNOW_ONLY) 
-  add_definitions(-DSNOW_ONLY)
-endif (DHSVM_SNOW_ONLY)
 
 # -------------------------------------------------------------
 # MPI is required

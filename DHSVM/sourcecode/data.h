@@ -250,6 +250,8 @@ typedef struct {
   int StreamTemp;
   int CanopyShading;
   int ImprovRadiation;          /* if TRUE then improved radiation scheme is on */
+  int CanopyGapping;            /* if canopy gapping is on */
+  int SnowSlide;                /* if snow sliding option is true */
   char PrismDataPath[BUFSIZE + 1];
   char PrismDataExt[BUFSIZE + 1];
   char ShadingDataPath[BUFSIZE + 1];
@@ -355,6 +357,12 @@ typedef struct {
                                A negataive value indicates flux from snow -- sublimiation */
   float CanopyVaporMassFlux;/* Vapor mass flux to/from intercepted snow in the canopy (m/timestep) */
   float Glacier;		    /* Amount of snow added to glacier during simulation */
+  float Qsw;                /* Net shortwave radiation exchange at surface */
+  float Qlw;                /* Net longwave radiation exchange at surface */
+  float Qs;				    /* Sensible heat exchange */
+  float Qe;				    /* Latent heat exchange */
+  float Qp;                 /* advected heat from rain input */
+  float MeltEnergy;			/* Energy used to melt snow and change of cold content of snow pack */
 } SNOWPIX;
 
 typedef struct {
@@ -439,9 +447,69 @@ typedef struct {
   ITEM *OrderedTopoIndex;       /* Structure array to hold the ranked topoindex for fine pixels in a coarse pixel */
 } TOPOPIX;
 
-typedef struct {
-  int Veg;			/* Vegetation type */
+typedef struct
+{
+  uchar HasSnow;			    /* Snow cover flag determined by SWE */
+  unshort LastSnow;			    /* Days since last snowfall */
+  int NVegLActual;		        /* Number of vegetation layers above snow */
+  float Albedo;				    /* Albedo of snow pack */
+  float TSurf;				    /* Temperature of snow pack surface layer */
+  unsigned char OverStory;	    /* TRUE if there is an overstory */
+  unsigned char UnderStory;	    /* TRUE if there is an understory */
+  float NetRadiation[2];        /* Net radiation received by the entire pixel W/m2 */
+  float NetShort[2];            /* Shortwave radiation for vegetation surfaces and ground/snow surface W/m2 */
+  float LongIn[2];		        /* Incoming longwave radiation for vegetation surfaces and ground/snow surface W/m2 */
+  float LongOut[2];		        /* Outgoing longwave radiation for vegetation surfaces and ground/snow surface W/m2 */
+  float PixelLongIn;	        /* Incoming longwave for entire pixel W/m2 */
+  float PixelLongOut;	        /* Outgoing longwave for entire pixel W/m2 */
+  float Precip;					/* Total amount of precipitation at pixel (m) */
+  float SumPrecip;              /* Accumulated precipitation at pixel (m) */
+  float RainFall;		        /* Amount of rainfall (m) */
+  float SnowFall;		        /* Amount of snowfall determined by air temperature (m) */
+  float *IntRain;		        /* Rain interception by each vegetation layer (m) */
+  float *IntSnow;		        /* Snow interception by each vegetation layer (m) */
+  float CanopyVaporMassFlux;    /* Vapor mass flux to/from intercepted snow in the canopy (m/timestep) */
+  float TempIntStorage;			/* Temporary snow and rain interception storage, used by MassRelease() */
   float Tcanopy;		        /* Canopy temperature (C) */
+  float MeltEnergy;			    /* Energy used to melt snow and change of cold content of snow pack */
+  float MoistureFlux;		    /* Amount of water transported from the pixel
+                                to the atmosphere (m/timestep) */
+  float Ra[2];			        /* Aerodynamic resistance in the absence of snow  */
+  float RaSnow;			        /* Aerodynamic resistance for the lower boundary in the presence of snow */
+  float U[2];			        /* Wind speed profile (m/s) */
+  float USnow;			        /* wind speed 2, above snow surface (m/s) */
+  float SnowPackOutflow;		/* Snow pack outflow (m) */
+  float Swq;				    /* Snow water equivalent */
+  float PackWater;			    /* Liquid water content of snow pack */
+  float TPack;				    /* Temperature of snow pack */
+  float SurfWater;			    /* Liquid water content of surface layer */
+  float VaporMassFlux;		    /* Vapor mass flux to/from snow pack,(m/timestep).
+                                A negataive value indicates flux from snow -- sublimiation */
+  float *Moist;			        /* Soil moisture content in layers (0-1) */
+  float EvapSoil;		        /* Evaporation from the upper soil layer */
+  float ETot;			        /* Total amount of evapotranspiration */
+  float *EPot;			        /* Potential transpiration from each vegetation/soil layer */
+  float *EAct;			        /* Actual transpiration from each vegetation soil layer */
+  float *EInt;			        /* Evaporation from interception for each vegetation layer */
+  float **ESoil;		        /* Transpiration for each vegetation layer from each soil zone */
+  float GapView;                /* skyview ration from gap to sky */
+  float Qsw;                    /* Net shortwave radiation exchange at surface */
+  float Qlin;                   /* Incoming longwave radiation */
+  float Qlw;                    /* Net longwave radiation exchange at surface */
+  float Qs;				        /* Sensible heat exchange */
+  float Qe;				        /* Latent heat exchange */
+  float Qp;                     /* advected heat from rain input */
+} CanopyGapStruct;
+
+typedef struct {
+  int Veg;			            /* Vegetation type */
+  int Gapping;                  /* 1=present, 0=absence*/
+  float Tcanopy;		        /* Canopy temperature (C) */
+  float MoistureFlux;		    /* Amount of water transported from the pixel
+                                   to the atmosphere (m/timestep) */
+  float MeltEnergy;			    /* Energy used to melt snow and change of cold content
+                                of snow pack */
+  CanopyGapStruct *Type;        /* canopy structure */
 } VEGPIX;
 
 typedef struct {
@@ -498,6 +566,7 @@ typedef struct {
   float ExtnCoeff;            /* Light extinction coefficient varied by month */
   float MonthlyExtnCoeff[12]; /* Monthly light extinction (or attenuation coeff); unit: m^-1; 
                              used in improved radiation scheme */
+  float GapDiam;
 } VEGTABLE;
 
 typedef struct {
@@ -534,6 +603,7 @@ typedef struct {
   ROADSTRUCT Road;
   SNOWPIX Snow;
   SOILPIX Soil;
+  VEGPIX Veg;
   float NetRad;
   float SoilWater;
   float CanopyWater;

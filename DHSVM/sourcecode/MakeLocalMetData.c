@@ -61,6 +61,7 @@ PIXMET MakeLocalMetData(int y, int x, MAPSIZE *Map, int DayStep,
                         PRECIPPIX *PrecipMap, MAPSIZE *Radar,
                         RADARPIX **RadarMap, float **PrismMap,
                         SNOWPIX *LocalSnow, SNOWTABLE *SnowAlbedo,
+                        CanopyGapStruct **Gap, VEGPIX *VegMap,
                         float ***MM5Input, float ***WindModel,
                         float **PrecipLapseMap, MET_MAP_PIX ***MetMap,
                         int NGraphics, int Month, float skyview,
@@ -72,7 +73,7 @@ PIXMET MakeLocalMetData(int y, int x, MAPSIZE *Map, int DayStep,
                             WindSource == MODEL */
   float Temp;			/* Temporary variable */
   float WeightSum;		/* sum of the weights */
-  int i;			/* counter */
+  int i,j;			/* counter */
   int RadarX;			/* X coordinate of radar map coordinate */
   int RadarY;			/* Y coordinate of radar map coordinate */
   float TempLapseRate;
@@ -140,10 +141,10 @@ PIXMET MakeLocalMetData(int y, int x, MAPSIZE *Map, int DayStep,
           LocalMet.Wind += CurrentWeight * Stat[i].Data.Wind;
         LocalMet.Lin += CurrentWeight * Stat[i].Data.Lin;
         LocalMet.Sin += CurrentWeight * Stat[i].Data.Sin;
-        if (Options->Shading == TRUE) {
-          LocalMet.SinBeam += CurrentWeight * Stat[i].Data.SinBeamObs;
-          LocalMet.SinDiffuse += CurrentWeight * Stat[i].Data.SinDiffuseObs;
-        }
+        
+        LocalMet.SinBeam += CurrentWeight * Stat[i].Data.SinBeamObs;
+        LocalMet.SinDiffuse += CurrentWeight * Stat[i].Data.SinDiffuseObs;
+        
         TempLapseRate += CurrentWeight * Stat[i].Data.TempLapse;
       }
     }
@@ -217,10 +218,7 @@ PIXMET MakeLocalMetData(int y, int x, MAPSIZE *Map, int DayStep,
     if (LocalMet.SinBeam + LocalMet.SinDiffuse > SOLARCON)
       LocalMet.SinBeam = SOLARCON - LocalMet.SinDiffuse;
   }
-  else {
-    LocalMet.SinBeam = LocalMet.Sin;
-    LocalMet.SinDiffuse = 0;
-  }
+
   RadMap->BeamIn = LocalMet.SinBeam;
   RadMap->DiffuseIn = LocalMet.SinDiffuse;
   RadMap->Tair = LocalMet.Tair;
@@ -294,6 +292,14 @@ PIXMET MakeLocalMetData(int y, int x, MAPSIZE *Map, int DayStep,
 
   PrecipMap->RainFall = PrecipMap->Precip - PrecipMap->SnowFall;
 
+  if (VegMap->Gapping) {
+    for (j = 0; j < CELL_PARTITION; j++) {
+      (*Gap)[j].SnowFall = PrecipMap->SnowFall;
+      (*Gap)[j].RainFall = PrecipMap->RainFall;
+      (*Gap)[j].Precip = PrecipMap->Precip;
+    }
+  }
+  
   /* Local heat of vaporization, Eq. 4.2.1, Shuttleworth (1993) */
   LocalMet.Lv = 2501000 - 2361 * LocalMet.Tair;
 
@@ -327,6 +333,22 @@ PIXMET MakeLocalMetData(int y, int x, MAPSIZE *Map, int DayStep,
   }
   else
     LocalSnow->LastSnow = 0;
+  /* if canopy gap is present */
+  if (VegMap->Gapping) {
+    for (j = 0; j < CELL_PARTITION; j++) {
+      if ((*Gap)[j].HasSnow) {
+        if ((*Gap)[j].SnowFall > 0.0)
+          (*Gap)[j].LastSnow = 0;
+        else
+          (*Gap)[j].LastSnow++;
+
+        (*Gap)[j].Albedo = CalcSnowAlbedo((*Gap)[j].TSurf, (*Gap)[j].LastSnow,
+          SnowAlbedo);
+      }
+      else
+        (*Gap)[j].LastSnow = 0.;
+    }
+  }
 
   if (NGraphics > 0) {
     (*MetMap)[y][x].accum_precip =
