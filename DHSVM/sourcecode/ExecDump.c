@@ -48,19 +48,19 @@ void ExecDump(MAPSIZE *Map, DATE *Current, DATE *Start, OPTIONSTRUCT *Options,
 
   flag = 1;
   DumpPix(Current, IsEqualTime(Current, Start), &(Dump->Aggregate),
-    &(Total->Evap), &(Total->Precip), &(Total->Rad), &(Total->Snow),
-    &(Total->Soil), &(Total->Veg), Soil->MaxLayers, Veg->MaxLayers,
-    Options, flag);
-
+          &(Total->Evap), &(Total->Precip), &(Total->Rad), &(Total->Snow),
+          &(Total->Soil), &(Total->Veg), Soil->MaxLayers, Veg->MaxLayers,
+          Options, flag);
+  
   fprintf(Dump->Aggregate.FilePtr, "\n");
 
   if (Options->Extent != POINT) {
     /* check whether the model state needs to be dumped at this timestep, and
-    dump state if needed */
+       dump state if needed */
     if (Dump->NStates < 0) {
       StoreModelState(Dump->Path, Current, Map, Options, TopoMap, PrecipMap,
-        SnowMap, MetMap, VegMap, Veg, SoilMap, Soil,
-        Network, HydrographInfo, Hydrograph, ChannelData);
+                      SnowMap, MetMap, VegMap, Veg, SoilMap, Soil,
+                      Network, HydrographInfo, Hydrograph, ChannelData);
       if (Options->HasNetwork)
         StoreChannelState(Dump->Path, Current, ChannelData->streams);
     }
@@ -68,9 +68,9 @@ void ExecDump(MAPSIZE *Map, DATE *Current, DATE *Start, OPTIONSTRUCT *Options,
       for (i = 0; i < Dump->NStates; i++) {
         if (IsEqualTime(Current, &(Dump->DState[i]))) {
           StoreModelState(Dump->Path, Current, Map, Options, TopoMap,
-            PrecipMap, SnowMap, MetMap, VegMap, Veg,
-            SoilMap, Soil, Network, HydrographInfo, Hydrograph,
-            ChannelData);
+                          PrecipMap, SnowMap, MetMap, VegMap, Veg,
+                          SoilMap, Soil, Network, HydrographInfo, Hydrograph,
+                          ChannelData);
           if (Options->HasNetwork)
             StoreChannelState(Dump->Path, Current, ChannelData->streams);
         }
@@ -81,16 +81,16 @@ void ExecDump(MAPSIZE *Map, DATE *Current, DATE *Start, OPTIONSTRUCT *Options,
     for (i = 0; i < Dump->NPix; i++) {
       if (Dump->Pix[i].OK) {
         Global2Local(Map, Dump->Pix[i].Loc.E, Dump->Pix[i].Loc.N, &x, &y);
-
-      /* output variable at the pixel */
-      flag = 2;
-      DumpPix(Current, IsEqualTime(Current, Start), &(Dump->Pix[i].OutFile),
-        &(EvapMap[y][x]), &(PrecipMap[y][x]), &(RadMap[y][x]), &(SnowMap[y][x]),
-        &(SoilMap[y][x]), &(VegMap[y][x]), Soil->NLayers[(SoilMap[y][x].Soil - 1)],
-        Veg->NLayers[(VegMap[y][x].Veg - 1)], Options, flag);
-      fprintf(Dump->Pix[i].OutFile.FilePtr, "\n");
+        
+        /* output variable at the pixel */
+        flag = 2;
+        DumpPix(Current, IsEqualTime(Current, Start), &(Dump->Pix[i].OutFile),
+                &(EvapMap[y][x]), &(PrecipMap[y][x]), &(RadMap[y][x]), &(SnowMap[y][x]),
+                &(SoilMap[y][x]), &(VegMap[y][x]), Soil->NLayers[(SoilMap[y][x].Soil - 1)],
+                Veg->NLayers[(VegMap[y][x].Veg - 1)], Options, flag);
+        fprintf(Dump->Pix[i].OutFile.FilePtr, "\n");
+      }
     }
-
     /* check which maps need to be dumped at this timestep, and dump maps if needed */
     for (i = 0; i < Dump->NMaps; i++) {
       for (j = 0; j < Dump->DMap[i].N; j++) {
@@ -1115,6 +1115,7 @@ void DumpMap(MAPSIZE *Map, DATE *Current, MAPDUMP *DMap, TOPOPIX **TopoMap,
     break;
   }
 }
+
 
 /*****************************************************************************
 DumpPix()

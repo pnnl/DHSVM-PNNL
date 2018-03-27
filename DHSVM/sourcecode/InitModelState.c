@@ -111,7 +111,7 @@ void InitModelState(DATE *Start, MAPSIZE *Map, OPTIONSTRUCT *Options, PRECIPPIX 
               Local2Global(Map, x, y, &gx, &gy);
               fprintf(stderr, "InitModelState at (x, y) is (%d, %d):\n", gx, gy);
               fprintf(stderr,
-                "\tRain interception negative on layer %d of max %d ... reset to 0\n", i, Veg.MaxLayers); */
+                "\tRain interception negative on layer %d of max %d ... reset to 0\n", i, Veg.MaxLayers);
               */
               PrecipMap[y][x].IntRain[i] = 0.0;
             }

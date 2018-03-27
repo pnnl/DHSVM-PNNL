@@ -238,9 +238,9 @@ void InitTopoMap(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * GMap, MAPSIZE 
     (*TopoMap)[Options->PointY][Options->PointX].Mask = (1 != OUTSIDEBASIN);
   }
 
-  /* for debugging */
+  /* for debugging
   if (dodump) DumpTopo(Map, *TopoMap);
-
+  */
 }
 
 /*****************************************************************************
