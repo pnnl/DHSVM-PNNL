@@ -494,14 +494,16 @@ void InitModelState(DATE *Start, MAPSIZE *Map, OPTIONSTRUCT *Options, PRECIPPIX 
 	  }
 	}
 	/* total number of grid cells with a gap structure */
-        printf("\n****Canopy Gap****\n");
-        printf("%d: %d out of %d cells have a gap structure\n\n", 
+        if (ParallelRank() == 0) {
+          printf("\n****Canopy Gap****\n");
+        }
+        printf("%d: %d out of %d cells have a gap structure\n", 
                ParallelRank(), CountGap, Count);
         GA_Fgop(&CountGap, 1, "+");
         GA_Fgop(&Count, 1, "+");
         TotNumGap = CountGap;
         if (ParallelRank() == 0) {
-          printf("all: %d out of %d cells have a gap structure\n\n", 
+          printf("%d out of %d cells have a gap structure\n\n", 
                  TotNumGap, Count);
         }
   }
