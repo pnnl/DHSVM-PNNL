@@ -324,80 +324,17 @@ void Aggregate(MAPSIZE *Map, OPTIONSTRUCT *Options, TOPOPIX **TopoMap,
 #undef MACRO
   
 
-  /* /\* average evaporation data *\/ */
-  /* Total->Evap.ETot /= NPixels; */
-  /* for (i = 0; i < Veg->MaxLayers + 1; i++) { */
-  /*   Total->Evap.EPot[i] /= NPixels; */
-  /*   Total->Evap.EAct[i] /= NPixels; */
-  /* } */
-  /* for (i = 0; i < Veg->MaxLayers; i++) */
-  /*   Total->Evap.EInt[i] /= NPixels; */
-  /* for (i = 0; i < Veg->MaxLayers; i++) { */
-  /*   for (j = 0; j < Soil->MaxLayers; j++) { */
-  /*     Total->Evap.ESoil[i][j] /= NPixels; */
-  /*   } */
-  /* } */
-  /* Total->Evap.EvapSoil /= NPixels;; */
-
-  /* /\* average precipitation data *\/ */
-  /* Total->Precip.Precip /= NPixels; */
-  /* Total->Precip.SnowFall /= NPixels; */
-  /* for (i = 0; i < Veg->MaxLayers; i++) { */
-  /*   Total->Precip.IntRain[i] /= NPixels; */
-  /*   Total->Precip.IntSnow[i] /= NPixels; */
-  /* } */
-  /* Total->CanopyWater /= NPixels; */
-
-  /* /\* average radiation data *\/ */
-  /* Total->Rad.Tair /= NPixels; */
-  /* Total->Rad.ObsShortIn /= NPixels; */
-  /* Total->Rad.PixelNetShort /= NPixels; */
-  /* Total->NetRad /= NPixels; */
-  /* Total->Rad.BeamIn /= NPixels; */
-  /* Total->Rad.DiffuseIn /= NPixels; */
-  /* for (i = 0; i <= 2; i++) { */
-  /*   Total->Rad.NetShort[i] /= NPixels; */
-  /*   Total->Rad.LongIn[i] /= NPixels; */
-  /*   Total->Rad.LongOut[i] /= NPixels; */
-  /* } */
-
-  /* /\* average snow data *\/ */
-  /* Total->Snow.Swq /= NPixels; */
-  /* Total->Snow.Melt /= NPixels; */
-  /* Total->Snow.PackWater /= NPixels; */
-  /* Total->Snow.TPack /= NPixels; */
-  /* Total->Snow.SurfWater /= NPixels; */
-  /* Total->Snow.TSurf /= NPixels; */
-  /* Total->Snow.ColdContent /= NPixels; */
-  /* Total->Snow.Albedo /= NPixels; */
-  /* Total->Snow.Depth /= NPixels; */
-  /* Total->Snow.Qe /= NPixels; */
-  /* Total->Snow.Qs /= NPixels; */
-  /* Total->Snow.Qsw /= NPixels; */
-  /* Total->Snow.Qlw /= NPixels; */
-  /* Total->Snow.Qp /= NPixels; */
-  /* Total->Snow.MeltEnergy /= NPixels; */
-  /* Total->Snow.VaporMassFlux /= NPixels; */
-  /* Total->Snow.CanopyVaporMassFlux /= NPixels; */
-
-  /* if (TotNumGap > 0) { */
-  /*   Total->Veg.Type[Opening].Qsw /= TotNumGap; */
-  /*   Total->Veg.Type[Opening].Qlin /= TotNumGap; */
-  /*   Total->Veg.Type[Opening].Qlw /= TotNumGap; */
-  /*   Total->Veg.Type[Opening].Qe /= TotNumGap; */
-  /*   Total->Veg.Type[Opening].Qs /= TotNumGap; */
-  /*   Total->Veg.Type[Opening].Qp /= TotNumGap; */
-  /*   Total->Veg.Type[Opening].Swq /= TotNumGap; */
-  /*   Total->Veg.Type[Opening].MeltEnergy /= TotNumGap; */
-  /* } */
-  /* /\* average soil moisture data *\/ */
-  /* Total->Soil.Depth /= NPixels; */
-  /* for (i = 0; i < Soil->MaxLayers; i++) { */
-  /*   Total->Soil.Moist[i] /= NPixels; */
-  /*   Total->Soil.Perc[i] /= NPixels; */
-  /*   Total->Soil.Temp[i] /= NPixels; */
-  /* } */
-
+  /* These are averaged differently than other aggregate fields */
+  if (TotNumGap > 0) {
+    Total->Veg.Type[Opening].Qsw /= TotNumGap/NPixels;
+    Total->Veg.Type[Opening].Qlin /= TotNumGap/NPixels;
+    Total->Veg.Type[Opening].Qlw /= TotNumGap/NPixels;
+    Total->Veg.Type[Opening].Qe /= TotNumGap/NPixels;
+    Total->Veg.Type[Opening].Qs /= TotNumGap/NPixels;
+    Total->Veg.Type[Opening].Qp /= TotNumGap/NPixels;
+    Total->Veg.Type[Opening].Swq /= TotNumGap/NPixels;
+    Total->Veg.Type[Opening].MeltEnergy /= TotNumGap/NPixels;
+  }
 
   free(sums);
 }
