@@ -9,7 +9,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2018-03-27 12:56:04 d3g096
+# Last Change: 2018-03-29 08:28:36 d3g096
 
 # -------------------------------------------------------------
 # Set up for this subdirectory
@@ -74,6 +74,7 @@ add_executable(DHSVM
   AdjustStorage.c
   Aggregate.c
   AggregateRadiation.c
+  Avalanche.c
   CalcAerodynamic.c
   CalcAvailableWater.c
   CalcDistance.c

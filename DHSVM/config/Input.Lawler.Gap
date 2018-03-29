@@ -107,8 +107,8 @@ Albedo Melting Lambda = 0.6 			  # Lambda for melting period
 Albedo Accumulation Min = 0.7 			  # Min albedo value during accumulation period
 Albedo Melting Min = 0.55 				  # Min albedo value during melting period
 Gap Wind Adj Factor = 0.9                 # Adjustment for wind received by gap (0-1)
-Snowslide Parameter1 = 
-Snowslide Parameter2 = 
+Snowslide Parameter1 = 700                # Empirical parameters used to calculate snow holding depth
+Snowslide Parameter2 = 0.12               # Empirical parameters used to calculate snow holding depth
 
 ##########################################################################################################
 # TERRAIN INFORMATION SECTION
