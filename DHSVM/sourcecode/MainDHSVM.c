@@ -284,6 +284,9 @@ int main(int argc, char **argv)
 
     /* reset aggregated variables */
     ResetAggregate(&Soil, &Veg, &Total, &Options);
+    
+    /* redistribute snow based on snow surface slope etc */
+	Avalanche(&Map, TopoMap, &Time, &Options, SnowMap);
 
     if (IsNewMonth(&(Time.Current), Time.Dt))
       InitNewMonth(&Time, &Options, &Map, TopoMap, PrismMap, ShadowMap,
