@@ -141,8 +141,10 @@ void InitDump(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map, int MaxSoilLay
   sprintf(Dump->Balance.FileName, "%sMass.Balance", Dump->Path);
   OpenFile(&(Dump->Balance.FilePtr), Dump->Balance.FileName, "w", TRUE);
 
+#ifndef SNOW_ONLY
   sprintf(Dump->FinalBalance.FileName, "%sMass.Final.Balance", Dump->Path);
   OpenFile(&(Dump->FinalBalance.FilePtr), Dump->FinalBalance.FileName, "w", TRUE);
+#endif
 
   if (Options->Extent != POINT) {
     /* Read remaining information from dump info file */

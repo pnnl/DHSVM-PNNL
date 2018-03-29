@@ -13,8 +13,8 @@
  * $Id: MassEnergyBalance.c,v3.1.2 2013/08/18 ning Exp $
  */
 #ifdef SNOW_ONLY
-#define NO_ET
-#define NO_SOIL
+  //#define NO_ET
+  #define NO_SOIL
 #endif
 
 #include <math.h>
@@ -436,13 +436,13 @@ void MassEnergyBalance(OPTIONSTRUCT *Options, int y, int x,
     CalcCanopyGapET(&(LocalVeg->Type), MaxSoilLayers, VType, LocalVeg, SType,
       LocalSoil, LocalMet, LocalEvap, LocalNetwork, Dt, UpperRa, LowerRa);
 
-    /* aggregate the gap and non-gap variables based on area weight*/
-    if (LocalVeg->Gapping)
-      AggregateCanopyGap(&(LocalVeg->Type), LocalVeg, LocalSoil, LocalSnow,
-        LocalEvap, LocalPrecip, LocalRad, weight, MaxSoilLayers, MaxVegLayers);
   }
-
 #endif
+  
+  /* aggregate the gap and non-gap variables based on area weight*/
+  if (LocalVeg->Gapping)
+    AggregateCanopyGap(&(LocalVeg->Type), LocalVeg, LocalSoil, LocalSnow,
+		LocalEvap, LocalPrecip, LocalRad, weight, MaxSoilLayers, MaxVegLayers);
 
   /* add the water that was not intercepted to the upper soil layer */
 
@@ -554,6 +554,7 @@ void MassEnergyBalance(OPTIONSTRUCT *Options, int y, int x,
      below */
   if ((InfiltOption == DYNAMIC) && (SurfaceWater > 0.))
     LocalSoil->InfiltAcc += Infiltration;
+#endif
 
   if (HeatFluxOption == TRUE) {
     if (LocalSnow->HasSnow == TRUE) {
@@ -576,7 +577,6 @@ void MassEnergyBalance(OPTIONSTRUCT *Options, int y, int x,
   else
     NoSensibleHeatFlux(Dt, LocalMet, LocalVeg->MoistureFlux, LocalSoil);
 
-#endif
 
   /* add the components of the radiation balance for the current pixel to
      the total */
