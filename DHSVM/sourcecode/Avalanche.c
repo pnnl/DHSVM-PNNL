@@ -59,34 +59,15 @@ void Avalanche(MAPSIZE *Map, TOPOPIX **TopoMap, TIMESTRUCT *Time, OPTIONSTRUCT *
   /*****************************************************************************
      Allocate memory
     ****************************************************************************/
-  if (!(SubSnowGrad = (float **)calloc(Map->NY, sizeof(float *))))
+
+  if (!(SubSnowGrad = calloc_2D_float(Map->NY, Map->NX)))
     ReportError((char *)Routine, 1);
-  for (i = 0; i < Map->NY; i++) {
-    if (!(SubSnowGrad[i] = (float *)calloc(Map->NX, sizeof(float))))
-      ReportError((char *)Routine, 1);
-  }
-  if (!(slope_deg = (float **)calloc(Map->NY, sizeof(float *))))
+  if (!(slope_deg = calloc_2D_float(Map->NY, Map->NX)))
     ReportError((char *)Routine, 1);
-  for (i = 0; i < Map->NY; i++) {
-    if (!(slope_deg[i] = (float *)calloc(Map->NX, sizeof(float))))
-      ReportError((char *)Routine, 1);
-  }
-  if (!((SubDir) = (unsigned char ***)calloc(Map->NY, sizeof(unsigned char **))))
+  if (!((SubDir) = calloc_3D_uchar(Map->NY, Map->NX, NDIRS)))
     ReportError((char *)Routine, 1);
-  for (i = 0; i < Map->NY; i++) {
-    if (!((SubDir)[i] = (unsigned char **)calloc(Map->NX, sizeof(unsigned char*))))
-      ReportError((char *)Routine, 1);
-    for (j = 0; j < Map->NX; j++) {
-      if (!(SubDir[i][j] = (unsigned char *)calloc(NDIRS, sizeof(unsigned char))))
-        ReportError((char *)Routine, 1);
-    }
-  }
-  if (!(SubTotalDir = (unsigned int **)calloc(Map->NY, sizeof(unsigned int *))))
+  if (!(SubTotalDir = calloc_2D_uint(Map->NY, Map->NX)))
     ReportError((char *)Routine, 1);
-  for (i = 0; i < Map->NY; i++) {
-    if (!(SubTotalDir[i] = (unsigned int *)calloc(Map->NX, sizeof(unsigned int))))
-      ReportError((char *)Routine, 1);
-  }
 
   /* calculate snow surface slope in the same approach as subflow direction */
   SnowSlopeAspect(Map, TopoMap, Snow, SubSnowGrad, SubDir, SubTotalDir);
@@ -139,16 +120,8 @@ void Avalanche(MAPSIZE *Map, TOPOPIX **TopoMap, TIMESTRUCT *Time, OPTIONSTRUCT *
       }
     }
   }
-  for (i = 0; i < Map->NY; i++) {
-    free(SubTotalDir[i]);
-    free(slope_deg[i]);
-    free(SubSnowGrad[i]);
-    for (j = 0; j < Map->NX; j++)
-      free(SubDir[i][j]);
-    free(SubDir[i]);
-  }
-  free(SubDir);
-  free(SubTotalDir);
-  free(slope_deg);
-  free(SubSnowGrad);
+  free_2D_uchar(SubDir);
+  free_2D_uint(SubTotalDir);
+  free_2D_float(slope_deg);
+  free_2D_float(SubSnowGrad);
 }
