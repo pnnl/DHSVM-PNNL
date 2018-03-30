@@ -9,7 +9,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2018-03-29 08:28:36 d3g096
+# Last Change: 2018-03-30 11:45:13 d3g096
 
 # -------------------------------------------------------------
 # Set up for this subdirectory
@@ -25,10 +25,6 @@ include_directories(BEFORE
 if (DHSVM_DUMP_TOPO)
   add_definitions(-DTOPO_DUMP)
 endif (DHSVM_DUMP_TOPO)
-
-if (DHSVM_SNOW_ONLY) 
-  add_definitions(-DSNOW_ONLY)
-endif (DHSVM_SNOW_ONLY)
 
 include_directories(AFTER
   ${MPI_C_INCLUDE_PATH}
@@ -70,7 +66,7 @@ add_library(BinIO STATIC
 # DHSVM Target
 # -------------------------------------------------------------
 
-add_executable(DHSVM
+set(DHSVM_SRC
   AdjustStorage.c
   Aggregate.c
   AggregateRadiation.c
@@ -146,7 +142,7 @@ add_executable(DHSVM
   SeparateRadiation.c
   SlopeAspect.c
   SnowInterception.c
-  SnowMelt.c brent.h
+  SnowMelt.c
   SnowPackEnergyBalance.c
   SoilEvaporation.c
   StabilityCorrection.c
@@ -157,12 +153,15 @@ add_executable(DHSVM
   channel.c
   channel_grid.c
   channel_complt.c
-  data.h
   deg2utm.c
   equal.c
   errorhandler.c
   globals.c
   ${FLEX_tableio_OUTPUTS}
+)
+
+add_executable(DHSVM
+  ${DHSVM_SRC}
 )
 
 target_link_libraries(DHSVM
@@ -173,6 +172,24 @@ target_link_libraries(DHSVM
   ${MPI_C_LIBRARIES}
   ${MATH_LIBRARY}
 )
+
+if(DHSVM_SNOW_ONLY)
+
+  add_executable(DHSVM_SNOW
+    ${DHSVM_SRC}
+    )
+
+  target_compile_definitions(DHSVM_SNOW
+    PUBLIC SNOW_ONLY=1
+    )
+
+  target_link_libraries(DHSVM_SNOW
+    BinIO
+    ${NETCDF_LIBRARIES}
+    ${X11_LIBRARIES}
+    ${MATH_LIBRARY}
+    )
+endif(DHSVM_SNOW_ONLY)
 
 # -------------------------------------------------------------
 # channel_test

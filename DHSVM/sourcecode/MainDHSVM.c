@@ -152,6 +152,11 @@ int main(int argc, char **argv)
     
     printf("\nRunning DHSVM %s using %d processors on %d nodes\n",
            version, nproc, GA_Cluster_nnodes());
+#ifdef SNOW_ONLY
+    printf("----------------------------------\n");
+    printf("WARNING: USING SNOW ONLY MODULES (prescribed in makefile)!\n");
+    printf("----------------------------------\n");
+#endif
     printf("\nSTARTING INITIALIZATION PROCEDURES\n\n");
   }
 
@@ -228,12 +233,14 @@ int main(int argc, char **argv)
   InitDump(Input, &Options, &GMap, &Map, Soil.MaxLayers, Veg.MaxLayers, Time.Dt,
 	   TopoMap, &Dump, &NGraphics, &which_graphics);
 
+#ifndef SNOW_ONLY
   if (Options.HasNetwork == TRUE) {
     InitChannelDump(&Options, &ChannelData, Dump.Path);
     ReadChannelState(Dump.InitStatePath, &(Time.Start), ChannelData.streams);
 	if (Options.StreamTemp && Options.CanopyShading)
 	  InitChannelRVeg(&Time, ChannelData.streams);
   }
+#endif
 
   InitSnowMap(&Map, &SnowMap);
   InitAggregated(&Options, Veg.MaxLayers, Soil.MaxLayers, &Total);
@@ -286,9 +293,8 @@ int main(int argc, char **argv)
     ResetAggregate(&Soil, &Veg, &Total, &Options);
     
     /* redistribute snow based on snow surface slope etc */
-    if (Options.SnowSlide) {
-      Avalanche(&Map, TopoMap, &Time, &Options, SnowMap);
-    }
+    if (Options.SnowSlide)
+	    Avalanche(&Map, TopoMap, &Time, &Options, SnowMap);
 
     if (IsNewMonth(&(Time.Current), Time.Dt))
       InitNewMonth(&Time, &Options, &Map, TopoMap, PrismMap, ShadowMap,
@@ -418,9 +424,11 @@ int main(int argc, char **argv)
 	   EvapMap, RadiationMap, PrecipMap, SnowMap, MetMap, VegMap, &Veg, SoilMap,
 	   Network, &ChannelData, &Soil, &Total, &HydrographInfo, Hydrograph);
 
+#ifndef SNOW_ONLY
   if (me == 0) {
     FinalMassBalance(&(Dump.FinalBalance), &Total, &Mass);
   }
+#endif
 
   DestroyChannel(&Options, &Map, &ChannelData);
 

@@ -9,7 +9,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2018-03-27 12:43:24 d3g096
+# Last Change: 2018-03-30 11:44:38 d3g096
 
 # -------------------------------------------------------------
 # General set up
@@ -50,7 +50,7 @@ endif(UNIX)
 option (DHSVM_BUILD_TESTS "Build several module test programs in addition to DHSVM" OFF)
 
 # Limit calculations to snow pack only
-option (DHSVM_SNOW_ONLY "Only simulate snow pack (no ET or infiltration)" OFF)
+option (DHSVM_SNOW_ONLY "Builds an addition executable, DHSVM_SNOW, that simulates snow only" OFF)
 
 # -------------------------------------------------------------
 # MPI is required
