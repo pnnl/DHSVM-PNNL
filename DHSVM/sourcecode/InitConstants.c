@@ -564,6 +564,11 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
       ReportError(StrEnv[gapwind_adj].KeyName, 74);
   }
   if (Options->SnowSlide) {
+
+    /* FIXME: not supported in parallel */
+
+    ReportError("Snow sliding not supported in parallel", 70);
+    
     if (!CopyFloat(&SNOWSLIDE1, StrEnv[snowslide_parameter1].VarStr, 1))
       ReportError(StrEnv[snowslide_parameter1].KeyName, 51);
 
