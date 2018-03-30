@@ -120,7 +120,7 @@ void Avalanche(MAPSIZE *Map, TOPOPIX **TopoMap, TIMESTRUCT *Time, OPTIONSTRUCT *
       }
     }
   }
-  free_2D_uchar(SubDir);
+  free_3D_uchar(SubDir);
   free_2D_uint(SubTotalDir);
   free_2D_float(slope_deg);
   free_2D_float(SubSnowGrad);
