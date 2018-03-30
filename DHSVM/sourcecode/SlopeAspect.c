@@ -484,6 +484,32 @@ void SnowSlopeAspect(MAPSIZE *Map, TOPOPIX **TopoMap, SNOWPIX **Snow,
   int y;
   int n;
   float neighbor_elev[NNEIGHBORS];
+  float outelev, elev;
+  int gaelev;
+
+  /* make a global array to hold elevation */
+
+  gaelev = GA_Duplicate_type(Map->dist, "SnowSlopeAspect", GA_Type(NC_FLOAT));
+
+  outelev = (float) OUTSIDEBASIN;
+
+  GA_Fill(gaelev, &outelev);
+
+  ParallelBarrier();
+
+  /* put snow elevations in GA (presumably, all of these puts should be
+     local, so it may be OK do put one value at a time; maybe try
+     non-blocking too) */
+
+  for (x = 0; x < Map->NX; x++) {
+    for (y = 0; y < Map->NY; y++) {
+      if (INBASIN(TopoMap[y][x].Mask)) {
+        elev = TopoMap[y][x].Dem + Snow[y][x].Swq;
+        GA_Put_one(gaelev, Map, x, y, &elev);
+      }
+    }
+  }
+  GA_Update_ghosts(gaelev);
 
   for (x = 0; x < Map->NX; x++) {
     for (y = 0; y < Map->NY; y++) {
@@ -491,17 +517,12 @@ void SnowSlopeAspect(MAPSIZE *Map, TOPOPIX **TopoMap, SNOWPIX **Snow,
         float slope, aspect;
         for (n = 0; n < NNEIGHBORS; n++) {
           int xn = x + xneighbor[n];
-          int yn = y + yneighbor[n];
+          int yn = y + yneighbor[n];			  
           if (valid_cell(Map, xn, yn)) {
-            /* snow elevation (swq+dem) of neighboring cells */
-            neighbor_elev[n] =
-              ((TopoMap[yn][xn].Mask) ? (TopoMap[yn][xn].Dem + Snow[yn][xn].Swq) : (float)OUTSIDEBASIN);
-          }
-          else {
-            neighbor_elev[n] = (float)OUTSIDEBASIN;
-          }
+            GA_Get_one(gaelev, Map, xn, yn, &elev);
+            neighbor_elev[n] = elev;
+          } 
         }
-
         slope_aspect(Map->DX, Map->DY, (TopoMap[y][x].Dem + Snow[y][x].Swq), neighbor_elev,
           &slope, &aspect);
         flow_fractions(Map->DX, Map->DY, slope, aspect, neighbor_elev,
@@ -512,6 +533,7 @@ void SnowSlopeAspect(MAPSIZE *Map, TOPOPIX **TopoMap, SNOWPIX **Snow,
       }
     }
   }
+  GA_Destroy(gaelev);
   return;
 }
 
