@@ -10,7 +10,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2018-03-29 07:18:07 d3g096
+# Last Change: 2018-03-30 08:34:41 d3g096
 
 set -xue
 
@@ -60,7 +60,7 @@ options="-Wdev --debug-trycompile"
 # useful build types: Debug, Release, RelWithDebInfo
 common_flags="\
         -D CMAKE_BUILD_TYPE:STRING=$build \
-        -D DHSVM_SNOW_ONLY:BOOL=OFF \
+        -D DHSVM_SNOW_ONLY:BOOL=ON \
         -D DHSVM_BUILD_TESTS:BOOL=ON \
         -D DHSVM_DUMP_TOPO:BOOL=OFF \
 "
