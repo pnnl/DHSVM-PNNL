@@ -9,7 +9,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2018-03-30 11:45:13 d3g096
+# Last Change: 2018-03-30 11:50:24 d3g096
 
 # -------------------------------------------------------------
 # Set up for this subdirectory
@@ -150,6 +150,7 @@ set(DHSVM_SRC
   SurfaceEnergyBalance.c
   UnsaturatedFlow.c
   WaterTableDepth.c
+  array_alloc.c
   channel.c
   channel_grid.c
   channel_complt.c
@@ -187,6 +188,8 @@ if(DHSVM_SNOW_ONLY)
     BinIO
     ${NETCDF_LIBRARIES}
     ${X11_LIBRARIES}
+    ${GA_LIBRARIES} 
+    ${MPI_C_LIBRARIES}
     ${MATH_LIBRARY}
     )
 endif(DHSVM_SNOW_ONLY)
