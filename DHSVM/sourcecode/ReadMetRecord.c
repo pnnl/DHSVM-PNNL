@@ -48,6 +48,9 @@ void ReadMetRecord(OPTIONSTRUCT *Options, DATE *Current, int NSoilLayers,
   /* expect to see temperature for each soil layer */
   if (Options->PrecipType == STATION)
     NMetVars++;
+  /* separate input of rain and snow following precipitation */
+  if (Options->PrecipSepr)
+    NMetVars += 2;
   if (Options->PrecipLapse == VARIABLE)
     NMetVars++;
   if (Options->TempLapse == VARIABLE)
@@ -115,7 +118,12 @@ void ReadMetRecord(OPTIONSTRUCT *Options, DATE *Current, int NSoilLayers,
       MetRecord->Precip = 0.0;
     }
     i++;
-
+    if (Options->PrecipSepr) {
+      MetRecord->Rain = Array[5 + i];
+      i++;
+      MetRecord->Snow = Array[5 + i];
+      i++;
+    }
   }
   else
     MetRecord->Precip = 0.0;

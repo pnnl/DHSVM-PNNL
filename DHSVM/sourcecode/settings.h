@@ -117,7 +117,7 @@ enum KEYS {
   shading, snotel, outside, rhoverride, precipitation_source, wind_source, 
   temp_lapse, precip_lapse, cressman_radius, cressman_stations, prism_data_path, 
   prism_data_ext, shading_data_path, shading_data_ext, skyview_data_path, 
-  stream_temp, canopy_shading, improv_radiation, gapping, snowslide,
+  stream_temp, canopy_shading, improv_radiation, gapping, snowslide, sepr,
   /* Area */
   coordinate_system, extreme_north, extreme_west, center_latitude,
   center_longitude, time_zone_meridian, number_of_rows,
