@@ -10,7 +10,7 @@
 * DESCRIP-END.
 * FUNCTIONS:    MakeLocalMetData()
 * COMMENTS:
-* $Id: MakeLocalMetData.c,v3.1.2 2014/01/1 ning Exp $     
+* $Id: MakeLocalMetData.c,v3.2 2018/03/30 ning Exp $     
 */
 
 #include <assert.h>
@@ -232,6 +232,8 @@ PIXMET MakeLocalMetData(int y, int x, MAPSIZE *Map, int DayStep,
   if (Options->QPF == TRUE || Options->MM5 == FALSE) {
     if (Options->PrecipType == STATION && Options->Prism == FALSE) {
       PrecipMap->Precip = 0.0;
+      PrecipMap->SnowFall = 0.0;
+	  PrecipMap->RainFall = 0.0;
       for (i = 0; i < NStats; i++) {
         if (Stat[i].localuse && MetWeights[i] > 0) {
           CurrentWeight = ((float) MetWeights[i]) / WeightSum;
@@ -242,6 +244,12 @@ PIXMET MakeLocalMetData(int y, int x, MAPSIZE *Map, int DayStep,
             PrecipMap->Precip += CurrentWeight *
               LapsePrecip(Stat[i].Data.Precip, Stat[i].Elev, LocalElev,
                           Stat[i].Data.PrecipLapse);
+          if (Options->PrecipSepr) {
+            PrecipMap->SnowFall += CurrentWeight *
+              LapsePrecip(Stat[i].Data.Snow, Stat[i].Elev, LocalElev, Stat[i].Data.PrecipLapse);
+            PrecipMap->RainFall += CurrentWeight *
+              LapsePrecip(Stat[i].Data.Rain, Stat[i].Elev, LocalElev, Stat[i].Data.PrecipLapse);
+          }
         }
       }
     }
@@ -279,18 +287,20 @@ PIXMET MakeLocalMetData(int y, int x, MAPSIZE *Map, int DayStep,
       LocalMet.Rh = 100.0;
   }
 
-  /* Separate precipitation into rainfall and snowfall */
-  if (PrecipMap->Precip > 0.0 && LocalMet.Tair < MAX_SNOW_TEMP) {
-    if (LocalMet.Tair > MIN_RAIN_TEMP)
-      PrecipMap->SnowFall = PrecipMap->Precip *
-      (MAX_SNOW_TEMP - LocalMet.Tair) / (MAX_SNOW_TEMP - MIN_RAIN_TEMP);
+  /* Separate precipitation into rainfall and snowfall if rain and snow are not input
+  separately such as in WRF output */
+  if (! Options->PrecipSepr) {
+    if (PrecipMap->Precip > 0.0 && LocalMet.Tair < MAX_SNOW_TEMP) {
+      if (LocalMet.Tair > MIN_RAIN_TEMP)
+        PrecipMap->SnowFall = PrecipMap->Precip *
+        (MAX_SNOW_TEMP - LocalMet.Tair) / (MAX_SNOW_TEMP - MIN_RAIN_TEMP);
+      else
+        PrecipMap->SnowFall = PrecipMap->Precip;
+    }
     else
-      PrecipMap->SnowFall = PrecipMap->Precip;
+      PrecipMap->SnowFall = 0.0;
+    PrecipMap->RainFall = PrecipMap->Precip - PrecipMap->SnowFall;
   }
-  else
-    PrecipMap->SnowFall = 0.0;
-
-  PrecipMap->RainFall = PrecipMap->Precip - PrecipMap->SnowFall;
 
   if (VegMap->Gapping) {
     for (j = 0; j < CELL_PARTITION; j++) {
