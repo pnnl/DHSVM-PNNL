@@ -59,6 +59,7 @@ Riparian Shading       = FALSE            # used for stream tempeature only
 Variable Light Transmittance = TRUE       # TRUE if light transmittance changes with solar altitude
 Canopy Gapping = TRUE
 Snow Sliding = FALSE
+Precipitation Separation = FALSE
 
 ##########################################################################################################
 # MODEL AREA SECTION
