@@ -443,7 +443,7 @@ void AggregateCanopyGap(CanopyGapStruct **Gap, VEGPIX *LocalVeg,
   LocalSnow->VaporMassFlux =
     weight*(*Gap)[Opening].VaporMassFlux + (1-weight)*(*Gap)[Forest].VaporMassFlux;
 
-  for (i = 0; i <= NVeg; i++) {
+  for (i = 0; i < 2; i++) {
     LocalRad->NetShort[i] = 
       weight*(*Gap)[Opening].NetShort[i] + (1-weight)*(*Gap)[Forest].NetShort[i];
     LocalRad->LongIn[i] = 

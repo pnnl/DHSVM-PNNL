@@ -10,7 +10,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2018-01-25 11:10:17 d3g096
+# Last Change: 2018-03-30 08:34:41 d3g096
 
 set -xue
 
@@ -60,7 +60,7 @@ options="-Wdev --debug-trycompile"
 # useful build types: Debug, Release, RelWithDebInfo
 common_flags="\
         -D CMAKE_BUILD_TYPE:STRING=$build \
-        -D DHSVM_SNOW_ONLY:BOOL=OFF \
+        -D DHSVM_SNOW_ONLY:BOOL=ON \
         -D DHSVM_BUILD_TESTS:BOOL=ON \
         -D DHSVM_DUMP_TOPO:BOOL=OFF \
 "
@@ -75,9 +75,28 @@ if [ $host == "flophouse" ]; then
 elif [ $host == "WE32673" ]; then
 
     # this is a Mac system with NetCDF installed using MacPorts
+    # using the GNU compiler installed via MacPorts
 
     CC=gcc-mp-6
     CXX=g++-mp-6
+    export CC CXX
+
+    cmake $options \
+        -D CMAKE_VERBOSE_MAKEFILE:BOOL=TRUE \
+        -D NETCDF_DIR:PATH=/opt/local/include \
+        -D DHSVM_USE_X11:BOOL=ON \
+        -D DHSVM_USE_NETCDF:BOOL=ON \
+        -D DHSVM_USE_RBM:BOOL=OFF \
+        $common_flags \
+        ..
+
+elif [ $host == "WE32673-clang" ]; then
+
+    # this is a Mac system with NetCDF installed using MacPorts
+    # using the system (XCode) compiler
+
+    CC=/usr/bin/clang
+    CXX=/usr/bin/clang++
     export CC CXX
 
     cmake $options \
