@@ -439,7 +439,9 @@ void InitModelState(DATE *Start, MAPSIZE *Map, OPTIONSTRUCT *Options, PRECIPPIX 
       }
     }
   }
-  if (remove > 0.0) {
+
+  GA_Fgop(&remove, 1, "+");
+  if (ParallelRank() == 0 && remove > 0.0) {
     printf("WARNING:excess water in soil profile is %f m^3 \n", remove);
     printf("Expect possible large flood wave during first timesteps \n\n");
   }
@@ -499,8 +501,8 @@ void InitModelState(DATE *Start, MAPSIZE *Map, OPTIONSTRUCT *Options, PRECIPPIX 
         }
         printf("%d: %d out of %d cells have a gap structure\n", 
                ParallelRank(), CountGap, Count);
-        GA_Fgop(&CountGap, 1, "+");
-        GA_Fgop(&Count, 1, "+");
+        GA_Igop(&CountGap, 1, "+");
+        GA_Igop(&Count, 1, "+");
         TotNumGap = CountGap;
         if (ParallelRank() == 0) {
           printf("%d out of %d cells have a gap structure\n\n", 
