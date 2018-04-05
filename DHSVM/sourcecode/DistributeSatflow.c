@@ -32,19 +32,12 @@ void DistributeSatflow(int Dt, float DX, float DY, float SatFlow, int NSoilLayer
   float *Runoff, float *Moist, int InfiltOption)
 
 {
-  float DeepDrainage;		/* amount of drainage from the lowest root zone to the layer below it (m) */
   float DeepLayerDepth;		/* depth of the layer below the deepest root layer */
-  float Drainage;		    /* amount of water drained from each soil layer during the current timestep */
-  float Exponent;		    /* Brooks-Corey exponent */
-  float FieldCapacity;		/* amount of water in soil at field capacity (m) */
-  float MaxSoilWater;		/* maximum allowable amount of soil moiture in each layer (m) */
-  float SoilWater;		    /* amount of water in each soil layer (m) */
   int i;			        /* counter */
 
  /*Following variables adde by Zhuoran*/
   float DeepFCap;		/* field capacity of the layer below the deepest root layer */
   float DeepPorosity;		/* porosity of the layer below the deepest root layer */
-  float DeepExcessFCap;
   float DeepAvaWater;
   float AvaWater;
   float DeepWaterGap;
@@ -52,7 +45,6 @@ void DistributeSatflow(int Dt, float DX, float DY, float SatFlow, int NSoilLayer
   float ExtracWater;
   float DeepExtracWater;
   float Depth;
-  float MoistureTransfer;
 
   DeepPorosity = Porosity[NSoilLayers - 1];
   DeepFCap = FCap[NSoilLayers - 1];

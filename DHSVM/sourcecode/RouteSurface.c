@@ -62,7 +62,7 @@ void RouteSurface(MAPSIZE * Map, TIMESTRUCT * Time, TOPOPIX ** TopoMap,
   GA_Patch patch;
 
 
-  /* Allocate memory for Runon Matrix */
+  /* Allocate memory for Runoff Matrix */
   if (Options->HasNetwork) {
     /* Option->Routing = false when routing = conventional */
     for (y = 0; y < Map->NY; y++) {

@@ -48,7 +48,7 @@ void InitNewMonth(TIMESTRUCT *Time, OPTIONSTRUCT *Options, MAPSIZE *Map,
   char FileName[MAXSTRING + 1];
   char VarName[BUFSIZE + 1];	/* Variable name */
   int i;
-  int j;
+  int j, jj;
   int y, x;
   int sy, sx;
   float a, b, l;
@@ -126,6 +126,13 @@ void InitNewMonth(TIMESTRUCT *Time, OPTIONSTRUCT *Options, MAPSIZE *Map,
     if (!(Array1 = (unsigned char *)calloc(Map->NY * Map->NX, sizeof(unsigned char))))
       ReportError((char *)Routine, 1);
     for (i = 0; i < Time->NDaySteps; i++) {
+	  /* if computational time step is finer than hourly, make the shade factor equal within
+	  the hourly interval */
+	  if (Time->NDaySteps > 24) {
+		jj = round(i / (Time->NDaySteps / 24));
+		Read2DMatrix(FileName, Array1, NumberType, Map, jj, VarName, jj);
+	  }
+	  else   
       Read2DMatrix(FileName, Array1, NumberType, Map, i, VarName, i);
       for (y = 0; y < Map->NY; y++) {
         for (x = 0; x < Map->NX; x++) {
@@ -150,21 +157,22 @@ void InitNewMonth(TIMESTRUCT *Time, OPTIONSTRUCT *Options, MAPSIZE *Map,
       VType[i].MaxInt[j] = VType[i].LAI[j] * VType[i].Fract[j] * LAI_WATER_MULTIPLIER;
       VType[i].Albedo[j] = VType[i].AlbedoMonthly[j][Time->Current.Month - 1];
     }
-    if (VType[i].OverStory) {
-      a = VType[i].LeafAngleA;
-      b = VType[i].LeafAngleB;
-      l = VType[i].LAI[0] / VType[i].ClumpingFactor;
-      if (l == 0)
-        VType[i].Taud = 1.0;
-      else
-        VType[i].Taud = exp(-b * l) * ((1 - a * l) * exp(-a * l) +
-          (a * l) * (a * l) * evalexpint(1, a * l));
-    }
-    else {
-      VType[i].Taud = 0.0;
+	if (Options->CanopyRadAtt == VARIABLE) {
+      if (VType[i].OverStory) {
+        a = VType[i].LeafAngleA;
+        b = VType[i].LeafAngleB;
+        l = VType[i].LAI[0] / VType[i].ClumpingFactor;
+        if (l == 0)
+          VType[i].Taud = 1.0;
+        else
+          VType[i].Taud = exp(-b * l) * ((1 - a * l) * exp(-a * l) +
+            (a * l) * (a * l) * evalexpint(1, a * l));
+      }
+      else {
+        VType[i].Taud = 0.0;
+      }
     }
   }
-
 }
 
 /*****************************************************************************
