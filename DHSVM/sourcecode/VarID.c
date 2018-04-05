@@ -64,6 +64,9 @@ struct {
   006, "Travel.Time",
       "Travel time", "%d",
       "hours", "Travel time", NC_SHORT, FALSE, FALSE, FALSE, 0}, {
+  007, "Veg.CanopyGap",
+       "Canopy Gap", "%d", 
+       "", "Canopy Gap", NC_BYTE, FALSE, FALSE, FALSE, 0 },{
   101, "Evap.ETot",
       "Evapotranspiration (Total)", "%.4g",
       "m/timestep", "Total amount of evapotranspiration",
@@ -150,6 +153,9 @@ struct {
   410, "Snow.ColdContent",
       "Snow Cold Content", "%.4g",
       "J", "Cold content of snow pack", NC_FLOAT, FALSE, FALSE, FALSE, 0}, {
+  411, "Snow.Albedo",
+      "Snow Albedo", "%.4g",
+      " ", "Albedo of snow pack surface", NC_FLOAT, FALSE, FALSE, FALSE, 0 }, {
   501, "Soil.Moist",
       "Soil Moisture Content", "%.4g",
       "", "Soil moisture for layer %d", NC_FLOAT, TRUE, FALSE, TRUE, 0}, {

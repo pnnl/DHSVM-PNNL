@@ -11,7 +11,7 @@
  * DESCRIP-END.
  * FUNCTIONS:    Aggregate()
  * COMMENTS:
- * $Id: Aggregate.c,v 1.17 2004/08/18 01:01:25 colleen Exp $
+ * $Id: Aggregate.c,v 1.17 2018/02/18 ning Exp $
  */
 
 #include <ga.h>
@@ -65,6 +65,8 @@
   MACRO(aggregate->Rad.DiffuseIn); \
   for (i = 0; i < 2; i++) { \
     MACRO(aggregate->Rad.NetShort[i]); \
+    MACRO(aggregate->Rad.LongIn[i]); \
+    MACRO(aggregate->Rad.LongOut[i]); \
   } \
   MACRO(aggregate->Snow.Swq); \
   MACRO(aggregate->Snow.Melt); \
@@ -75,14 +77,14 @@
   MACRO(aggregate->Snow.ColdContent); \
   MACRO(aggregate->Snow.Albedo); \
   MACRO(aggregate->Snow.Depth); \
+  MACRO(aggregate->Snow.Qe); \
+  MACRO(aggregate->Snow.Qs); \
+  MACRO(aggregate->Snow.Qsw); \
+  MACRO(aggregate->Snow.Qlw); \
+  MACRO(aggregate->Snow.Qp); \
+  MACRO(aggregate->Snow.MeltEnergy); \
   MACRO(aggregate->Snow.VaporMassFlux); \
   MACRO(aggregate->Snow.CanopyVaporMassFlux); \
-  MACRO(aggregate->Soil.Depth); \
-  for (i = 0; i < Soil->MaxLayers; i++) { \
-    MACRO(aggregate->Soil.Moist[i]); \
-    MACRO(aggregate->Soil.Perc[i]); \
-    MACRO(aggregate->Soil.Temp[i]); \
-  } \
   MACRO(aggregate->Soil.Moist[Soil->MaxLayers]); \
   MACRO(aggregate->Soil.TableDepth); \
   MACRO(aggregate->Soil.WaterLevel); \
@@ -105,6 +107,22 @@
   MACRO(aggregate->RoadInt); \
   MACRO(aggregate->CulvertReturnFlow); \
   MACRO(aggregate->CulvertToChannel); \
+  if (TotNumGap > 0) { \
+    MACRO(aggregate->Veg.Type[Opening].Qsw); \
+    MACRO(aggregate->Veg.Type[Opening].Qlin); \
+    MACRO(aggregate->Veg.Type[Opening].Qlw); \
+    MACRO(aggregate->Veg.Type[Opening].Qe); \
+    MACRO(aggregate->Veg.Type[Opening].Qs); \
+    MACRO(aggregate->Veg.Type[Opening].Qp); \
+    MACRO(aggregate->Veg.Type[Opening].Swq); \
+    MACRO(aggregate->Veg.Type[Opening].MeltEnergy); \
+  } \
+  MACRO(aggregate->Soil.Depth); \
+  for (i = 0; i < Soil->MaxLayers; i++) { \
+    MACRO(aggregate->Soil.Moist[i]); \
+    MACRO(aggregate->Soil.Perc[i]); \
+    MACRO(aggregate->Soil.Temp[i]); \
+  } \
   } 
 
 
@@ -121,20 +139,20 @@
   which is executed at the beginning of each time step.
 *****************************************************************************/
 void Aggregate(MAPSIZE *Map, OPTIONSTRUCT *Options, TOPOPIX **TopoMap,
-	       LAYER *Soil, LAYER * Veg, VEGPIX **VegMap, EVAPPIX **Evap,
-	       PRECIPPIX **Precip, PIXRAD **RadMap, SNOWPIX **Snow,
-	       SOILPIX **SoilMap, AGGREGATED *Total, VEGTABLE *VType,
-	       ROADSTRUCT **Network, CHANNEL *ChannelData, float *roadarea)
+               LAYER *Soil, LAYER *Veg, VEGPIX **VegMap, EVAPPIX **Evap,
+               PRECIPPIX **Precip, PIXRAD **RadMap, SNOWPIX **Snow,
+               SOILPIX **SoilMap, AGGREGATED *Total, VEGTABLE *VType,
+               ROADSTRUCT **Network, CHANNEL *ChannelData, float *roadarea)
 {
   int NPixels;                  /* Number of pixels in the basin */
-  int NSoilL;			/* Number of soil layers for current pixel */
-  int NVegL;			/* Number of vegetation layers for current pixel */
-  int i;				/* counter */
-  int j;				/* counter */
+  int NSoilL;                   /* Number of soil layers for current pixel */
+  int NVegL;                    /* Number of vegetation layers for current pixel */
+  int i;                                /* counter */
+  int j;                                /* counter */
   int x;
   int y;
   int n;
-  float DeepDepth;		/* depth to bottom of lowest rooting zone */
+  float DeepDepth;              /* depth to bottom of lowest rooting zone */
   float *sums;
 
   NPixels = Map->AllCells;
@@ -145,7 +163,7 @@ void Aggregate(MAPSIZE *Map, OPTIONSTRUCT *Options, TOPOPIX **TopoMap,
       if (INBASIN(TopoMap[y][x].Mask)) {
         NSoilL = Soil->NLayers[SoilMap[y][x].Soil - 1];
         NVegL = Veg->NLayers[VegMap[y][x].Veg - 1];
-		  
+                  
         /* aggregate the evaporation data */
         Total->Evap.ETot += Evap[y][x].ETot;
         for (i = 0; i < NVegL; i++) {
@@ -155,14 +173,14 @@ void Aggregate(MAPSIZE *Map, OPTIONSTRUCT *Options, TOPOPIX **TopoMap,
         }
         Total->Evap.EPot[Veg->MaxLayers] += Evap[y][x].EPot[NVegL];
         Total->Evap.EAct[Veg->MaxLayers] += Evap[y][x].EAct[NVegL];
-		  
+                  
         for (i = 0; i < NVegL; i++) {
           for (j = 0; j < NSoilL; j++) {
             Total->Evap.ESoil[i][j] += Evap[y][x].ESoil[i][j];
           }
         }
         Total->Evap.EvapSoil += Evap[y][x].EvapSoil;
-		  
+                  
         /* aggregate precipitation data */
         Total->Precip.Precip += Precip[y][x].Precip;
         Total->Precip.SnowFall += Precip[y][x].SnowFall;
@@ -173,22 +191,22 @@ void Aggregate(MAPSIZE *Map, OPTIONSTRUCT *Options, TOPOPIX **TopoMap,
             Precip[y][x].IntSnow[i];
         }
 
-	/* aggregate radiation data */
-	if (Options->MM5 == TRUE) {
-	  Total->Rad.BeamIn = NOT_APPLICABLE;
-	  Total->Rad.DiffuseIn = NOT_APPLICABLE;
-	}
-	else {
+        /* aggregate radiation data */
+        if (Options->MM5 == TRUE) {
+          Total->Rad.BeamIn = NOT_APPLICABLE;
+          Total->Rad.DiffuseIn = NOT_APPLICABLE;
+        }
+        else {
           Total->Rad.Tair += RadMap[y][x].Tair;
           Total->Rad.ObsShortIn += RadMap[y][x].ObsShortIn;
-	  Total->Rad.BeamIn += RadMap[y][x].BeamIn;
-	  Total->Rad.DiffuseIn += RadMap[y][x].DiffuseIn;
+          Total->Rad.BeamIn += RadMap[y][x].BeamIn;
+          Total->Rad.DiffuseIn += RadMap[y][x].DiffuseIn;
           Total->Rad.PixelNetShort += RadMap[y][x].PixelNetShort;
           Total->NetRad += RadMap[y][x].NetRadiation[0] + RadMap[y][x].NetRadiation[1];
-	}
+        }
 
-	/* aggregate snow data */
-	if (Snow[y][x].HasSnow)
+        /* aggregate snow data */
+        if (Snow[y][x].HasSnow)
           Total->Snow.HasSnow = TRUE;
         Total->Snow.Swq += Snow[y][x].Swq;
         Total->Snow.Glacier += Snow[y][x].Glacier;
@@ -201,8 +219,25 @@ void Aggregate(MAPSIZE *Map, OPTIONSTRUCT *Options, TOPOPIX **TopoMap,
         Total->Snow.ColdContent += Snow[y][x].ColdContent;
         Total->Snow.Albedo += Snow[y][x].Albedo;
         Total->Snow.Depth += Snow[y][x].Depth;
+        Total->Snow.Qe += Snow[y][x].Qe;
+        Total->Snow.Qs += Snow[y][x].Qs;
+        Total->Snow.Qsw += Snow[y][x].Qsw;
+        Total->Snow.Qlw += Snow[y][x].Qlw;
+        Total->Snow.Qp += Snow[y][x].Qp;
+        Total->Snow.MeltEnergy += Snow[y][x].MeltEnergy;
         Total->Snow.VaporMassFlux += Snow[y][x].VaporMassFlux;
         Total->Snow.CanopyVaporMassFlux += Snow[y][x].CanopyVaporMassFlux;
+
+        if (VegMap[y][x].Gapping) {
+          Total->Veg.Type[Opening].Qsw += VegMap[y][x].Type[Opening].Qsw;
+          Total->Veg.Type[Opening].Qlin += VegMap[y][x].Type[Opening].Qlin;
+          Total->Veg.Type[Opening].Qlw += VegMap[y][x].Type[Opening].Qlw;
+          Total->Veg.Type[Opening].Qe += VegMap[y][x].Type[Opening].Qe;
+          Total->Veg.Type[Opening].Qs += VegMap[y][x].Type[Opening].Qs;
+          Total->Veg.Type[Opening].Qp += VegMap[y][x].Type[Opening].Qp;
+          Total->Veg.Type[Opening].Swq += VegMap[y][x].Type[Opening].Swq;
+          Total->Veg.Type[Opening].MeltEnergy += VegMap[y][x].Type[Opening].MeltEnergy;
+        }
 
         /* aggregate soil moisture data */
         Total->Soil.Depth += SoilMap[y][x].Depth;
@@ -223,7 +258,7 @@ void Aggregate(MAPSIZE *Map, OPTIONSTRUCT *Options, TOPOPIX **TopoMap,
 
         if (SoilMap[y][x].TableDepth <= 0)
           (Total->Saturated)++;
-		
+                
         Total->Soil.WaterLevel += SoilMap[y][x].WaterLevel;
         Total->Soil.SatFlow += SoilMap[y][x].SatFlow;
         Total->Soil.TSurf += SoilMap[y][x].TSurf;
@@ -234,10 +269,10 @@ void Aggregate(MAPSIZE *Map, OPTIONSTRUCT *Options, TOPOPIX **TopoMap,
         Total->Soil.Qst += SoilMap[y][x].Qst;
         Total->Soil.IExcess += SoilMap[y][x].IExcess;
         Total->Soil.DetentionStorage += SoilMap[y][x].DetentionStorage;
-		
+                
         if (Options->Infiltration == DYNAMIC)
           Total->Soil.InfiltAcc += SoilMap[y][x].InfiltAcc;
-		
+                
         Total->Soil.Runoff += SoilMap[y][x].Runoff;
         Total->ChannelInt += SoilMap[y][x].ChannelInt;
         SoilMap[y][x].ChannelInt = 0.0;
@@ -287,6 +322,19 @@ void Aggregate(MAPSIZE *Map, OPTIONSTRUCT *Options, TOPOPIX **TopoMap,
 #define MACRO(x) x = sums[n++]; x /= (float)NPixels;
   APPLY_MACRO(Total);
 #undef MACRO
+  
+
+  /* These are averaged differently than other aggregate fields */
+  if (TotNumGap > 0) {
+    Total->Veg.Type[Opening].Qsw /= TotNumGap/NPixels;
+    Total->Veg.Type[Opening].Qlin /= TotNumGap/NPixels;
+    Total->Veg.Type[Opening].Qlw /= TotNumGap/NPixels;
+    Total->Veg.Type[Opening].Qe /= TotNumGap/NPixels;
+    Total->Veg.Type[Opening].Qs /= TotNumGap/NPixels;
+    Total->Veg.Type[Opening].Qp /= TotNumGap/NPixels;
+    Total->Veg.Type[Opening].Swq /= TotNumGap/NPixels;
+    Total->Veg.Type[Opening].MeltEnergy /= TotNumGap/NPixels;
+  }
 
   free(sums);
 }

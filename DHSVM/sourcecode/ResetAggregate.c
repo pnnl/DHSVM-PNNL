@@ -18,6 +18,7 @@
 #include "settings.h"
 #include "data.h"
 #include "functions.h"
+#include "constants.h"
 
 /*****************************************************************************
   ResetAggregate()
@@ -61,8 +62,9 @@ void ResetAggregate(LAYER * Soil, LAYER * Veg, AGGREGATED * Total,
   Total->Rad.DiffuseIn = 0.;
   Total->NetRad = 0.;
   Total->Rad.ObsShortIn = 0.;
-  for (i = 0; i < Veg->MaxLayers; i++) {
+  for (i = 0; i < 2; i++) {
     Total->Rad.NetShort[i] = 0.;
+    Total->Rad.LongIn[i] = 0.;
   }
 
   /* initialize snow data */
@@ -78,12 +80,17 @@ void ResetAggregate(LAYER * Soil, LAYER * Veg, AGGREGATED * Total,
   Total->Snow.ColdContent = 0.0;
   Total->Snow.Albedo = 0.0;
   Total->Snow.Depth = 0.0;
+  Total->Snow.Qe = 0.0;
+  Total->Snow.Qs = 0.0;
+  Total->Snow.Qsw = 0.0;
+  Total->Snow.Qlw = 0.0;
+  Total->Snow.Qp = 0.0;
+  Total->Snow.MeltEnergy = 0.0;
   Total->Snow.VaporMassFlux = 0.0;
   Total->Snow.CanopyVaporMassFlux = 0.0;
 
   /* initialize soil moisture data.  The total amount of runoff is calculated
      in the RouteSurface() routine */
-
   Total->Soil.Soil = 0;
   Total->Soil.Depth = 0.0;
   for (i = 0; i < Soil->MaxLayers + 1; i++)
@@ -115,4 +122,17 @@ void ResetAggregate(LAYER * Soil, LAYER * Veg, AGGREGATED * Total,
   Total->Saturated = 0;
   Total->CulvertReturnFlow = 0;
   Total->CulvertToChannel = 0;
+
+  if (Options->CanopyGapping && TotNumGap > 0) {
+	for (i = 0; i < CELL_PARTITION; i++) {
+	  Total->Veg.Type[i].Qsw = 0;
+	  Total->Veg.Type[i].Qlin = 0;
+	  Total->Veg.Type[i].Qlw = 0;
+	  Total->Veg.Type[i].Qe = 0;
+	  Total->Veg.Type[i].Qs = 0;
+	  Total->Veg.Type[i].Qp = 0;
+	  Total->Veg.Type[i].Swq = 0;
+	  Total->Veg.Type[i].MeltEnergy = 0;
+	}
+  }
 }
