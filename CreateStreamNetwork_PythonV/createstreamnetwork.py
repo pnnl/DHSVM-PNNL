@@ -399,8 +399,8 @@ rowcolmapfun(elev,aspect,slope,"maskras")
 
 print('creating streammap')
 
-if arcpy.Exists('/output.gdb/outcover.shp'):
-    arcpy.Delete_management('/output.gdb/outcover.shp')
+if arcpy.Exists('/output.gdb/outcover'):
+    arcpy.Delete_management('/output.gdb/outcover')
 
 outcover="./output.gdb/outcover"
 arcpy.Intersect_analysis([streamnet,"rowcolpoly.shp"], outcover, "", "", "")
