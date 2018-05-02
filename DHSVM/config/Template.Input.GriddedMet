@@ -109,6 +109,7 @@ Albedo Accumulation Lambda = 0.95         # Lambda for accmulation period
 Albedo Melting Lambda = 0.7               # Lambda for melting period
 Albedo Accumulation Min = 0.4             # Min albedo value during accumulation period
 Albedo Melting Min = 0.3                  # Min albedo value during melting period
+Max Surface Snow Layer Depth = 0.125      # /* maximum depth of the surface snow layer in water equivalent (m) */ 
 Gap Wind Adj Factor = 1.0                 # Adjustment for wind received by gap (0-1)
 Snowslide Parameter1 = 700                # Empirical parameters used to calculate snow holding depth
 Snowslide Parameter2 = 0.12               # Empirical parameters used to calculate snow holding depth

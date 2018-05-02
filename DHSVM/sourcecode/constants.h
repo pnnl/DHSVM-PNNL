@@ -83,6 +83,8 @@ extern float ALB_MELT_LAMBDA;           /* snow thaw albedo cruve control parame
 extern float ALB_ACC_MIN;
 extern float ALB_MELT_MIN;
 
+extern float MAX_SURFACE_SWE; 	       /* maximum depth of the surface layer in snow water equivalent (m) */
+
 extern float GAPWIND_FACTOR;
 extern int TotNumGap;                  /* total number of grid cells with a gap structure */
 
