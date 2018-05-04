@@ -17,6 +17,7 @@
 #define CONSTANTS_H
 
 #define CELLFACTOR 3            /* For discretization of forest roads for kinematic wave routing */
+#define CELL_PARTITION 2        /* Number of veg type in a grid cell */
 #define CH_ICE     (2100.0e3)	/* Volumetric heat capacity (J/(m3*C) of ice (0C) */
 #define CH_WATER   (4186.8e3)	/* Volumetric heat capacity (J/(m3*C) of water */
 #define CP         1013.0		/* Specific heat of moist air at constant pressure (J/(kg*C)) */
@@ -82,4 +83,9 @@ extern float ALB_MELT_LAMBDA;           /* snow thaw albedo cruve control parame
 extern float ALB_ACC_MIN;
 extern float ALB_MELT_MIN;
 
+extern float GAPWIND_FACTOR;
+extern int TotNumGap;                  /* total number of grid cells with a gap structure */
+
+extern float SNOWSLIDE1;               /* First Parameter in Snowslide equation */
+extern float SNOWSLIDE2;               /* Second Parameter in Snowslide equation */
 #endif

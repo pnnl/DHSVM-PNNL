@@ -194,9 +194,11 @@ void InitStations(LISTPTR Input, MAPSIZE *Map, int NDaySteps,
 
     /* check to see if the stations are inside the bounding box */
     if (((*Stat)[k].Loc.N >= Map->NY || (*Stat)[k].Loc.N < 0 ||
-         (*Stat)[k].Loc.E >= Map->NX || (*Stat)[k].Loc.E < 0)
-        && Options->Outside == FALSE)
-      printf("Station %d outside bounding box: %s ignored\n", i + 1, (*Stat)[k].Name);
+      (*Stat)[k].Loc.E >= Map->NX || (*Stat)[k].Loc.E < 0)
+      && Options->Outside == FALSE){
+      k = k;
+	  //printf("Station %d outside bounding box: %s ignored\n", i + 1, (*Stat)[k].Name);
+	}
     else
       k = k + 1;
   }
@@ -333,10 +335,13 @@ void InitGridMet(OPTIONSTRUCT *Options, LISTPTR Input, MAPSIZE *GMap, MAPSIZE *M
         /* met grids must be with the bounding box of the basin */
         if (((*Stat)[k].Loc.N >= GMap->NY || (*Stat)[k].Loc.N < 0 ||
              (*Stat)[k].Loc.E >= GMap->NX || (*Stat)[k].Loc.E < 0)) {
+          /*
           if (ParallelRank() == 0) {
             printf("..... Station %d outside the basin bounding box: %s ignored\n",
                    m, (*Stat)[k].Name);
           }
+          */
+          k = k;
         }
         else {
           /* only include grids within the mask */
@@ -395,7 +400,12 @@ void InitGridMet(OPTIONSTRUCT *Options, LISTPTR Input, MAPSIZE *GMap, MAPSIZE *M
     ReportError(Routine, 69);
 
   *NStats = k;
-  printf("\n\nFinal number of stations in bounding box is %d \n\n", k);
+  printf("Final number of stations in bounding box is %d \n\n", k);
+
+  /* initially assume the station is not used on this processor */
+  for (i = 0; i < *NStats; i++) {
+    (*Stat)[i].localuse = 0;
+  }
 
   if (Options->Outside == TRUE && Options->Prism == TRUE) {
     for (i = 0; i < *NStats; i++) {

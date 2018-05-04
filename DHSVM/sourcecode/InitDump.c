@@ -79,6 +79,7 @@ void InitDump(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *GMap, MAPSIZE *Map,
     {"OUTPUT", "NUMBER OF MAP VARIABLES", "", ""},
     {"OUTPUT", "NUMBER OF IMAGE VARIABLES", "", ""},
     {"OUTPUT", "NUMBER OF GRAPHICS", "", ""},
+    {"OUTPUT", "SATURATION EXTENT", "", "FALSE"}, 
     {NULL, NULL, "", NULL},
   };
 
@@ -130,6 +131,14 @@ void InitDump(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *GMap, MAPSIZE *Map,
   else if (!CopyInt(NGraphics, StrEnv[ngraphics].VarStr, 1) || *NGraphics < 0)
     ReportError(StrEnv[ngraphics].KeyName, 51);
 
+  if (strncmp(StrEnv[satextent].VarStr, "TRUE", 4) == 0)
+    Dump->SatExtent = TRUE;
+  else if (strncmp(StrEnv[satextent].VarStr, "FALSE", 5) == 0)
+    Dump->SatExtent = FALSE;
+  else
+    ReportError(StrEnv[satextent].KeyName, 51);
+  
+
   if (Options->Extent == POINT)
     *NGraphics = 0;
 
@@ -143,8 +152,10 @@ void InitDump(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *GMap, MAPSIZE *Map,
   sprintf(Dump->Balance.FileName, "%sMass.Balance", Dump->Path);
   OpenFile(&(Dump->Balance.FilePtr), Dump->Balance.FileName, "w", TRUE);
 
+#ifndef SNOW_ONLY
   sprintf(Dump->FinalBalance.FileName, "%sMass.Final.Balance", Dump->Path);
   OpenFile(&(Dump->FinalBalance.FilePtr), Dump->FinalBalance.FileName, "w", TRUE);
+#endif
 
   if (Options->Extent != POINT) {
     /* Read remaining information from dump info file */

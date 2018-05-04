@@ -1,8 +1,7 @@
 # 
 # SUMMARY:      makefile for DHSVM
 # USAGE:        make DHSVM
-
-#	$Id: makefile,v3.1.2 2015/11/12 Ning Exp $	
+	
 
 OBJS = AdjustStorage.o Aggregate.o AggregateRadiation.o	CalcAerodynamic.o \
 CalcAvailableWater.o CalcDistance.o CalcEffectiveKh.o CalcKhDry.o \
@@ -26,7 +25,7 @@ SlopeAspect.o SnowInterception.o SnowMelt.o SnowPackEnergyBalance.o  \
 SoilEvaporation.o StabilityCorrection.o StoreModelState.o	      \
 SurfaceEnergyBalance.o UnsaturatedFlow.o VarID.o WaterTableDepth.o   \
 channel.o channel_grid.o equal.o errorhandler.o globals.o tableio.o  \
-channel_complt.o RiparianShading.o
+channel_complt.o RiparianShading.o DistributeSatflow.o 
 
 SRCS = $(OBJS:%.o=%.c)
 
@@ -55,7 +54,7 @@ LIBS = -lm -L/usr/X11R6/lib -lX11 -L/sw/lib -L/usr/local/lib -lnetcdf
 #LIBS = -lm -L/usr/X11R6/lib -lX11 -L/sw/lib -L/usr/local/lib -lnetcdf
 
 DHSVM: $(OBJS)
-	$(CC) $(OBJS) $(CFLAGS) -o DHSVM3.1.2 $(LIBS)
+	$(CC) $(OBJS) $(CFLAGS) -o DHSVM3.2 $(LIBS)
 
 clean::
 	rm -f DHSVM

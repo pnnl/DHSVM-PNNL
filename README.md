@@ -14,6 +14,24 @@ the model is used. Finally, if you do find bugs in the model or if you
 have improvements to the model code, we are interested in
 incorporating your suggestions and/or contributions. 
 
+## DHSVM v 3.2 ##
+### _Release date: February 23, 2018_ ###
+
+This is a major release from DHSVM 3.1.2. It includes several new features, function enhancements and bug fixes.<br />
+The tutorial and sample data to run DHSVM v 3.2 will be made available on the <a href="http://dhsvmdev.pnl.gov//tutorials.stm">DHSVM website </a>.
+
+__New Capabilities__
+  * Variable radiation transmittance (with solar position and tree characteristics) 
+  * Canopy gap (Sun et al., _under review_)
+  * Snow sliding 
+  * Python scripts to create stream network
+  * Support of gridded meteorological data input
+
+__Enhancement & Fixes__
+  * Negative soil moisture 
+  * Configuration and Build with CMake
+<br />
+
 # Parallel Version
 
 This branch of DHSVM has been modified to run in parallel using
@@ -76,7 +94,7 @@ select optional features.  Here are some terse instructions:
     [NetCDF](http://www.unidata.ucar.edu/software/netcdf/), or RBM
     using the default C compiler.
     
-* If successful, build DHSVM and related programs, using
+  * If successful, build DHSVM and related programs, using
 
         cmake --build .
 
@@ -84,4 +102,15 @@ select optional features.  Here are some terse instructions:
     in a tree mirroring the source tree.  For example, DHSVM is
     `build/DHSVM/sourcecode/DHSVM`. 
     
+The original Makefiles are in the source tree and can still be used as
+described in the tutorial if preferred.
+
+### Snow-only mode ###
+
+If DHSVM is configured with this option,
+
+   -D DHSVM_SNOW_ONLY:BOOL=ON
+   
+an additional executable is built, `DHSVM_SNOW`, which operates in
+snow-only mode. 
 

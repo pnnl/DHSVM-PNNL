@@ -15,6 +15,6 @@ shift
 
 set width = 1.5,2.,3.,5.,2.,5.,7.5,10.,15.
 
-awk -v W=$width 'BEGIN{ split( W, WARRAY, "," );}{LENGTH = $4; VOL = WARRAY[$5]*LENGTH*$InitialDepth; print $1, VOL;}' $StreamNetworkFile >! ../modelstate/Channel.State.$OutputDate
+awk -v W=$width -v D=$InitialDepth 'BEGIN{split(W,WARRAY,",");}{if($1!="#") {LENGTH=$4; VOL=WARRAY[$5]*LENGTH*D; print $1,VOL}}' $StreamNetworkFile >! ../modelstate/Channel.State.$OutputDate
 
 endif

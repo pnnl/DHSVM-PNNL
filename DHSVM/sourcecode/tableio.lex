@@ -62,7 +62,7 @@ typedef struct {
 %x comment_start record_start string_start
 
 
-WHITE	[ \t]+
+WHITE	[ \t\r]+
 INTEGER [0-9]+
 REAL 	[-\+]?[0-9]*\.[0-9]+([-+]?[EeDd][0-9]+)?
 WORD 	[A-Za-z][A-Za-z0-9_]+

@@ -10,7 +10,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2017-06-06 08:21:26 d3g096
+# Last Change: 2018-03-30 11:47:00 d3g096
 
 set -xue
 
@@ -60,9 +60,10 @@ options="-Wdev --debug-trycompile"
 # useful build types: Debug, Release, RelWithDebInfo
 common_flags="\
         -D CMAKE_BUILD_TYPE:STRING=$build \
-        -D DHSVM_SNOW_ONLY:BOOL=OFF \
+        -D DHSVM_SNOW_ONLY:BOOL=ON \
         -D DHSVM_BUILD_TESTS:BOOL=ON \
         -D DHSVM_USE_RBM:BOOL=OFF \
+        -D DHSVM_DUMP_TOPO:BOOL=OFF \
         -D CMAKE_VERBOSE_MAKEFILE:BOOL=TRUE \
 "
 
@@ -98,6 +99,7 @@ elif [ $host == "WE32673" ]; then
     cmake $options \
         -D MPI_C_COMPILER:STRING="$prefix/bin/mpicc-openmpi-clang38" \
         -D MPIEXEC:STRING="$prefix/bin/mpiexec-openmpi-clang38" \
+        -D GA_DIR:PATH="/Users/d3g096/Projects/GridPACK" \
         -D NETCDF_DIR:PATH="$prefix/include" \
         -D DHSVM_USE_X11:BOOL=OFF \
         -D DHSVM_USE_NETCDF:BOOL=ON \
@@ -120,6 +122,24 @@ elif [ $host == "WE32673-gnu" ]; then
         -D NETCDF_DIR:PATH="$prefix/include" \
         -D DHSVM_USE_X11:BOOL=OFF \
         -D DHSVM_USE_NETCDF:BOOL=ON \
+        $common_flags \
+        ..
+
+elif [ $host == "WE32673-clang" ]; then
+
+    # this is a Mac system with NetCDF installed using MacPorts
+    # using the system (XCode) compiler
+
+    CC=/usr/bin/clang
+    CXX=/usr/bin/clang++
+    export CC CXX
+
+    cmake $options \
+        -D CMAKE_VERBOSE_MAKEFILE:BOOL=TRUE \
+        -D NETCDF_DIR:PATH=/opt/local/include \
+        -D DHSVM_USE_X11:BOOL=ON \
+        -D DHSVM_USE_NETCDF:BOOL=ON \
+        -D DHSVM_USE_RBM:BOOL=OFF \
         $common_flags \
         ..
 
@@ -251,7 +271,7 @@ else
         -D DHSVM_USE_X11:BOOL=OFF \
         -D DHSVM_USE_NETCDF:BOOL=OFF \
         -D DHSVM_BUILD_TESTS:BOOL=OFF \
-
+        ..
 
     echo "Unknown host: $host"
     exit 2

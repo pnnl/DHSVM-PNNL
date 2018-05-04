@@ -167,10 +167,11 @@ void CalcWeights(METLOCATION * Station, int NStats, MAPSIZE *Map,
           /* got closest station */
 
           for (i = 0; i < NStats; i++) {
-            if (i == closest)
+            if (i == closest) {
               (*WeightArray)[y][x][i] = MAXUCHAR;
-            else
+            } else {
               (*WeightArray)[y][x][i] = 0;
+            }
           }
 
         }			/* done in basin mask */
@@ -281,13 +282,25 @@ void CalcWeights(METLOCATION * Station, int NStats, MAPSIZE *Map,
   }
   for (i = 0; i <= NStats; i++)
     if (stat[i] > 0)
-      printf("%d pixels are linked to %d met stations \n", stat[i],
-        i);
+      printf("%d: %d local pixels are linked to met station %d\n",
+             ParallelRank(), stat[i], i);
 
-  for (i = 0; i < NStats; i++)
-    if (stationid[i] > 0)
-      printf("%s station used in interpolation \n", Station[i].Name);
+  for (i = 0, j = 0; i < NStats; i++) {
+    if (stationid[i] > 0) {
+      Station[i].localuse = 1;
+      j += 1;
+      /*
+        printf("%d: %s station used in interpolation \n",
+        ParallelRank(), Station[i].Name);
+      */
+    } else {
+      Station[i].localuse = 0;
+    }
+  }
 
+  printf("%d: %d of %d met stations used locally \n",
+         ParallelRank(), j, NStats);
+  
   /* Free memory */
 
   free(Weights);

@@ -35,21 +35,24 @@ void GetMetData(OPTIONSTRUCT *Options, TIMESTRUCT *Time, int NSoilLayers,
   if (DEBUG)
     printf("Reading all met data for current timestep\n");
 
-  for (i = 0; i < NStats; i++)
-    ReadMetRecord(Options, &(Time->Current), NSoilLayers, &(Stat[i].MetFile),
-      Stat[i].IsWindModelLocation, &(Stat[i].Data));
+  for (i = 0; i < NStats; i++) {
+    if (Stat[i].localuse) {
+      ReadMetRecord(Options, &(Time->Current), NSoilLayers, &(Stat[i].MetFile),
+                    Stat[i].IsWindModelLocation, &(Stat[i].Data));
+    }
+  }
 
   if (Options->PrecipType == RADAR)
     ReadRadarMap(&(Time->Current), &(Time->StartRadar), Time->Dt, Radar,
       RadarMap, RadarFileName);
 
-  if (Options->Shading == TRUE) {
-    for (i = 0; i < NStats; i++) {
+  for (i = 0; i < NStats; i++) {
+    if (Stat[i].localuse) {
       if (SunMax > 0.0) {
         Stat[i].Data.ClearIndex = Stat[i].Data.Sin / SunMax;
         SeparateRadiation(Stat[i].Data.Sin, Stat[i].Data.ClearIndex,
-          &(Stat[i].Data.SinBeamObs),
-          &(Stat[i].Data.SinDiffuseObs));
+                          &(Stat[i].Data.SinBeamObs),
+                          &(Stat[i].Data.SinDiffuseObs));
       }
       else {
         /* if sun is below horizon, then force all shortwave to zero */

@@ -1,20 +1,20 @@
 /*
- * SUMMARY:      InitTables.c - Initialize lookup tables
- * USAGE:        Part of DHSVM
- *
- * AUTHOR:       Bart Nijssen
- * ORG:          University of Washington, Department of Civil Engineering
- * E-MAIL:       nijssen@u.washington.edu
- * ORIG-DATE:    Apr-96
- * DESCRIPTION:  Initialize lookup tables
- * DESCRIP-END.
- * FUNCTIONS:    InitTables()
- *               InitSoilTable()
- *               InitVegTable()
- *               InitSnowTable()
- * COMMENTS:
- * $Id: InitTables.c,v3.1.2 2013/12/11 ning Exp $
- */
+* SUMMARY:      InitTables.c - Initialize lookup tables
+* USAGE:        Part of DHSVM
+*
+* AUTHOR:       Bart Nijssen
+* ORG:          University of Washington, Department of Civil Engineering
+* E-MAIL:       nijssen@u.washington.edu
+* ORIG-DATE:    Apr-96
+* DESCRIPTION:  Initialize lookup tables
+* DESCRIP-END.
+* FUNCTIONS:    InitTables()
+*               InitSoilTable()
+*               InitVegTable()
+*               InitSnowTable()
+* COMMENTS:
+* $Id: InitTables.c,v3.1.2 2013/12/11 ning Exp $
+*/
 
 
 
@@ -34,10 +34,10 @@
 #include "getinit.h"
 #include "ParallelDHSVM.h"
 
- /*******************************************************************************/
- /*				  InitTables()                                 */
+/*******************************************************************************/
+/*				  InitTables()                                 */
 
- /*******************************************************************************/
+/*******************************************************************************/
 void InitTables(int StepsPerDay, LISTPTR Input, OPTIONSTRUCT *Options,
   SOILTABLE **SType, LAYER *Soil, VEGTABLE **VType,
   LAYER *Veg, SNOWTABLE **SnowAlbedo)
@@ -57,22 +57,22 @@ void InitTables(int StepsPerDay, LISTPTR Input, OPTIONSTRUCT *Options,
 }
 
 /********************************************************************************
-  Function Name: InitSoilTable()
+Function Name: InitSoilTable()
 
-  Purpose      : Initialize the soil lookup table
-                 Processes most of the following section in InFileName:
-         [SOILS]
+Purpose      : Initialize the soil lookup table
+Processes most of the following section in InFileName:
+[SOILS]
 
-  Required     :
-    SOILTABLE **SType - Pointer to lookup table
-    LISTPTR Input     - Pointer to linked list with input info
-    LAYER *Soil       - Pointer to structure with soil layer information
+Required     :
+SOILTABLE **SType - Pointer to lookup table
+LISTPTR Input     - Pointer to linked list with input info
+LAYER *Soil       - Pointer to structure with soil layer information
 
-  Returns      : Number of soil layers
+Returns      : Number of soil layers
 
-  Modifies     : SoilTable and Soil
+Modifies     : SoilTable and Soil
 
-  Comments     :
+Comments     :
 ********************************************************************************/
 int InitSoilTable(OPTIONSTRUCT *Options, SOILTABLE ** SType,
   LISTPTR Input, LAYER * Soil, int InfiltOption)
@@ -90,12 +90,10 @@ int InitSoilTable(OPTIONSTRUCT *Options, SOILTABLE ** SType,
     "MAXIMUM INFILTRATION",
     "CAPILLARY DRIVE",
     "SURFACE ALBEDO",
-
     "NUMBER OF SOIL LAYERS",
     "POROSITY",
     "PORE SIZE DISTRIBUTION",
     "BUBBLING PRESSURE",
-
     "FIELD CAPACITY",
     "WILTING POINT",
     "BULK DENSITY",
@@ -105,6 +103,7 @@ int InitSoilTable(OPTIONSTRUCT *Options, SOILTABLE ** SType,
   };
   char SectionName[] = "SOILS";
   char VarStr[thermal_capacity + 1][BUFSIZE + 1];
+
 
   /* Get the number of different soil types */
   GetInitString(SectionName, "NUMBER OF SOIL TYPES", "", VarStr[0],
@@ -225,12 +224,10 @@ int InitSoilTable(OPTIONSTRUCT *Options, SOILTABLE ** SType,
     if (!CopyFloat((*SType)[i].Ks, VarStr[vertical_ks], (*SType)[i].NLayers))
       ReportError(KeyName[vertical_ks], 51);
 
-    if (!CopyFloat((*SType)[i].KhSol, VarStr[solids_thermal],
-      (*SType)[i].NLayers))
+    if (!CopyFloat((*SType)[i].KhSol, VarStr[solids_thermal], (*SType)[i].NLayers))
       ReportError(KeyName[solids_thermal], 51);
 
-    if (!CopyFloat((*SType)[i].Ch, VarStr[thermal_capacity],
-      (*SType)[i].NLayers))
+    if (!CopyFloat((*SType)[i].Ch, VarStr[thermal_capacity], (*SType)[i].NLayers))
       ReportError(KeyName[thermal_capacity], 51);
   }
 
@@ -247,25 +244,24 @@ int InitSoilTable(OPTIONSTRUCT *Options, SOILTABLE ** SType,
 }
 
 /********************************************************************************
-  Function Name: InitVegTable()
+Function Name: InitVegTable()
 
-  Purpose      : Initialize the vegetation lookup table
-                 Processes most of the following section in the input file:
-         [VEGETATION]
+Purpose      : Initialize the vegetation lookup table
+Processes most of the following section in the input file:
+[VEGETATION]
 
-  Required     :
-    VEGTABLE **VType - Pointer to lookup table
-    LISTPTR Input    - Pointer to linked list with input info
-    LAYER *Veg       - Pointer to structure with veg layer information
+Required     :
+VEGTABLE **VType - Pointer to lookup table
+LISTPTR Input    - Pointer to linked list with input info
+LAYER *Veg       - Pointer to structure with veg layer information
 
-  Returns      : Number of vegetation types
+Returns      : Number of vegetation types
 
-  Modifies     : VegTable and Veg
+Modifies     : VegTable and Veg
 
-  Comments     :
+Comments     :
 ********************************************************************************/
-int InitVegTable(VEGTABLE ** VType, LISTPTR Input, OPTIONSTRUCT * Options,
-  LAYER * Veg)
+int InitVegTable(VEGTABLE **VType, LISTPTR Input, OPTIONSTRUCT *Options, LAYER *Veg)
 {
   const char *Routine = "InitVegTable";
   int i;			/* Counter */
@@ -285,6 +281,7 @@ int InitVegTable(VEGTABLE ** VType, LISTPTR Input, OPTIONSTRUCT * Options,
     "TRUNK SPACE",
     "AERODYNAMIC ATTENUATION",
     "RADIATION ATTENUATION",
+    "DIFFUSE RADIATION ATTENUATION",
     "CLUMPING FACTOR",
     "LEAF ANGLE A",
     "LEAF ANGLE B",
@@ -296,6 +293,7 @@ int InitVegTable(VEGTABLE ** VType, LISTPTR Input, OPTIONSTRUCT * Options,
     "DETENTION FRACTION",
     "DETENTION DECAY",
     "HEIGHT",
+    "CANOPY GAP DIAMETER",
     "MAXIMUM RESISTANCE",
     "MINIMUM RESISTANCE",
     "MOISTURE THRESHOLD",
@@ -314,6 +312,7 @@ int InitVegTable(VEGTABLE ** VType, LISTPTR Input, OPTIONSTRUCT * Options,
   };
   char SectionName[] = "VEGETATION";
   char VarStr[understory_monalb + 1][BUFSIZE + 1];
+  float maxLAI;
 
   /* Get the number of different vegetation types */
   GetInitString(SectionName, "NUMBER OF VEGETATION TYPES", "", VarStr[0],
@@ -348,8 +347,8 @@ int InitVegTable(VEGTABLE ** VType, LISTPTR Input, OPTIONSTRUCT * Options,
       ReportError(KeyName[veg_description], 51);
     strcpy((*VType)[i].Desc, VarStr[veg_description]);
     MakeKeyString(VarStr[veg_description]);	/* basically makes the string all
-                           uppercase and removed spaces so
-                           it is easier to compare */
+                                            uppercase and removed spaces so
+                                            it is easier to compare */
     if (strncmp(VarStr[veg_description], "GLACIER", strlen("GLACIER")) == 0) {
       (*VType)[i].Index = GLACIER;
     }
@@ -466,11 +465,10 @@ int InitVegTable(VEGTABLE ** VType, LISTPTR Input, OPTIONSTRUCT * Options,
 
     /* assign the entries to the appropriate variables */
     /* allocation of zero memory is not supported on some
-       compilers */
+    compilers */
     if ((*VType)[i].OverStory == TRUE) {
       if (!CopyFloat(&((*VType)[i].Fract[0]), VarStr[fraction], 1))
         ReportError(KeyName[fraction], 51);
-
       if (Options->CanopyRadAtt == VARIABLE) {
         if (!CopyFloat(&((*VType)[i].HemiFract[0]), VarStr[hemifraction], 1))
           ReportError(KeyName[hemifraction], 51);
@@ -484,10 +482,19 @@ int InitVegTable(VEGTABLE ** VType, LISTPTR Input, OPTIONSTRUCT * Options,
           ReportError(KeyName[scat], 51);
         (*VType)[i].Atten = NOT_APPLICABLE;
       }
-
-      else if (Options->CanopyRadAtt == FIXED) {
-        if (!CopyFloat(&((*VType)[i].Atten), VarStr[radiation_att], 1))
-          ReportError(KeyName[radiation_att], 51);
+      else if (Options->CanopyRadAtt == FIXED && Options->ImprovRadiation == FALSE) {
+        if (!CopyFloat(&((*VType)[i].Atten), VarStr[beam_attn], 1))
+          ReportError(KeyName[beam_attn], 51);
+        (*VType)[i].ClumpingFactor = NOT_APPLICABLE;
+        (*VType)[i].Scat = NOT_APPLICABLE;
+        (*VType)[i].LeafAngleA = NOT_APPLICABLE;
+        (*VType)[i].LeafAngleB = NOT_APPLICABLE;
+        (*VType)[i].Taud = NOT_APPLICABLE;
+      }
+      else if (Options->ImprovRadiation == TRUE) {
+        if (!CopyFloat(&((*VType)[i].Taud), VarStr[diff_attn], 1))
+          ReportError(KeyName[diff_attn], 51);
+        (*VType)[i].Atten = NOT_APPLICABLE;
         (*VType)[i].ClumpingFactor = NOT_APPLICABLE;
         (*VType)[i].Scat = NOT_APPLICABLE;
         (*VType)[i].LeafAngleA = NOT_APPLICABLE;
@@ -515,6 +522,12 @@ int InitVegTable(VEGTABLE ** VType, LISTPTR Input, OPTIONSTRUCT * Options,
 
       if (!CopyFloat((*VType)[i].LAIMonthly[0], VarStr[overstory_monlai], 12))
         ReportError(KeyName[overstory_monlai], 51);
+
+      maxLAI = -9999;
+      for (k = 0; k < 12; k++) {
+        if ((*VType)[i].LAIMonthly[0][k] > maxLAI)
+          maxLAI = (*VType)[i].LAIMonthly[0][k];
+      }
 
       if (!CopyFloat((*VType)[i].AlbedoMonthly[0], VarStr[overstory_monalb], 12))
         ReportError(KeyName[overstory_monalb], 51);
@@ -577,9 +590,9 @@ int InitVegTable(VEGTABLE ** VType, LISTPTR Input, OPTIONSTRUCT * Options,
       ReportError(KeyName[root_zone_depth], 51);
 
     /* Calculate the wind speed profiles and the aerodynamical resistances
-       for each layer.  The values are normalized for a reference height wind
-       speed of 1 m/s, and are adjusted each timestep using actual reference
-       height wind speeds */
+    for each layer.  The values are normalized for a reference height wind
+    speed of 1 m/s, and are adjusted each timestep using actual reference
+    height wind speeds */
     CalcAerodynamic((*VType)[i].NVegLayers, (*VType)[i].OverStory,
       (*VType)[i].Cn, (*VType)[i].Height, (*VType)[i].Trunk,
       (*VType)[i].U, &((*VType)[i].USnow), (*VType)[i].Ra,
@@ -594,6 +607,11 @@ int InitVegTable(VEGTABLE ** VType, LISTPTR Input, OPTIONSTRUCT * Options,
         if (!CopyFloat(&((*VType)[i].VfAdjust), VarStr[vf_adj], 1))
           ReportError(KeyName[vf_adj], 51);
         (*VType)[i].Vf = (*VType)[i].Fract[0] * (*VType)[i].VfAdjust;
+
+        if (Options->CanopyGapping == TRUE) {
+          if (!CopyFloat(&((*VType)[i].GapDiam), VarStr[gap_diam], 1))
+            ReportError(KeyName[gap_diam], 51);
+        }
       }
       else {
         if ((*VType)[i].UnderStory == TRUE) {
@@ -620,16 +638,16 @@ int InitVegTable(VEGTABLE ** VType, LISTPTR Input, OPTIONSTRUCT * Options,
 }
 
 /********************************************************************************
-  InitSnowTable()
+InitSnowTable()
 
-  Source:
-  Laramie, R. L., and J. C. Schaake, Jr., Simulation of the continuous
-      snowmelt process, Ralph M. Parsons Laboratory, Mass. Inst. of Technol.,
-      1972
+Source:
+Laramie, R. L., and J. C. Schaake, Jr., Simulation of the continuous
+snowmelt process, Ralph M. Parsons Laboratory, Mass. Inst. of Technol.,
+1972
 
-  Snow albedo is calculated as a function of the number of days since the
-  last observed snow fall. There are separete albedo curves for the freeze
-  and thaw conditions.
+Snow albedo is calculated as a function of the number of days since the
+last observed snow fall. There are separete albedo curves for the freeze
+and thaw conditions.
 ********************************************************************************/
 void InitSnowTable(SNOWTABLE ** SnowAlbedo, int StepsPerDay)
 {
