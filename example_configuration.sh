@@ -161,6 +161,25 @@ elif [ $host = "briareus" ]; then
 
     # with these modules (default compilers:
 
+    # module load intel/15.0.1
+    # module load intelmpi/2017.4.056
+
+    prefix=/files0/dhsvm
+
+    CC="icc"
+    export CC
+
+    cmake \
+    -D DHSVM_USE_NETCDF:BOOL=OFF \
+    -D MPI_C_COMPILER:STRING="mpicc" \
+    -D GA_DIR:STRING="/files0/dhsvm" \
+    -D CMAKE_INSTALL_PREFIX:PATH="/files0/dhsvm" \
+    ..
+
+elif [ $host = "briareus-gnu" ]; then
+
+    # with these modules (default compilers:
+
     # module load gcc
     # module load mpi/openmpi/1.4.3/gnu
 
@@ -173,10 +192,8 @@ elif [ $host = "briareus" ]; then
     -D DHSVM_USE_NETCDF:BOOL=OFF \
     -D MPI_C_COMPILER:STRING="/share/apps/openmpi/1.4.3/gnu/bin/mpicc" \
     -D GA_DIR:STRING="/files0/dhsvm" \
-    -D GA_EXTRA_LIBS:STRING="-libverbs" \
     -D CMAKE_INSTALL_PREFIX:PATH="/files0/dhsvm" \
     ..
-
 
 elif [ $host = "constance" ]; then
 
