@@ -195,8 +195,8 @@ elif [ $host = "constance" ]; then
     export CC CXX
 
     cmake $options \
-        -D MPI_C_COMPILER:STRING="/share/apps/intel/2017u1/impi/2017.1.132/intel64/bin/mpicc" \
-        -D MPIEXEC:STRING="/share/apps/intel/2017u1/impi/2017.1.132/intel64/bin/mpiexec" \
+        -D MPI_C_COMPILER:STRING="mpicc" \
+        -D MPIEXEC:STRING="mpiexec" \
         -D GA_DIR:STRING="$prefix" \
 	-D GA_EXTRA_LIBS:STRING="-libverbs -lm" \
         -D DHSVM_USE_X11:BOOL=OFF \
