@@ -31,6 +31,7 @@
 #include "DHSVMChannel.h"
 #include "channel.h"
 #include "ParallelDHSVM.h"
+#include "timing.h"
 
 /******************************************************************************/
 /*				GLOBAL VARIABLES                              */
@@ -120,6 +121,9 @@ int main(int argc, char **argv)
     { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
 
   int me, nproc, p;
+
+  TIMING_INIT();
+  TIMING_TASK_START("total");
 
   ParallelInitialize(&argc, &argv);
   me = ParallelRank();
@@ -449,6 +453,8 @@ int main(int argc, char **argv)
     ParallelBarrier();
   }
 
+  TIMING_TASK_END("total");
+  TIMING_DONE(me);
   
   ParallelFinalize();
   return EXIT_SUCCESS;

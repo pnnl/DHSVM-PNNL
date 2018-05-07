@@ -10,7 +10,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2018-03-30 11:47:00 d3g096
+# Last Change: 2018-05-07 12:39:09 d3g096
 
 set -xue
 
@@ -80,6 +80,8 @@ if [ $host == "flophouse" ]; then
         -D MPIEXEC:STRING="/usr/lib64/openmpi/bin/mpiexec" \
         -D GA_DIR:STRING="$prefix/ga-c++" \
 	-D GA_EXTRA_LIBS:STRING="-lm" \
+        -D DHSVM_USE_GPTL:BOOL=ON \
+        -D GPTL_DIR:PATH="$prefix/gptl-v5.5.3-2-gbb58395" \
         -D DHSVM_USE_NETCDF:BOOL=ON \
         -D CMAKE_INSTALL_PREFIX:PATH="$prefix/dhsvm" \
         $common_flags \

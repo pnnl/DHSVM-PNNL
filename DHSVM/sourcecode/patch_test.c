@@ -10,9 +10,11 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2017-04-06 08:14:32 d3g096
+ * LAST CHANGE: 2018-05-07 12:47:25 d3g096
  * COMMENTS:
  */
+
+#undef GPTL_TIMING
 
 #include <stdio.h>
 #include <ga.h>

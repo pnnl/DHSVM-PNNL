@@ -10,11 +10,16 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2017-05-10 11:29:29 d3g096
+ * LAST CHANGE: 2018-05-07 12:46:50 d3g096
  * COMMENTS:
  */
 
+#ifdef TEST_MAIN
+#undef GPTL_TIMING
+#endif
+
 #include <stdlib.h>
+#include <timing.h>
 
 
 /******************************************************************************/
@@ -33,6 +38,7 @@
   {                                                                     \
     int i;                                                              \
     thetype *p;                                                         \
+    TIMING_TASK_START("memory allocation");                             \
     theresult = NULL;                                                   \
     p = (thetype *) calloc(n1*n2, sizeof(thetype));                     \
     if (p != NULL)                                                      \
@@ -51,11 +57,14 @@
             free(p);                                                    \
           }                                                             \
       }                                                                 \
+    TIMING_TASK_END("memory allocation");                               \
   }
 
 #define FREE_2D_TYPE(thearray)                  \
+  TIMING_TASK_START("memory allocation");       \
   free(thearray[0]);                            \
   free(thearray);                               \
+  TIMING_TASK_END("memory allocation");         \
   thearray = NULL;
 
 
