@@ -331,6 +331,7 @@ typedef struct {
   uchar SnowCoverOver;		/* Flag overstory can be covered */
   unshort LastSnow;			/* Days since last snowfall */
   float Swq;				/* Snow water equivalent */
+  float OldSwq;             /* Snow water equivalent from previous time step */
   float Melt;				/* Snow Melt */
   float Outflow;		    /* Snow pack outflow (m) */
   float PackWater;			/* Liquid water content of snow pack */
