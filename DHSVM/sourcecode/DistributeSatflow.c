@@ -47,7 +47,7 @@ void DistributeSatflow(int Dt, float DX, float DY, float SatFlow, int NSoilLayer
   float DeepExtracWater;
   float Depth;
 
-  TIMING_TASK_START("Saturated Flow");
+  TIMING_TASK_START("Saturated Flow", 2);
 
   DeepPorosity = Porosity[NSoilLayers - 1];
   DeepFCap = FCap[NSoilLayers - 1];
@@ -215,7 +215,7 @@ void DistributeSatflow(int Dt, float DX, float DY, float SatFlow, int NSoilLayer
 
   assert(SatFlow >= -0.000001);
 
-  TIMING_TASK_END("Saturated Flow");
+  TIMING_TASK_END("Saturated Flow", 2);
 
 }
 

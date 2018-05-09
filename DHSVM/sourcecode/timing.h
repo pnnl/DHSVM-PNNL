@@ -10,12 +10,16 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2018-05-07 14:51:07 d3g096
+ * LAST CHANGE: 2018-05-09 08:12:44 d3g096
  * COMMENTS:
  */
 
 #ifndef _timing_h_
 #define _timing_h_
+
+#ifndef TIMING_MAX_LEVEL
+#define TIMING_MAX_LEVEL 1
+#endif
 
 #if defined(GPTL_TIMING)
 
@@ -28,15 +32,15 @@
   GPTLsetoption(GPTLoverhead, 1);               \
   GPTLinitialize();
   
-#define TIMING_TASK_START(name) GPTLstart(name)
-#define TIMING_TASK_END(name) GPTLstop(name)
+#define TIMING_TASK_START(name, level) if (level <= TIMING_MAX_LEVEL) GPTLstart(name);
+#define TIMING_TASK_END(name, level) if (level <= TIMING_MAX_LEVEL) GPTLstop(name);
 #define TIMING_DONE(me) GPTLpr(me)
 
 #else
 
 #define TIMING_INIT() /* */
-#define TIMING_TASK_START(name) /* */
-#define TIMING_TASK_END(name) /* */
+#define TIMING_TASK_START(name, level) /* */
+#define TIMING_TASK_END(name, level) /* */
 #define TIMING_DONE(me) /* */
 
 #endif

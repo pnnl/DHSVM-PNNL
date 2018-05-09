@@ -9,7 +9,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2018-05-07 12:49:05 d3g096
+# Last Change: 2018-05-09 08:09:07 d3g096
 
 # -------------------------------------------------------------
 # Set up for this subdirectory
@@ -35,6 +35,8 @@ if (GPTL_FOUND)
   add_definitions(-DGPTL_TIMING)
   include_directories(AFTER ${GPTL_INCLUDE_DIRS})
 endif (GPTL_FOUND)
+
+add_definitions(-DTIMING_MAX_LEVEL=${DHSVM_TIMING_LEVEL})
 
 # tablio.c generation
 if (FLEX_FOUND)

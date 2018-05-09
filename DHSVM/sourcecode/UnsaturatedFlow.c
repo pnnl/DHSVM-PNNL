@@ -133,7 +133,7 @@ void UnsaturatedFlow(int Dt, float DX, float DY, float Infiltration,
   int i;			        /* counter */
 
 
-  TIMING_TASK_START("Unsaturated Flow");
+  TIMING_TASK_START("Unsaturated Flow", 2);
 
   DeepLayerDepth = TotalDepth;
   for (i = 0; i < NSoilLayers; i++)
@@ -243,6 +243,6 @@ void UnsaturatedFlow(int Dt, float DX, float DY, float Infiltration,
     *TableDepth = 0.0;
   }
 
-  TIMING_TASK_END("Unsaturated Flow");
+  TIMING_TASK_END("Unsaturated Flow", 2);
 
 }

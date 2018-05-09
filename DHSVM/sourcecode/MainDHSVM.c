@@ -123,8 +123,8 @@ int main(int argc, char **argv)
   int me, nproc, p;
 
   TIMING_INIT();
-  TIMING_TASK_START("total");
-  TIMING_TASK_START("startup");
+  TIMING_TASK_START("total", 0);
+  TIMING_TASK_START("startup", 1);
 
   ParallelInitialize(&argc, &argv);
   me = ParallelRank();
@@ -288,7 +288,7 @@ int main(int argc, char **argv)
   if (Options.StreamTemp) 
 	Init_segment_ncell(TopoMap, ChannelData.stream_map, Map.NY, Map.NX, ChannelData.streams);
 
-  TIMING_TASK_END("startup");
+  TIMING_TASK_END("startup", 1);
   
 /*****************************************************************************
   Perform Calculations 
@@ -325,6 +325,9 @@ int main(int argc, char **argv)
       channel_step_initialize_network(ChannelData.roads);
     }
 
+    
+    TIMING_TASK_START("Vertical mass/energy balance", 1);
+
     for (y = 0; y < Map.NY; y++) {
       for (x = 0; x < Map.NX; x++) {
         if (INBASIN(TopoMap[y][x].Mask)) {
@@ -336,7 +339,7 @@ int main(int argc, char **argv)
 			       &(RadiationMap[y][x]), &(PrecipMap[y][x]), &Radar,
 			       RadarMap, PrismMap, &(SnowMap[y][x]),
 			       SnowAlbedo, &(VegMap[y][x].Type), &(VegMap[y][x]), 
-                   MM5Input, WindModel, PrecipLapseMap,
+                               MM5Input, WindModel, PrecipLapseMap,
 			       &MetMap, NGraphics, Time.Current.Month,
 			       SkyViewMap[y][x], ShadowMap[Time.DayStep][y][x],
 			       SolarGeo.SunMax, SolarGeo.SineSolarAltitude);
@@ -347,7 +350,7 @@ int main(int argc, char **argv)
 			       &(RadiationMap[y][x]), &(PrecipMap[y][x]), &Radar,
 			       RadarMap, PrismMap, &(SnowMap[y][x]),
 			       SnowAlbedo, &(VegMap[y][x].Type), &(VegMap[y][x]), 
-                   MM5Input, WindModel, PrecipLapseMap,
+                               MM5Input, WindModel, PrecipLapseMap,
 			       &MetMap, NGraphics, Time.Current.Month, 0.0,
 			       0.0, SolarGeo.SunMax,
 			       SolarGeo.SineSolarAltitude);
@@ -370,16 +373,18 @@ int main(int argc, char **argv)
           }
 		  
           MassEnergyBalance(&Options, y, x, SolarGeo.SineSolarAltitude, Map.DX, Map.DY,
-            Time.Dt, Options.HeatFlux, Options.CanopyRadAtt, Options.Infiltration, Soil.MaxLayers,
-            Veg.MaxLayers, &LocalMet, &(Network[y][x]), &(PrecipMap[y][x]),
-            &(VType[VegMap[y][x].Veg - 1]), &(VegMap[y][x]), &(SType[SoilMap[y][x].Soil - 1]),
-            &(SoilMap[y][x]), &(SnowMap[y][x]), &(RadiationMap[y][x]), &(EvapMap[y][x]),
-            &(Total.Rad), &ChannelData, SkyViewMap);
+                            Time.Dt, Options.HeatFlux, Options.CanopyRadAtt, Options.Infiltration, Soil.MaxLayers,
+                            Veg.MaxLayers, &LocalMet, &(Network[y][x]), &(PrecipMap[y][x]),
+                            &(VType[VegMap[y][x].Veg - 1]), &(VegMap[y][x]), &(SType[SoilMap[y][x].Soil - 1]),
+                            &(SoilMap[y][x]), &(SnowMap[y][x]), &(RadiationMap[y][x]), &(EvapMap[y][x]),
+                            &(Total.Rad), &ChannelData, SkyViewMap);
 	 
-		  PrecipMap[y][x].SumPrecip += PrecipMap[y][x].Precip;
-		}
-	  }
+          PrecipMap[y][x].SumPrecip += PrecipMap[y][x].Precip;
+        }
+      }
     }
+
+    TIMING_TASK_END("Vertical mass/energy balance", 1);
 
     /* Average all RBM inputs over each segment */
     if (Options.StreamTemp) {
@@ -391,26 +396,28 @@ int main(int argc, char **argv)
 #ifndef SNOW_ONLY
     
 
-    TIMING_TASK_START("Subsurface routing");
+    TIMING_TASK_START("Subsurface routing", 1);
     RouteSubSurface(Time.Dt, &Map, TopoMap, VType, VegMap, Network,
         	    SType, SoilMap, &ChannelData, &Time, &Options, &Dump,
         	    MaxStreamID, SnowMap);
-    TIMING_TASK_END("Subsurface routing");
+    TIMING_TASK_END("Subsurface routing", 1);
 
-    TIMING_TASK_START("Channel routing");
+    TIMING_TASK_START("Channel routing", 1);
     if (Options.HasNetwork)
       RouteChannel(&ChannelData, &Time, &Map, TopoMap, SoilMap, &Total,
         	   &Options, Network, SType, PrecipMap, LocalMet.Tair, LocalMet.Rh);
-    TIMING_TASK_END("Channel routing");
+    TIMING_TASK_END("Channel routing", 1);
 
-    TIMING_TASK_START("Surface routing");
+    TIMING_TASK_START("Surface routing", 1);
     if (Options.Extent == BASIN)
       RouteSurface(&Map, &Time, TopoMap, SoilMap, &Options,
         UnitHydrograph, &HydrographInfo, Hydrograph,
         &Dump, VegMap, VType, &ChannelData);
-    TIMING_TASK_END("Surface routing");
+    TIMING_TASK_END("Surface routing", 1);
 
 #endif
+
+    TIMING_TASK_START("Output", 1);
 
 #if 0
     if (NGraphics > 0)
@@ -430,9 +437,13 @@ int main(int argc, char **argv)
 	     EvapMap, RadiationMap, PrecipMap, SnowMap, MetMap, VegMap, &Veg, 
 		 SoilMap, Network, &ChannelData, &Soil, &Total, &HydrographInfo,Hydrograph);
 	
+    TIMING_TASK_END("Output", 1);
+
     IncreaseTime(&Time);
 	t += 1;
   }
+
+  TIMING_TASK_START("Output", 1);
 
   ExecDump(&Map, &(Time.Current), &(Time.Start), &Options, &Dump, TopoMap,
 	   EvapMap, RadiationMap, PrecipMap, SnowMap, MetMap, VegMap, &Veg, SoilMap,
@@ -443,6 +454,8 @@ int main(int argc, char **argv)
     FinalMassBalance(&(Dump.FinalBalance), &Total, &Mass);
   }
 #endif
+
+  TIMING_TASK_END("Output", 1);
 
   DestroyChannel(&Options, &Map, &ChannelData);
 
@@ -463,7 +476,7 @@ int main(int argc, char **argv)
     ParallelBarrier();
   }
 
-  TIMING_TASK_END("total");
+  TIMING_TASK_END("total", 0);
   TIMING_DONE(me);
   
   ParallelFinalize();

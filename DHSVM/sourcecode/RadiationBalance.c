@@ -97,7 +97,7 @@ void RadiationBalance(OPTIONSTRUCT *Options, int HeatFluxOption,
                            direct and diffuse radiation, respectively */
   float Tsurf;			/* Surface temperature (C) */
 
-  TIMING_TASK_START("Radiation balance");
+  TIMING_TASK_START("Radiation balance", 2);
 
   F = VType->Fract[0];
   h = VType->Height[0];
@@ -183,7 +183,7 @@ void RadiationBalance(OPTIONSTRUCT *Options, int HeatFluxOption,
   // Input raw (downward) shortwave radiation without topo shading 
   LocalRad->ObsShortIn = VIC_Rs;
 
-  TIMING_TASK_END("Radiation balance");
+  TIMING_TASK_END("Radiation balance", 2);
 }
 
 /************************************************************************************************

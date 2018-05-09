@@ -10,7 +10,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2018-05-08 13:55:59 d3g096
+# Last Change: 2018-05-09 09:05:53 d3g096
 
 set -xue
 
@@ -85,6 +85,7 @@ if [ $host == "flophouse" ]; then
         -D GA_DIR:PATH="${prefix}/ga-c++" \
 	-D GA_EXTRA_LIBS:STRING="-lm" \
         -D DHSVM_USE_GPTL:BOOL=ON \
+        -D DHSVM_TIMING_LEVEL:STRING="1" \
         -D GPTL_DIR:PATH="$prefix/gptl-v5.5.3-2-gbb58395" \
         -D DHSVM_USE_NETCDF:BOOL=ON \
         -D CMAKE_INSTALL_PREFIX:PATH="$prefix/dhsvm" \
@@ -105,6 +106,7 @@ elif [ $host == "tlaloc" ]; then
         -D GA_DIR:STRING="$prefix/ga-c++" \
 	-D GA_EXTRA_LIBS:STRING="-lm" \
         -D DHSVM_USE_GPTL:BOOL=ON \
+        -D DHSVM_TIMING_LEVEL:STRING="1" \
         -D GPTL_DIR:PATH="$prefix/gptl-v5.5.3-2-gbb58395" \
         -D DHSVM_USE_NETCDF:BOOL=OFF \
         -D CMAKE_INSTALL_PREFIX:PATH="$prefix/dhsvm" \

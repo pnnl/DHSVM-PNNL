@@ -122,7 +122,7 @@ void SnowInterception(OPTIONSTRUCT *Options, int y, int x, int Dt, float F,
   float intsnowfrac;		/*fraction of intercepted water which is solid */
   float OriginalRainfall;
 
-  TIMING_TASK_START("Snow interception");
+  TIMING_TASK_START("Snow interception", 3);
 
   /* Initialize Drip, H2O balance, and mass release variables. */
   OriginalRainfall = *RainFall;
@@ -360,5 +360,5 @@ void SnowInterception(OPTIONSTRUCT *Options, int y, int x, int Dt, float F,
   *RainFall = RainThroughFall + Drip;
   *SnowFall = SnowThroughFall + ReleasedMass;
 
-  TIMING_TASK_END("Snow interception");
+  TIMING_TASK_END("Snow interception", 3);
 }

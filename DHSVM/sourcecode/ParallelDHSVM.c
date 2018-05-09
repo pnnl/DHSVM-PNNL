@@ -10,7 +10,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2018-05-07 13:40:16 d3g096
+ * LAST CHANGE: 2018-05-09 08:00:24 d3g096
  * COMMENTS:
  */
 
@@ -133,7 +133,7 @@ GA_Inquire_irreg_distr(int ga, int *mapc, int *nblk)
   int ndim, dims[GA_MAX_DIM];
   int gatype;
 
-  TIMING_TASK_START("GA Creation");
+  TIMING_TASK_START("GA Creation", 4);
 
   NGA_Inquire(ga, &gatype, &ndim, &dims[0]);
 
@@ -162,7 +162,7 @@ GA_Inquire_irreg_distr(int ga, int *mapc, int *nblk)
     mapcptr++;
   }
   free(idx);
-  TIMING_TASK_END("GA Creation");
+  TIMING_TASK_END("GA Creation", 4);
 }
 
 /******************************************************************************/
@@ -184,7 +184,7 @@ GA_Duplicate_type(int oga, char *nname, int ntype)
   int ndim, dims[GA_MAX_DIM];
   int otype;
 
-  TIMING_TASK_START("GA Creation");
+  TIMING_TASK_START("GA Creation", 4);
 
   NGA_Inquire(oga, &otype, &ndim, &dims[0]);
 
@@ -216,7 +216,7 @@ GA_Duplicate_type(int oga, char *nname, int ntype)
 
     free(mapc);
   }    
-  TIMING_TASK_END("GA Creation");
+  TIMING_TASK_END("GA Creation", 4);
   return nga;
 }
 
@@ -635,9 +635,9 @@ MaskedDomainDecomposition(MAPSIZE *gmap, MAPSIZE *lmap, MAPSIZE *nmap,
 void
 ParallelBarrier()
 {
-  TIMING_TASK_START("GA Sync");
+  TIMING_TASK_START("GA Sync", 4);
   GA_Sync();
-  TIMING_TASK_END("GA Sync");
+  TIMING_TASK_END("GA Sync", 4);
 }
 
 /******************************************************************************/

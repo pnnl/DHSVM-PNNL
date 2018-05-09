@@ -116,16 +116,24 @@ snow-only mode.
 
 ### Timing with GPTL ### 
 
-DHSVM can be compiled to perform some internal timing during
-simulations.  This requires the
+DHSVM can optionally be compiled to perform some internal timing
+during simulations.  This requires the
 [General Purpose Timing Library](https://jmrosinski.github.io/GPTL/)
 be available on the system.  To enable timing, use the following
 configuration options:
 
-   -D DHSVM_USE_GPTL:BOOL=ON -D GPTL_DIR:PATH="/path/to/gptl"
+   -D DHSVM_USE_GPTL:BOOL=ON 
+   -D GPTL_DIR:PATH="/path/to/gptl"
+   -D DHSVM_TIMING_LEVEL:STRING="1" 
    
 The resulting executables will produce files named `timing.#` at the
 end of simulation, where `#` is the MPI process number.  These contain
 timing results for several key simulation components.
+
+The `DHSVM_TIMING_LEVEL` can be from 1 to 4, where 4 produces the most
+detailed information.  The timing routines can impact performance with
+higher detail, but this is documented in the output.  
+
+
 
 
