@@ -29,6 +29,7 @@
 #include "constants.h"
 #include "soilmoisture.h"
 #include "Calendar.h"
+#include "timing.h"
 
  /*****************************************************************************
    Function name: MassEnergyBalance()
@@ -99,6 +100,8 @@ void MassEnergyBalance(OPTIONSTRUCT *Options, int y, int x,
   float SnowTmean;          /* Average snow surface temperature*/
   double Tmp;			    /* Temporary value */
   float Ls;			        /* Latent heat of sublimation (J/kg) */
+
+  TIMING_TASK_START("Mass/energy balance");
 
   /* Edited by Zhuoran Duan zhuoran.duan@pnnl.gov 06/21/2006*/
   /*Add a function to modify soil moisture by add/extract SatFlow from previous time step*/
@@ -189,6 +192,8 @@ void MassEnergyBalance(OPTIONSTRUCT *Options, int y, int x,
      vegetation present. */
 #ifndef NO_SNOW
 
+  TIMING_TASK_START("Snow");
+
   if (VType->OverStory == TRUE &&
     (LocalPrecip->IntSnow[0] || LocalPrecip->SnowFall > 0.0)) {
     SnowInterception(Options, y, x, Dt, VType->Fract[0], VType->Vf,
@@ -246,6 +251,8 @@ void MassEnergyBalance(OPTIONSTRUCT *Options, int y, int x,
         &(LocalSnow->Swq), &(LocalSnow->VaporMassFlux),
         &(LocalSnow->TPack), &(LocalSnow->TSurf), &(LocalVeg->MeltEnergy));
 
+    TIMING_TASK_START("Snow energy balance terms");
+
     /* Calculate the terms of the snow energy balance.  This is similar to the
     code in SnowPackEnergyBalance.c */
     SnowTmean = 0.5 * (OldSnowTSurf + LocalSnow->TSurf);
@@ -285,6 +292,8 @@ void MassEnergyBalance(OPTIONSTRUCT *Options, int y, int x,
     /* Rainfall was added to SurfWater of the snow pack and has to be set to zero */
     LocalPrecip->RainFall = 0.0;
     LocalVeg->MoistureFlux -= LocalSnow->VaporMassFlux;
+
+    TIMING_TASK_END("Snow energy balance terms");
 
     /* Because we now have a new estimate of the snow surface temperature we
        can recalculate the longwave balance */
@@ -336,9 +345,14 @@ void MassEnergyBalance(OPTIONSTRUCT *Options, int y, int x,
       &(LocalVeg->Type), VType, LocalRad, LocalMet, UpperRa, UpperWind);
   }
 
+  TIMING_TASK_END("Snow");
+
 #endif
 
 #ifndef NO_ET
+
+  TIMING_TASK_START("ET");
+
   /* calculate the amount of evapotranspiration from each vegetation layer
      above the ground/soil surface.  Also calculate the total amount of
      evapotranspiration from the vegetation */
@@ -437,6 +451,8 @@ void MassEnergyBalance(OPTIONSTRUCT *Options, int y, int x,
       LocalSoil, LocalMet, LocalEvap, LocalNetwork, Dt, UpperRa, LowerRa);
 
   }
+
+  TIMING_TASK_END("ET");
 #endif
   
   /* aggregate the gap and non-gap variables based on area weight*/
@@ -447,6 +463,8 @@ void MassEnergyBalance(OPTIONSTRUCT *Options, int y, int x,
   /* add the water that was not intercepted to the upper soil layer */
 
 #ifndef NO_SOIL
+
+  TIMING_TASK_START("Infiltration");
 
   /* This has been modified so that PercArea for infiltration is calculated
      locally to account for the fact that some cells have roads and streams.
@@ -541,6 +559,8 @@ void MassEnergyBalance(OPTIONSTRUCT *Options, int y, int x,
     LocalSoil->ChannelInt += ChannelWater;
   }
 
+  TIMING_TASK_END("Infiltration");
+
   /* Calculate unsaturated soil water movement, and adjust soil water table depth */
   UnsaturatedFlow(Dt, DX, DY, Infiltration, RoadbedInfiltration,
     LocalSoil->SatFlow, SType->NLayers, LocalSoil->Depth,
@@ -587,4 +607,5 @@ void MassEnergyBalance(OPTIONSTRUCT *Options, int y, int x,
     if (channel_grid_has_channel(ChannelData->stream_map, x, y))
       channel_grid_inc_other(ChannelData->stream_map, x, y, LocalRad, LocalMet, skyview[y][x]);
   }
+  TIMING_TASK_END("Mass/energy balance");
 }

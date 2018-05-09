@@ -10,7 +10,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2018-05-07 13:13:56 d3g096
+ * LAST CHANGE: 2018-05-07 14:51:07 d3g096
  * COMMENTS:
  */
 
@@ -25,7 +25,7 @@
   GPTLsetoption(GPTLabort_on_error, 1);         \
   GPTLsetoption(GPTLsync_mpi, 1);               \
   GPTLsetoption(GPTLpercent, 1);                \
-  GPTLsetoption(GPTLoverhead, 0);               \
+  GPTLsetoption(GPTLoverhead, 1);               \
   GPTLinitialize();
   
 #define TIMING_TASK_START(name) GPTLstart(name)

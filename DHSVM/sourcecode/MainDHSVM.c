@@ -124,6 +124,7 @@ int main(int argc, char **argv)
 
   TIMING_INIT();
   TIMING_TASK_START("total");
+  TIMING_TASK_START("startup");
 
   ParallelInitialize(&argc, &argv);
   me = ParallelRank();
@@ -287,6 +288,8 @@ int main(int argc, char **argv)
   if (Options.StreamTemp) 
 	Init_segment_ncell(TopoMap, ChannelData.stream_map, Map.NY, Map.NX, ChannelData.streams);
 
+  TIMING_TASK_END("startup");
+  
 /*****************************************************************************
   Perform Calculations 
 *****************************************************************************/
@@ -325,6 +328,7 @@ int main(int argc, char **argv)
     for (y = 0; y < Map.NY; y++) {
       for (x = 0; x < Map.NX; x++) {
         if (INBASIN(TopoMap[y][x].Mask)) {
+
           if (Options.Shading)
             LocalMet =
               MakeLocalMetData(y, x, &Map, Time.DayStep, &Options, NStats,
@@ -387,18 +391,24 @@ int main(int argc, char **argv)
 #ifndef SNOW_ONLY
     
 
+    TIMING_TASK_START("Subsurface routing");
     RouteSubSurface(Time.Dt, &Map, TopoMap, VType, VegMap, Network,
         	    SType, SoilMap, &ChannelData, &Time, &Options, &Dump,
         	    MaxStreamID, SnowMap);
+    TIMING_TASK_END("Subsurface routing");
 
+    TIMING_TASK_START("Channel routing");
     if (Options.HasNetwork)
       RouteChannel(&ChannelData, &Time, &Map, TopoMap, SoilMap, &Total,
         	   &Options, Network, SType, PrecipMap, LocalMet.Tair, LocalMet.Rh);
+    TIMING_TASK_END("Channel routing");
 
+    TIMING_TASK_START("Surface routing");
     if (Options.Extent == BASIN)
       RouteSurface(&Map, &Time, TopoMap, SoilMap, &Options,
         UnitHydrograph, &HydrographInfo, Hydrograph,
         &Dump, VegMap, VType, &ChannelData);
+    TIMING_TASK_END("Surface routing");
 
 #endif
 

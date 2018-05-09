@@ -10,7 +10,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2017-04-06 08:13:35 d3g096
+ * LAST CHANGE: 2018-05-07 13:40:58 d3g096
  * COMMENTS:
  */
 
@@ -86,7 +86,7 @@ Distribute2DMatrix(void *MatrixZero, void *LocalMatrix,
     ld[gaYdim] = gNX;
     NGA_Put(ga, &lo[0], &hi[0], MatrixZero, &ld[0]);
   }
-  GA_Sync();
+  ParallelBarrier();
 
   lo[gaYdim] = Map->OffsetY;
   lo[gaXdim] = Map->OffsetX;
@@ -96,7 +96,7 @@ Distribute2DMatrix(void *MatrixZero, void *LocalMatrix,
   ld[gaYdim] = Map->NX;
   NGA_Get(ga, &lo[0], &hi[0], LocalMatrix, &ld[0]);
 
-  GA_Sync();
+  ParallelBarrier();
   GA_Destroy(ga);
 }
 
@@ -128,7 +128,7 @@ Collect2DMatrix(void *MatrixZero, void *LocalMatrix,
     ld[gaYdim] = gNX;
     NGA_Get(ga, &lo[0], &hi[0], MatrixZero, &ld[0]);
   }
-  GA_Sync();
+  ParallelBarrier();
   GA_Destroy(ga);
 }
 

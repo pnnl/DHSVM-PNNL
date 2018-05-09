@@ -21,6 +21,7 @@
 #include "functions.h"
 #include "soilmoisture.h"
 #include <assert.h>
+#include "timing.h"
 
 
 /*****************************************************************************/
@@ -45,6 +46,8 @@ void DistributeSatflow(int Dt, float DX, float DY, float SatFlow, int NSoilLayer
   float ExtracWater;
   float DeepExtracWater;
   float Depth;
+
+  TIMING_TASK_START("Saturated Flow");
 
   DeepPorosity = Porosity[NSoilLayers - 1];
   DeepFCap = FCap[NSoilLayers - 1];
@@ -211,6 +214,8 @@ void DistributeSatflow(int Dt, float DX, float DY, float SatFlow, int NSoilLayer
     *Runoff += SatFlow;
 
   assert(SatFlow >= -0.000001);
+
+  TIMING_TASK_END("Saturated Flow");
 
 }
 

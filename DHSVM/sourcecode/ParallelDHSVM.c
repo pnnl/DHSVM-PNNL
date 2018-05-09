@@ -10,7 +10,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2017-06-01 08:48:07 d3g096
+ * LAST CHANGE: 2018-05-07 13:40:16 d3g096
  * COMMENTS:
  */
 
@@ -31,6 +31,7 @@
 #include "DHSVMerror.h"
 #include "ParallelDHSVM.h"
 #include "array_alloc.h"
+#include "timing.h"
 
 
 const int gaXdim = 1;
@@ -132,6 +133,8 @@ GA_Inquire_irreg_distr(int ga, int *mapc, int *nblk)
   int ndim, dims[GA_MAX_DIM];
   int gatype;
 
+  TIMING_TASK_START("GA Creation");
+
   NGA_Inquire(ga, &gatype, &ndim, &dims[0]);
 
   np = GA_Nnodes();
@@ -159,6 +162,7 @@ GA_Inquire_irreg_distr(int ga, int *mapc, int *nblk)
     mapcptr++;
   }
   free(idx);
+  TIMING_TASK_END("GA Creation");
 }
 
 /******************************************************************************/
@@ -179,6 +183,8 @@ GA_Duplicate_type(int oga, char *nname, int ntype)
   int nga;
   int ndim, dims[GA_MAX_DIM];
   int otype;
+
+  TIMING_TASK_START("GA Creation");
 
   NGA_Inquire(oga, &otype, &ndim, &dims[0]);
 
@@ -210,6 +216,7 @@ GA_Duplicate_type(int oga, char *nname, int ntype)
 
     free(mapc);
   }    
+  TIMING_TASK_END("GA Creation");
   return nga;
 }
 
@@ -432,7 +439,7 @@ find_splits(int ga, int nsplit, int *isplit)
     value = 1;
     NGA_Put(ga_mask, &lo[0], &hi[0], &value, NULL);
   }
-  GA_Sync();
+  ParallelBarrier();
 
   ga_sum = GA_Duplicate(ga, "find_splits Sum");
   GA_Zero(ga_sum);
@@ -603,7 +610,7 @@ MaskedDomainDecomposition(MAPSIZE *gmap, MAPSIZE *lmap, MAPSIZE *nmap,
       fflush(stdout);
     }
   }
-  GA_Sync();
+  ParallelBarrier();
 
   memcpy(nmap, lmap, sizeof(MAPSIZE));
 
@@ -628,7 +635,9 @@ MaskedDomainDecomposition(MAPSIZE *gmap, MAPSIZE *lmap, MAPSIZE *nmap,
 void
 ParallelBarrier()
 {
+  TIMING_TASK_START("GA Sync");
   GA_Sync();
+  TIMING_TASK_END("GA Sync");
 }
 
 /******************************************************************************/
@@ -831,7 +840,7 @@ Collect2DMatrixGA(void *LocalMatrix, int NumberType, MAPSIZE *Map)
   ld[gaXdim] = Map->NY;
   ld[gaYdim] = Map->NX;
   NGA_Put(ga, &lo[0], &hi[0], LocalMatrix, &ld[0]);
-  GA_Sync();
+  ParallelBarrier();
   /* GA_Print(ga); */
   return ga;
 }

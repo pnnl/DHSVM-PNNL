@@ -24,6 +24,7 @@
 #include "massenergy.h"
 #include "snow.h"
 #include "functions.h"
+#include "timing.h"
 
 /*****************************************************************************
 Function name: SnowInterception()
@@ -120,6 +121,8 @@ void SnowInterception(OPTIONSTRUCT *Options, int y, int x, int Dt, float F,
   float intrainfrac;		/* fraction of intercepted water which is liquid */
   float intsnowfrac;		/*fraction of intercepted water which is solid */
   float OriginalRainfall;
+
+  TIMING_TASK_START("Snow interception");
 
   /* Initialize Drip, H2O balance, and mass release variables. */
   OriginalRainfall = *RainFall;
@@ -356,4 +359,6 @@ void SnowInterception(OPTIONSTRUCT *Options, int y, int x, int Dt, float F,
 
   *RainFall = RainThroughFall + Drip;
   *SnowFall = SnowThroughFall + ReleasedMass;
+
+  TIMING_TASK_END("Snow interception");
 }

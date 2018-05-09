@@ -11,7 +11,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2017-04-28 08:56:17 d3g096
+ * LAST CHANGE: 2018-05-07 13:39:54 d3g096
  * COMMENTS:
  *
  *    All processes have a copy of the channel network.  All processes
@@ -102,7 +102,7 @@ ChannelGatherLateralInflow(Channel *net, int ga)
   ld[1] = 1;
   NGA_Zero_patch(ga, lo, hi);
   NGA_Acc(ga, lo, hi, &lflow[0], ld, &one);
-  GA_Sync();
+  ParallelBarrier();
 
   /* GA_Print(ga); */
 
@@ -155,7 +155,7 @@ ChannelDistributeState(Channel *net, int ga)
     }
   }
 
-  GA_Sync();
+  ParallelBarrier();
 
   /* get the channel state from the GA and put it in the local copy of
      the channel network */
@@ -171,7 +171,7 @@ ChannelDistributeState(Channel *net, int ga)
     current->outflow = value[Outflow];
     current->storage = value[Storage];
   }
-  GA_Sync();
+  ParallelBarrier();
 
 
   
