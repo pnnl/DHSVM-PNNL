@@ -10,7 +10,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2018-03-30 11:47:00 d3g096
+# Last Change: 2018-05-09 09:05:53 d3g096
 
 set -xue
 
@@ -73,14 +73,42 @@ if [ $host == "flophouse" ]; then
     CXX=/usr/bin/g++
     export CC
 
+    # For GPTL (not working)
+    # CFLAGS="-finstrument-functions"
+    # export CFLAGS
+
     prefix="/net/flophouse/files0/perksoft/linux64"
+    cmake $options \
+        -D MPI_C_COMPILER:STRING="/usr/lib64/openmpi/bin/mpicc" \
+        -D MPI_CXX_COMPILER:STRING="/usr/lib64/openmpi/bin/mpicxx" \
+        -D MPIEXEC:STRING="/usr/lib64/openmpi/bin/mpiexec" \
+        -D GA_DIR:PATH="${prefix}/ga-c++" \
+	-D GA_EXTRA_LIBS:STRING="-lm" \
+        -D DHSVM_USE_GPTL:BOOL=ON \
+        -D DHSVM_TIMING_LEVEL:STRING="1" \
+        -D GPTL_DIR:PATH="$prefix/gptl-v5.5.3-2-gbb58395" \
+        -D DHSVM_USE_NETCDF:BOOL=ON \
+        -D CMAKE_INSTALL_PREFIX:PATH="$prefix/dhsvm" \
+        $common_flags \
+        ..
+
+elif [ $host == "tlaloc" ]; then
+
+    CC=/usr/bin/gcc
+    CXX=/usr/bin/g++
+    export CC
+
+    prefix="/file0/perksoft"
     cmake $options \
         -D MPI_C_COMPILER:STRING="/usr/lib64/openmpi/bin/mpicc" \
         -D MPI_CXX_COMPILER:STRING="/usr/lib64/openmpi/bin/mpicxx" \
         -D MPIEXEC:STRING="/usr/lib64/openmpi/bin/mpiexec" \
         -D GA_DIR:STRING="$prefix/ga-c++" \
 	-D GA_EXTRA_LIBS:STRING="-lm" \
-        -D DHSVM_USE_NETCDF:BOOL=ON \
+        -D DHSVM_USE_GPTL:BOOL=ON \
+        -D DHSVM_TIMING_LEVEL:STRING="1" \
+        -D GPTL_DIR:PATH="$prefix/gptl-v5.5.3-2-gbb58395" \
+        -D DHSVM_USE_NETCDF:BOOL=OFF \
         -D CMAKE_INSTALL_PREFIX:PATH="$prefix/dhsvm" \
         $common_flags \
         ..

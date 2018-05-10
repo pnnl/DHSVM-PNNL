@@ -26,6 +26,8 @@
 #include "functions.h"
 #include "snow.h"
 
+#include "timing.h"
+
 static float CalcSnowPackEnergyBalance(float Tsurf, ...);
 
 /*****************************************************************************
@@ -105,6 +107,8 @@ float SnowMelt(int y, int x, int Dt, float Z, float Displacement, float Z0,
                               (m water equivalent) */
   float SurfaceCC;		    /* Cold content of snow pack (J) */
   float SurfaceSwq;		    /* Surface layer snow water equivalent (m) */
+
+  TIMING_TASK_START("Snow melt", 3);
 
   InitialSwq = *Swq;
   OldTSurf = *TSurf;
@@ -353,6 +357,8 @@ float SnowMelt(int y, int x, int Dt, float Z, float Displacement, float Z0,
   /* Mass balance test */
   MassBalanceError = (InitialSwq - *Swq) + (RainFall + SnowFall) - Outflow +
     *VaporMassFlux;
+
+  TIMING_TASK_END("Snow melt", 3);
 
   return (Outflow);
 }

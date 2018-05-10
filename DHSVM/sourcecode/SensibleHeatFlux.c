@@ -25,6 +25,7 @@
 #include "constants.h"
 #include "brent.h"
 #include "functions.h"
+#include "timing.h"
 
 /*****************************************************************************
   SensibleHeatFlux()
@@ -45,6 +46,8 @@ void SensibleHeatFlux(int y, int x, int Dt, float Ra, float ZRef,
   float TSoilLower;		/* Temperature os the soil at FluxDepth (C) */
   float TSoilUpper;		/* Temperature os the soil in top layer (C) */
   double Tmp;			/* Temporary value */
+
+  TIMING_TASK_START("Sensible heat flux", 3);
 
   OldTSurf = LocalSoil->TSurf;
   MaxTSurf = 0.5 * (LocalSoil->TSurf + LocalMet->Tair) + DELTAT;
@@ -112,6 +115,8 @@ void SensibleHeatFlux(int y, int x, int Dt, float Ra, float ZRef,
 
   LocalSoil->Qrest = LocalSoil->Qnet + LocalSoil->Qs + LocalSoil->Qe +
     LocalSoil->Qg + LocalSoil->Qst + MeltEnergy;
+
+  TIMING_TASK_END("Sensible heat flux", 3);
 }
 
 /*****************************************************************************

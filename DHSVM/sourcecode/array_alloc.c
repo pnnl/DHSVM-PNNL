@@ -10,11 +10,16 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2017-05-10 11:29:29 d3g096
+ * LAST CHANGE: 2018-05-09 08:01:02 d3g096
  * COMMENTS:
  */
 
+#ifdef TEST_MAIN
+#undef GPTL_TIMING
+#endif
+
 #include <stdlib.h>
+#include <timing.h>
 
 
 /******************************************************************************/
@@ -33,6 +38,7 @@
   {                                                                     \
     int i;                                                              \
     thetype *p;                                                         \
+    TIMING_TASK_START("array allocation", 4);                           \
     theresult = NULL;                                                   \
     p = (thetype *) calloc(n1*n2, sizeof(thetype));                     \
     if (p != NULL)                                                      \
@@ -51,11 +57,14 @@
             free(p);                                                    \
           }                                                             \
       }                                                                 \
+    TIMING_TASK_END("array allocation", 4);                             \
   }
 
 #define FREE_2D_TYPE(thearray)                  \
+  TIMING_TASK_START("array allocation", 4);     \
   free(thearray[0]);                            \
   free(thearray);                               \
+  TIMING_TASK_END("array allocation", 4);       \
   thearray = NULL;
 
 
@@ -109,6 +118,7 @@ calloc_3D_uint(int N1, int N2, int N3)
 {
   unsigned int ***result, *p;
   int i, j;
+  TIMING_TASK_START("array allocation", 4); 
   result = NULL;
   p = (unsigned int *) calloc(N1*N2*N3, sizeof(unsigned int));
   if (p != NULL) {
@@ -124,6 +134,7 @@ calloc_3D_uint(int N1, int N2, int N3)
       free(p);
     }
   }
+  TIMING_TASK_END("array allocation", 4); 
   return result;
 }
 
@@ -145,6 +156,7 @@ calloc_3D_uchar(int N1, int N2, int N3)
 {
   unsigned char ***result, *p;
   int i, j;
+  TIMING_TASK_START("array allocation", 4); 
   result = NULL;
   p = (unsigned char *) calloc(N1*N2*N3, sizeof(unsigned char));
   if (p != NULL) {
@@ -160,6 +172,7 @@ calloc_3D_uchar(int N1, int N2, int N3)
       free(p);
     }
   }
+  TIMING_TASK_END("array allocation", 4); 
   return result;
 }
 

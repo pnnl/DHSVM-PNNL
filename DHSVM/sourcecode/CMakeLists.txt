@@ -9,7 +9,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2018-03-30 11:50:24 d3g096
+# Last Change: 2018-05-09 08:09:07 d3g096
 
 # -------------------------------------------------------------
 # Set up for this subdirectory
@@ -30,6 +30,13 @@ include_directories(AFTER
   ${MPI_C_INCLUDE_PATH}
   ${GA_INCLUDE_DIRS}
 )
+
+if (GPTL_FOUND)
+  add_definitions(-DGPTL_TIMING)
+  include_directories(AFTER ${GPTL_INCLUDE_DIRS})
+endif (GPTL_FOUND)
+
+add_definitions(-DTIMING_MAX_LEVEL=${DHSVM_TIMING_LEVEL})
 
 # tablio.c generation
 if (FLEX_FOUND)
@@ -165,14 +172,21 @@ add_executable(DHSVM
   ${DHSVM_SRC}
 )
 
-target_link_libraries(DHSVM
-  BinIO
+set (DHSVM_LIBS BinIO)
+
+if (GPTL_FOUND) 
+  list(APPEND DHSVM_LIBS ${GPTL_LIBRARIES})
+endif (GPTL_FOUND)
+
+list(APPEND DHSVM_LIBS 
   ${NETCDF_LIBRARIES}
   ${X11_LIBRARIES}
   ${GA_LIBRARIES} 
   ${MPI_C_LIBRARIES}
   ${MATH_LIBRARY}
 )
+
+target_link_libraries(DHSVM ${DHSVM_LIBS})
 
 if(DHSVM_SNOW_ONLY)
 
@@ -184,14 +198,8 @@ if(DHSVM_SNOW_ONLY)
     PUBLIC SNOW_ONLY=1
     )
 
-  target_link_libraries(DHSVM_SNOW
-    BinIO
-    ${NETCDF_LIBRARIES}
-    ${X11_LIBRARIES}
-    ${GA_LIBRARIES} 
-    ${MPI_C_LIBRARIES}
-    ${MATH_LIBRARY}
-    )
+  target_link_libraries(DHSVM_SNOW ${DHSVM_LIBS})
+
 endif(DHSVM_SNOW_ONLY)
 
 # -------------------------------------------------------------
@@ -345,6 +353,7 @@ if (DHSVM_BUILD_TESTS)
     )
   target_link_libraries(patch_test
     BinIO
+    ${GPTL_LIBRARIES}
     ${GA_LIBRARIES} 
     ${MPI_C_LIBRARIES}
     )
