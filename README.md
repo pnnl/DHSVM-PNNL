@@ -52,7 +52,7 @@ select optional features.  Here are some terse instructions:
     [NetCDF](http://www.unidata.ucar.edu/software/netcdf/), or RBM
     using the default C compiler.
     
-* If successful, build DHSVM and related programs, using
+  * If successful, build DHSVM and related programs, using
 
         cmake --build .
 
@@ -62,3 +62,13 @@ select optional features.  Here are some terse instructions:
     
 The original Makefiles are in the source tree and can still be used as
 described in the tutorial if preferred.
+
+### Snow-only mode ###
+
+If DHSVM is configured with this option,
+
+   -D DHSVM_SNOW_ONLY:BOOL=ON
+   
+an additional executable is built, `DHSVM_SNOW`, which operates in
+snow-only mode. 
+
