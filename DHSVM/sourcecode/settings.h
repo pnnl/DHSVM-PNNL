@@ -129,7 +129,7 @@ enum KEYS {
   snow_water_capacity, reference_height, rain_lai_multiplier,
   snow_lai_multiplier, min_intercepted_snow, outside_basin,
   temp_lapse_rate, precip_lapse_rate, precip_multiplier, alb_acc_lambda, 
-  alb_melt_lambda, alb_acc_min, alb_melt_min, snowslide_parameter1,
+  alb_melt_lambda, alb_acc_min, alb_melt_min, max_swe, snowslide_parameter1,
   snowslide_parameter2, gapwind_adj,
   /* Station information */
   station_name = 0, station_north, station_east, station_elev, station_file,
