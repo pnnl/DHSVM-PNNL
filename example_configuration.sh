@@ -201,6 +201,7 @@ elif [ $host = "briareus" ]; then
     -D DHSVM_USE_NETCDF:BOOL=OFF \
     -D MPI_C_COMPILER:STRING="mpicc" \
     -D GA_DIR:STRING="/files0/dhsvm" \
+    -D GA_EXTRA_LIBS:STRING="-libverbs -lm" \
     -D CMAKE_INSTALL_PREFIX:PATH="/files0/dhsvm" \
     ..
 
