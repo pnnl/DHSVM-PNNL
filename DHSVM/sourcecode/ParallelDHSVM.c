@@ -10,7 +10,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2018-05-09 08:00:24 d3g096
+ * LAST CHANGE: 2018-05-15 13:56:50 d3g096
  * COMMENTS:
  */
 
@@ -366,7 +366,7 @@ GA_Mapsize(MAPSIZE *global, MAPSIZE *local, int gaid)
   global->dist = gaid;
   local->dist = gaid;
   local->Xorig = global->Xorig + lo[gaXdim]*global->DX;
-  local->Yorig = global->Yorig + lo[gaYdim]*global->DY;
+  local->Yorig = global->Yorig - lo[gaYdim]*global->DY;
   local->OffsetX = lo[gaXdim];
   local->OffsetY = lo[gaYdim];
   local->NX = hi[gaXdim] - lo[gaXdim] + 1;
