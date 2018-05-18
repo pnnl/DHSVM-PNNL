@@ -248,7 +248,6 @@ elif [ $host = "constance" ]; then
 	-D GA_EXTRA_LIBS:STRING="-libverbs -lm" \
         -D DHSVM_USE_X11:BOOL=OFF \
         -D DHSVM_USE_NETCDF:BOOL=OFF \
-        -D NETCDF_INCLUDES:PATH="${NETCDF_INCLUDE}" \
         -D CMAKE_INSTALL_PREFIX:PATH="$prefix" \
         $common_flags \
         ..
