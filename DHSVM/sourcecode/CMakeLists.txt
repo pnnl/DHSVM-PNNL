@@ -38,6 +38,11 @@ endif (GPTL_FOUND)
 
 add_definitions(-DTIMING_MAX_LEVEL=${DHSVM_TIMING_LEVEL})
 
+if(CMAKE_BUILD_TYPE MATCHES Debug)
+    message("debug mode: turning DEBUG messages on")
+    add_definitions(-DDEBUG=1)
+endif(CMAKE_BUILD_TYPE MATCHES Debug)
+
 # tablio.c generation
 if (FLEX_FOUND)
   FLEX_TARGET(tableio 

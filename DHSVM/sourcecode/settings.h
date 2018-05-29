@@ -85,7 +85,10 @@ typedef unsigned int unint;
 #define GLACIER -1234
 
 #define TINY       1e-20
+
+#ifndef DEBUG
 #define DEBUG      FALSE
+#endif
 
 #define HEADERLINES    5
 #define BUFSIZE      255

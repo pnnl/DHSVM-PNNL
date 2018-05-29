@@ -10,7 +10,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2018-05-09 08:00:24 d3g096
+ * LAST CHANGE: 2018-05-15 13:56:50 d3g096
  * COMMENTS:
  */
 
@@ -47,7 +47,7 @@ ParallelInitialize(int *argc, char ***argv)
   int ierr;
   ierr = 0;
   GA_Initialize_args(argc, argv);
-  if (!MA_init(MT_C_DBL, 5000, 5000)) {
+  if (!MA_init(MT_C_DBL, 500000, 500000)) {
     ReportError("ParallelInitialize: MA_init: ", 70);
     ierr += 1;
   }
@@ -366,7 +366,7 @@ GA_Mapsize(MAPSIZE *global, MAPSIZE *local, int gaid)
   global->dist = gaid;
   local->dist = gaid;
   local->Xorig = global->Xorig + lo[gaXdim]*global->DX;
-  local->Yorig = global->Yorig + lo[gaYdim]*global->DY;
+  local->Yorig = global->Yorig - lo[gaYdim]*global->DY;
   local->OffsetX = lo[gaXdim];
   local->OffsetY = lo[gaYdim];
   local->NX = hi[gaXdim] - lo[gaXdim] + 1;
