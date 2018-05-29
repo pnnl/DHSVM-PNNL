@@ -24,6 +24,7 @@
 #include "functions.h"
 #include "constants.h"
 #include "rad.h"
+#include "timing.h"
 
 /*****************************************************************************
 Function name: MakeLocalMetData()
@@ -79,6 +80,8 @@ PIXMET MakeLocalMetData(int y, int x, MAPSIZE *Map, int DayStep,
   float TempLapseRate;
   int WindDirection = 0;	/* Direction of model wind */
   PIXMET LocalMet;		/* local met data */
+
+  TIMING_TASK_START("Make new met data", 2);
 
   LocalMet.Tair = 0.0;
   LocalMet.Rh = 0.0;
@@ -367,6 +370,8 @@ PIXMET MakeLocalMetData(int y, int x, MAPSIZE *Map, int DayStep,
     (*MetMap)[y][x].wind_speed = LocalMet.Wind;
     (*MetMap)[y][x].humidity = LocalMet.Rh;
   }
+
+  TIMING_TASK_END("Make new met data", 2);
 
   return LocalMet;
 }

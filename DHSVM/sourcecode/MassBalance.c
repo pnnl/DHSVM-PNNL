@@ -23,6 +23,7 @@
 #include "functions.h"
 #include "constants.h"
 #include "Calendar.h"
+#include "timing.h"
 
 /*****************************************************************************
   MassBalance()
@@ -42,6 +43,8 @@ void MassBalance(DATE *Current, DATE *Start, FILES *Out, AGGREGATED *Total, WATE
   float Output;			/* total water flux leaving the basin;  */
   float Input;
   float MassError;		/* mass balance error m  */
+
+  TIMING_TASK_START("MassBalasce", 2);
 
   NewWaterStorage = Total->Soil.IExcess + Total->Road.IExcess + 
     Total->CanopyWater + Total->SoilWater +
@@ -91,4 +94,5 @@ void MassBalance(DATE *Current, DATE *Start, FILES *Out, AGGREGATED *Total, WATE
 	  Total->ChannelInt,  Total->RoadInt, Total->CulvertToChannel, 
       Total->Rad.BeamIn+Total->Rad.DiffuseIn, Total->Rad.PixelNetShort, 
       Total->Rad.NetShort[0], Total->Rad.NetShort[1], Total->NetRad, Total->Rad.Tair, MassError);
+  TIMING_TASK_END("MassBalasce", 2);
 }

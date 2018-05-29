@@ -296,6 +296,8 @@ int main(int argc, char **argv)
   while (Before(&(Time.Current), &(Time.End)) ||
 	 IsEqualTime(&(Time.Current), &(Time.End))) {
 
+    TIMING_TASK_START("Time step initialization", 1);
+
     /* reset aggregated variables */
     ResetAggregate(&Soil, &Veg, &Total, &Options);
     
@@ -325,6 +327,7 @@ int main(int argc, char **argv)
       channel_step_initialize_network(ChannelData.roads);
     }
 
+    TIMING_TASK_END("Time step initialization", 1);
     
     TIMING_TASK_START("Vertical mass/energy balance", 1);
 
