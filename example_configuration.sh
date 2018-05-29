@@ -197,13 +197,16 @@ elif [ $host = "briareus" ]; then
     CC="icc"
     export CC
 
-    cmake \
-    -D DHSVM_USE_NETCDF:BOOL=OFF \
-    -D MPI_C_COMPILER:STRING="mpicc" \
-    -D GA_DIR:STRING="/files0/dhsvm" \
-    -D GA_EXTRA_LIBS:STRING="-libverbs -lm" \
-    -D CMAKE_INSTALL_PREFIX:PATH="/files0/dhsvm" \
-    ..
+    cmake $options \
+        -D DHSVM_USE_NETCDF:BOOL=OFF \
+        -D MPI_C_COMPILER:STRING="mpicc" \
+        -D GA_DIR:STRING="/files0/dhsvm" \
+        -D GA_EXTRA_LIBS:STRING="-libverbs -lm" \
+        -D DHSVM_USE_GPTL:BOOL=ON \
+        -D DHSVM_TIMING_LEVEL:STRING="2" \
+        -D GPTL_DIR:PATH="$prefix" \
+        -D CMAKE_INSTALL_PREFIX:PATH="/files0/dhsvm" \
+        ..
 
 elif [ $host = "briareus-gnu" ]; then
 
