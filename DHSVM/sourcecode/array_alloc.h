@@ -11,7 +11,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2017-05-10 09:41:19 d3g096
+ * LAST CHANGE: 2018-06-04 11:52:22 d3g096
  * COMMENTS:
  */
 
@@ -30,6 +30,9 @@ extern void free_3D_uint(unsigned int ***p);
 
 extern unsigned char *** calloc_3D_uchar(int N1, int N2, int N3);
 extern void free_3D_uchar(unsigned char ***p);
+
+extern unsigned char *** calloc_3D_float(int N1, int N2, int N3);
+extern void free_3D_float(unsigned char ***p);
 
 #endif
 
