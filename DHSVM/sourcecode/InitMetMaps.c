@@ -29,6 +29,7 @@
 #include "rad.h"
 #include "sizeofnt.h"
 #include "varid.h"
+#include "array_alloc.h"
 #include "ParallelDHSVM.h"
 
 
@@ -212,17 +213,7 @@ void InitMM5Maps(int NSoilLayers, int NY, int NX, float ****MM5Input,
   if (Options->HeatFlux == FALSE)
     NTotalMaps -= NSoilLayers;
 
-  if (!((*MM5Input) = (float ***)calloc(NTotalMaps, sizeof(float **))))
-    ReportError(Routine, 1);
-
-  for (n = 0; n < NTotalMaps; n++) {
-    if (!((*MM5Input)[n] = (float **)calloc(NY, sizeof(float *))))
-      ReportError(Routine, 1);
-    for (y = 0; y < NY; y++) {
-      if (!((*MM5Input)[n][y] = (float *)calloc(NX, sizeof(float))))
-        ReportError(Routine, 1);
-    }
-  }
+  *MM5Input = calloc_3D_float(NTotalMaps, NY, NX);
 
   /* Initiate radiation map */
   if (!(*RadMap = (PIXRAD **)calloc(NY, sizeof(PIXRAD *))))
