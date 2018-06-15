@@ -75,7 +75,7 @@ void InitMetSources(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *GMap, MAPSIZE
   }
   /* The MM5 option overrides all other options, so check that one first */
   if (Options->MM5 == TRUE) {
-    InitMM5(Input, NSoilLayers, Time, InFiles, Options, MM5Map, Map);
+    InitMM5(Input, NSoilLayers, Time, InFiles, Options, MM5Map, GMap);
   }
 
   /* Use gridded met forcing data */
@@ -538,6 +538,11 @@ void InitMM5(LISTPTR Input, int NSoilLayers, TIMESTRUCT *Time,
   if (!CopyFloat(&(MM5Map->DY), StrEnv[MM5_dy].VarStr, 1))
     ReportError(StrEnv[MM5_dy].KeyName, 51);
 
+  MM5Map->DX = MM5Map->DY;
+
+  MM5Map->gNX = MM5Map->NX;
+  MM5Map->gNY = MM5Map->NY;
+
   MM5Map->OffsetX = Round(((float)(MM5Map->Xorig - Map->Xorig)) /
                           ((float)Map->DX));
   MM5Map->OffsetY = Round(((float)(MM5Map->Yorig - Map->Yorig)) /
@@ -546,32 +551,35 @@ void InitMM5(LISTPTR Input, int NSoilLayers, TIMESTRUCT *Time,
   if (MM5Map->OffsetX > 0 || MM5Map->OffsetY < 0)
     ReportError("Input Options File", 31);
 
-  printf("MM5 extreme north / south is %f %f \n", MM5Map->Yorig,
-         MM5Map->Yorig - MM5Map->NY * MM5Map->DY);
-  printf("MM5 extreme west / east is %f %f\n", MM5Map->Xorig,
-         MM5Map->Xorig + MM5Map->NX * MM5Map->DY);
-  printf("MM5 rows is %d \n", MM5Map->NY);
-  printf("MM5 cols is %d \n", MM5Map->NX);
-  printf("MM5 dy is %f \n", MM5Map->DY);
-  printf("Temperature Map is %s\n", InFiles->MM5Temp);
-  printf("Precip Map is %s\n", InFiles->MM5Precipitation);
-  printf("wind Map is %s\n", InFiles->MM5Wind);
-  printf("shortwave Map is %s\n", InFiles->MM5ShortWave);
-  printf("humidity Map is %s\n", InFiles->MM5Humidity);
-  printf("lapse Map is %s\n", InFiles->MM5Lapse);
-  printf("terrain Map is %s\n", InFiles->MM5Terrain);
-  printf("MM5 offset x is %d \n", MM5Map->OffsetX);
-  printf("MM5 offset y is %d \n", MM5Map->OffsetY);
-  printf("dhsvm extreme north / south is %f %f \n", Map->Yorig,
-         Map->Yorig - Map->NY * Map->DY);
-  printf("dhsvm extreme west / east is %f %f \n", Map->Xorig,
-         Map->Xorig + Map->NX * Map->DY);
-  printf("fail if %d > %d\n",
-         (int)((Map->NY + MM5Map->OffsetY) * Map->DY / MM5Map->DY),
-         MM5Map->NY);
-  printf("fail if %d > %d\n",
-         (int)((Map->NX - MM5Map->OffsetX) * Map->DX / MM5Map->DY),
-         MM5Map->NX);
+  if (ParallelRank() == 0) {
+
+    printf("MM5 extreme north / south is %f %f \n", MM5Map->Yorig,
+           MM5Map->Yorig - MM5Map->NY * MM5Map->DY);
+    printf("MM5 extreme west / east is %f %f\n", MM5Map->Xorig,
+           MM5Map->Xorig + MM5Map->NX * MM5Map->DY);
+    printf("MM5 rows is %d \n", MM5Map->NY);
+    printf("MM5 cols is %d \n", MM5Map->NX);
+    printf("MM5 dy is %f \n", MM5Map->DY);
+    printf("Temperature Map is %s\n", InFiles->MM5Temp);
+    printf("Precip Map is %s\n", InFiles->MM5Precipitation);
+    printf("wind Map is %s\n", InFiles->MM5Wind);
+    printf("shortwave Map is %s\n", InFiles->MM5ShortWave);
+    printf("humidity Map is %s\n", InFiles->MM5Humidity);
+    printf("lapse Map is %s\n", InFiles->MM5Lapse);
+    printf("terrain Map is %s\n", InFiles->MM5Terrain);
+    printf("MM5 offset x is %d \n", MM5Map->OffsetX);
+    printf("MM5 offset y is %d \n", MM5Map->OffsetY);
+    printf("dhsvm extreme north / south is %f %f \n", Map->Yorig,
+           Map->Yorig - Map->NY * Map->DY);
+    printf("dhsvm extreme west / east is %f %f \n", Map->Xorig,
+           Map->Xorig + Map->NX * Map->DY);
+    printf("fail if %d > %d\n",
+           (int)((Map->NY + MM5Map->OffsetY) * Map->DY / MM5Map->DY),
+           MM5Map->NY);
+    printf("fail if %d > %d\n",
+           (int)((Map->NX - MM5Map->OffsetX) * Map->DX / MM5Map->DY),
+           MM5Map->NX);
+  }
   if ((int)((Map->NY + MM5Map->OffsetY) * Map->DY / MM5Map->DY) > MM5Map->NY
       || (int)((Map->NX - MM5Map->OffsetX) * Map->DX / MM5Map->DY) >
       MM5Map->NX)
@@ -648,8 +656,10 @@ void InitRadar(LISTPTR Input, MAPSIZE * Map, TIMESTRUCT * Time,
     ReportError(StrEnv[radar_grid].KeyName, 51);
 
   Radar->DXY = sqrt(Radar->DX * Radar->DX + Radar->DY * Radar->DY);
-  Radar->X = 0;
-  Radar->Y = 0;
+  /* 
+     Radar->X = 0;
+     Radar->Y = 0;
+  */
   Radar->OffsetX = Round(((float)(Radar->Xorig - Map->Xorig)) /
                          ((float)Map->DX));
   Radar->OffsetY = Round(((float)(Radar->Yorig - Map->Yorig)) /
