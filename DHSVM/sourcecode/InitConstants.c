@@ -464,8 +464,10 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
 
   Map->DX = Map->DY;
   Map->DXY = (float) sqrt(Map->DX * Map->DX + Map->DY * Map->DY);
-  Map->X = 0;
-  Map->Y = 0;
+  /*
+    Map->X = 0;
+    Map->Y = 0;
+  */
   Map->OffsetX = 0;
   Map->OffsetY = 0;
   Map->NumCells = 0;

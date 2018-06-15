@@ -146,8 +146,8 @@ typedef struct {
   char System[BUFSIZE + 1];     /* Coordinate system */
   double Xorig;                 /* X coordinate of Northwest corner */
   double Yorig;                 /* Y coordinate of Northwest corner */
-  int X;                        /* Current x position */
-  int Y;                        /* Current y position */
+  /* int X; */                        /* Current x position */
+  /* int Y; */                       /* Current y position */
   int NX;                       /* Number of (local) pixels in x direction */
   int NY;                       /* Number of pixels in y direction */
   float DX;                     /* Pixel spacing in x-direction */
