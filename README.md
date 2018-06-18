@@ -22,7 +22,7 @@ The tutorial and sample data to run DHSVM v 3.2 will be made available on the <a
 
 __New Capabilities__
   * Variable radiation transmittance (with solar position and tree characteristics) 
-  * Canopy gap (Sun et al., _under review_)
+  * Canopy gap (<a href="https://onlinelibrary.wiley.com/doi/abs/10.1002/hyp.13150">Sun et al., 2018</a>)
   * Snow sliding 
   * Python scripts to create stream network
   * Support of gridded meteorological data input
