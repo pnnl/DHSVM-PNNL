@@ -10,7 +10,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2018-05-15 13:56:50 d3g096
+ * LAST CHANGE: 2018-06-19 08:58:09 d3g096
  * COMMENTS:
  */
 
@@ -350,6 +350,30 @@ DomainSummary(MAPSIZE *global, MAPSIZE *local)
   fflush(stdout);
   ParallelBarrier();
 }
+
+/******************************************************************************/
+/*                                GA4Map                                      */
+/******************************************************************************/
+int
+GA4Map(MAPSIZE *Map)
+{
+  int gaid; 
+  int dims[GA_MAX_DIM];
+  int chunk[GA_MAX_DIM];
+
+  dims[gaYdim] = Map->NY;
+  dims[gaXdim] = Map->NX;
+  
+  chunk[gaYdim] = 1;
+  chunk[gaXdim] = 1;
+
+  gaid = NGA_Create(C_FLOAT, 2, dims, "Domain Decompsition", chunk);
+  if (gaid == 0) {
+    ReportError("GA4Map", 70);
+  }
+  return gaid;
+}
+
 
 /******************************************************************************/
 /*                             GA_Mapsize                                     */

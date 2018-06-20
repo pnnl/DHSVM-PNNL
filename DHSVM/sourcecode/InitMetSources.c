@@ -75,7 +75,7 @@ void InitMetSources(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *GMap, MAPSIZE
   }
   /* The MM5 option overrides all other options, so check that one first */
   if (Options->MM5 == TRUE) {
-    InitMM5(Input, NSoilLayers, Time, InFiles, Options, MM5Map, GMap);
+    InitMM5(Input, NSoilLayers, Time, InFiles, Options, MM5Map, Map);
   }
 
   /* Use gridded met forcing data */
@@ -551,6 +551,8 @@ void InitMM5(LISTPTR Input, int NSoilLayers, TIMESTRUCT *Time,
   if (MM5Map->OffsetX > 0 || MM5Map->OffsetY < 0)
     ReportError("Input Options File", 31);
 
+  MM5Map->dist = GA4Map(MM5Map);
+
   if (ParallelRank() == 0) {
 
     printf("MM5 extreme north / south is %f %f \n", MM5Map->Yorig,
@@ -567,19 +569,24 @@ void InitMM5(LISTPTR Input, int NSoilLayers, TIMESTRUCT *Time,
     printf("humidity Map is %s\n", InFiles->MM5Humidity);
     printf("lapse Map is %s\n", InFiles->MM5Lapse);
     printf("terrain Map is %s\n", InFiles->MM5Terrain);
-    printf("MM5 offset x is %d \n", MM5Map->OffsetX);
-    printf("MM5 offset y is %d \n", MM5Map->OffsetY);
-    printf("dhsvm extreme north / south is %f %f \n", Map->Yorig,
-           Map->Yorig - Map->NY * Map->DY);
-    printf("dhsvm extreme west / east is %f %f \n", Map->Xorig,
-           Map->Xorig + Map->NX * Map->DY);
     printf("fail if %d > %d\n",
            (int)((Map->NY + MM5Map->OffsetY) * Map->DY / MM5Map->DY),
            MM5Map->NY);
     printf("fail if %d > %d\n",
            (int)((Map->NX - MM5Map->OffsetX) * Map->DX / MM5Map->DY),
            MM5Map->NX);
-  }
+  } 
+  ParallelBarrier();
+  printf("%d: dhsvm local extreme north / south is %f %f \n", ParallelRank(), 
+         Map->Yorig, Map->Yorig - Map->NY * Map->DY);
+  printf("%d: dhsvm local extreme west / east is %f %f \n", ParallelRank(), 
+         Map->Xorig, Map->Xorig + Map->NX * Map->DY);
+  printf("%d: MM5 offset x is %d\n", 
+         ParallelRank(), MM5Map->OffsetX);
+  printf("%d: MM5 offset y is %d\n", 
+         ParallelRank(), MM5Map->OffsetY);
+
+    
   if ((int)((Map->NY + MM5Map->OffsetY) * Map->DY / MM5Map->DY) > MM5Map->NY
       || (int)((Map->NX - MM5Map->OffsetX) * Map->DX / MM5Map->DY) >
       MM5Map->NX)

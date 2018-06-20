@@ -216,7 +216,7 @@ UpdateMM5Field(char *input, int Step, MAPSIZE *Map, MAPSIZE *MM5Map,
   const int NumberType = NC_FLOAT;
   int MM5Y, MM5X;
 
-  Read2DMatrix(input, Array, NumberType, MM5Map, Step, "", 0);
+  Read2DMatrixAll(input, Array, NumberType, MM5Map, Step, "", 0);
   for (y = 0; y < Map->NY; y++) {
     for (x = 0; x < Map->NX; x++) {
       MM5Y = (int)((y + MM5Map->OffsetY) * Map->DY / MM5Map->DY);

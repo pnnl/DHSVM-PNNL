@@ -10,7 +10,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2018-05-07 13:40:58 d3g096
+ * LAST CHANGE: 2018-06-18 13:03:03 d3g096
  * COMMENTS:
  */
 
@@ -50,9 +50,9 @@ CreateMapFile(char *FileName, char *FileLabel, MAPSIZE *Map)
 /******************************************************************************/
 /*                             Distribute2DMatrix                             */
 /******************************************************************************/
-void
+static void
 Distribute2DMatrix(void *MatrixZero, void *LocalMatrix, 
-                   int NumberType, MAPSIZE *Map)
+                   int NumberType, MAPSIZE *Map, int mirror)
 {
   int me;
   int gNX, gNY;
@@ -77,7 +77,6 @@ Distribute2DMatrix(void *MatrixZero, void *LocalMatrix,
   
   
   if (me == 0) {
-
     lo[0] = 0;
     lo[1] = 0;
     hi[gaYdim] = gNY-1;
@@ -88,17 +87,27 @@ Distribute2DMatrix(void *MatrixZero, void *LocalMatrix,
   }
   ParallelBarrier();
 
-  lo[gaYdim] = Map->OffsetY;
-  lo[gaXdim] = Map->OffsetX;
-  hi[gaYdim] = lo[gaYdim] + Map->NY - 1;
-  hi[gaXdim] = lo[gaXdim] + Map->NX - 1;
-  ld[gaXdim] = Map->NY;
-  ld[gaYdim] = Map->NX;
+  if (mirror) {
+    lo[0] = 0;
+    lo[1] = 0;
+    hi[gaYdim] = gNY-1;
+    hi[gaXdim] = gNX-1;
+    ld[gaXdim] = gNY;
+    ld[gaYdim] = gNX;
+  } else {
+    lo[gaYdim] = Map->OffsetY;
+    lo[gaXdim] = Map->OffsetX;
+    hi[gaYdim] = lo[gaYdim] + Map->NY - 1;
+    hi[gaXdim] = lo[gaXdim] + Map->NX - 1;
+    ld[gaXdim] = Map->NY;
+    ld[gaYdim] = Map->NX;
+  }
   NGA_Get(ga, &lo[0], &hi[0], LocalMatrix, &ld[0]);
 
   ParallelBarrier();
   GA_Destroy(ga);
 }
+
 
 /******************************************************************************/
 /*                            Collect2DMatrix                                 */
@@ -132,6 +141,38 @@ Collect2DMatrix(void *MatrixZero, void *LocalMatrix,
   GA_Destroy(ga);
 }
 
+/******************************************************************************/
+/*                             intRead2DMatrix                                */
+/******************************************************************************/
+static int 
+intRead2DMatrix(char *FileName, void *LocalMatrix, int NumberType, MAPSIZE *Map, 
+                int NDataSet, char *VarName, int index, int mirror)
+{
+  const char Routine[] = "Read2DMatrix";
+  void *tmpArray;
+  int gNX, gNY;
+  int me;
+
+  me = ParallelRank();
+
+  gNX = Map->gNX;
+  gNY = Map->gNY;
+
+  if (me == 0) {
+    if (!(tmpArray = (void *)calloc(gNY * gNX, SizeOfNumberType(NumberType))))
+      ReportError((char *)Routine, 1);
+    Read2DMatrixFmt(FileName, tmpArray, NumberType, gNY, gNX, NDataSet, VarName, index);
+  }
+
+  Distribute2DMatrix(tmpArray, LocalMatrix, NumberType, Map, mirror);
+
+  if (me == 0) {
+    free(tmpArray);
+  }
+
+  return 0;
+}
+
 
 /******************************************************************************/
 /*                              Read2DMatrix                                  */
@@ -155,29 +196,23 @@ Read2DMatrix(char *FileName, void *LocalMatrix, int NumberType, MAPSIZE *Map,
              int NDataSet, char *VarName, int index)
 {
   const char Routine[] = "Read2DMatrix";
-  void *tmpArray;
-  int gNX, gNY;
-  int me;
 
-  me = ParallelRank();
-
-  gNX = Map->gNX;
-  gNY = Map->gNY;
-
-  if (me == 0) {
-    if (!(tmpArray = (void *)calloc(gNY * gNX, SizeOfNumberType(NumberType))))
-      ReportError((char *)Routine, 1);
-    Read2DMatrixFmt(FileName, tmpArray, NumberType, gNY, gNX, NDataSet, VarName, index);
-  }
-
-  Distribute2DMatrix(tmpArray, LocalMatrix, NumberType, Map);
-
-  if (me == 0) {
-    free(tmpArray);
-  }
-
-  return 0;
+  return intRead2DMatrix(FileName, LocalMatrix, NumberType, Map, 
+                         NDataSet, VarName, index, 0);
 }
+
+/******************************************************************************/
+/*                         Read2DMatrixAll                                    */
+/******************************************************************************/
+int 
+Read2DMatrixAll(char *FileName, void *LocalMatrix, int NumberType, MAPSIZE *Map, 
+             int NDataSet, char *VarName, int index)
+{
+  const char Routine[] = "Read2DMatrixAll";
+  return intRead2DMatrix(FileName, LocalMatrix, NumberType, Map, 
+                         NDataSet, VarName, index, 1);
+}
+
 
 /******************************************************************************/
 /*                              Write2DMatrix                                  */

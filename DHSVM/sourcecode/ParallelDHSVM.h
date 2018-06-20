@@ -10,7 +10,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2017-05-08 07:14:50 d3g096
+ * LAST CHANGE: 2018-06-19 08:59:02 d3g096
  * COMMENTS:
  */
 
@@ -38,6 +38,7 @@ void GA_Put_one(int ga, MAPSIZE *Map, int x, int y, void *value);
 void GA_Acc_one(int ga, MAPSIZE *Map, int x, int y, void *value, void *alpha);
 void GA_Acc_one_global(int ga, MAPSIZE *Map, int gx, int gy, void *value, void *alpha);
 void GA_Get_one(int ga, MAPSIZE *Map, int x, int y, void *value);
+int GA4Map(MAPSIZE *Map);
 
 struct ga_patch_ {
   int NY, NX;                   /**< dimensions of the allocated patch */

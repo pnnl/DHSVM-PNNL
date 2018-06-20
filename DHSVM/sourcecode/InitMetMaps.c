@@ -213,7 +213,19 @@ void InitMM5Maps(int NSoilLayers, int NY, int NX, float ****MM5Input,
   if (Options->HeatFlux == FALSE)
     NTotalMaps -= NSoilLayers;
 
-  *MM5Input = calloc_3D_float(NTotalMaps, NY, NX);
+  /* *MM5Input = calloc_3D_float(NTotalMaps, NY, NX); */
+
+  if (!((*MM5Input) = (float ***)calloc(NTotalMaps, sizeof(float **))))
+    ReportError(Routine, 1);
+
+  for (n = 0; n < NTotalMaps; n++) {
+    if (!((*MM5Input)[n] = (float **)calloc(NY, sizeof(float *))))
+      ReportError(Routine, 1);
+    for (y = 0; y < NY; y++) {
+      if (!((*MM5Input)[n][y] = (float *)calloc(NX, sizeof(float))))
+        ReportError(Routine, 1);
+    }
+  }
 
   /* Initiate radiation map */
   if (!(*RadMap = (PIXRAD **)calloc(NY, sizeof(PIXRAD *))))

@@ -452,6 +452,9 @@ int main(int argc, char **argv)
 	   EvapMap, RadiationMap, PrecipMap, SnowMap, MetMap, VegMap, &Veg, SoilMap,
 	   Network, &ChannelData, &Soil, &Total, &HydrographInfo, Hydrograph);
 
+  /* make sure output has caught up */
+  fflush(stdout);
+  fflush(stderr);
 #ifndef SNOW_ONLY
   if (me == 0) {
     FinalMassBalance(&(Dump.FinalBalance), &Total, &Mass);
