@@ -240,7 +240,6 @@ void InitNewStep(INPUTFILES *InFiles, MAPSIZE *Map, TIMESTRUCT *Time,
   int j;			/* counter */
   int x;			/* counter */
   int y;			/* counter */
-  int NumberType;	/* number type in MM5 input */
   int Step;			/* Step in the MM5 Input */
   float *Array = NULL;
   int MM5Y, MM5X;
@@ -263,7 +262,6 @@ void InitNewStep(INPUTFILES *InFiles, MAPSIZE *Map, TIMESTRUCT *Time,
     /* Read the data from the MM5 files */
     if (!(Array = (float *)calloc(MM5Map->NY * MM5Map->NX, sizeof(float))))
       ReportError((char *)Routine, 1);
-    NumberType = NC_FLOAT;
 
     Step = NumberOfSteps(&(Time->StartMM5), &(Time->Current), Time->Dt);
 
