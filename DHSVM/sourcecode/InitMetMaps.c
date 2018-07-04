@@ -20,6 +20,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "settings.h"
 #include "constants.h"
 #include "data.h"
@@ -53,6 +54,11 @@ void InitMetMaps(int NDaySteps, MAPSIZE *Map, MAPSIZE *Radar,
 
   if (Options->MM5 == TRUE) {
     InitMM5Maps(Soil->MaxLayers, Map->NY, Map->NX, MM5Input, RadMap, Options);
+    /* If called for, use the precip lapse map for MM5 precip
+       distribution, avoiding lots of function interfaces changes */
+    if (strlen(PrecipLapseFile) > 0) {
+      InitPrecipLapseMap(PrecipLapseFile, Map, PrecipLapseMap);
+    }
     if (Options->Shading == TRUE)
       InitShadeMap(Options, NDaySteps, Map, ShadowMap, SkyViewMap);
   }

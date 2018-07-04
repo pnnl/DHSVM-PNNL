@@ -229,11 +229,12 @@ UpdateMM5Field(char *input, int Step, MAPSIZE *Map, MAPSIZE *MM5Map,
   Comments     : To be executed at the beginning of each time step
 *****************************************************************************/
 void InitNewStep(INPUTFILES *InFiles, MAPSIZE *Map, TIMESTRUCT *Time,
-  int NSoilLayers, OPTIONSTRUCT *Options, int NStats,
-  METLOCATION *Stat, char *RadarFileName, MAPSIZE *Radar,
-  RADARPIX **RadarMap, SOLARGEOMETRY *SolarGeo,
-  TOPOPIX **TopoMap, SOILPIX **SoilMap,
-  float ***MM5Input, float ***WindModel, MAPSIZE *MM5Map)
+                 int NSoilLayers, OPTIONSTRUCT *Options, int NStats,
+                 METLOCATION *Stat, char *RadarFileName, MAPSIZE *Radar,
+                 RADARPIX **RadarMap, SOLARGEOMETRY *SolarGeo,
+                 TOPOPIX **TopoMap, SOILPIX **SoilMap,
+                 float ***MM5Input, float **PrecipLapseMap, 
+                 float ***WindModel, MAPSIZE *MM5Map)
 {
   const char *Routine = "InitNewStep";
   int i;			/* counter */
