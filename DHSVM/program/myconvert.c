@@ -30,7 +30,7 @@ static char vcid[] = "$Id: convert.c,v 1.4 1998/06/25 04:25:10 nijssen Exp $";
 #include "myconvert.h"
 
 const char *usage = 
-"myconvert source_format target_format source_file target_file\n        number_of_rows number_of_column\n";
+"myconvert source_format target_format source_file target_file\n        number_of_rows number_of_column [steps]\n";
 
 int sizeArray[N_FORMATS];     /* Array with sizeof() */
 
@@ -43,7 +43,9 @@ int main(int argc, char **argv)
   int readFormat;               /* Formatspecifier for input file */
   int nRows;                    /* Number of rows */
   int nCols;                    /* Number of columns */
+  int nSteps;
   int writeFormat;              /* Format specifier for output file */
+  int i;
 
   InitSize();
 
@@ -60,6 +62,12 @@ int main(int argc, char **argv)
 
   nRows = GetNumber(argv[5]);
   nCols = GetNumber(argv[6]);
+
+  if (argc > 7) {
+    nSteps = GetNumber(argv[7]);
+  } else {
+    nSteps = 1;
+  }
   
   if (readFormat == ascii)
     OpenFile(&inFile, inFilename, "r", FALSE);
@@ -70,8 +78,11 @@ int main(int argc, char **argv)
     OpenFile(&outFile, outFilename, "w", TRUE);
   else
     OpenFile(&outFile, outFilename, "wb", TRUE);
-  
-  Convert(nRows, nCols, readFormat, inFile, writeFormat, outFile); 
+
+
+  for (i = 0; i < nSteps; ++i) {
+    Convert(nRows, nCols, readFormat, inFile, writeFormat, outFile); 
+  }
   
   fclose(inFile);
   fclose(outFile);
