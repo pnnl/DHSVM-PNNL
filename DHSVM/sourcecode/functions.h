@@ -146,8 +146,8 @@ void InitMetMaps(int NDaySteps, MAPSIZE *Map, MAPSIZE *Radar,
 		 unsigned char ****ShadowMap, float ***SkyViewMap,
 		 EVAPPIX ***EvapMap, PRECIPPIX ***PrecipMap,
 		 RADARPIX ***RadarMap, PIXRAD ***RadMap, SOILPIX **SoilMap, 
-         LAYER *Soil, VEGPIX **VegMap, LAYER *Veg, TOPOPIX **TopoMap, 
-         float ****MM5Input, float ****WindModel);
+                 LAYER *Soil, VEGPIX **VegMap, LAYER *Veg, TOPOPIX **TopoMap, 
+                 float ****MM5Input, float ****WindModel);
 
 void InitMetSources(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *GMap, MAPSIZE *Map,
             TOPOPIX **TopoMap, int NSoilLayers, TIMESTRUCT *Time, 
@@ -186,7 +186,7 @@ void InitNewStep(INPUTFILES *InFiles, MAPSIZE *Map, TIMESTRUCT *Time,
 		 METLOCATION *Stat, char *RadarFileName, MAPSIZE *Radar,
 		 RADARPIX **RadarMap, SOLARGEOMETRY *SolarGeo, 
 		 TOPOPIX **TopoMap, SOILPIX **SoilMap, float ***MM5Input, 
-         float ***WindModel, MAPSIZE *MM5Map);
+                 float **PrecipLapseMap, float ***WindModel, MAPSIZE *MM5Map);
 
 int InitPixDump(LISTPTR Input, MAPSIZE *GMap, MAPSIZE *Map, uchar **BasinMask, char *Path,
 		int NPix, PIXDUMP **Pix, OPTIONSTRUCT *Options);

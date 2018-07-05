@@ -460,6 +460,7 @@ void InitMM5(LISTPTR Input, int NSoilLayers, TIMESTRUCT *Time,
     {"METEOROLOGY", "MM5 EXTREME NORTH", "", ""},
     {"METEOROLOGY", "MM5 EXTREME WEST", "", ""},
     {"METEOROLOGY", "MM5 DY", "", ""},
+    {"METEOROLOGY", "MM5 PRECIPITATION DISTRIBUTION FILE", "", "none"},
     {NULL, NULL, "", NULL},
   };
 
@@ -505,6 +506,14 @@ void InitMM5(LISTPTR Input, int NSoilLayers, TIMESTRUCT *Time,
   if (IsEmptyStr(StrEnv[MM5_precip].VarStr))
     ReportError(StrEnv[MM5_precip].KeyName, 51);
   strcpy(InFiles->MM5Precipitation, StrEnv[MM5_precip].VarStr);
+
+  /* Use PrecipLapseFile to store the name of the MM5 precip
+     distribution map file. This avoids wholesale code changes. */
+  if (strncmp(StrEnv[MM5_precip_dist].VarStr, "none", 4)) {
+    strcpy(InFiles->PrecipLapseFile, StrEnv[MM5_precip_dist].VarStr);
+  } else {
+    strcpy(InFiles->PrecipLapseFile, "");
+  }
 
   if (Options->HeatFlux == TRUE) {
     if (!(InFiles->MM5SoilTemp = (char **)calloc(sizeof(char *), NSoilLayers)))
@@ -563,6 +572,11 @@ void InitMM5(LISTPTR Input, int NSoilLayers, TIMESTRUCT *Time,
     printf("MM5 cols is %d \n", MM5Map->NX);
     printf("MM5 dy is %f \n", MM5Map->DY);
     printf("Temperature Map is %s\n", InFiles->MM5Temp);
+    if (strlen(InFiles->PrecipLapseFile) > 0) {
+      printf("Precip Distribution Map is %s\n", InFiles->PrecipLapseFile);
+    } else {
+      printf("Precip is distributed evenly within MM5 cell\n");
+    }
     printf("Precip Map is %s\n", InFiles->MM5Precipitation);
     printf("wind Map is %s\n", InFiles->MM5Wind);
     printf("shortwave Map is %s\n", InFiles->MM5ShortWave);

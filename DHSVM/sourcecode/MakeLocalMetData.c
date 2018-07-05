@@ -121,6 +121,9 @@ PIXMET MakeLocalMetData(int y, int x, MAPSIZE *Map, int DayStep,
     LocalMet.Lin = MM5Input[MM5_longwave - 1][y][x];
     LocalMet.Press = 101300.0;
     PrecipMap->Precip = MM5Input[MM5_precip - 1][y][x];
+    if (PrecipLapseMap != NULL) {
+      PrecipMap->Precip *= PrecipLapseMap[y][x];
+    }
   }
   else {			/* MM5 is false and we need to interpolate the basic met records */
     WeightSum = 0.0;

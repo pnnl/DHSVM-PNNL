@@ -9,7 +9,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2017-04-07 13:07:28 d3g096
+# Last Change: 2018-07-05 06:47:02 d3g096
 
 # -------------------------------------------------------------
 # Set up for this subdirectory
@@ -181,6 +181,16 @@ add_executable(fill_sinks_dhsvm
   FILL_SINKS_DHSVM.c
 )
 
+# -------------------------------------------------------------
+# WriteConstantMapBin
+# -------------------------------------------------------------
+add_executable(WriteConstantMapBin
+  WriteConstantMap.c
+)  
+target_link_libraries(WriteConstantMapBin
+  locBinIO
+  ${MATH_LIBRARY}
+  )
 
 # -------------------------------------------------------------
 # installation

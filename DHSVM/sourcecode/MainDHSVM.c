@@ -319,7 +319,7 @@ int main(int argc, char **argv)
 
     InitNewStep(&InFiles, &Map, &Time, Soil.MaxLayers, &Options, NStats, Stat,
 		InFiles.RadarFile, &Radar, RadarMap, &SolarGeo, TopoMap, 
-        SoilMap, MM5Input, WindModel, &MM5Map);
+                SoilMap, MM5Input, PrecipLapseMap, WindModel, &MM5Map);
 
     /* initialize channel/road networks for time step */
     if (Options.HasNetwork) {
