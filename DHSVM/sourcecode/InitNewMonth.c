@@ -18,6 +18,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
 #include "settings.h"
 #include "data.h"
@@ -244,6 +245,7 @@ void InitNewStep(INPUTFILES *InFiles, MAPSIZE *Map, TIMESTRUCT *Time,
   int Step;			/* Step in the MM5 Input */
   float *Array = NULL;
   int MM5Y, MM5X;
+  const int NumberType = NC_FLOAT;
 
   /*printf("current time is %4d-%2d-%2d-%2d\n", Time->Current.Year,Time->Current.Month, Time->Current.Day, Time->Current.Hour);*/
 
@@ -303,6 +305,19 @@ void InitNewStep(INPUTFILES *InFiles, MAPSIZE *Map, TIMESTRUCT *Time,
       }
     }
     free(Array);
+
+    if (strlen(InFiles->PrecipLapseFile) > 0) {
+      if (!(Array = (float *)calloc(Map->NY * Map->NX, sizeof(float))))
+        ReportError((char *)Routine, 1);
+      Read2DMatrix(InFiles->PrecipLapseFile, Array, NumberType, Map, Step, "", 0);
+      for (y = 0; y < Map->NY; y++) {
+        for (x = 0; x < Map->NX; x++) {
+          PrecipLapseMap[y][x] = Array[y * Map->NX + x];
+        }
+      }
+      free(Array);
+    }
+
   }
   /*end if MM5*/
 
