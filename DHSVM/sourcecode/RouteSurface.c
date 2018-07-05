@@ -49,7 +49,7 @@ void RouteSurface(MAPSIZE * Map, TIMESTRUCT * Time, TOPOPIX ** TopoMap,
                   DUMPSTRUCT *Dump, VEGPIX ** VegMap, VEGTABLE * VType, CHANNEL *ChannelData)
 {
   const char *Routine = "RouteSurface";
-  static int one = 1.0;
+  static float one = 1.0;
   int Lag;			/* Lag time for hydrograph */
   int Step;
   float StreamFlow;
@@ -123,8 +123,9 @@ void RouteSurface(MAPSIZE * Map, TIMESTRUCT * Time, TOPOPIX ** TopoMap,
                 SoilMap[y][x].DetentionStorage = 0.0;
 
               /* there is no way to know what process owns the
-                 (drains_x, drains_y) cell, so the GA value is
-                 accumulated */
+                 (drains_x, drains_y) cell, so accumulate the GA value
+                 for that cell. It shouldn't cost much if (drains_x,
+                 drains_y) is local */
 
               GA_Acc_one_global(ga, Map, 
                          TopoMap[y][x].drains_x, TopoMap[y][x].drains_y, 
