@@ -10,7 +10,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2018-06-19 08:58:09 d3g096
+ * LAST CHANGE: 2018-07-04 08:11:27 d3g096
  * COMMENTS:
  */
 
@@ -355,7 +355,7 @@ DomainSummary(MAPSIZE *global, MAPSIZE *local)
 /*                                GA4Map                                      */
 /******************************************************************************/
 int
-GA4Map(MAPSIZE *Map)
+GA4Map(MAPSIZE *Map, const char *name)
 {
   int gaid; 
   int dims[GA_MAX_DIM];
@@ -367,7 +367,7 @@ GA4Map(MAPSIZE *Map)
   chunk[gaYdim] = 1;
   chunk[gaXdim] = 1;
 
-  gaid = NGA_Create(C_FLOAT, 2, dims, "Domain Decompsition", chunk);
+  gaid = NGA_Create(C_FLOAT, 2, dims, name, chunk);
   if (gaid == 0) {
     ReportError("GA4Map", 70);
   }
