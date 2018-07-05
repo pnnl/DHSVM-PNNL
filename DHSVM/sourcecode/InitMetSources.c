@@ -551,10 +551,10 @@ void InitMM5(LISTPTR Input, int NSoilLayers, TIMESTRUCT *Time,
   if (MM5Map->OffsetX > 0 || MM5Map->OffsetY < 0)
     ReportError("Input Options File", 31);
 
-  MM5Map->dist = GA4Map(MM5Map);
+  MM5Map->dist = GA4Map(MM5Map, "MM5");
 
   if (ParallelRank() == 0) {
-
+    printf("\n");
     printf("MM5 extreme north / south is %f %f \n", MM5Map->Yorig,
            MM5Map->Yorig - MM5Map->NY * MM5Map->DY);
     printf("MM5 extreme west / east is %f %f\n", MM5Map->Xorig,
@@ -577,6 +577,7 @@ void InitMM5(LISTPTR Input, int NSoilLayers, TIMESTRUCT *Time,
            MM5Map->NX);
   } 
   ParallelBarrier();
+
   printf("%d: dhsvm local extreme north / south is %f %f \n", ParallelRank(), 
          Map->Yorig, Map->Yorig - Map->NY * Map->DY);
   printf("%d: dhsvm local extreme west / east is %f %f \n", ParallelRank(), 
