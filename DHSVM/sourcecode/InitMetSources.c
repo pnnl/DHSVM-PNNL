@@ -525,7 +525,7 @@ void InitMM5(LISTPTR Input, int NSoilLayers, TIMESTRUCT *Time,
     } else if (!strncmp(VarStr, "continuous", 10)) {
       InFiles->MM5PrecipDistFreq = FreqContinous;
     } else {
-      ReportError(StrEnv[MM5_precip_freq].VarStr, 70);
+      ReportError(StrEnv[MM5_precip_freq].VarStr, 71);
     }
   } else {
     strcpy(InFiles->PrecipLapseFile, "");
