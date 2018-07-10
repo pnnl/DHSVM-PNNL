@@ -88,6 +88,12 @@ typedef struct {
   int *WaveLength;
 } UNITHYDRINFO;
 
+typedef enum {
+  FreqSingle = 0,
+  FreqMonth,
+  FreqContinous
+} MM5FREQ;
+
 typedef struct {
   char Const[BUFSIZE + 1];	/* Filename for main input file  */
   char RadMapPath[BUFSIZE + 1];	/* Path and start of filename for rad files */
@@ -103,6 +109,7 @@ typedef struct {
   char MM5Precipitation[BUFSIZE + 1];	/* File with MM5 precipitation 
 					   (m/timestep) */
   char **MM5SoilTemp;		/* Files with MM5 soil temperatures (C) */
+  MM5FREQ MM5PrecipDistFreq;    /* Frequency of MM5 precip distribution maps */
   char PrecipLapseFile[BUFSIZE + 1];	/* File with precipitation 
 					   lapse rate map */
   char WindMapPath[BUFSIZE + 1];	/* File with wind factors */

@@ -307,6 +307,21 @@ void InitNewStep(INPUTFILES *InFiles, MAPSIZE *Map, TIMESTRUCT *Time,
     free(Array);
 
     if (strlen(InFiles->PrecipLapseFile) > 0) {
+
+      switch (InFiles->MM5PrecipDistFreq) {
+      case (FreqSingle):
+        Step = 0;
+        break;
+      case (FreqMonth):
+        Step = Time->Current.Month - 1;
+        break;
+      case (FreqContinous):
+        /* Step unchanged */
+        break;
+      default:
+        ReportError("InitNewStep", 15);
+      }
+
       if (!(Array = (float *)calloc(Map->NY * Map->NX, sizeof(float))))
         ReportError((char *)Routine, 1);
       Read2DMatrix(InFiles->PrecipLapseFile, Array, NumberType, Map, Step, "", 0);
