@@ -398,6 +398,19 @@ int CopyUChar(unsigned char *Value, char *Str, const int NValues)
   return TRUE;
 }
 /*#####################################################################################*/
+int
+CopyLCase(char *Value, char *Str, const int maxlen)
+{
+  int i;
+  strncpy(Value, Str, maxlen);
+  for (i = 0; i < strlen(Value) && i < maxlen; ++i) {
+    Value[i] = tolower(Value[i]);
+  }
+  return TRUE;
+}
+
+
+/*#####################################################################################*/
 int IsEmptyStr(char *Str)
 {
   if (Str == NULL)

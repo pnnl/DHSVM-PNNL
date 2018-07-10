@@ -146,7 +146,7 @@ enum KEYS {
   /* MM5 information */
   MM5_start = 0, MM5_temperature, MM5_humidity, MM5_wind, MM5_shortwave,
   MM5_longwave, MM5_precip, MM5_terrain, MM5_lapse,
-  MM5_rows, MM5_cols, MM5_ext_north, MM5_ext_west, MM5_dy, MM5_precip_dist,
+  MM5_rows, MM5_cols, MM5_ext_north, MM5_ext_west, MM5_dy, MM5_precip_dist, MM5_precip_freq,
   /* grid information */
   grid_ext_north=0, grid_ext_south, grid_ext_east, grid_ext_west, tot_grid, decim,
   grid_met_file, file_prefix,

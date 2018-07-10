@@ -63,6 +63,7 @@ int CopyInt(int *Value, char *Str, const int NValues);
 int CopyLong(long *Value, char *Str, const int NValues);
 int CopyShort(short *Value, char *Str, const int NValues);
 int CopyUChar(unsigned char *Value, char *Str, const int NValues);
+int CopyLCase(char *Value, char *Str, const int maxlen);
 
 int CountLines(FILE * InFile);
 
