@@ -26,6 +26,7 @@
 #include "functions.h"
 #include "constants.h"
 #include "ParallelDHSVM.h"
+#include "timing.h"
 
 /*****************************************************************************
 ExecDump()
@@ -43,6 +44,8 @@ void ExecDump(MAPSIZE *Map, DATE *Current, DATE *Start, OPTIONSTRUCT *Options,
   int x;
   int y;
   int flag;
+
+  TIMING_TASK_START("ExecDump", 2);
 
   /* dump the aggregated basin values for this timestep */
 
@@ -107,6 +110,7 @@ void ExecDump(MAPSIZE *Map, DATE *Current, DATE *Start, OPTIONSTRUCT *Options,
       }
     }
   }
+  TIMING_TASK_END("ExecDump", 2);
 }
 
 /*****************************************************************************

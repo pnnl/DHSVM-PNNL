@@ -10,7 +10,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2017-06-01 08:48:07 d3g096
+ * LAST CHANGE: 2018-07-04 08:11:27 d3g096
  * COMMENTS:
  */
 
@@ -31,6 +31,7 @@
 #include "DHSVMerror.h"
 #include "ParallelDHSVM.h"
 #include "array_alloc.h"
+#include "timing.h"
 
 
 const int gaXdim = 1;
@@ -46,7 +47,7 @@ ParallelInitialize(int *argc, char ***argv)
   int ierr;
   ierr = 0;
   GA_Initialize_args(argc, argv);
-  if (!MA_init(MT_C_DBL, 5000, 5000)) {
+  if (!MA_init(MT_C_DBL, 500000, 500000)) {
     ReportError("ParallelInitialize: MA_init: ", 70);
     ierr += 1;
   }
@@ -132,6 +133,8 @@ GA_Inquire_irreg_distr(int ga, int *mapc, int *nblk)
   int ndim, dims[GA_MAX_DIM];
   int gatype;
 
+  TIMING_TASK_START("GA Creation", 4);
+
   NGA_Inquire(ga, &gatype, &ndim, &dims[0]);
 
   np = GA_Nnodes();
@@ -159,6 +162,7 @@ GA_Inquire_irreg_distr(int ga, int *mapc, int *nblk)
     mapcptr++;
   }
   free(idx);
+  TIMING_TASK_END("GA Creation", 4);
 }
 
 /******************************************************************************/
@@ -179,6 +183,8 @@ GA_Duplicate_type(int oga, char *nname, int ntype)
   int nga;
   int ndim, dims[GA_MAX_DIM];
   int otype;
+
+  TIMING_TASK_START("GA Creation", 4);
 
   NGA_Inquire(oga, &otype, &ndim, &dims[0]);
 
@@ -210,6 +216,7 @@ GA_Duplicate_type(int oga, char *nname, int ntype)
 
     free(mapc);
   }    
+  TIMING_TASK_END("GA Creation", 4);
   return nga;
 }
 
@@ -345,6 +352,30 @@ DomainSummary(MAPSIZE *global, MAPSIZE *local)
 }
 
 /******************************************************************************/
+/*                                GA4Map                                      */
+/******************************************************************************/
+int
+GA4Map(MAPSIZE *Map, const char *name)
+{
+  int gaid; 
+  int dims[GA_MAX_DIM];
+  int chunk[GA_MAX_DIM];
+
+  dims[gaYdim] = Map->NY;
+  dims[gaXdim] = Map->NX;
+  
+  chunk[gaYdim] = 1;
+  chunk[gaXdim] = 1;
+
+  gaid = NGA_Create(C_FLOAT, 2, dims, name, chunk);
+  if (gaid == 0) {
+    ReportError("GA4Map", 70);
+  }
+  return gaid;
+}
+
+
+/******************************************************************************/
 /*                             GA_Mapsize                                     */
 /******************************************************************************/
 static void
@@ -359,7 +390,7 @@ GA_Mapsize(MAPSIZE *global, MAPSIZE *local, int gaid)
   global->dist = gaid;
   local->dist = gaid;
   local->Xorig = global->Xorig + lo[gaXdim]*global->DX;
-  local->Yorig = global->Yorig + lo[gaYdim]*global->DY;
+  local->Yorig = global->Yorig - lo[gaYdim]*global->DY;
   local->OffsetX = lo[gaXdim];
   local->OffsetY = lo[gaYdim];
   local->NX = hi[gaXdim] - lo[gaXdim] + 1;
@@ -432,7 +463,7 @@ find_splits(int ga, int nsplit, int *isplit)
     value = 1;
     NGA_Put(ga_mask, &lo[0], &hi[0], &value, NULL);
   }
-  GA_Sync();
+  ParallelBarrier();
 
   ga_sum = GA_Duplicate(ga, "find_splits Sum");
   GA_Zero(ga_sum);
@@ -603,7 +634,7 @@ MaskedDomainDecomposition(MAPSIZE *gmap, MAPSIZE *lmap, MAPSIZE *nmap,
       fflush(stdout);
     }
   }
-  GA_Sync();
+  ParallelBarrier();
 
   memcpy(nmap, lmap, sizeof(MAPSIZE));
 
@@ -628,7 +659,9 @@ MaskedDomainDecomposition(MAPSIZE *gmap, MAPSIZE *lmap, MAPSIZE *nmap,
 void
 ParallelBarrier()
 {
+  TIMING_TASK_START("GA Sync", 4);
   GA_Sync();
+  TIMING_TASK_END("GA Sync", 4);
 }
 
 /******************************************************************************/
@@ -831,7 +864,7 @@ Collect2DMatrixGA(void *LocalMatrix, int NumberType, MAPSIZE *Map)
   ld[gaXdim] = Map->NY;
   ld[gaYdim] = Map->NX;
   NGA_Put(ga, &lo[0], &hi[0], LocalMatrix, &ld[0]);
-  GA_Sync();
+  ParallelBarrier();
   /* GA_Print(ga); */
   return ga;
 }

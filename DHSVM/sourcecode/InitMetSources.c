@@ -460,6 +460,9 @@ void InitMM5(LISTPTR Input, int NSoilLayers, TIMESTRUCT *Time,
     {"METEOROLOGY", "MM5 EXTREME NORTH", "", ""},
     {"METEOROLOGY", "MM5 EXTREME WEST", "", ""},
     {"METEOROLOGY", "MM5 DY", "", ""},
+    {"METEOROLOGY", "MM5 PRECIPITATION DISTRIBUTION FILE", "", "none"},
+    /* can be one of "single", "month", "continuous" */
+    {"METEOROLOGY", "MM5 PRECIPITATION DISTRIBUTION FREQUENCY", "", "single"},
     {NULL, NULL, "", NULL},
   };
 
@@ -506,6 +509,28 @@ void InitMM5(LISTPTR Input, int NSoilLayers, TIMESTRUCT *Time,
     ReportError(StrEnv[MM5_precip].KeyName, 51);
   strcpy(InFiles->MM5Precipitation, StrEnv[MM5_precip].VarStr);
 
+  /* Use PrecipLapseFile to store the name of the MM5 precip
+     distribution map file. This avoids wholesale code changes. */
+  if (strncmp(StrEnv[MM5_precip_dist].VarStr, "none", 4)) {
+    strcpy(InFiles->PrecipLapseFile, StrEnv[MM5_precip_dist].VarStr);
+
+    /* Precipitation distribution can be in several forms. */
+
+    CopyLCase(VarStr, StrEnv[MM5_precip_freq].VarStr, BUFSIZE + 1);
+    
+    if (!strncmp(VarStr, "single", 6)) {
+      InFiles->MM5PrecipDistFreq = FreqSingle;
+    } else if (!strncmp(VarStr, "month", 6)) {
+      InFiles->MM5PrecipDistFreq = FreqMonth;
+    } else if (!strncmp(VarStr, "continuous", 10)) {
+      InFiles->MM5PrecipDistFreq = FreqContinous;
+    } else {
+      ReportError(StrEnv[MM5_precip_freq].VarStr, 71);
+    }
+  } else {
+    strcpy(InFiles->PrecipLapseFile, "");
+  }
+
   if (Options->HeatFlux == TRUE) {
     if (!(InFiles->MM5SoilTemp = (char **)calloc(sizeof(char *), NSoilLayers)))
       ReportError(Routine, 1);
@@ -538,6 +563,11 @@ void InitMM5(LISTPTR Input, int NSoilLayers, TIMESTRUCT *Time,
   if (!CopyFloat(&(MM5Map->DY), StrEnv[MM5_dy].VarStr, 1))
     ReportError(StrEnv[MM5_dy].KeyName, 51);
 
+  MM5Map->DX = MM5Map->DY;
+
+  MM5Map->gNX = MM5Map->NX;
+  MM5Map->gNY = MM5Map->NY;
+
   MM5Map->OffsetX = Round(((float)(MM5Map->Xorig - Map->Xorig)) /
                           ((float)Map->DX));
   MM5Map->OffsetY = Round(((float)(MM5Map->Yorig - Map->Yorig)) /
@@ -546,32 +576,62 @@ void InitMM5(LISTPTR Input, int NSoilLayers, TIMESTRUCT *Time,
   if (MM5Map->OffsetX > 0 || MM5Map->OffsetY < 0)
     ReportError("Input Options File", 31);
 
-  printf("MM5 extreme north / south is %f %f \n", MM5Map->Yorig,
-         MM5Map->Yorig - MM5Map->NY * MM5Map->DY);
-  printf("MM5 extreme west / east is %f %f\n", MM5Map->Xorig,
-         MM5Map->Xorig + MM5Map->NX * MM5Map->DY);
-  printf("MM5 rows is %d \n", MM5Map->NY);
-  printf("MM5 cols is %d \n", MM5Map->NX);
-  printf("MM5 dy is %f \n", MM5Map->DY);
-  printf("Temperature Map is %s\n", InFiles->MM5Temp);
-  printf("Precip Map is %s\n", InFiles->MM5Precipitation);
-  printf("wind Map is %s\n", InFiles->MM5Wind);
-  printf("shortwave Map is %s\n", InFiles->MM5ShortWave);
-  printf("humidity Map is %s\n", InFiles->MM5Humidity);
-  printf("lapse Map is %s\n", InFiles->MM5Lapse);
-  printf("terrain Map is %s\n", InFiles->MM5Terrain);
-  printf("MM5 offset x is %d \n", MM5Map->OffsetX);
-  printf("MM5 offset y is %d \n", MM5Map->OffsetY);
-  printf("dhsvm extreme north / south is %f %f \n", Map->Yorig,
-         Map->Yorig - Map->NY * Map->DY);
-  printf("dhsvm extreme west / east is %f %f \n", Map->Xorig,
-         Map->Xorig + Map->NX * Map->DY);
-  printf("fail if %d > %d\n",
-         (int)((Map->NY + MM5Map->OffsetY) * Map->DY / MM5Map->DY),
-         MM5Map->NY);
-  printf("fail if %d > %d\n",
-         (int)((Map->NX - MM5Map->OffsetX) * Map->DX / MM5Map->DY),
-         MM5Map->NX);
+  MM5Map->dist = GA4Map(MM5Map, "MM5");
+
+  if (ParallelRank() == 0) {
+    printf("\n");
+    printf("MM5 extreme north / south is %f %f \n", MM5Map->Yorig,
+           MM5Map->Yorig - MM5Map->NY * MM5Map->DY);
+    printf("MM5 extreme west / east is %f %f\n", MM5Map->Xorig,
+           MM5Map->Xorig + MM5Map->NX * MM5Map->DY);
+    printf("MM5 rows is %d \n", MM5Map->NY);
+    printf("MM5 cols is %d \n", MM5Map->NX);
+    printf("MM5 dy is %f \n", MM5Map->DY);
+    printf("Temperature Map is %s\n", InFiles->MM5Temp);
+    if (strlen(InFiles->PrecipLapseFile) > 0) {
+      printf("Precip Distribution Map is %s\n", InFiles->PrecipLapseFile);
+      switch (InFiles->MM5PrecipDistFreq) {
+      case (FreqSingle):
+        printf("A single precipititation distribution map is used for the entire simulation\n");
+        break;
+      case (FreqMonth):
+        printf("Monthly precipititation distribution maps are used\n");
+        break;
+      case (FreqContinous):
+        printf("An individual precipititation distribution maps is used for each MM5 time step.\n");
+        break;
+      default:
+        ReportError("InitMM5", 15);
+        break;
+      }
+    } else {
+      printf("Precip is distributed evenly within MM5 cell\n");
+    }
+    printf("Precip Map is %s\n", InFiles->MM5Precipitation);
+    printf("wind Map is %s\n", InFiles->MM5Wind);
+    printf("shortwave Map is %s\n", InFiles->MM5ShortWave);
+    printf("humidity Map is %s\n", InFiles->MM5Humidity);
+    printf("lapse Map is %s\n", InFiles->MM5Lapse);
+    printf("terrain Map is %s\n", InFiles->MM5Terrain);
+    printf("fail if %d > %d\n",
+           (int)((Map->NY + MM5Map->OffsetY) * Map->DY / MM5Map->DY),
+           MM5Map->NY);
+    printf("fail if %d > %d\n",
+           (int)((Map->NX - MM5Map->OffsetX) * Map->DX / MM5Map->DY),
+           MM5Map->NX);
+  } 
+  ParallelBarrier();
+
+  printf("%d: dhsvm local extreme north / south is %f %f \n", ParallelRank(), 
+         Map->Yorig, Map->Yorig - Map->NY * Map->DY);
+  printf("%d: dhsvm local extreme west / east is %f %f \n", ParallelRank(), 
+         Map->Xorig, Map->Xorig + Map->NX * Map->DY);
+  printf("%d: MM5 offset x is %d\n", 
+         ParallelRank(), MM5Map->OffsetX);
+  printf("%d: MM5 offset y is %d\n", 
+         ParallelRank(), MM5Map->OffsetY);
+
+    
   if ((int)((Map->NY + MM5Map->OffsetY) * Map->DY / MM5Map->DY) > MM5Map->NY
       || (int)((Map->NX - MM5Map->OffsetX) * Map->DX / MM5Map->DY) >
       MM5Map->NX)
@@ -648,8 +708,10 @@ void InitRadar(LISTPTR Input, MAPSIZE * Map, TIMESTRUCT * Time,
     ReportError(StrEnv[radar_grid].KeyName, 51);
 
   Radar->DXY = sqrt(Radar->DX * Radar->DX + Radar->DY * Radar->DY);
-  Radar->X = 0;
-  Radar->Y = 0;
+  /* 
+     Radar->X = 0;
+     Radar->Y = 0;
+  */
   Radar->OffsetX = Round(((float)(Radar->Xorig - Map->Xorig)) /
                          ((float)Map->DX));
   Radar->OffsetY = Round(((float)(Radar->Yorig - Map->Yorig)) /

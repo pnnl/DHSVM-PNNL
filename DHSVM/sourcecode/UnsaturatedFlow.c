@@ -23,6 +23,7 @@
 #include "settings.h"
 #include "functions.h"
 #include "soilmoisture.h"
+#include "timing.h"
 
 /*****************************************************************************
 Function name: UnsaturatedFlow()
@@ -131,6 +132,9 @@ void UnsaturatedFlow(int Dt, float DX, float DY, float Infiltration,
   float SoilWater;		    /* amount of water in each soil layer (m) */
   int i;			        /* counter */
 
+
+  TIMING_TASK_START("Unsaturated Flow", 2);
+
   DeepLayerDepth = TotalDepth;
   for (i = 0; i < NSoilLayers; i++)
     DeepLayerDepth -= RootDepth[i];
@@ -238,4 +242,7 @@ void UnsaturatedFlow(int Dt, float DX, float DY, float Infiltration,
 
     *TableDepth = 0.0;
   }
+
+  TIMING_TASK_END("Unsaturated Flow", 2);
+
 }

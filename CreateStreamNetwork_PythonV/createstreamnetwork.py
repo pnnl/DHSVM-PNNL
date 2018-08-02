@@ -9,7 +9,7 @@
 # COMMENTS:     This python script is created based on original 
 #		AML scripts createstreamnetwork.aml as part of DHSVM
 #
-# Last Change: 2017-08-10 
+# Last Change: 2018-05-01 07:50:01 d3g096
 
 # -------------------------------------------------------------
 #	Import system modules
@@ -399,8 +399,8 @@ rowcolmapfun(elev,aspect,slope,"maskras")
 
 print('creating streammap')
 
-if arcpy.Exists('/output.gdb/outcover.shp'):
-    arcpy.Delete_management('/output.gdb/outcover.shp')
+if arcpy.Exists('/output.gdb/outcover'):
+    arcpy.Delete_management('/output.gdb/outcover')
 
 outcover="./output.gdb/outcover"
 arcpy.Intersect_analysis([streamnet,"rowcolpoly.shp"], outcover, "", "", "")

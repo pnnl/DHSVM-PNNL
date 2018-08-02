@@ -35,6 +35,9 @@ void CreateMapFile(char *FileName, char *FileLabel, MAPSIZE *Map);
 int Read2DMatrix(char *FileName, void *Matrix, int NumberType, 
                  MAPSIZE *Map, int NDataSet, char *VarName, int index);
 
+int Read2DMatrixAll(char *FileName, void *Matrix, int NumberType, 
+                    MAPSIZE *Map, int NDataSet, char *VarName, int index);
+
 int Write2DMatrix(char *FileName, void *Matrix, int NumberType, 
                   MAPSIZE *Map, MAPDUMP *DMap, int index);
 

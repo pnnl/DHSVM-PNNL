@@ -9,7 +9,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2018-03-30 11:44:38 d3g096
+# Last Change: 2018-05-09 08:01:13 d3g096
 
 # -------------------------------------------------------------
 # General set up
@@ -50,7 +50,17 @@ endif(UNIX)
 option (DHSVM_BUILD_TESTS "Build several module test programs in addition to DHSVM" OFF)
 
 # Limit calculations to snow pack only
-option (DHSVM_SNOW_ONLY "Builds an addition executable, DHSVM_SNOW, that simulates snow only" OFF)
+option (DHSVM_SNOW_ONLY 
+  "Builds an addition executable, DHSVM_SNOW, that simulates snow only" OFF)
+
+# Use the General Purpose Timing Library (GPTL) for performance timing
+option (DHSVM_USE_GPTL, 
+  "Use the General Purpose Timing Library (GPTL) for performance timing" OFF)
+
+set(DHSVM_TIMING_LEVEL "1" CACHE STRING "The level of timing to use (1-4)")
+if (NOT (DHSVM_TIMING_LEVEL MATCHES "^[1234]")) 
+  message(ERROR "DHSVM_TIMING_LEVEL=\"${DHSVM_TIMING_LEVEL}\" not understood")
+endif()
 
 # -------------------------------------------------------------
 # MPI is required
@@ -67,6 +77,12 @@ message(STATUS "MPI_C_LIBRARIES: ${MPI_C_LIBRARIES}")
 message(STATUS "Checking GA ...")
 find_package(GA REQUIRED)
 
+# -------------------------------------------------------------
+# GPTL is optional, but if asked for, it must be found
+# -------------------------------------------------------------
+if (DHSVM_USE_GPTL)
+  find_package(GPTL REQUIRED)
+endif (DHSVM_USE_GPTL)
 # -------------------------------------------------------------
 # system-specific options
 # -------------------------------------------------------------

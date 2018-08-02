@@ -221,5 +221,6 @@ void InitNetwork(MAPSIZE *Map, TOPOPIX **TopoMap,
         }
       }
     }
+    fclose(inputfile);
   }
 }

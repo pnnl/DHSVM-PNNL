@@ -91,6 +91,7 @@ static char *ErrorMessage[] = {
   "Riparian parameter < 0:", /* 68 */
   "No gridded met file is found within the basin boundary", /* 69 */
   "MPI/GA Error:",                                          /* 70 */
+  "Unknown keyword: ",                                      /* 71 */
   NULL
 };
 

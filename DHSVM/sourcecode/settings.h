@@ -85,7 +85,10 @@ typedef unsigned int unint;
 #define GLACIER -1234
 
 #define TINY       1e-20
+
+#ifndef DEBUG
 #define DEBUG      FALSE
+#endif
 
 #define HEADERLINES    5
 #define BUFSIZE      255
@@ -129,7 +132,7 @@ enum KEYS {
   snow_water_capacity, reference_height, rain_lai_multiplier,
   snow_lai_multiplier, min_intercepted_snow, outside_basin,
   temp_lapse_rate, precip_lapse_rate, precip_multiplier, alb_acc_lambda, 
-  alb_melt_lambda, alb_acc_min, alb_melt_min, snowslide_parameter1,
+  alb_melt_lambda, alb_acc_min, alb_melt_min, max_swe, snowslide_parameter1,
   snowslide_parameter2, gapwind_adj,
   /* Station information */
   station_name = 0, station_north, station_east, station_elev, station_file,
@@ -143,7 +146,7 @@ enum KEYS {
   /* MM5 information */
   MM5_start = 0, MM5_temperature, MM5_humidity, MM5_wind, MM5_shortwave,
   MM5_longwave, MM5_precip, MM5_terrain, MM5_lapse,
-  MM5_rows, MM5_cols, MM5_ext_north, MM5_ext_west, MM5_dy,
+  MM5_rows, MM5_cols, MM5_ext_north, MM5_ext_west, MM5_dy, MM5_precip_dist, MM5_precip_freq,
   /* grid information */
   grid_ext_north=0, grid_ext_south, grid_ext_east, grid_ext_west, tot_grid, decim,
   grid_met_file, file_prefix,

@@ -18,6 +18,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
 #include <ga.h>
 
@@ -175,6 +176,7 @@ void InitNewMonth(TIMESTRUCT *Time, OPTIONSTRUCT *Options, MAPSIZE *Map,
   }
 }
 
+
 /*****************************************************************************
   Function name: InitNewDay()
 
@@ -201,6 +203,30 @@ void InitNewDay(int DayOfYear, SOLARGEOMETRY * SolarGeo)
     &(SolarGeo->Sunrise), &(SolarGeo->Sunset),
     &(SolarGeo->TimeAdjustment), &(SolarGeo->SunEarthDistance));
 }
+
+
+/******************************************************************************/
+/* UpdateMM5Field                                                              */
+/******************************************************************************/
+static void
+UpdateMM5Field(char *input, int Step, MAPSIZE *Map, MAPSIZE *MM5Map,
+               float *Array, float **MM5InputField)
+{
+  int x;
+  int y;
+  const int NumberType = NC_FLOAT;
+  int MM5Y, MM5X;
+
+  Read2DMatrixAll(input, Array, NumberType, MM5Map, Step, "", 0);
+  for (y = 0; y < Map->NY; y++) {
+    for (x = 0; x < Map->NX; x++) {
+      MM5Y = (int)((y + MM5Map->OffsetY) * Map->DY / MM5Map->DY);
+      MM5X = (int)((x - MM5Map->OffsetX) * Map->DX / MM5Map->DY);
+      MM5InputField[y][x] = Array[MM5Y * MM5Map->NX + MM5X];
+    }
+  }
+}
+
 
 /*****************************************************************************
   Function name: InitNewStep()
@@ -236,21 +262,22 @@ void InitNewDay(int DayOfYear, SOLARGEOMETRY * SolarGeo)
   Comments     : To be executed at the beginning of each time step
 *****************************************************************************/
 void InitNewStep(INPUTFILES *InFiles, MAPSIZE *Map, TIMESTRUCT *Time,
-  int NSoilLayers, OPTIONSTRUCT *Options, int NStats,
-  METLOCATION *Stat, char *RadarFileName, MAPSIZE *Radar,
-  RADARPIX **RadarMap, SOLARGEOMETRY *SolarGeo,
-  TOPOPIX **TopoMap, SOILPIX **SoilMap,
-  float ***MM5Input, float ***WindModel, MAPSIZE *MM5Map)
+                 int NSoilLayers, OPTIONSTRUCT *Options, int NStats,
+                 METLOCATION *Stat, char *RadarFileName, MAPSIZE *Radar,
+                 RADARPIX **RadarMap, SOLARGEOMETRY *SolarGeo,
+                 TOPOPIX **TopoMap, SOILPIX **SoilMap,
+                 float ***MM5Input, float **PrecipLapseMap, 
+                 float ***WindModel, MAPSIZE *MM5Map)
 {
   const char *Routine = "InitNewStep";
   int i;			/* counter */
   int j;			/* counter */
   int x;			/* counter */
   int y;			/* counter */
-  int NumberType;	/* number type in MM5 input */
   int Step;			/* Step in the MM5 Input */
   float *Array = NULL;
   int MM5Y, MM5X;
+  const int NumberType = NC_FLOAT;
 
   /*printf("current time is %4d-%2d-%2d-%2d\n", Time->Current.Year,Time->Current.Month, Time->Current.Day, Time->Current.Hour);*/
 
@@ -258,103 +285,86 @@ void InitNewStep(INPUTFILES *InFiles, MAPSIZE *Map, TIMESTRUCT *Time,
      horizon, this is only necessary if shading is TRUE */
 
   SolarHour(SolarGeo->Latitude,
-    (Time->DayStep + 1) * ((float)Time->Dt) / SECPHOUR,
-    ((float)Time->Dt) / SECPHOUR, SolarGeo->NoonHour,
-    SolarGeo->Declination, SolarGeo->Sunrise, SolarGeo->Sunset,
-    SolarGeo->TimeAdjustment, SolarGeo->SunEarthDistance,
-    &(SolarGeo->SineSolarAltitude), &(SolarGeo->DayLight),
-    &(SolarGeo->SolarTimeStep), &(SolarGeo->SunMax),
-    &(SolarGeo->SolarAzimuth));
+            (Time->DayStep + 1) * ((float)Time->Dt) / SECPHOUR,
+            ((float)Time->Dt) / SECPHOUR, SolarGeo->NoonHour,
+            SolarGeo->Declination, SolarGeo->Sunrise, SolarGeo->Sunset,
+            SolarGeo->TimeAdjustment, SolarGeo->SunEarthDistance,
+            &(SolarGeo->SineSolarAltitude), &(SolarGeo->DayLight),
+            &(SolarGeo->SolarTimeStep), &(SolarGeo->SunMax),
+            &(SolarGeo->SolarAzimuth));
 
   if (Options->MM5 == TRUE) {
     /* Read the data from the MM5 files */
     if (!(Array = (float *)calloc(MM5Map->NY * MM5Map->NX, sizeof(float))))
       ReportError((char *)Routine, 1);
-    NumberType = NC_FLOAT;
 
     Step = NumberOfSteps(&(Time->StartMM5), &(Time->Current), Time->Dt);
 
-    Read2DMatrix(InFiles->MM5Temp, Array, NumberType, MM5Map, Step, "", 0);
-    for (y = 0; y < Map->NY; y++)
-      for (x = 0; x < Map->NX; x++) {
-        MM5Y = (int)((y + MM5Map->OffsetY) * Map->DY / MM5Map->DY);
-        MM5X = (int)((x - MM5Map->OffsetX) * Map->DX / MM5Map->DY);
-        MM5Input[MM5_temperature - 1][y][x] = Array[MM5Y * MM5Map->NX + MM5X];
-      }
+    UpdateMM5Field(InFiles->MM5Temp, Step, Map, MM5Map, Array,
+                   MM5Input[MM5_temperature - 1]);
+    UpdateMM5Field(InFiles->MM5Humidity, Step, Map, MM5Map, Array,
+                   MM5Input[MM5_humidity - 1]);
+    UpdateMM5Field(InFiles->MM5Wind, Step, Map, MM5Map, Array,
+                   MM5Input[MM5_wind - 1]);
+    UpdateMM5Field(InFiles->MM5ShortWave, Step, Map, MM5Map, Array,
+                   MM5Input[MM5_shortwave - 1]);
+    UpdateMM5Field(InFiles->MM5LongWave, Step, Map, MM5Map, Array,
+                   MM5Input[MM5_longwave - 1]);
+    UpdateMM5Field(InFiles->MM5Precipitation, Step, Map, MM5Map, Array,
+                   MM5Input[MM5_precip - 1]);
 
-    Read2DMatrix(InFiles->MM5Humidity, Array, NumberType, MM5Map, Step, "", 0);
-
-    for (y = 0; y < Map->NY; y++)
+    for (y = 0; y < Map->NY; y++) {
       for (x = 0; x < Map->NX; x++) {
-        MM5Y = (int)((y + MM5Map->OffsetY) * Map->DY / MM5Map->DY);
-        MM5X = (int)((x - MM5Map->OffsetX) * Map->DX / MM5Map->DY);
-        MM5Input[MM5_humidity - 1][y][x] = Array[MM5Y * MM5Map->NX + MM5X];
-      }
-
-    Read2DMatrix(InFiles->MM5Wind, Array, NumberType, MM5Map, Step, "", 0);
-    for (y = 0; y < Map->NY; y++)
-      for (x = 0; x < Map->NX; x++) {
-        MM5Y = (int)((y + MM5Map->OffsetY) * Map->DY / MM5Map->DY);
-        MM5X = (int)((x - MM5Map->OffsetX) * Map->DX / MM5Map->DY);
-        MM5Input[MM5_wind - 1][y][x] = Array[MM5Y * MM5Map->NX + MM5X];
-      }
-
-    Read2DMatrix(InFiles->MM5ShortWave, Array, NumberType, MM5Map, Step, "", 0);
-    for (y = 0; y < Map->NY; y++)
-      for (x = 0; x < Map->NX; x++) {
-        MM5Y = (int)((y + MM5Map->OffsetY) * Map->DY / MM5Map->DY);
-        MM5X = (int)((x - MM5Map->OffsetX) * Map->DX / MM5Map->DY);
-        MM5Input[MM5_shortwave - 1][y][x] = Array[MM5Y * MM5Map->NX + MM5X];
-      }
-
-    Read2DMatrix(InFiles->MM5LongWave, Array, NumberType, MM5Map, Step, "", 0);
-    for (y = 0; y < Map->NY; y++)
-      for (x = 0; x < Map->NX; x++) {
-        MM5Y = (int)((y + MM5Map->OffsetY) * Map->DY / MM5Map->DY);
-        MM5X = (int)((x - MM5Map->OffsetX) * Map->DX / MM5Map->DY);
-        MM5Input[MM5_longwave - 1][y][x] = Array[MM5Y * MM5Map->NX + MM5X];
-      }
-
-    Read2DMatrix(InFiles->MM5Precipitation, Array, NumberType, MM5Map, Step, "", 0);
-    for (y = 0; y < Map->NY; y++)
-      for (x = 0; x < Map->NX; x++) {
-        MM5Y = (int)((y + MM5Map->OffsetY) * Map->DY / MM5Map->DY);
-        MM5X = (int)((x - MM5Map->OffsetX) * Map->DX / MM5Map->DY);
-        MM5Input[MM5_precip - 1][y][x] = Array[MM5Y * MM5Map->NX + MM5X];
         if (MM5Input[MM5_precip - 1][y][x] < 0.0) {
           printf("Warning: MM5 precip is less than zero %f\n",
-            MM5Input[MM5_precip - 1][y][x]);
+                 MM5Input[MM5_precip - 1][y][x]);
           MM5Input[MM5_precip - 1][y][x] = 0.0;
         }
       }
-    Read2DMatrix(InFiles->MM5Terrain, Array, NumberType, MM5Map, Step, "", 0);
-    for (y = 0; y < Map->NY; y++)
-      for (x = 0; x < Map->NX; x++) {
-        MM5Y = (int)((y + MM5Map->OffsetY) * Map->DY / MM5Map->DY);
-        MM5X = (int)((x - MM5Map->OffsetX) * Map->DX / MM5Map->DY);
-        MM5Input[MM5_terrain - 1][y][x] = Array[MM5Y * MM5Map->NX + MM5X];
-      }
-    Read2DMatrix(InFiles->MM5Lapse, Array, NumberType, MM5Map, Step, "", 0);
-    for (y = 0; y < Map->NY; y++)
-      for (x = 0; x < Map->NX; x++) {
-        MM5Y = (int)((y + MM5Map->OffsetY) * Map->DY / MM5Map->DY);
-        MM5X = (int)((x - MM5Map->OffsetX) * Map->DX / MM5Map->DY);
-        MM5Input[MM5_lapse - 1][y][x] = Array[MM5Y * MM5Map->NX + MM5X];
-      }
+    }
+    
+    UpdateMM5Field(InFiles->MM5Terrain, Step, Map, MM5Map, Array,
+                   MM5Input[MM5_terrain - 1]);
+    UpdateMM5Field(InFiles->MM5Lapse, Step, Map, MM5Map, Array,
+                   MM5Input[MM5_lapse - 1]);
 
     if (Options->HeatFlux == TRUE) {
 
+
       for (i = 0, j = MM5_lapse; i < NSoilLayers; i++, j++) {
-        Read2DMatrix(InFiles->MM5SoilTemp[i], Array, NumberType, MM5Map, Step, "", 0);
-        for (y = 0; y < Map->NY; y++)
-          for (x = 0; x < Map->NX; x++) {
-            MM5Y = (int)((y + MM5Map->OffsetY) * Map->DY / MM5Map->DY);
-            MM5X = (int)((x - MM5Map->OffsetX) * Map->DX / MM5Map->DY);
-            MM5Input[j][y][x] = Array[MM5Y * MM5Map->NX + MM5X];
-          }
+        UpdateMM5Field(InFiles->MM5SoilTemp[i], Step, Map, MM5Map, Array,
+                       MM5Input[j]);
       }
     }
     free(Array);
+
+    if (strlen(InFiles->PrecipLapseFile) > 0) {
+
+      switch (InFiles->MM5PrecipDistFreq) {
+      case (FreqSingle):
+        Step = 0;
+        break;
+      case (FreqMonth):
+        Step = Time->Current.Month - 1;
+        break;
+      case (FreqContinous):
+        /* Step unchanged */
+        break;
+      default:
+        ReportError("InitNewStep", 15);
+      }
+
+      if (!(Array = (float *)calloc(Map->NY * Map->NX, sizeof(float))))
+        ReportError((char *)Routine, 1);
+      Read2DMatrix(InFiles->PrecipLapseFile, Array, NumberType, Map, Step, "", 0);
+      for (y = 0; y < Map->NY; y++) {
+        for (x = 0; x < Map->NX; x++) {
+          PrecipLapseMap[y][x] = Array[y * Map->NX + x];
+        }
+      }
+      free(Array);
+    }
+
   }
   /*end if MM5*/
 

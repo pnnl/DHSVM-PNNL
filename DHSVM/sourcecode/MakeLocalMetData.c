@@ -24,6 +24,7 @@
 #include "functions.h"
 #include "constants.h"
 #include "rad.h"
+#include "timing.h"
 
 /*****************************************************************************
 Function name: MakeLocalMetData()
@@ -80,6 +81,8 @@ PIXMET MakeLocalMetData(int y, int x, MAPSIZE *Map, int DayStep,
   int WindDirection = 0;	/* Direction of model wind */
   PIXMET LocalMet;		/* local met data */
 
+  TIMING_TASK_START("Make new met data", 2);
+
   LocalMet.Tair = 0.0;
   LocalMet.Rh = 0.0;
   LocalMet.Wind = 0.0;
@@ -118,6 +121,9 @@ PIXMET MakeLocalMetData(int y, int x, MAPSIZE *Map, int DayStep,
     LocalMet.Lin = MM5Input[MM5_longwave - 1][y][x];
     LocalMet.Press = 101300.0;
     PrecipMap->Precip = MM5Input[MM5_precip - 1][y][x];
+    if (PrecipLapseMap != NULL) {
+      PrecipMap->Precip *= PrecipLapseMap[y][x];
+    }
   }
   else {			/* MM5 is false and we need to interpolate the basic met records */
     WeightSum = 0.0;
@@ -367,6 +373,8 @@ PIXMET MakeLocalMetData(int y, int x, MAPSIZE *Map, int DayStep,
     (*MetMap)[y][x].wind_speed = LocalMet.Wind;
     (*MetMap)[y][x].humidity = LocalMet.Rh;
   }
+
+  TIMING_TASK_END("Make new met data", 2);
 
   return LocalMet;
 }

@@ -20,6 +20,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "settings.h"
 #include "constants.h"
 #include "data.h"
@@ -29,6 +30,7 @@
 #include "rad.h"
 #include "sizeofnt.h"
 #include "varid.h"
+#include "array_alloc.h"
 #include "ParallelDHSVM.h"
 
 
@@ -55,6 +57,11 @@ void InitMetMaps(int NDaySteps, MAPSIZE *Map, MAPSIZE *Radar,
 
   if (Options->MM5 == TRUE) {
     InitMM5Maps(Soil->MaxLayers, Map->NY, Map->NX, MM5Input, RadMap, Options);
+    /* If called for, use the precip lapse map for MM5 precip
+       distribution, avoiding lots of function interfaces changes */
+    if (strlen(PrecipLapseFile) > 0) {
+      InitPrecipLapseMap(PrecipLapseFile, Map, PrecipLapseMap);
+    }
     if (Options->Shading == TRUE)
       InitShadeMap(Options, NDaySteps, Map, ShadowMap, SkyViewMap);
   }
@@ -211,6 +218,8 @@ void InitMM5Maps(int NSoilLayers, int NY, int NX, float ****MM5Input,
 
   if (Options->HeatFlux == FALSE)
     NTotalMaps -= NSoilLayers;
+
+  /* *MM5Input = calloc_3D_float(NTotalMaps, NY, NX); */
 
   if (!((*MM5Input) = (float ***)calloc(NTotalMaps, sizeof(float **))))
     ReportError(Routine, 1);

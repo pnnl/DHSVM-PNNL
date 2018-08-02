@@ -126,6 +126,7 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
     { "CONSTANTS", "ALBEDO MELTING LAMBDA", "", "" },
     { "CONSTANTS", "ALBEDO ACCUMULATION MIN", "", "" },
     { "CONSTANTS", "ALBEDO MELTING MIN", "", "" },
+    {"CONSTANTS", "MAX SURFACE SNOW LAYER DEPTH", "", "0.125" },
     { "CONSTANTS", "SNOWSLIDE PARAMETER1", "", "" },
     { "CONSTANTS", "SNOWSLIDE PARAMETER2", "", "" },
     { "CONSTANTS", "GAP WIND ADJ FACTOR", "", "" },
@@ -464,8 +465,10 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
 
   Map->DX = Map->DY;
   Map->DXY = (float) sqrt(Map->DX * Map->DX + Map->DY * Map->DY);
-  Map->X = 0;
-  Map->Y = 0;
+  /*
+    Map->X = 0;
+    Map->Y = 0;
+  */
   Map->OffsetX = 0;
   Map->OffsetY = 0;
   Map->NumCells = 0;
@@ -564,6 +567,11 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
   if (!CopyFloat(&ALB_MELT_MIN,
     StrEnv[alb_melt_min].VarStr, 1))
     ReportError(StrEnv[alb_melt_min].KeyName, 51);
+    
+  /* maximum depth of the surface layer in snow water equivalent (m) */
+  if (!CopyFloat(&MAX_SURFACE_SWE,
+    StrEnv[max_swe].VarStr, 1))
+    ReportError(StrEnv[max_swe].KeyName, 51);
 
   /* if turn on canopy gap module */
   if (Options->CanopyGapping) {

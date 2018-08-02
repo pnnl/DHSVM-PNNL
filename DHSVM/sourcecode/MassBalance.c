@@ -17,12 +17,14 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #include "settings.h"
 #include "data.h"
 #include "DHSVMerror.h"
 #include "functions.h"
 #include "constants.h"
 #include "Calendar.h"
+#include "timing.h"
 
 /*****************************************************************************
   MassBalance()
@@ -42,6 +44,26 @@ void MassBalance(DATE *Current, DATE *Start, FILES *Out, AGGREGATED *Total, WATE
   float Output;			/* total water flux leaving the basin;  */
   float Input;
   float MassError;		/* mass balance error m  */
+
+  float deltaSWE;       /* change of SWE from last time step */
+  float NetWaterIn1;    /* incoming water to the soil (precip-deltaSWE+SnowVaporFlux) */
+  float NetWaterIn2;    /* rain or melt */
+  
+  /* Calculate the net water going into the soil column */
+  if (IsEqualTime(Current, Start))
+    deltaSWE = 0.;
+  else
+    deltaSWE = Total->Snow.OldSwq - Total->Snow.Swq; 
+  NetWaterIn1 = Total->Precip.Precip + deltaSWE + Total->Snow.VaporMassFlux; 
+  
+  if (fabs(NetWaterIn1) <= 1.e-12)
+    NetWaterIn1 = 0.;
+  
+  /* 2nd approach */
+  if (Total->Snow.Swq>0|| (Total->Snow.Swq==0 && deltaSWE>0))
+     NetWaterIn2 = Total->Snow.Melt;
+  else
+     NetWaterIn2 = Total->Precip.Precip - Total->Precip.SnowFall;
 
   NewWaterStorage = Total->Soil.IExcess + Total->Road.IExcess + 
     Total->CanopyWater + Total->SoilWater +
@@ -69,6 +91,8 @@ void MassBalance(DATE *Current, DATE *Start, FILES *Out, AGGREGATED *Total, WATE
   
   if (IsEqualTime(Current, Start)) {
     fprintf(Out->FilePtr, "         Date        ");
+    fprintf(Out->FilePtr, " NetWaterIn1(mm) ");
+    fprintf(Out->FilePtr, " NetWaterIn2(mm) ");
     fprintf(Out->FilePtr, " Precip(m) ");
     fprintf(Out->FilePtr, " Snow(m) ");
     fprintf(Out->FilePtr, " IExcess(m) ");
@@ -83,12 +107,14 @@ void MassBalance(DATE *Current, DATE *Start, FILES *Out, AGGREGATED *Total, WATE
     fprintf(Out->FilePtr, "\n");
   }
   PrintDate(Current, Out->FilePtr);
-  fprintf(Out->FilePtr, " %g  %g  %g  %g  %g  %g  %g  %g  %g  %g \
-      %g  %g  %g  %g  %g  %g  %g  %g %g  %g \n", 
+  fprintf(Out->FilePtr, " %g  %g  %g  %g  %g  %g  %g  %g  %g  %g  %g  %g \
+      %g  %g  %g  %g  %g  %g  %g  %g %g  %g \n", NetWaterIn1*1000, NetWaterIn2*1000, 
       Total->Precip.Precip, Total->Precip.SnowFall, Total->Soil.IExcess,
       Total->Snow.Swq, Total->Snow.Melt, Total->Evap.ETot, 
       Total->CanopyWater, Total->SoilWater, Total->Soil.SatFlow, Total->Snow.VaporMassFlux,
 	  Total->ChannelInt,  Total->RoadInt, Total->CulvertToChannel, 
       Total->Rad.BeamIn+Total->Rad.DiffuseIn, Total->Rad.PixelNetShort, 
       Total->Rad.NetShort[0], Total->Rad.NetShort[1], Total->NetRad, Total->Rad.Tair, MassError);
+  Total->Snow.OldSwq = Total->Snow.Swq;
+  TIMING_TASK_END("MassBalasce", 2);
 }

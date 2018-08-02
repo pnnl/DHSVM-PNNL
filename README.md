@@ -22,7 +22,7 @@ The tutorial and sample data to run DHSVM v 3.2 will be made available on the <a
 
 __New Capabilities__
   * Variable radiation transmittance (with solar position and tree characteristics) 
-  * Canopy gap (Sun et al., _under review_)
+  * Canopy gap (<a href="https://onlinelibrary.wiley.com/doi/abs/10.1002/hyp.13150">Sun et al., 2018</a>)
   * Snow sliding 
   * Python scripts to create stream network
   * Support of gridded meteorological data input
@@ -40,7 +40,6 @@ This branch of DHSVM has been modified to run in parallel using
 ## Hydrologic Processes / Options not Implemented in Parallel 
 
 * `Flow Routing` = `UNIT_HYDROGRAPH`
-* `MM5` = `TRUE`
 * `Precipitation Source` = `RADAR`
 
 ## Requirements
@@ -113,4 +112,27 @@ If DHSVM is configured with this option,
    
 an additional executable is built, `DHSVM_SNOW`, which operates in
 snow-only mode. 
+
+### Timing with GPTL ### 
+
+DHSVM can optionally be compiled to perform some internal timing
+during simulations.  This requires the
+[General Purpose Timing Library](https://jmrosinski.github.io/GPTL/)
+be available on the system.  To enable timing, use the following
+configuration options:
+
+   -D DHSVM_USE_GPTL:BOOL=ON 
+   -D GPTL_DIR:PATH="/path/to/gptl"
+   -D DHSVM_TIMING_LEVEL:STRING="1" 
+   
+The resulting executables will produce files named `timing.#` at the
+end of simulation, where `#` is the MPI process number.  These contain
+timing results for several key simulation components.
+
+The `DHSVM_TIMING_LEVEL` can be from 1 to 4, where 4 produces the most
+detailed information.  The timing routines can impact performance with
+higher detail, but this is documented in the output.  
+
+
+
 

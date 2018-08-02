@@ -90,6 +90,12 @@ typedef struct {
   int *WaveLength;
 } UNITHYDRINFO;
 
+typedef enum {
+  FreqSingle = 0,
+  FreqMonth,
+  FreqContinous
+} MM5FREQ;
+
 typedef struct {
   char Const[BUFSIZE + 1];	/* Filename for main input file  */
   char RadMapPath[BUFSIZE + 1];	/* Path and start of filename for rad files */
@@ -105,6 +111,7 @@ typedef struct {
   char MM5Precipitation[BUFSIZE + 1];	/* File with MM5 precipitation 
 					   (m/timestep) */
   char **MM5SoilTemp;		/* Files with MM5 soil temperatures (C) */
+  MM5FREQ MM5PrecipDistFreq;    /* Frequency of MM5 precip distribution maps */
   char PrecipLapseFile[BUFSIZE + 1];	/* File with precipitation 
 					   lapse rate map */
   char WindMapPath[BUFSIZE + 1];	/* File with wind factors */
@@ -146,8 +153,8 @@ typedef struct {
   char System[BUFSIZE + 1];     /* Coordinate system */
   double Xorig;                 /* X coordinate of Northwest corner */
   double Yorig;                 /* Y coordinate of Northwest corner */
-  int X;                        /* Current x position */
-  int Y;                        /* Current y position */
+  /* int X; */                        /* Current x position */
+  /* int Y; */                       /* Current y position */
   int NX;                       /* Number of (local) pixels in x direction */
   int NY;                       /* Number of pixels in y direction */
   float DX;                     /* Pixel spacing in x-direction */
@@ -339,6 +346,7 @@ typedef struct {
   uchar SnowCoverOver;		/* Flag overstory can be covered */
   unshort LastSnow;			/* Days since last snowfall */
   float Swq;				/* Snow water equivalent */
+  float OldSwq;             /* Snow water equivalent from previous time step */
   float Melt;				/* Snow Melt */
   float Outflow;		    /* Snow pack outflow (m) */
   float PackWater;			/* Liquid water content of snow pack */

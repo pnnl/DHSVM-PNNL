@@ -18,8 +18,6 @@
 
 #include <stdarg.h>
 
-#define MAX_SURFACE_SWE     0.125	/* maximum depth of the surface layer
-					                   in water equivalent (m) */
 
 void MassRelease(float *InterceptedSnow, float *TempInterceptionStorage,
 		 float *ReleasedMass, float *Drip, float MDRatio);

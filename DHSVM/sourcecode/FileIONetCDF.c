@@ -736,8 +736,10 @@ int main(void)
   strcpy(Map.System, "Coordinate system");
   Map.Xorig = 100.;
   Map.Yorig = 100.;
-  Map.X = 0;
-  Map.Y = 0;
+  /* 
+     Map.X = 0;
+     Map.Y = 0;
+  */
   Map.NX = 4;
   Map.NY = 6;
   Map.DX = 5.;

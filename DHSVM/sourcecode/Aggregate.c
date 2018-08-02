@@ -24,6 +24,7 @@
 #include "DHSVMerror.h"
 #include "functions.h"
 #include "constants.h"
+#include "timing.h"
 
 /* This macro is defined so several different operations can be
    applied to each field, including summation over processors, without
@@ -154,6 +155,8 @@ void Aggregate(MAPSIZE *Map, OPTIONSTRUCT *Options, TOPOPIX **TopoMap,
   int n;
   float DeepDepth;              /* depth to bottom of lowest rooting zone */
   float *sums;
+
+  TIMING_TASK_START("Aggregate", 2);
 
   NPixels = Map->AllCells;
   *roadarea = 0.;
@@ -337,4 +340,5 @@ void Aggregate(MAPSIZE *Map, OPTIONSTRUCT *Options, TOPOPIX **TopoMap,
   }
 
   free(sums);
+  TIMING_TASK_END("Aggregate", 2);
 }

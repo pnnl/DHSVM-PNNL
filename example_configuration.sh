@@ -10,7 +10,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2018-03-30 11:47:00 d3g096
+# Last Change: 2018-05-09 15:25:11 d3g096
 
 set -xue
 
@@ -73,14 +73,42 @@ if [ $host == "flophouse" ]; then
     CXX=/usr/bin/g++
     export CC
 
+    # For GPTL (not working)
+    # CFLAGS="-finstrument-functions"
+    # export CFLAGS
+
     prefix="/net/flophouse/files0/perksoft/linux64"
+    cmake $options \
+        -D MPI_C_COMPILER:STRING="/usr/lib64/openmpi/bin/mpicc" \
+        -D MPI_CXX_COMPILER:STRING="/usr/lib64/openmpi/bin/mpicxx" \
+        -D MPIEXEC:STRING="/usr/lib64/openmpi/bin/mpiexec" \
+        -D GA_DIR:PATH="${prefix}/ga-c++" \
+	-D GA_EXTRA_LIBS:STRING="-lm" \
+        -D DHSVM_USE_GPTL:BOOL=ON \
+        -D DHSVM_TIMING_LEVEL:STRING="1" \
+        -D GPTL_DIR:PATH="$prefix/gptl-v5.5.3-2-gbb58395" \
+        -D DHSVM_USE_NETCDF:BOOL=ON \
+        -D CMAKE_INSTALL_PREFIX:PATH="$prefix/dhsvm" \
+        $common_flags \
+        ..
+
+elif [ $host == "tlaloc" ]; then
+
+    CC=/usr/bin/gcc
+    CXX=/usr/bin/g++
+    export CC
+
+    prefix="/file0/perksoft"
     cmake $options \
         -D MPI_C_COMPILER:STRING="/usr/lib64/openmpi/bin/mpicc" \
         -D MPI_CXX_COMPILER:STRING="/usr/lib64/openmpi/bin/mpicxx" \
         -D MPIEXEC:STRING="/usr/lib64/openmpi/bin/mpiexec" \
         -D GA_DIR:STRING="$prefix/ga-c++" \
 	-D GA_EXTRA_LIBS:STRING="-lm" \
-        -D DHSVM_USE_NETCDF:BOOL=ON \
+        -D DHSVM_USE_GPTL:BOOL=ON \
+        -D DHSVM_TIMING_LEVEL:STRING="1" \
+        -D GPTL_DIR:PATH="$prefix/gptl-v5.5.3-2-gbb58395" \
+        -D DHSVM_USE_NETCDF:BOOL=OFF \
         -D CMAKE_INSTALL_PREFIX:PATH="$prefix/dhsvm" \
         $common_flags \
         ..
@@ -99,7 +127,7 @@ elif [ $host == "WE32673" ]; then
     cmake $options \
         -D MPI_C_COMPILER:STRING="$prefix/bin/mpicc-openmpi-clang38" \
         -D MPIEXEC:STRING="$prefix/bin/mpiexec-openmpi-clang38" \
-        -D GA_DIR:PATH="/Users/d3g096/Projects/GridPACK" \
+        -D GA_DIR:PATH="$prefix" \
         -D NETCDF_DIR:PATH="$prefix/include" \
         -D DHSVM_USE_X11:BOOL=OFF \
         -D DHSVM_USE_NETCDF:BOOL=ON \
@@ -161,6 +189,29 @@ elif [ $host = "briareus" ]; then
 
     # with these modules (default compilers:
 
+    # module load intel/15.0.1
+    # module load intelmpi/2017.4.056
+
+    prefix=/files0/dhsvm
+
+    CC="icc"
+    export CC
+
+    cmake $options \
+        -D DHSVM_USE_NETCDF:BOOL=OFF \
+        -D MPI_C_COMPILER:STRING="mpicc" \
+        -D GA_DIR:STRING="/files0/dhsvm" \
+        -D GA_EXTRA_LIBS:STRING="-libverbs -lm" \
+        -D DHSVM_USE_GPTL:BOOL=ON \
+        -D DHSVM_TIMING_LEVEL:STRING="2" \
+        -D GPTL_DIR:PATH="$prefix" \
+        -D CMAKE_INSTALL_PREFIX:PATH="/files0/dhsvm" \
+        ..
+
+elif [ $host = "briareus-gnu" ]; then
+
+    # with these modules (default compilers:
+
     # module load gcc
     # module load mpi/openmpi/1.4.3/gnu
 
@@ -175,7 +226,6 @@ elif [ $host = "briareus" ]; then
     -D GA_DIR:STRING="/files0/dhsvm" \
     -D CMAKE_INSTALL_PREFIX:PATH="/files0/dhsvm" \
     ..
-
 
 elif [ $host = "constance" ]; then
 
@@ -195,13 +245,12 @@ elif [ $host = "constance" ]; then
     export CC CXX
 
     cmake $options \
-        -D MPI_C_COMPILER:STRING="/share/apps/intel/2017u1/impi/2017.1.132/intel64/bin/mpicc" \
-        -D MPIEXEC:STRING="/share/apps/intel/2017u1/impi/2017.1.132/intel64/bin/mpiexec" \
+        -D MPI_C_COMPILER:STRING="mpicc" \
+        -D MPIEXEC:STRING="mpiexec" \
         -D GA_DIR:STRING="$prefix" \
 	-D GA_EXTRA_LIBS:STRING="-libverbs -lm" \
         -D DHSVM_USE_X11:BOOL=OFF \
         -D DHSVM_USE_NETCDF:BOOL=OFF \
-        -D NETCDF_INCLUDES:PATH="${NETCDF_INCLUDE}" \
         -D CMAKE_INSTALL_PREFIX:PATH="$prefix" \
         $common_flags \
         ..
