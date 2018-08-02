@@ -431,6 +431,9 @@ void InitMM5(LISTPTR Input, int NSoilLayers, TIMESTRUCT *Time,
     {"METEOROLOGY", "MM5 EXTREME NORTH", "", ""},
     {"METEOROLOGY", "MM5 EXTREME WEST", "", ""},
     {"METEOROLOGY", "MM5 DY", "", ""},
+    {"METEOROLOGY", "MM5 PRECIPITATION DISTRIBUTION FILE", "", "none"},
+    /* can be one of "single", "month", "continuous" */
+    {"METEOROLOGY", "MM5 PRECIPITATION DISTRIBUTION FREQUENCY", "", "single"},
     {NULL, NULL, "", NULL},
   };
 
@@ -476,6 +479,28 @@ void InitMM5(LISTPTR Input, int NSoilLayers, TIMESTRUCT *Time,
   if (IsEmptyStr(StrEnv[MM5_precip].VarStr))
     ReportError(StrEnv[MM5_precip].KeyName, 51);
   strcpy(InFiles->MM5Precipitation, StrEnv[MM5_precip].VarStr);
+
+  /* Use PrecipLapseFile to store the name of the MM5 precip
+     distribution map file. This avoids wholesale code changes. */
+  if (strncmp(StrEnv[MM5_precip_dist].VarStr, "none", 4)) {
+    strcpy(InFiles->PrecipLapseFile, StrEnv[MM5_precip_dist].VarStr);
+
+    /* Precipitation distribution can be in several forms. */
+
+    CopyLCase(VarStr, StrEnv[MM5_precip_freq].VarStr, BUFSIZE + 1);
+    
+    if (!strncmp(VarStr, "single", 6)) {
+      InFiles->MM5PrecipDistFreq = FreqSingle;
+    } else if (!strncmp(VarStr, "month", 6)) {
+      InFiles->MM5PrecipDistFreq = FreqMonth;
+    } else if (!strncmp(VarStr, "continuous", 10)) {
+      InFiles->MM5PrecipDistFreq = FreqContinous;
+    } else {
+      ReportError(StrEnv[MM5_precip_freq].VarStr, 70);
+    }
+  } else {
+    strcpy(InFiles->PrecipLapseFile, "");
+  }
 
   if (Options->HeatFlux == TRUE) {
     if (!(InFiles->MM5SoilTemp = (char **)calloc(sizeof(char *), NSoilLayers)))
@@ -526,6 +551,25 @@ void InitMM5(LISTPTR Input, int NSoilLayers, TIMESTRUCT *Time,
   printf("MM5 dy is %f \n", MM5Map->DY);
   printf("Temperature Map is %s\n", InFiles->MM5Temp);
   printf("Precip Map is %s\n", InFiles->MM5Precipitation);
+  if (strlen(InFiles->PrecipLapseFile) > 0) {
+    printf("Precip Distribution Map is %s\n", InFiles->PrecipLapseFile);
+    switch (InFiles->MM5PrecipDistFreq) {
+    case (FreqSingle):
+      printf("A single precipititation distribution map is used for the entire simulation\n");
+      break;
+    case (FreqMonth):
+      printf("Monthly precipititation distribution maps are used\n");
+      break;
+    case (FreqContinous):
+      printf("An individual precipititation distribution maps is used for each MM5 time step.\n");
+      break;
+    default:
+      ReportError("InitMM5", 15);
+      break;
+    }
+  } else {
+    printf("Precip is distributed evenly within MM5 cell\n");
+  }
   printf("wind Map is %s\n", InFiles->MM5Wind);
   printf("shortwave Map is %s\n", InFiles->MM5ShortWave);
   printf("humidity Map is %s\n", InFiles->MM5Humidity);

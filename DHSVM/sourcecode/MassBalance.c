@@ -17,6 +17,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #include "settings.h"
 #include "data.h"
 #include "DHSVMerror.h"
