@@ -706,6 +706,7 @@ void InitRadar(LISTPTR Input, MAPSIZE * Map, TIMESTRUCT * Time,
 
   if (!CopyFloat(&(Radar->DY), StrEnv[radar_grid].VarStr, 1))
     ReportError(StrEnv[radar_grid].KeyName, 51);
+  Radar->DX = Radar->DY;
 
   Radar->DXY = sqrt(Radar->DX * Radar->DX + Radar->DY * Radar->DY);
   /* 
