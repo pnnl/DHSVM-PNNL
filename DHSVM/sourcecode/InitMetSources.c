@@ -706,16 +706,26 @@ void InitRadar(LISTPTR Input, MAPSIZE * Map, TIMESTRUCT * Time,
 
   if (!CopyFloat(&(Radar->DY), StrEnv[radar_grid].VarStr, 1))
     ReportError(StrEnv[radar_grid].KeyName, 51);
+  Radar->DX = Radar->DY;
 
   Radar->DXY = sqrt(Radar->DX * Radar->DX + Radar->DY * Radar->DY);
   /* 
      Radar->X = 0;
      Radar->Y = 0;
   */
+
+  /* the same map will be used for all processes */
+  Radar->gNX = Radar->NX;
+  Radar->gNY = Radar->NY;
+  Radar->NumCells = Radar->NX*Radar->NY;
+  Radar->AllCells = Radar->NumCells;
+
   Radar->OffsetX = Round(((float)(Radar->Xorig - Map->Xorig)) /
                          ((float)Map->DX));
   Radar->OffsetY = Round(((float)(Radar->Yorig - Map->Yorig)) /
                          ((float)Map->DY));
+
+  Radar->dist = GA4Map(Radar, "Radar");
 
   if (Radar->OffsetX > 0 || Radar->OffsetY < 0)
     ReportError("Input Options File", 31);

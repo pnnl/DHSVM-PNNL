@@ -40,7 +40,8 @@ This branch of DHSVM has been modified to run in parallel using
 ## Hydrologic Processes / Options not Implemented in Parallel 
 
 * `Flow Routing` = `UNIT_HYDROGRAPH`
-* `Precipitation Source` = `RADAR`
+
+There may be other options that don't work. These are what's known.
 
 ## Requirements
 
