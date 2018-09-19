@@ -491,7 +491,7 @@ void AggregateCanopyGap(CanopyGapStruct **Gap, VEGPIX *LocalVeg,
   }
   for (i = 0; i < NVeg; i++) {
     for (j = 0; j < NSoil; j++) {
-      LocalEvap->ESoil[i][j] +=
+      LocalEvap->ESoil[i][j] =
         weight*(*Gap)[Opening].ESoil[i][j] + (1-weight)*(*Gap)[Forest].ESoil[i][j];
     }
   }
