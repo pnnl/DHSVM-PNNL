@@ -10,7 +10,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2018-07-04 08:12:50 d3g096
+ * LAST CHANGE: 2018-10-04 13:28:56 d3g096
  * COMMENTS:
  */
 
@@ -20,7 +20,8 @@
 #include <ga.h>
 
 #include "sizeofnt.h"
-#include "data.h"
+#include "settings.h"
+#include "MapSize.h"
 
 int Global2Local(MAPSIZE *Map, int globalx, int globaly, int *localx, int *localy);
 void Local2Global(MAPSIZE *Map, int localx, int localy, int *globalx, int *globaly);
