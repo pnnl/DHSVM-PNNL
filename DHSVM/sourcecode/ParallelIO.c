@@ -10,7 +10,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2018-06-18 13:03:03 d3g096
+ * LAST CHANGE: 2018-10-04 13:28:00 d3g096
  * COMMENTS:
  */
 
@@ -22,7 +22,8 @@
 #include <stdlib.h>
 #include <ga.h>
 
-#include "data.h"
+#include "settings.h"
+#include "MapSize.h"
 #include "sizeofnt.h"
 #include "DHSVMerror.h"
 #include "ParallelDHSVM.h"
