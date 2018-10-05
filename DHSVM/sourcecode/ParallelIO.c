@@ -10,7 +10,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2018-10-04 13:28:00 d3g096
+ * LAST CHANGE: 2018-10-05 13:21:03 d3g096
  * COMMENTS:
  */
 
@@ -152,6 +152,7 @@ intRead2DMatrix(char *FileName, void *LocalMatrix, int NumberType, MAPSIZE *Map,
   const char Routine[] = "Read2DMatrix";
   void *tmpArray;
   int gNX, gNY;
+  int flag;
   int me;
 
   me = ParallelRank();
@@ -162,16 +163,18 @@ intRead2DMatrix(char *FileName, void *LocalMatrix, int NumberType, MAPSIZE *Map,
   if (me == 0) {
     if (!(tmpArray = (void *)calloc(gNY * gNX, SizeOfNumberType(NumberType))))
       ReportError((char *)Routine, 1);
-    Read2DMatrixFmt(FileName, tmpArray, NumberType, gNY, gNX, NDataSet, VarName, index);
+    flag = Read2DMatrixFmt(FileName, tmpArray, NumberType, gNY, gNX, NDataSet, VarName, index);
+  } else {
+    flag = 0;
   }
-
   Distribute2DMatrix(tmpArray, LocalMatrix, NumberType, Map, mirror);
 
   if (me == 0) {
     free(tmpArray);
   }
+  GA_Brdcst(&flag, sizeof(int), 0);
 
-  return 0;
+  return flag;
 }
 
 
@@ -225,7 +228,7 @@ Write2DMatrix(char *FileName, void *LocalMatrix, int NumberType,
   const char Routine[] = "Write2DMatrix";
   void *tmpArray;
   int gNX, gNY;
-  int me;
+  int me, flag;
 
   me = ParallelRank();
 
@@ -241,8 +244,9 @@ Write2DMatrix(char *FileName, void *LocalMatrix, int NumberType,
   Collect2DMatrix(tmpArray, LocalMatrix, NumberType, Map);
 
   if (me == 0) {
-    Write2DMatrixFmt(FileName, tmpArray, NumberType, Map->gNY, Map->gNX, DMap, index);
+    flag = Write2DMatrixFmt(FileName, tmpArray, NumberType, gNY, gNX, DMap, index);
     free(tmpArray);
   }
-  return 0;
+  GA_Brdcst(&flag, sizeof(int), 0);
+  return flag;
 }
