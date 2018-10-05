@@ -31,7 +31,7 @@
 /*****************************************************************************
 ExecDump()
 *****************************************************************************/
-void ExecDump(MAPSIZE *Map, DATE *Current, DATE *Start, OPTIONSTRUCT *Options,
+void ExecDump(MAPSIZE *GMap, MAPSIZE *Map, DATE *Current, DATE *Start, OPTIONSTRUCT *Options,
   DUMPSTRUCT *Dump, TOPOPIX **TopoMap, EVAPPIX **EvapMap,
   PIXRAD **RadMap, PRECIPPIX **PrecipMap, SNOWPIX **SnowMap,
   MET_MAP_PIX **MetMap, VEGPIX **VegMap, LAYER *Veg, SOILPIX **SoilMap,
@@ -61,7 +61,7 @@ void ExecDump(MAPSIZE *Map, DATE *Current, DATE *Start, OPTIONSTRUCT *Options,
     /* check whether the model state needs to be dumped at this timestep, and
        dump state if needed */
     if (Dump->NStates < 0) {
-      StoreModelState(Dump->Path, Current, Map, Options, TopoMap, PrecipMap,
+      StoreModelState(Dump->Path, Current, GMap, Map, Options, TopoMap, PrecipMap,
                       SnowMap, MetMap, VegMap, Veg, SoilMap, Soil,
                       Network, HydrographInfo, Hydrograph, ChannelData);
       if (Options->HasNetwork)
@@ -70,7 +70,7 @@ void ExecDump(MAPSIZE *Map, DATE *Current, DATE *Start, OPTIONSTRUCT *Options,
     else {
       for (i = 0; i < Dump->NStates; i++) {
         if (IsEqualTime(Current, &(Dump->DState[i]))) {
-          StoreModelState(Dump->Path, Current, Map, Options, TopoMap,
+          StoreModelState(Dump->Path, Current, GMap, Map, Options, TopoMap,
                           PrecipMap, SnowMap, MetMap, VegMap, Veg,
                           SoilMap, Soil, Network, HydrographInfo, Hydrograph,
                           ChannelData);

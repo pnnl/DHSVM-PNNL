@@ -192,10 +192,10 @@ void InitDump(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *GMap, MAPSIZE *Map,
     free(BasinMask);
 
     if (Dump->NMaps > 0)
-      InitMapDump(Input, Map, MaxSoilLayers, MaxVegLayers, Dump->Path,
+      InitMapDump(Input, GMap, Map, MaxSoilLayers, MaxVegLayers, Dump->Path,
         Dump->NMaps, NMapVars, &(Dump->DMap));
     if (NImageVars > 0)
-      InitImageDump(Input, Dt, Map, MaxSoilLayers, MaxVegLayers, Dump->Path,
+      InitImageDump(Input, Dt, GMap, Map, MaxSoilLayers, MaxVegLayers, Dump->Path,
         Dump->NMaps, NImageVars, &(Dump->DMap));
 
     if (*NGraphics > 0)
@@ -311,7 +311,7 @@ void InitStateDump(LISTPTR Input, int NStates, DATE ** DState)
   Comments     : InitImageDump must be preceded by a call to InitMapDump, since
                  the necessary memory is allocated there
 *******************************************************************************/
-void InitImageDump(LISTPTR Input, int Dt, MAPSIZE * Map, int MaxSoilLayers,
+void InitImageDump(LISTPTR Input, int Dt, MAPSIZE * GMap, MAPSIZE * Map, int MaxSoilLayers,
   int MaxVegLayers, char *Path, int NMaps, int NImages,
   MAPDUMP ** DMap)
 {
@@ -370,7 +370,7 @@ void InitImageDump(LISTPTR Input, int Dt, MAPSIZE * Map, int MaxSoilLayers,
     (*DMap)[i].NumberType = NC_BYTE;
     strcpy((*DMap)[i].Format, "%d");
 
-    CreateMapFile((*DMap)[i].FileName, (*DMap)[i].FileLabel, Map);
+    CreateMapFile((*DMap)[i].FileName, (*DMap)[i].FileLabel, GMap);
 
     if (!SScanDate(VarStr[image_start], &Start))
       ReportError(KeyName[image_start], 51);
@@ -427,7 +427,7 @@ void InitImageDump(LISTPTR Input, int Dt, MAPSIZE * Map, int MaxSoilLayers,
 
   Comments     :
 *******************************************************************************/
-void InitMapDump(LISTPTR Input, MAPSIZE * Map, int MaxSoilLayers,
+void InitMapDump(LISTPTR Input, MAPSIZE * GMap, MAPSIZE * Map, int MaxSoilLayers,
   int MaxVegLayers, char *Path, int TotalMapImages, int NMaps,
   MAPDUMP ** DMap)
 {
@@ -480,7 +480,7 @@ void InitMapDump(LISTPTR Input, MAPSIZE * Map, int MaxSoilLayers,
     strncpy((*DMap)[i].FileName, Path, BUFSIZE);
     GetVarAttr(&((*DMap)[i]));
 
-    CreateMapFile((*DMap)[i].FileName, (*DMap)[i].FileLabel, Map);
+    CreateMapFile((*DMap)[i].FileName, (*DMap)[i].FileLabel, GMap);
 
     if (!CopyInt(&((*DMap)[i].N), VarStr[nmaps], 1))
       ReportError(KeyName[nmaps], 51);
