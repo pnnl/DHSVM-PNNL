@@ -371,7 +371,7 @@ void InitCanopyGapMap(OPTIONSTRUCT *Options, LISTPTR Input, MAPSIZE *Map,
   int NVeg;
   int NSoil;
   int NumberType;		/* number type */
-  unsigned char *Gap;		/* presence of gap */
+  float *Gap;		/* gap diameter */
 
   /* Get the canopy gap map filename from the [VEGETATION] section */
   GetInitString("VEGETATION", "CANOPY GAP MAP FILE", "", CanopyMapFileName,
@@ -382,7 +382,7 @@ void InitCanopyGapMap(OPTIONSTRUCT *Options, LISTPTR Input, MAPSIZE *Map,
   /* Read the vegetation type */
   GetVarName(007, 0, VarName);
   GetVarNumberType(007, &NumberType);
-  if (!(Gap = (unsigned char *)calloc(Map->NX * Map->NY,
+  if (!(Gap = (float *)calloc(Map->NX * Map->NY,
     SizeOfNumberType(NumberType))))
     ReportError((char *)Routine, 1);
   flag = Read2DMatrix(CanopyMapFileName, Gap, NumberType, Map, 0, VarName, 0);
@@ -396,7 +396,7 @@ void InitCanopyGapMap(OPTIONSTRUCT *Options, LISTPTR Input, MAPSIZE *Map,
         (*VegMap)[y][x].Gapping = Gap[i];
         /* set gapping to false for cells with no overstory */
         if (VType[(*VegMap)[y][x].Veg - 1].OverStory == FALSE)
-          (*VegMap)[y][x].Gapping = 0;
+          (*VegMap)[y][x].Gapping = 0.0;
       }
     }
   }
@@ -406,10 +406,10 @@ void InitCanopyGapMap(OPTIONSTRUCT *Options, LISTPTR Input, MAPSIZE *Map,
         (*VegMap)[y][x].Gapping = Gap[i];
         /* set gapping to false for cells with no overstory */
         if (VType[(*VegMap)[y][x].Veg - 1].OverStory == FALSE)
-          (*VegMap)[y][x].Gapping = 0;
+          (*VegMap)[y][x].Gapping = 0.0;
         /* set gapping to false given glacier cell */
         if (VType[(*VegMap)[y][x].Veg - 1].Index == GLACIER)
-          (*VegMap)[y][x].Gapping = 0;
+          (*VegMap)[y][x].Gapping = 0.0;
       }
     }
   }

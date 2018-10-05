@@ -452,7 +452,7 @@ void InitModelState(DATE *Start, MAPSIZE *Map, OPTIONSTRUCT *Options, PRECIPPIX 
 	  for (x = 0; x < Map->NX; x++) {
 		if (INBASIN(TopoMap[y][x].Mask)) {
 		  Count += 1;
-		  if (VegMap[y][x].Gapping) {
+		  if (VegMap[y][x].Gapping > 0.0) {
 			CountGap += 1;
 			for (i = 0; i < CELL_PARTITION; i++) {
 			  VegMap[y][x].Type[i].TPack = SnowMap[y][x].TPack;
@@ -468,7 +468,7 @@ void InitModelState(DATE *Start, MAPSIZE *Map, OPTIONSTRUCT *Options, PRECIPPIX 
 			VegMap[y][x].Type[Forest].Swq = SnowMap[y][x].Swq;
 
 			VegMap[y][x].Type[Opening].GapView =
-			  CalcGapView(0.5 * VType[VegMap[y][x].Veg - 1].GapDiam,
+			  CalcGapView(0.5 * VegMap[y][x].Gapping,
 				VType[VegMap[y][x].Veg - 1].Height[0],
 				VType[VegMap[y][x].Veg - 1].Vf);
 		  }

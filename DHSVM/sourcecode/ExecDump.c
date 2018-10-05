@@ -1163,7 +1163,7 @@ void DumpPix(DATE *Current, int first, FILES *OutFile, EVAPPIX *Evap,
       fprintf(OutFile->FilePtr, " InfiltAcc");
 
     if (flag == 2)
-      if (Veg->Gapping == 1)
+      if (Veg->Gapping > 0.0 )
         fprintf(OutFile->FilePtr, "Gap_SW GAP_LW");
 
     fprintf(OutFile->FilePtr, "\n");
@@ -1244,7 +1244,7 @@ void DumpPix(DATE *Current, int first, FILES *OutFile, EVAPPIX *Evap,
 
   /* Only report the gap radiations values when dumping pixels instead of basin average */
   if (flag == 2)
-    if (Veg->Gapping == 1)
+    if (Veg->Gapping > 0.0)
       fprintf(OutFile->FilePtr, " %g %g",
         Veg->Type[Opening].NetShort[1], Veg->Type[Opening].LongIn[1]);
 

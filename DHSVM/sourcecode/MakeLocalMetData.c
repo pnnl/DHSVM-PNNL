@@ -298,7 +298,7 @@ PIXMET MakeLocalMetData(int y, int x, MAPSIZE *Map, int DayStep,
     PrecipMap->RainFall = PrecipMap->Precip - PrecipMap->SnowFall;
   }
 
-  if (VegMap->Gapping) {
+  if (VegMap->Gapping > 0.0 ) {
     for (j = 0; j < CELL_PARTITION; j++) {
       (*Gap)[j].SnowFall = PrecipMap->SnowFall;
       (*Gap)[j].RainFall = PrecipMap->RainFall;
@@ -340,7 +340,7 @@ PIXMET MakeLocalMetData(int y, int x, MAPSIZE *Map, int DayStep,
   else
     LocalSnow->LastSnow = 0;
   /* if canopy gap is present */
-  if (VegMap->Gapping) {
+  if (VegMap->Gapping > 0.0) {
     for (j = 0; j < CELL_PARTITION; j++) {
       if ((*Gap)[j].HasSnow) {
         if ((*Gap)[j].SnowFall > 0.0)
