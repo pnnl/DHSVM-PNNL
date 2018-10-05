@@ -82,7 +82,7 @@ void DumpPix(DATE *Current, int first, FILES *OutFile, EVAPPIX *Evap,
 void DumpTopo(MAPSIZE *Map, TOPOPIX **TopoMap);
 #endif
 
-void ExecDump(MAPSIZE *Map, DATE *Current, DATE *Start, OPTIONSTRUCT *Options,
+void ExecDump(MAPSIZE *GMap, MAPSIZE *Map, DATE *Current, DATE *Start, OPTIONSTRUCT *Options,
 	      DUMPSTRUCT *Dump, TOPOPIX **TopoMap, EVAPPIX **EvapMap, PIXRAD **RadiMap,
 	      PRECIPPIX ** PrecipMap, SNOWPIX **SnowMap, MET_MAP_PIX **MetMap, 
           VEGPIX **VegMap, LAYER *Veg, SOILPIX **SoilMap, ROADSTRUCT **Network, 
@@ -123,7 +123,7 @@ void InitDump(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *GMap, MAPSIZE *Map,
 void InitEvapMap(MAPSIZE *Map, EVAPPIX ***EvapMap, SOILPIX **SoilMap,
 		 LAYER *Soil, VEGPIX **VegMap, LAYER *Veg, TOPOPIX **TopoMap);
 
-void InitImageDump(LISTPTR Input, int Dt, MAPSIZE *Map, int MaxSoilLayers,
+void InitImageDump(LISTPTR Input, int Dt, MAPSIZE *GMap, MAPSIZE *Map, int MaxSoilLayers,
 		   int MaxVegLayers, char *Path, int NMaps, int NImages, MAPDUMP **DMap);
 
 void InitInFiles(INPUTFILES *InFiles);
@@ -132,8 +132,8 @@ void InitInterpolationWeights(MAPSIZE *Map, OPTIONSTRUCT *Options,
 			      TOPOPIX **TopoMap, uchar ****MetWeights,
 			      METLOCATION *Stats, int NStats);
 
-void InitMapDump(LISTPTR Input, MAPSIZE *Map, int MaxSoilLayers, int MaxVegLayers,
-		 char *Path, int TotalMapImages, int NMaps, MAPDUMP **DMap);
+void InitMapDump(LISTPTR Input, MAPSIZE *GMap, MAPSIZE *Map, int MaxSoilLayers, 
+                 int MaxVegLayers, char *Path, int TotalMapImages, int NMaps, MAPDUMP **DMap);
 
 void InitMassWaste(LISTPTR Input, TIMESTRUCT *Time);
 
@@ -342,7 +342,7 @@ void SkipLines(FILES *InFile, int NLines);
 
 void StoreChannelState(char *Path, DATE *Current, Channel *Head);
 
-void StoreModelState(char *Path, DATE *Current, MAPSIZE *Map,
+void StoreModelState(char *Path, DATE *Current, MAPSIZE *GMap, MAPSIZE *Map,
 		     OPTIONSTRUCT *Options, TOPOPIX **TopoMap, PRECIPPIX **PrecipMap, 
              SNOWPIX **SnowMap, MET_MAP_PIX **MetMap, VEGPIX **VegMap, 
              LAYER *Veg, SOILPIX **SoilMap, LAYER *Soil, ROADSTRUCT **Network, 

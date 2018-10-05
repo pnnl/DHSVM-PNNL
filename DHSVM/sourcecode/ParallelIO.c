@@ -10,7 +10,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2018-10-05 13:21:03 d3g096
+ * LAST CHANGE: 2018-10-05 15:04:22 d3g096
  * COMMENTS:
  */
 
@@ -38,11 +38,11 @@ extern int (*Write2DMatrixFmt) (char *FileName, void *Matrix, int NumberType, in
 /*                            CreateMapFile                                   */
 /******************************************************************************/
 void
-CreateMapFile(char *FileName, char *FileLabel, MAPSIZE *Map)
+CreateMapFile(char *FileName, char *FileLabel, MAPSIZE *GMap)
 {
   int me = ParallelRank();
   if (me == 0) {
-    CreateMapFileFmt(FileName, FileLabel, Map);
+    CreateMapFileFmt(FileName, FileLabel, GMap);
   }
   ParallelBarrier();
 }
