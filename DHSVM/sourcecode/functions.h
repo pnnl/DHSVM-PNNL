@@ -391,7 +391,7 @@ void CanopyGapInterceptionStorage(int NAct, float *MaxInt, float *Fract,
 
 void CanopyGapRadiation(CanopyGapStruct **Gap, float SunAngle, float Rs,
   float Rsb, float Rsd, float Ld, float TSurf, float Tcanopy, float SoilAlbedo,
-  VEGTABLE *VType, SNOWPIX *LocalSnow, PIXRAD *LocalRad);
+  VEGTABLE *VType, SNOWPIX *LocalSnow, PIXRAD *LocalRad, float Gapping);
 
 float CanopyGapShortRadiation(int Understory, float GapView, float h, float dm,
   float SunAngle, float Rsb, float Rsd, float Extn, float SoilAlbedo, VEGTABLE *VType,

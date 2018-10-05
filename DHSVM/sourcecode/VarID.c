@@ -65,8 +65,8 @@ struct {
       "Travel time", "%d",
       "hours", "Travel time", NC_SHORT, FALSE, FALSE, FALSE, 0}, {
   007, "Veg.CanopyGap",
-       "Canopy Gap", "%d", 
-       "", "Canopy Gap", NC_BYTE, FALSE, FALSE, FALSE, 0 },{
+       "Canopy Gap", "%.2f", 
+       "", "Canopy Gap", NC_FLOAT, FALSE, FALSE, FALSE, 0 },{
   101, "Evap.ETot",
       "Evapotranspiration (Total)", "%.4g",
       "m/timestep", "Total amount of evapotranspiration",

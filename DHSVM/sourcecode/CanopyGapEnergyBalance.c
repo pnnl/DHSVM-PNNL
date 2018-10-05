@@ -140,7 +140,7 @@ void CanopyGapSnowMelt(OPTIONSTRUCT *Options, int y, int x, int Dt,
     can recalculate the longwave balance */
     Tsurf = Gap[Opening]->TSurf;
     CanopyGapLongRadiation(&((*Gap)[Opening]), VType->Height[0],
-      VType->GapDiam, LocalMet->Lin, LocalVeg->Tcanopy, VType->Fract[0]);
+      LocalVeg->Gapping, LocalMet->Lin, LocalVeg->Tcanopy, VType->Fract[0]);
     (*Gap)[Opening].LongIn[0] = 0.;
   }
   else {

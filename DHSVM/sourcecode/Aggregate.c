@@ -125,7 +125,7 @@ void Aggregate(MAPSIZE *Map, OPTIONSTRUCT *Options, TOPOPIX **TopoMap,
 		Total->Snow.VaporMassFlux += Snow[y][x].VaporMassFlux;
 		Total->Snow.CanopyVaporMassFlux += Snow[y][x].CanopyVaporMassFlux;
 
-		if (VegMap[y][x].Gapping) {
+		if (VegMap[y][x].Gapping > 0.0 ) {
 		  Total->Veg.Type[Opening].Qsw += VegMap[y][x].Type[Opening].Qsw;
 		  Total->Veg.Type[Opening].Qlin += VegMap[y][x].Type[Opening].Qlin;
 		  Total->Veg.Type[Opening].Qlw += VegMap[y][x].Type[Opening].Qlw;
