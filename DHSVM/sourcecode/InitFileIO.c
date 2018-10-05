@@ -155,7 +155,7 @@ Read2DMatrix(char *FileName, void *Matrix, int NumberType, MAPSIZE *Map,
 
   result = Read2DMatrixFmt(FileName, Matrix, NumberType,
                            Map->NY, Map->NX, NDataSet, VarName, index);
-  return 0;
+  return result;
 }
 
 /******************************************************************************/
