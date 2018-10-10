@@ -205,7 +205,7 @@ if (argc != 6 ){
 
  /* skip the headers */
  for (i = 0; i < nskip; i++)
-	fgets(junkc, 100, fmap);
+	fgets(junkc, 1000, fmap);
 
  while (!feof(fmap)){
    /* initialize the variables */
