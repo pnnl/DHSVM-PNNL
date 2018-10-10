@@ -245,10 +245,10 @@ void CalcCanopyGapET(CanopyGapStruct **Gap, int NSoil, VEGTABLE *VType,
     (*Gap)[Opening].NetRadiation[1] = NetRadiation;
     (*Gap)[Opening].NetRadiation[0] = 0.;
     (*Gap)[Opening].EvapSoil =
-      SoilEvaporation(Dt, LocalMet->Tair, LocalMet->Slope, LocalMet->Gamma,
+    SoilEvaporation(Dt, LocalMet->Tair, LocalMet->Slope, LocalMet->Gamma,
         LocalMet->Lv, LocalMet->AirDens, LocalMet->Vpd,
         NetRadiation, UpperRa, (*Gap)[Opening].MoistureFlux, SType->Porosity[0],
-        SType->Ks[0], SType->Press[0], SType->PoreDist[0],
+        SType->FCap[0], SType->Ks[0], SType->Press[0], SType->PoreDist[0],
         VType->RootDepth[0], &((*Gap)[Opening].Moist[0]),
         LocalNetwork->Adjust[0]);
   }
@@ -402,10 +402,10 @@ void CalcGapSurroudingET(int Dt, CanopyGapStruct **Gap,
       (*Gap)[Forest].NetRadiation[1] = NetRadiation;
     }
     (*Gap)[Forest].EvapSoil =
-      SoilEvaporation(Dt, LocalMet->Tair, LocalMet->Slope, LocalMet->Gamma,
+    SoilEvaporation(Dt, LocalMet->Tair, LocalMet->Slope, LocalMet->Gamma,
         LocalMet->Lv, LocalMet->AirDens, LocalMet->Vpd,
         NetRadiation, LowerRa, (*Gap)[Forest].MoistureFlux, SType->Porosity[0],
-        SType->Ks[0], SType->Press[0], SType->PoreDist[0],
+        SType->FCap[0], SType->Ks[0], SType->Press[0], SType->PoreDist[0],
         VType->RootDepth[0], &((*Gap)[Forest].Moist[0]),
         LocalNetwork->Adjust[0]);
   }

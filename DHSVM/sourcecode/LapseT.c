@@ -65,12 +65,13 @@ float LapseT(float Temp, float FromElev, float ToElev, float LapseRate)
 
   Comments     : Used to lapse precip with elevation.
 *****************************************************************************/
-float LapsePrecip(float Precip, float FromElev, float ToElev, float PrecipLapse)
+float LapsePrecip(float Precip, float FromElev, float ToElev, 
+  float PrecipLapse, float precipMultiplier)
 {
   float LapsedPrecip;		/* Precipitation at ToElev (m/timestep) */
 
   LapsedPrecip = Precip * (1.0 + PrecipLapse * (ToElev - FromElev))
-	  * (1 + PRECIPMULTIPLIER * (ToElev - MINELEV));
+	  * (1 + precipMultiplier * (ToElev - MINELEV));
 
   if (LapsedPrecip < 0.0)
     LapsedPrecip = 0.0;

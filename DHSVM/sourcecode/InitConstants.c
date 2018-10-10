@@ -95,6 +95,7 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
     {"OPTIONS", "CANOPY GAPPING", "", "" },
     {"OPTIONS", "SNOW SLIDING", "", "" },
     {"OPTIONS", "PRECIPITATION SEPARATION", "", "FALSE" },
+    {"OPTIONS", "PRECIPITATION MULTIPLIER MAP", "", "" },
     {"AREA", "COORDINATE SYSTEM", "", ""},
     {"AREA", "EXTREME NORTH", "", ""},
     {"AREA", "EXTREME WEST", "", ""},
@@ -121,7 +122,6 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
     {"CONSTANTS", "OUTSIDE BASIN VALUE", "", ""},
     {"CONSTANTS", "TEMPERATURE LAPSE RATE", "", ""},
     {"CONSTANTS", "PRECIPITATION LAPSE RATE", "", ""},
-    {"CONSTANTS", "PRECIPITATION MULTIPLIER", "", ""},
     { "CONSTANTS", "ALBEDO ACCUMULATION LAMBDA", "", "" },
     { "CONSTANTS", "ALBEDO MELTING LAMBDA", "", "" },
     { "CONSTANTS", "ALBEDO ACCUMULATION MIN", "", "" },
@@ -425,6 +425,12 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
       Options->PrecipLapse = VARIABLE;
     else
       ReportError(StrEnv[precip_lapse].KeyName, 51);
+	if (IsEmptyStr(StrEnv[multiplier].VarStr)) {
+	  strcpy(Options->PrecipMultiplierMapPath, "");
+	  printf("No input of precipitation multiplier map - no correction is made", 51);
+	}
+	else
+	  strcpy(Options->PrecipMultiplierMapPath, StrEnv[multiplier].VarStr);
   }
 
   /**************** Determine areal extent ****************/
@@ -544,9 +550,6 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
   }
   else
     PRECIPLAPSE = NOT_APPLICABLE;
-
-  if (!CopyFloat(&PRECIPMULTIPLIER, StrEnv[precip_multiplier].VarStr, 1))
-      ReportError(StrEnv[precip_multiplier].KeyName, 51);
 
   if (!CopyFloat(&ALB_ACC_LAMBDA,
     StrEnv[alb_acc_lambda].VarStr, 1))

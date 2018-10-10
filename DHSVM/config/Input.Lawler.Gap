@@ -60,6 +60,7 @@ Variable Light Transmittance = TRUE       # TRUE if light transmittance changes 
 Canopy Gapping = TRUE
 Snow Sliding = FALSE
 Precipitation Separation = FALSE
+Precipitation Multiplier Map =  # no correction be made if leave blank              
 
 ##########################################################################################################
 # MODEL AREA SECTION
@@ -102,7 +103,6 @@ Min Intercepted Snow = 0.001              # Intercepted snow that can only be me
 Outside Basin Value  = 0                  # Value in mask that indicates outside the basin
 Temperature Lapse Rate   = -0.0065        # Temperature lapse rate (C/m)
 Precipitation Lapse Rate =  0.000    	  # Precipitation lapse rate (m/m). Use a linear function to 
-Precipitation Multiplier = 0              # assuming precipiatio is positively related to elevation    
 Albedo Accumulation Lambda = 0.9 	  # Lambda for accumulation period
 Albedo Melting Lambda = 0.6 		  # Lambda for melting period
 Albedo Accumulation Min = 0.7 		  # Min albedo value during accumulation period
@@ -132,7 +132,7 @@ Basin Mask File   = ../input/mask.bin
 Stream Map File      = ../input/stream.map.dat
 Stream Network File  = ../input/stream.network.dat
 Stream Class File    = ../input/adjust.classfile
-Riparian Veg File    = NA
+Riparian Veg File    = 
 
 ################################### ROAD NETWORK #########################################################
 
@@ -262,7 +262,7 @@ Residual Water Content 1 = 0. 0. 0.
 [VEGETATION]
 
 Vegetation Map File = ../input/Veg.bin
-Canopy Gap Map File = ../input/CanopyGap.bin
+Canopy Gap Map File = ../input/GapDiam.bin    # Gap diameter spatial input
 
 Number of Vegetation Types = 1              # Number of different vegetation types
 
@@ -287,7 +287,6 @@ Max Snow Int Capacity    1 = 0.03
 Snow Interception Eff    1 = 0.6              
 Mass Release Drip Ratio  1 = 0.4             
 Height                   1 = 25
-Canopy Gap Diameter      1 = 60
 Overstory Monthly LAI    1 = 5.0 5.0 5.0 5.0 8.0 10.0 10.0 8.0 5.0 5.0 5.0 5.0 
 Understory Monthly LAI   1 = 
 Maximum Resistance       1 = 4000  
