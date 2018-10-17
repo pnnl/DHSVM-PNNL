@@ -25,7 +25,4 @@ int Write2DMatrixBin(char *FileName, void *Matrix, int NumberType, int NY,
 		     int NX, ...); 
 int Write2DMatrixByteSwapBin(char *FileName, void *Matrix, int NumberType,
 			     int NY, int NX, ...); 
-void byte_swap_long(long *buffer, int number_of_swaps);
-void byte_swap_short(short *buffer, int number_of_swaps);
-
 #endif
