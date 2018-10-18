@@ -9,7 +9,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2018-05-09 08:01:13 d3g096
+# Last Change: 2018-10-17 13:56:16 d3g096
 
 # -------------------------------------------------------------
 # General set up
@@ -25,7 +25,7 @@ list (APPEND CMAKE_MODULE_PATH "${DHSVM_SOURCE_DIR}/cmake")
 # Configuration options
 # -------------------------------------------------------------
 
-enable_language(C)
+enable_language(C CXX)
 
 # Option to dump topography maps, for debugging
 option (DHSVM_DUMP_TOPO

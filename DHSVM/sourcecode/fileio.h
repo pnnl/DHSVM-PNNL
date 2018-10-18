@@ -30,20 +30,20 @@ extern char fileext[];
 
 /* function pointers for 2D file IO */
 
-void CreateMapFile(char *FileName, char *FileLabel, MAPSIZE *Map);
+void CreateMapFile(const char *FileName, const char *FileLabel, MAPSIZE *Map);
 
-int Read2DMatrix(char *FileName, void *Matrix, int NumberType, 
-                 MAPSIZE *Map, int NDataSet, char *VarName, int index);
+int Read2DMatrix(const char *FileName, void *Matrix, int NumberType, 
+                 MAPSIZE *Map, int NDataSet, const char *VarName, int index);
 
-int Read2DMatrixAll(char *FileName, void *Matrix, int NumberType, 
-                    MAPSIZE *Map, int NDataSet, char *VarName, int index);
+int Read2DMatrixAll(const char *FileName, void *Matrix, int NumberType, 
+                    MAPSIZE *Map, int NDataSet, const char *VarName, int index);
 
-int Write2DMatrix(char *FileName, void *Matrix, int NumberType, 
+int Write2DMatrix(const char *FileName, void *Matrix, int NumberType, 
                   MAPSIZE *Map, MAPDUMP *DMap, int index);
 
 
 /* generic file functions */
-void OpenFile(FILE **FilePtr, char *FileName, char *Mode,
+void OpenFile(FILE **FilePtr, const char *FileName, const char *Mode,
 	      unsigned char OverWrite);
 
 #endif

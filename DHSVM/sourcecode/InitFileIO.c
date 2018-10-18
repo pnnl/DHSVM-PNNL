@@ -25,9 +25,9 @@
 #include "ParallelDHSVM.h"
 
 /* global function pointers */
-void (*CreateMapFileFmt) (char *FileName, ...);
-int (*Read2DMatrixFmt) (char *FileName, void *Matrix, int NumberType, int NY, int NX, int NDataSet, ...);
-int (*Write2DMatrixFmt) (char *FileName, void *Matrix, int NumberType, int NY, int NX, ...);
+void (*CreateMapFileFmt) (char const *FileName, ...);
+int (*Read2DMatrixFmt) (char const *FileName, void *Matrix, int NumberType, int NY, int NX, int NDataSet, ...);
+int (*Write2DMatrixFmt) (char const *FileName, void *Matrix, int NumberType, int NY, int NX, ...);
 
 /*******************************************************************************
   Function name: InitFileIO()

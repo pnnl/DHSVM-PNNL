@@ -9,7 +9,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2018-05-09 08:09:07 d3g096
+# Last Change: 2018-10-18 08:30:14 d3g096
 
 # -------------------------------------------------------------
 # Set up for this subdirectory
@@ -72,6 +72,10 @@ add_library(BinIO STATIC
   SizeOfNT.c 
   VarID.c
   array_alloc.c
+  InputMap2D.cpp
+  BinaryInputMap2D.cpp
+  NetCDFInputMap2D.cpp
+  byte_swap.c
 )
 
 # -------------------------------------------------------------

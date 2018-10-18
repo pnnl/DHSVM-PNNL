@@ -10,7 +10,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2018-10-05 15:04:22 d3g096
+ * LAST CHANGE: 2018-10-17 14:28:17 d3g096
  * COMMENTS:
  */
 
@@ -30,15 +30,15 @@
 #include "fileio.h"
 
 /* global function pointers */
-extern void (*CreateMapFileFmt) (char *FileName, ...);
-extern int (*Read2DMatrixFmt) (char *FileName, void *Matrix, int NumberType, int NY, int NX, int NDataSet, ...);
-extern int (*Write2DMatrixFmt) (char *FileName, void *Matrix, int NumberType, int NY, int NX, ...);
+extern void (*CreateMapFileFmt) (const char *FileName, ...);
+extern int (*Read2DMatrixFmt) (const char *FileName, void *Matrix, int NumberType, int NY, int NX, int NDataSet, ...);
+extern int (*Write2DMatrixFmt) (const char *FileName, void *Matrix, int NumberType, int NY, int NX, ...);
 
 /******************************************************************************/
 /*                            CreateMapFile                                   */
 /******************************************************************************/
 void
-CreateMapFile(char *FileName, char *FileLabel, MAPSIZE *GMap)
+CreateMapFile(const char *FileName, const char *FileLabel, MAPSIZE *GMap)
 {
   int me = ParallelRank();
   if (me == 0) {
@@ -146,8 +146,8 @@ Collect2DMatrix(void *MatrixZero, void *LocalMatrix,
 /*                             intRead2DMatrix                                */
 /******************************************************************************/
 static int 
-intRead2DMatrix(char *FileName, void *LocalMatrix, int NumberType, MAPSIZE *Map, 
-                int NDataSet, char *VarName, int index, int mirror)
+intRead2DMatrix(const char *FileName, void *LocalMatrix, int NumberType, MAPSIZE *Map, 
+                int NDataSet, const char *VarName, int index, int mirror)
 {
   const char Routine[] = "Read2DMatrix";
   void *tmpArray;
@@ -196,8 +196,8 @@ intRead2DMatrix(char *FileName, void *LocalMatrix, int NumberType, MAPSIZE *Map,
  * @return 
  */
 int 
-Read2DMatrix(char *FileName, void *LocalMatrix, int NumberType, MAPSIZE *Map, 
-             int NDataSet, char *VarName, int index)
+Read2DMatrix(const char *FileName, void *LocalMatrix, int NumberType, MAPSIZE *Map, 
+             int NDataSet, const char *VarName, int index)
 {
   const char Routine[] = "Read2DMatrix";
 
@@ -209,8 +209,8 @@ Read2DMatrix(char *FileName, void *LocalMatrix, int NumberType, MAPSIZE *Map,
 /*                         Read2DMatrixAll                                    */
 /******************************************************************************/
 int 
-Read2DMatrixAll(char *FileName, void *LocalMatrix, int NumberType, MAPSIZE *Map, 
-             int NDataSet, char *VarName, int index)
+Read2DMatrixAll(const char *FileName, void *LocalMatrix, int NumberType, MAPSIZE *Map, 
+             int NDataSet, const char *VarName, int index)
 {
   const char Routine[] = "Read2DMatrixAll";
   return intRead2DMatrix(FileName, LocalMatrix, NumberType, Map, 
@@ -222,7 +222,7 @@ Read2DMatrixAll(char *FileName, void *LocalMatrix, int NumberType, MAPSIZE *Map,
 /*                              Write2DMatrix                                  */
 /******************************************************************************/
 int
-Write2DMatrix(char *FileName, void *LocalMatrix, int NumberType, 
+Write2DMatrix(const char *FileName, void *LocalMatrix, int NumberType, 
               MAPSIZE *Map, MAPDUMP *DMap, int index)
 {
   const char Routine[] = "Write2DMatrix";

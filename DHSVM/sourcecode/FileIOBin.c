@@ -28,38 +28,9 @@
 #include "fileio.h"
 #include "sizeofnt.h"
 #include "settings.h"
+#include "byte_swap.h"
 #include "DHSVMerror.h"
 
-/******************************************************************************/
-/*                          byte_swap_short                                   */
-/******************************************************************************/
-static void 
-byte_swap_short(short *buffer, int number_of_swaps)
-{
-  short *temp;
-  int swap_loop;
-
-  for (swap_loop = 0, temp = buffer; swap_loop < number_of_swaps;
-       swap_loop++, temp++) {
-    *temp = ((*temp & 0x00ff) << 8) | ((*temp & 0xff00) >> 8);
-  }
-}
-
-/******************************************************************************/
-/*                             byte_swap_long                                 */
-/******************************************************************************/
-static void 
-byte_swap_long(long *buffer, int number_of_swaps)
-{
-  long *temp;
-  int swap_loop;
-
-  for (swap_loop = 0, temp = buffer; swap_loop < number_of_swaps;
-       swap_loop++, temp++) {
-    *temp = ((*temp & 0x000000ff) << 24) | ((*temp & 0x0000ff00) << 8) |
-      ((*temp & 0x00ff0000) >> 8) | ((*temp & 0xff000000) >> 24);
-  }
-}
 
 /*****************************************************************************
   Function name: CreateMapFileBin()
@@ -76,7 +47,7 @@ byte_swap_long(long *buffer, int number_of_swaps)
 
   Comments     :
 *****************************************************************************/
-void CreateMapFileBin(char *FileName, char *FileLabel, MA)
+void CreateMapFileBin(char *FileName, ...)
 {
   FILE *NewFile;
 
