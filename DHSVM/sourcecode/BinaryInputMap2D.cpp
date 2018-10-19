@@ -7,7 +7,7 @@
 // -------------------------------------------------------------
 // -------------------------------------------------------------
 // Created October 17, 2018 by William A. Perkins
-// Last Change: 2018-10-17 15:01:23 d3g096
+// Last Change: 2018-10-18 12:29:23 d3g096
 // -------------------------------------------------------------
 
 
@@ -45,7 +45,7 @@ BinaryInputMap2D::BinaryInputMap2D(const std::string fname, const std::string vn
 
 BinaryInputMap2D::~BinaryInputMap2D(void)
 {
-  // empty
+  this->my_close();
 }
 
 // -------------------------------------------------------------
@@ -71,7 +71,7 @@ BinaryInputMap2D::my_close()
 // BinaryInputMap2D::my_read_fmt
 // -------------------------------------------------------------
 int
-BinaryInputMap2D::my_read_fmt(const int& index, void *LocalMatrix)
+BinaryInputMap2D::my_read_fmt(const int& index, unsigned char *LocalMatrix)
 {
   int NX(this->my_Map->gNX);
   int NY(this->my_Map->gNY);
@@ -116,7 +116,7 @@ ByteSwapInputMap2d::~ByteSwapInputMap2d(void)
 // ByteSwapInputMap2d::my_read_fmt
 // -------------------------------------------------------------
 int
-ByteSwapInputMap2d::my_read_fmt(const int& index, void *LocalMatrix)
+ByteSwapInputMap2d::my_read_fmt(const int& index, unsigned char *LocalMatrix)
 {
   int NElements =
     BinaryInputMap2D::my_read_fmt(index, LocalMatrix);

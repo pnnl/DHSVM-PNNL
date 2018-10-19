@@ -10,7 +10,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2018-10-17 14:28:17 d3g096
+ * LAST CHANGE: 2018-10-18 12:07:10 d3g096
  * COMMENTS:
  */
 
@@ -175,46 +175,6 @@ intRead2DMatrix(const char *FileName, void *LocalMatrix, int NumberType, MAPSIZE
   GA_Brdcst(&flag, sizeof(int), 0);
 
   return flag;
-}
-
-
-/******************************************************************************/
-/*                              Read2DMatrix                                  */
-/******************************************************************************/
-/** 
- * 
- * 
- * @param FileName name of file to read
- * @param Matrix  @e local 2D array (NX, NY) to be filled
- * @param NumberType 
- * @param NY 
- * @param NX 
- * @param NDataSet 
- * @param VarName 
- * @param index 
- * 
- * @return 
- */
-int 
-Read2DMatrix(const char *FileName, void *LocalMatrix, int NumberType, MAPSIZE *Map, 
-             int NDataSet, const char *VarName, int index)
-{
-  const char Routine[] = "Read2DMatrix";
-
-  return intRead2DMatrix(FileName, LocalMatrix, NumberType, Map, 
-                         NDataSet, VarName, index, 0);
-}
-
-/******************************************************************************/
-/*                         Read2DMatrixAll                                    */
-/******************************************************************************/
-int 
-Read2DMatrixAll(const char *FileName, void *LocalMatrix, int NumberType, MAPSIZE *Map, 
-             int NDataSet, const char *VarName, int index)
-{
-  const char Routine[] = "Read2DMatrixAll";
-  return intRead2DMatrix(FileName, LocalMatrix, NumberType, Map, 
-                         NDataSet, VarName, index, 1);
 }
 
 

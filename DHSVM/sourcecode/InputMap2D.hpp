@@ -8,7 +8,7 @@
 // -------------------------------------------------------------
 // -------------------------------------------------------------
 // Created October 15, 2018 by William A. Perkins
-// Last Change: 2018-10-18 06:23:32 d3g096
+// Last Change: 2018-10-18 12:28:29 d3g096
 // -------------------------------------------------------------
 
 
@@ -58,8 +58,8 @@ protected:
 public:
 
   /// Default constructor.
-  InputMap2D(const std::string fname, const std::string vname, const int NumberType,
-             const MAPSIZE *Map, const bool mirror)
+  InputMap2D(const std::string& fname, const std::string& vname, const int& NumberType,
+             const MAPSIZE *Map, const bool& mirror)
     : my_Name(fname), my_VarName(vname), my_NumberType(NumberType),
       my_Map(Map), my_mirror(mirror), my_last_index(-1)
   {}
@@ -67,11 +67,7 @@ public:
   /// Destructor
   ~InputMap2D(void)
   {
-    try {
-      this->close();
-    } catch (...) {
-      // destructors cannot throw
-    }
+    // children should make sure they're closed
   }
 
   /// Open the input map file

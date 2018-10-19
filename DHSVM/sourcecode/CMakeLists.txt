@@ -9,7 +9,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2018-10-18 08:30:14 d3g096
+# Last Change: 2018-10-18 12:16:57 d3g096
 
 # -------------------------------------------------------------
 # Set up for this subdirectory
@@ -75,6 +75,7 @@ add_library(BinIO STATIC
   InputMap2D.cpp
   BinaryInputMap2D.cpp
   NetCDFInputMap2D.cpp
+  Map2D.cpp
   byte_swap.c
 )
 
@@ -181,6 +182,8 @@ add_executable(DHSVM
   ${DHSVM_SRC}
 )
 
+set_target_properties(DHSVM PROPERTIES LINKER_LANGUAGE CXX)
+
 set (DHSVM_LIBS BinIO)
 
 if (GPTL_FOUND) 
@@ -208,6 +211,8 @@ if(DHSVM_SNOW_ONLY)
     )
 
   target_link_libraries(DHSVM_SNOW ${DHSVM_LIBS})
+
+  set_target_properties(DHSVM_SNOW PROPERTIES LINKER_LANGUAGE CXX)
 
 endif(DHSVM_SNOW_ONLY)
 
