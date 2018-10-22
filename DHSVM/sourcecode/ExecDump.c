@@ -1388,6 +1388,7 @@ DumpTopo(MAPSIZE *Map, MAPSIZE *GMap, TOPOPIX **TopoMap)
 
   for (k = 0; k < NDIRS; k++) {
     sprintf(DMap.Name, "Dir%d", k);
+    sprintf(DMap.LongName, "Flow in direction %d", k);
     for (y = 0; y < Map->NY; y++) {
       for (x = 0; x < Map->NX; x++) {
         if (INBASIN(TopoMap[y][x].Mask)) {
