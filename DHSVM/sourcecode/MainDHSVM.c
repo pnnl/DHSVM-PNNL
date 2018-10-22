@@ -181,10 +181,6 @@ int main(int argc, char **argv)
 
   DomainSummary(&GMap, &Map);
 
-#ifdef TOPO_DUMP
-  DumpTopo(&Map, TopoMap);
-#endif
-
   if (Options.HasNetwork)
     InitChannel(Input, &Map, Time.Dt, &ChannelData, SoilMap, &MaxStreamID, &MaxRoadID, &Options);
   else if (Options.Extent != POINT)
