@@ -7,7 +7,7 @@
 // -------------------------------------------------------------
 // -------------------------------------------------------------
 // Created October 18, 2018 by William A. Perkins
-// Last Change: 2018-10-18 12:29:49 d3g096
+// Last Change: 2018-10-22 11:53:51 d3g096
 // -------------------------------------------------------------
 
 #include <cstdio>
@@ -164,7 +164,7 @@ NetCDFInputMap2D::my_close(void)
 // NetCDFInputMap2D::my_read_fmt
 // -------------------------------------------------------------
 int
-NetCDFInputMap2D::my_read_fmt(const int& index, unsigned char *buffer)
+NetCDFInputMap2D::my_read_fmt(const int& unused_index, const int& index, unsigned char *buffer)
 {
   int ncstatus;
   size_t count[3];

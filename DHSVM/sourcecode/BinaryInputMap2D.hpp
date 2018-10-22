@@ -8,7 +8,7 @@
 // -------------------------------------------------------------
 // -------------------------------------------------------------
 // Created October 17, 2018 by William A. Perkins
-// Last Change: 2018-10-18 11:40:31 d3g096
+// Last Change: 2018-10-22 11:52:47 d3g096
 // -------------------------------------------------------------
 
 
@@ -37,7 +37,7 @@ protected:
   void my_close();
 
   /// format specific read
-  int my_read_fmt(const int& index, unsigned char *LocalMatrix);
+  int my_read_fmt(const int& index, const int& unused_index, unsigned char *LocalMatrix);
 
 public:
 
@@ -58,7 +58,7 @@ class ByteSwapInputMap2d
 protected:
 
   /// format specific read
-  int my_read_fmt(const int& index, unsigned char *LocalMatrix);
+  int my_read_fmt(const int& index, const int& unused_index, unsigned char *LocalMatrix);
 
 public:
 

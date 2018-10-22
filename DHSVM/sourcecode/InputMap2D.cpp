@@ -10,7 +10,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2018-10-18 07:23:06 d3g096
+ * LAST CHANGE: 2018-10-22 11:55:02 d3g096
  * COMMENTS:
  */
 
@@ -91,7 +91,7 @@ SerialInputMap2D::my_distribute(unsigned char *buf0, void *LocalMatrix)
 // SerialInputMap2D::my_read
 // -------------------------------------------------------------
 int
-SerialInputMap2D::my_read(const int& index, void *LocalMatrix)
+SerialInputMap2D::my_read(const int& NDataSet, const int& index, void *LocalMatrix)
 {
   const char Routine[] = "SerialInputMap2D::my_read";
   int me(ParallelRank());
@@ -105,7 +105,7 @@ SerialInputMap2D::my_read(const int& index, void *LocalMatrix)
 
   if (me == 0) {
     tmpArray = new unsigned char[bufsize];
-    flag = my_read_fmt(index, tmpArray);
+    flag = my_read_fmt(NDataSet, index, tmpArray);
   }
     
   my_distribute(tmpArray, LocalMatrix);

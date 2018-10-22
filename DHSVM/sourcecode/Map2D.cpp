@@ -10,7 +10,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2018-10-18 12:06:35 d3g096
+ * LAST CHANGE: 2018-10-22 11:56:07 d3g096
  * COMMENTS:
  */
 
@@ -126,7 +126,7 @@ Read2DMatrix(const char *FileName, void *Matrix, int NumberType,
   std::auto_ptr<InputMap2D>
     map((*input_factory)(FileName, VarName, NumberType, Map, mirror));
   map->open();
-  flag = map->read(index, Matrix);
+  flag = map->read(NDataSet, index, Matrix);
   map->close();
   return flag;
 }
@@ -142,7 +142,7 @@ int Read2DMatrixAll(const char *FileName, void *Matrix, int NumberType,
   std::auto_ptr<InputMap2D>
     map((*input_factory)(FileName, VarName, NumberType, Map, true));
   map->open();
-  flag = map->read(index, Matrix);
+  flag = map->read(NDataSet, index, Matrix);
   map->close();
   return flag;
 }

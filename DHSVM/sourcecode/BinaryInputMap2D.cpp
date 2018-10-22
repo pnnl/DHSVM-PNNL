@@ -7,7 +7,7 @@
 // -------------------------------------------------------------
 // -------------------------------------------------------------
 // Created October 17, 2018 by William A. Perkins
-// Last Change: 2018-10-18 12:29:23 d3g096
+// Last Change: 2018-10-22 11:55:40 d3g096
 // -------------------------------------------------------------
 
 
@@ -71,7 +71,7 @@ BinaryInputMap2D::my_close()
 // BinaryInputMap2D::my_read_fmt
 // -------------------------------------------------------------
 int
-BinaryInputMap2D::my_read_fmt(const int& index, unsigned char *LocalMatrix)
+BinaryInputMap2D::my_read_fmt(const int& index, const int& unused_index, unsigned char *LocalMatrix)
 {
   int NX(this->my_Map->gNX);
   int NY(this->my_Map->gNY);
@@ -116,10 +116,10 @@ ByteSwapInputMap2d::~ByteSwapInputMap2d(void)
 // ByteSwapInputMap2d::my_read_fmt
 // -------------------------------------------------------------
 int
-ByteSwapInputMap2d::my_read_fmt(const int& index, unsigned char *LocalMatrix)
+ByteSwapInputMap2d::my_read_fmt(const int& index, const int& unused_index, unsigned char *LocalMatrix)
 {
   int NElements =
-    BinaryInputMap2D::my_read_fmt(index, LocalMatrix);
+    BinaryInputMap2D::my_read_fmt(index, unused_index, LocalMatrix);
   
   size_t ElemSize(SizeOfNumberType(this->my_NumberType));
 

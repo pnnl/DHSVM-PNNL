@@ -8,7 +8,7 @@
 // -------------------------------------------------------------
 // -------------------------------------------------------------
 // Created October 15, 2018 by William A. Perkins
-// Last Change: 2018-10-18 12:28:29 d3g096
+// Last Change: 2018-10-22 11:50:18 d3g096
 // -------------------------------------------------------------
 
 
@@ -50,7 +50,7 @@ protected:
   virtual void my_close()  = 0;
 
   /// Read a map into the memory specified (specialized)
-  virtual int my_read(const int& index, void *LocalMatrix) = 0;
+  virtual int my_read(const int& NDataSet, const int& index, void *LocalMatrix) = 0;
 
   /// Undefined protected copy constructor to avoid unwanted copies.
   InputMap2D(const InputMap2D& old);
@@ -83,10 +83,11 @@ public:
   }
 
   /// Read a map into the memory specified (if 1 returned flip y)
-  int read(const int& index, void *LocalMatrix)
+  int read(const int& NDataSet, const int& index, void *LocalMatrix)
   {
-    int flag(this->my_read(index, LocalMatrix));
+    int flag(this->my_read(NDataSet, index, LocalMatrix));
     my_last_index = index;
+    return(flag);
   }
 };
 
@@ -99,10 +100,10 @@ class SerialInputMap2D
 protected:
 
   /// format specific read
-  virtual int my_read_fmt(const int& index, unsigned char *buffer) = 0;
+  virtual int my_read_fmt(const int& NDataSet, const int& index, unsigned char *buffer) = 0;
 
   /// Read a map into the memory specified (specialized)
-  int my_read(const int& index, void *LocalMatrix);
+  int my_read(const int& NDataSet, const int& index, void *LocalMatrix);
 
   /// Routine to distribute the map once read
   void my_distribute(unsigned char *buf0, void *LocalMatrix);
