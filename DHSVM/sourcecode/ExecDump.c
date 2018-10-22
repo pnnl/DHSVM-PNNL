@@ -1276,13 +1276,16 @@ void DumpPix(DATE *Current, int first, FILES *OutFile, EVAPPIX *Evap,
 /*                                DumpTopo                                    */
 /******************************************************************************/
 void
-DumpTopo(MAPSIZE *Map, TOPOPIX **TopoMap)
+DumpTopo(MAPSIZE *Map, MAPSIZE *GMap, TOPOPIX **TopoMap)
 {
   int x, y, k;
   int ntype;
   float *Array;
   int numPoints;
   char FileName[BUFSIZE + 1];
+  MAPDUMP DMap;
+
+  DMap.Resolution = MAP_OUTPUT;
 
   numPoints = Map->NX*Map->NY;
 
@@ -1295,7 +1298,11 @@ DumpTopo(MAPSIZE *Map, TOPOPIX **TopoMap)
       Array[y * Map->NX + x] = ParallelRank();
     }
   }
-  Write2DMatrix(FileName, Array, NC_FLOAT, Map, NULL, 0);
+
+  DMap.ID = 000;
+  GetVarAttr(&DMap);
+  CreateMapFile(FileName, "Assigned processor", GMap);
+  Write2DMatrix(FileName, Array, NC_FLOAT, Map, &DMap, 0);
   
   sprintf(FileName, "%s%s", "DEM", fileext);
   for (y = 0; y < Map->NY; y++) {
@@ -1308,7 +1315,10 @@ DumpTopo(MAPSIZE *Map, TOPOPIX **TopoMap)
       }
     }
   }
-  Write2DMatrix(FileName, Array, NC_FLOAT, Map, NULL, 0);
+  DMap.ID = 001;
+  GetVarAttr(&DMap);
+  CreateMapFile(FileName, "DEM", GMap);
+  Write2DMatrix(FileName, Array, NC_FLOAT, Map, &DMap, 0);
 
   sprintf(FileName, "%s%s", "Slope", fileext);
   for (y = 0; y < Map->NY; y++) {
@@ -1321,7 +1331,10 @@ DumpTopo(MAPSIZE *Map, TOPOPIX **TopoMap)
       }
     }
   }
-  Write2DMatrix(FileName, Array, NC_FLOAT, Map, NULL, 0);
+  DMap.ID = 011;
+  GetVarAttr(&DMap);
+  CreateMapFile(FileName, "Slope", GMap);
+  Write2DMatrix(FileName, Array, NC_FLOAT, Map, &DMap, 0);
 
 
   sprintf(FileName, "%s%s", "Mask", fileext);
@@ -1335,7 +1348,11 @@ DumpTopo(MAPSIZE *Map, TOPOPIX **TopoMap)
       }
     }
   }
-  Write2DMatrix(FileName, Array, NC_FLOAT, Map, NULL, 0);
+  DMap.ID = 002;
+  GetVarAttr(&DMap);
+  DMap.NumberType = NC_FLOAT;
+  CreateMapFile(FileName, "Basin mask", GMap);
+  Write2DMatrix(FileName, Array, NC_FLOAT, Map, &DMap, 0);
 
   sprintf(FileName, "%s%s", "Aspect", fileext);
   for (y = 0; y < Map->NY; y++) {
@@ -1348,9 +1365,12 @@ DumpTopo(MAPSIZE *Map, TOPOPIX **TopoMap)
       }
     }
   }
-  Write2DMatrix(FileName, Array, NC_FLOAT, Map, NULL, 0);
+  DMap.ID = 011;
+  GetVarAttr(&DMap);
+  CreateMapFile(FileName, "Aspect", GMap);
+  Write2DMatrix(FileName, Array, NC_FLOAT, Map, &DMap, 0);
 
-  sprintf(FileName, "%s%s", "TotalDir", fileext);
+  sprintf(FileName, "%s%s", "FlowDir", fileext);
   for (y = 0; y < Map->NY; y++) {
     for (x = 0; x < Map->NX; x++) {
       if (INBASIN(TopoMap[y][x].Mask)) {
@@ -1361,10 +1381,13 @@ DumpTopo(MAPSIZE *Map, TOPOPIX **TopoMap)
       }
     }
   }
-  Write2DMatrix(FileName, Array, NC_FLOAT, Map, NULL, 0);
+  DMap.ID = 012;
+  GetVarAttr(&DMap);
+  CreateMapFile(FileName, "Flow directions", GMap);
+  Write2DMatrix(FileName, Array, NC_FLOAT, Map, &DMap, 0);
 
   for (k = 0; k < NDIRS; k++) {
-    sprintf(FileName, "%s%d%s", "Dir", k, fileext);
+    sprintf(DMap.Name, "Dir%d", k);
     for (y = 0; y < Map->NY; y++) {
       for (x = 0; x < Map->NX; x++) {
         if (INBASIN(TopoMap[y][x].Mask)) {
@@ -1375,13 +1398,8 @@ DumpTopo(MAPSIZE *Map, TOPOPIX **TopoMap)
         }
       }
     }
-    Write2DMatrix(FileName, Array, NC_FLOAT, Map, NULL, 0);
+    Write2DMatrix(FileName, Array, NC_FLOAT, Map, &DMap, 0);
   }
-
-
-
-
-
 
   free(Array);
 }
