@@ -105,9 +105,9 @@ elif [ $host == "tlaloc" ]; then
 
     prefix="/file0/perksoft"
     cmake $options \
-        -D MPI_C_COMPILER:STRING="/usr/lib64/openmpi/bin/mpicc" \
-        -D MPI_CXX_COMPILER:STRING="/usr/lib64/openmpi/bin/mpicxx" \
-        -D MPIEXEC:STRING="/usr/lib64/openmpi/bin/mpiexec" \
+        -D MPI_C_COMPILER:STRING="mpicc" \
+        -D MPI_CXX_COMPILER:STRING="mpicxx" \
+        -D MPIEXEC:STRING="mpiexec" \
         -D GA_DIR:STRING="$prefix/ga-c++" \
 	-D GA_EXTRA_LIBS:STRING="-lm" \
         -D DHSVM_TIMING_LEVEL:STRING="1" \

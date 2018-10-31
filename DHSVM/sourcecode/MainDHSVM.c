@@ -181,10 +181,6 @@ int main(int argc, char **argv)
 
   DomainSummary(&GMap, &Map);
 
-#ifdef TOPO_DUMP
-  DumpTopo(&Map, TopoMap);
-#endif
-
   if (Options.HasNetwork)
     InitChannel(Input, &Map, Time.Dt, &ChannelData, SoilMap, &MaxStreamID, &MaxRoadID, &Options);
   else if (Options.Extent != POINT)
@@ -436,7 +432,7 @@ int main(int argc, char **argv)
     
     MassBalance(&(Time.Current), &(Time.Start), &(Dump.Balance), &Total, &Mass);
 
-    ExecDump(&Map, &(Time.Current), &(Time.Start), &Options, &Dump, TopoMap,
+    ExecDump(&GMap, &Map, &(Time.Current), &(Time.Start), &Options, &Dump, TopoMap,
 	     EvapMap, RadiationMap, PrecipMap, SnowMap, MetMap, VegMap, &Veg, 
 		 SoilMap, Network, &ChannelData, &Soil, &Total, &HydrographInfo,Hydrograph);
 	
@@ -448,7 +444,7 @@ int main(int argc, char **argv)
 
   TIMING_TASK_START("Output", 1);
 
-  ExecDump(&Map, &(Time.Current), &(Time.Start), &Options, &Dump, TopoMap,
+  ExecDump(&GMap, &Map, &(Time.Current), &(Time.Start), &Options, &Dump, TopoMap,
 	   EvapMap, RadiationMap, PrecipMap, SnowMap, MetMap, VegMap, &Veg, SoilMap,
 	   Network, &ChannelData, &Soil, &Total, &HydrographInfo, Hydrograph);
 

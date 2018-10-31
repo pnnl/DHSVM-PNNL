@@ -10,7 +10,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2018-06-18 13:03:03 d3g096
+ * LAST CHANGE: 2018-10-05 15:04:22 d3g096
  * COMMENTS:
  */
 
@@ -22,7 +22,8 @@
 #include <stdlib.h>
 #include <ga.h>
 
-#include "data.h"
+#include "settings.h"
+#include "MapSize.h"
 #include "sizeofnt.h"
 #include "DHSVMerror.h"
 #include "ParallelDHSVM.h"
@@ -37,11 +38,11 @@ extern int (*Write2DMatrixFmt) (char *FileName, void *Matrix, int NumberType, in
 /*                            CreateMapFile                                   */
 /******************************************************************************/
 void
-CreateMapFile(char *FileName, char *FileLabel, MAPSIZE *Map)
+CreateMapFile(char *FileName, char *FileLabel, MAPSIZE *GMap)
 {
   int me = ParallelRank();
   if (me == 0) {
-    CreateMapFileFmt(FileName, FileLabel, Map);
+    CreateMapFileFmt(FileName, FileLabel, GMap);
   }
   ParallelBarrier();
 }
@@ -151,6 +152,7 @@ intRead2DMatrix(char *FileName, void *LocalMatrix, int NumberType, MAPSIZE *Map,
   const char Routine[] = "Read2DMatrix";
   void *tmpArray;
   int gNX, gNY;
+  int flag;
   int me;
 
   me = ParallelRank();
@@ -161,16 +163,18 @@ intRead2DMatrix(char *FileName, void *LocalMatrix, int NumberType, MAPSIZE *Map,
   if (me == 0) {
     if (!(tmpArray = (void *)calloc(gNY * gNX, SizeOfNumberType(NumberType))))
       ReportError((char *)Routine, 1);
-    Read2DMatrixFmt(FileName, tmpArray, NumberType, gNY, gNX, NDataSet, VarName, index);
+    flag = Read2DMatrixFmt(FileName, tmpArray, NumberType, gNY, gNX, NDataSet, VarName, index);
+  } else {
+    flag = 0;
   }
-
   Distribute2DMatrix(tmpArray, LocalMatrix, NumberType, Map, mirror);
 
   if (me == 0) {
     free(tmpArray);
   }
+  GA_Brdcst(&flag, sizeof(int), 0);
 
-  return 0;
+  return flag;
 }
 
 
@@ -224,7 +228,7 @@ Write2DMatrix(char *FileName, void *LocalMatrix, int NumberType,
   const char Routine[] = "Write2DMatrix";
   void *tmpArray;
   int gNX, gNY;
-  int me;
+  int me, flag;
 
   me = ParallelRank();
 
@@ -240,8 +244,9 @@ Write2DMatrix(char *FileName, void *LocalMatrix, int NumberType,
   Collect2DMatrix(tmpArray, LocalMatrix, NumberType, Map);
 
   if (me == 0) {
-    Write2DMatrixFmt(FileName, tmpArray, NumberType, Map->gNY, Map->gNX, DMap, index);
+    flag = Write2DMatrixFmt(FileName, tmpArray, NumberType, gNY, gNX, DMap, index);
     free(tmpArray);
   }
-  return 0;
+  GA_Brdcst(&flag, sizeof(int), 0);
+  return flag;
 }
