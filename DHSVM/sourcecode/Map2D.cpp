@@ -10,7 +10,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2018-10-22 11:56:07 d3g096
+ * LAST CHANGE: 2018-10-23 13:50:17 d3g096
  * COMMENTS:
  */
 
@@ -148,6 +148,55 @@ int Read2DMatrixAll(const char *FileName, void *Matrix, int NumberType,
 }
 
 
+// -------------------------------------------------------------
+// InputMap2DAlloc
+// -------------------------------------------------------------
+extern "C"
+void *
+InputMap2DAlloc(const char* fname, const char* vname,
+                int NumberType, MAPSIZE *Map, int mirror)
+{
+  InputMap2D *result;
+  result = (*input_factory)(fname, vname, NumberType, Map, mirror);
+  return static_cast<void *>(result);
+}
 
+// -------------------------------------------------------------
+// InputMap2DOpen
+// -------------------------------------------------------------
+int
+InputMap2DOpen(void *map2d)
+{
+  static_cast<InputMap2D *>(map2d)->open();
+  return 0;
+}
 
+// -------------------------------------------------------------
+// InputMap2DRead
+// -------------------------------------------------------------
+int
+InputMap2DRead(void *map2d, int NDataSet, int index, void *ldata)
+{
+  return static_cast<InputMap2D *>(map2d)->read(NDataSet, index, ldata);
+}
+
+// -------------------------------------------------------------
+// InputMap2DClose
+// -------------------------------------------------------------
+int
+InputMap2DClose(void *map2d)
+{
+  static_cast<InputMap2D *>(map2d)->close();
+  return 0;
+}
+
+// -------------------------------------------------------------
+// InputMap2DFree
+// -------------------------------------------------------------
+extern "C"
+void
+InputMap2DFree(void *map2d)
+{
+  delete static_cast<InputMap2D *>(map2d);
+}
 

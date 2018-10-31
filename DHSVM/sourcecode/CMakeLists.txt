@@ -9,7 +9,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2018-10-18 12:16:57 d3g096
+# Last Change: 2018-10-23 15:01:40 d3g096
 
 # -------------------------------------------------------------
 # Set up for this subdirectory
@@ -61,11 +61,10 @@ endif(FLEX_FOUND)
 # -------------------------------------------------------------
 # Binary I/O library
 # -------------------------------------------------------------
-add_library(BinIO STATIC
+set(iosrc
   Calendar.c 
   InitFileIO.c
   FileIOBin.c 
-  FileIONetCDF.c
   Files.c 
   InitArray.c 
   ReportError.c
@@ -74,10 +73,17 @@ add_library(BinIO STATIC
   array_alloc.c
   InputMap2D.cpp
   BinaryInputMap2D.cpp
-  NetCDFInputMap2D.cpp
   Map2D.cpp
   byte_swap.c
-)
+  )
+if(NETCDF_FOUND)
+  list(APPEND iosrc
+    FileIONetCDF.c
+    NetCDFInputMap2D.cpp
+    )
+endif(NETCDF_FOUND)
+
+add_library(BinIO STATIC ${iosrc})
 
 # -------------------------------------------------------------
 # DHSVM Target

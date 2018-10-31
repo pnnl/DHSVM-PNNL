@@ -103,14 +103,21 @@ typedef struct {
   char RadTablePath[BUFSIZE + 1];	/* Same for rad tables */
   char RadarFile[BUFSIZE + 1];	/* File with radar precipitation */
   char MM5Terrain[BUFSIZE + 1];	/* File with MM5 terrain (m) */
+  void *MM5TerrainMap;          /* 2D Map file instance for terrain */
   char MM5Lapse[BUFSIZE + 1];	/* File with MM5 Lapse Rate (C/m) */
+  void *MM5LapseMap;            /* 2D Map file instance for terrain */
   char MM5Temp[BUFSIZE + 1];	/* File with MM5 temperature (C) */
+  void *MM5TempMap;             /* 2D Map file instance for terrain */
   char MM5Humidity[BUFSIZE + 1];	/* File with MM5 humidity (%) */
+  void *MM5HumidityMap;         /* 2D Map file instance for terrain */
   char MM5Wind[BUFSIZE + 1];	/* File with MM5 wind speed (m/s) */
-  char MM5ShortWave[BUFSIZE + 1];	/* File with MM5 shortwave (W/m2) */
-  char MM5LongWave[BUFSIZE + 1];	/* File with MM5 longwave (W/m2) */
-  char MM5Precipitation[BUFSIZE + 1];	/* File with MM5 precipitation 
-					   (m/timestep) */
+  void *MM5WindMap;             /* 2D Map file instance for terrain */
+  char MM5ShortWave[BUFSIZE + 1]; /* File with MM5 shortwave (W/m2) */
+  void *MM5ShortWaveMap;        /* 2D Map file instance for terrain */
+  char MM5LongWave[BUFSIZE + 1]; /* File with MM5 longwave (W/m2) */
+  void *MM5LongWaveMap;         /* 2D Map file instance for terrain */
+  char MM5Precipitation[BUFSIZE + 1]; /* File with MM5 precipitation (m/timestep) */
+  void *MM5PrecipitationMap;    /* 2D Map file instance for terrain */
   char **MM5SoilTemp;		/* Files with MM5 soil temperatures (C) */
   MM5FREQ MM5PrecipDistFreq;    /* Frequency of MM5 precip distribution maps */
   char PrecipLapseFile[BUFSIZE + 1];	/* File with precipitation 

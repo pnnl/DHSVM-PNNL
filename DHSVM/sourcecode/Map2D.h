@@ -10,7 +10,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2018-10-19 07:58:44 d3g096
+ * LAST CHANGE: 2018-10-23 13:50:21 d3g096
  * COMMENTS:
  */
 
@@ -22,18 +22,15 @@
 #include "MapSize.h"
 #include "fileio.h"
 
-/* typedef void* InputMap2D; */
-/* typedef void* OutputMap2D; */
-
-/* InputMap2D *InputMap2DAlloc(const char* fname, const char* vname,  */
-/*                             int NumberType, MAPSIZE *Map, int mirror); */
-/* int InputMap2DOpen(InputMap2D *map2d); */
-/* int InputMap2DRead(InputMap2D *map2d, int index, void *ldata); */
-/* int InputMap2DClose(InputMap2D *map2d); */
-/* void InputMap2DFree(InputMap2D *map2d); */
-
 void Map2DInit(int FileFormat);
 
+void *InputMap2DAlloc(const char* fname, const char* vname,
+                      int NumberType, MAPSIZE *Map, int mirror);
+int InputMap2DOpen(void *map2d);
+int InputMap2DRead(void *map2d, int NDataSet, int index, void *ldata);
+int InputMap2DClose(void *map2d);
+
+void InputMap2DFree(void *map2d);
 
 int Read2DMatrix(const char *FileName, void *Matrix, int NumberType, 
                  MAPSIZE *Map, int NDataSet, const char *VarName, int index);

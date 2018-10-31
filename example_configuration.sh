@@ -10,7 +10,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2018-10-22 15:04:44 d3g096
+# Last Change: 2018-10-23 14:50:46 d3g096
 
 set -xue
 
@@ -128,7 +128,7 @@ elif [ $host == "WE32673" ]; then
         -D MPI_C_COMPILER:STRING="$prefix/bin/mpicc-openmpi-clang38" \
         -D MPIEXEC:STRING="$prefix/bin/mpiexec-openmpi-clang38" \
         -D GA_DIR:PATH="$prefix" \
-        -D NETCDF_DIR:PATH="$prefix/include" \
+        -D NETCDF_DIR:PATH="$prefix" \
         -D DHSVM_USE_X11:BOOL=OFF \
         -D DHSVM_USE_NETCDF:BOOL=ON \
         $common_flags \
