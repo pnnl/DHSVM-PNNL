@@ -17,14 +17,15 @@ set -xue
 # -------------------------------------------------------------
 # handle command line options
 # -------------------------------------------------------------
-usage="$0 [-d|-r] [name]"
+usage="$0 [-d|-r|-t] [name]"
 
-set -- `getopt dr $*`
+set -- `getopt drt $*`
 if [ $? != 0 ]; then
     echo $usage >&2
     exit 2
 fi
 
+timing="OFF"
 build="RelWithDebInfo"
 for o in $*; do
     case $o in
@@ -36,6 +37,10 @@ for o in $*; do
             build="Release"
             shift
             ;;
+	-t)
+	    timing="ON"
+	    shift
+	    ;;
         --)
             shift
             break
@@ -64,6 +69,7 @@ common_flags="\
         -D DHSVM_BUILD_TESTS:BOOL=ON \
         -D DHSVM_USE_RBM:BOOL=OFF \
         -D DHSVM_DUMP_TOPO:BOOL=OFF \
+	-D DHSVM_USE_GPTL:BOOL=$timing \
         -D CMAKE_VERBOSE_MAKEFILE:BOOL=TRUE \
 "
 
@@ -84,7 +90,6 @@ if [ $host == "flophouse" ]; then
         -D MPIEXEC:STRING="/usr/lib64/openmpi/bin/mpiexec" \
         -D GA_DIR:PATH="${prefix}/ga-c++" \
 	-D GA_EXTRA_LIBS:STRING="-lm" \
-        -D DHSVM_USE_GPTL:BOOL=ON \
         -D DHSVM_TIMING_LEVEL:STRING="1" \
         -D GPTL_DIR:PATH="$prefix/gptl-v5.5.3-2-gbb58395" \
         -D DHSVM_USE_NETCDF:BOOL=ON \
@@ -105,7 +110,6 @@ elif [ $host == "tlaloc" ]; then
         -D MPIEXEC:STRING="/usr/lib64/openmpi/bin/mpiexec" \
         -D GA_DIR:STRING="$prefix/ga-c++" \
 	-D GA_EXTRA_LIBS:STRING="-lm" \
-        -D DHSVM_USE_GPTL:BOOL=ON \
         -D DHSVM_TIMING_LEVEL:STRING="1" \
         -D GPTL_DIR:PATH="$prefix/gptl-v5.5.3-2-gbb58395" \
         -D DHSVM_USE_NETCDF:BOOL=OFF \
@@ -202,7 +206,6 @@ elif [ $host = "briareus" ]; then
         -D MPI_C_COMPILER:STRING="mpicc" \
         -D GA_DIR:STRING="/files0/dhsvm" \
         -D GA_EXTRA_LIBS:STRING="-libverbs -lm" \
-        -D DHSVM_USE_GPTL:BOOL=ON \
         -D DHSVM_TIMING_LEVEL:STRING="2" \
         -D GPTL_DIR:PATH="$prefix" \
         -D CMAKE_INSTALL_PREFIX:PATH="/files0/dhsvm" \
@@ -249,6 +252,7 @@ elif [ $host = "constance" ]; then
         -D MPIEXEC:STRING="mpiexec" \
         -D GA_DIR:STRING="$prefix" \
 	-D GA_EXTRA_LIBS:STRING="-libverbs -lm" \
+        -D GPTL_DIR:PATH="$prefix" \
         -D DHSVM_USE_X11:BOOL=OFF \
         -D DHSVM_USE_NETCDF:BOOL=OFF \
         -D CMAKE_INSTALL_PREFIX:PATH="$prefix" \
@@ -276,6 +280,7 @@ elif [ $host = "constance-gnu" ]; then
         -D MPIEXEC:STRING="/share/apps/openmpi/1.8.3/gcc/4.8.2/bin/mpiexec" \
         -D GA_DIR:STRING="$prefix" \
 	-D GA_EXTRA_LIBS:STRING="-libverbs -lm -lpthread" \
+        -D GPTL_DIR:PATH="$prefix" \
         -D DHSVM_USE_X11:BOOL=OFF \
         -D DHSVM_USE_NETCDF:BOOL=OFF \
         -D NETCDF_INCLUDES:PATH="${NETCDF_INCLUDE}" \
@@ -298,12 +303,15 @@ elif [ $host = "constance-gnu-pr" ]; then
     CC=/share/apps/gcc/4.8.2/bin/gcc
     CXX=/share/apps/gcc/4.8.2/bin/g++
     export CC CXX
+    CFLAGS="-pthread"
+    CXXFLAGS="-pthread"
+    export CFLAGS CXXFLAGS
 
     cmake $options \
         -D MPI_C_COMPILER:STRING="/share/apps/openmpi/1.8.3/gcc/4.8.2/bin/mpicc" \
         -D MPIEXEC:STRING="/share/apps/openmpi/1.8.3/gcc/4.8.2/bin/mpiexec" \
         -D GA_DIR:STRING="$prefix" \
-	-D GA_EXTRA_LIBS:STRING="-lm -lpthread" \
+	-D GA_EXTRA_LIBS:STRING="-lrt -lm" \
         -D DHSVM_USE_X11:BOOL=OFF \
         -D DHSVM_USE_NETCDF:BOOL=OFF \
         -D NETCDF_INCLUDES:PATH="${NETCDF_INCLUDE}" \
