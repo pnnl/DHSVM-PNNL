@@ -140,11 +140,11 @@ void InitMassWaste(LISTPTR Input, TIMESTRUCT *Time);
 void InitGridMet(OPTIONSTRUCT *Options, LISTPTR Input, MAPSIZE *Map, TOPOPIX **TopoMap,  
          GRID *Grid, METLOCATION **Stat, int *NStats);
 
-void InitMetMaps(int NDaySteps, MAPSIZE *Map, MAPSIZE *Radar,
+void InitMetMaps(LISTPTR Input, int NDaySteps, MAPSIZE *Map, MAPSIZE *Radar,
 		 OPTIONSTRUCT *Options, char *WindPath, char *PrecipLapsePath,
 		 float ***PrecipLapseMap, float ***PrismMap,
 		 unsigned char ****ShadowMap, float ***SkyViewMap,
-		 EVAPPIX ***EvapMap, PRECIPPIX ***PrecipMap,
+		 EVAPPIX ***EvapMap, PRECIPPIX ***PrecipMap, float ***PptMultiplierMap,
 		 RADARPIX ***RadarMap, PIXRAD ***RadMap, SOILPIX **SoilMap, 
                  LAYER *Soil, VEGPIX **VegMap, LAYER *Veg, TOPOPIX **TopoMap, 
                  float ****MM5Input, float ****WindModel);
@@ -190,6 +190,8 @@ void InitNewStep(INPUTFILES *InFiles, MAPSIZE *Map, TIMESTRUCT *Time,
 
 int InitPixDump(LISTPTR Input, MAPSIZE *Map, uchar **BasinMask, char *Path,
 		int NPix, PIXDUMP **Pix, OPTIONSTRUCT *Options);
+void InitPptMultiplierMap(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
+  float ***PptMultiplierMap);                            
 
 void InitPrecipLapse(LISTPTR Input, INPUTFILES *InFiles);
 
@@ -262,7 +264,7 @@ uchar IsStationLocation(COORD *Loc, int NStats, METLOCATION *Station,
 void InitXGraphics(int argc, char **argv,
 		   int ny, int nx, int nd, MET_MAP_PIX ***MetMap);
 
-float LapsePrecip(float Precip, float FromElev, float ToElev, float PrecipLapse);
+float LapsePrecip(float Precip, float FromElev, float ToElev, float PrecipLapse, float precipMultiplier);
 
 float LapseT(float Temp, float FromElev, float ToElev, float LapseRate);
  
@@ -273,7 +275,7 @@ PIXMET MakeLocalMetData(int y, int x, MAPSIZE *Map, int DayStep,
 			float **PrismMap, SNOWPIX *LocalSnow, SNOWTABLE *SnowAlbedo,
             CanopyGapStruct **Gap, VEGPIX *VegMap,
 			float ***MM5Input, float ***WindModel, float **PrecipLapseMap,
-			MET_MAP_PIX ***MetMap, int NGraphics, int Month, float skyview,
+			MET_MAP_PIX ***MetMap, float precipMultiplier, int NGraphics, int Month, float skyview,
 			unsigned char shadow, float SunMax, float SineSolarAltitude);
 
 void MassBalance(DATE *Current, DATE *Start, FILES *Out, AGGREGATED *Total, 

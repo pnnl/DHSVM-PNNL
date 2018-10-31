@@ -113,15 +113,6 @@ void InitTopoMap(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * Map,
   else ReportError((char *)Routine, 57);
   free(Elev);
 
-  /* find out the minimum grid elevation of the basin */
-  MINELEV = 9999;
-  for (y = 0, i = 0; y < Map->NY; y++) {
-    for (x = 0; x < Map->NX; x++, i++) {
-      if ((*TopoMap)[y][x].Dem < MINELEV) {
-        MINELEV = (*TopoMap)[y][x].Dem;
-      }
-    }
-  }
   /* Read the mask */
   GetVarName(002, 0, VarName);
   GetVarNumberType(002, &NumberType);
@@ -163,6 +154,17 @@ void InitTopoMap(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * Map,
       for (x = 0; x < Map->NX; x++)
         (*TopoMap)[y][x].Mask = OUTSIDEBASIN;
     (*TopoMap)[Options->PointY][Options->PointX].Mask = (1 != OUTSIDEBASIN);
+  }
+  /* find out the minimum grid elevation of the basin */
+  MINELEV = 9999;
+  for (y = 0, i = 0; y < Map->NY; y++) {
+    for (x = 0; x < Map->NX; x++, i++) {
+      if (INBASIN((*TopoMap)[y][x].Mask)) {
+      if ((*TopoMap)[y][x].Dem < MINELEV) {
+        MINELEV = (*TopoMap)[y][x].Dem;
+      }
+      }
+    }
   }
 }
 

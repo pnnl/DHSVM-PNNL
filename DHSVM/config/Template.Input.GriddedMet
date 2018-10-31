@@ -62,6 +62,7 @@ Variable Light Transmittance  = TRUE      # TRUE OR FALSE
 Canopy Gapping = TRUE
 Snow Sliding = TRUE
 Precipitation Separation = TRUE
+Precipitation Multiplier Map = ../input/soild.bin # no correction be made if leave blank              
 
 ################################################################################
 # MODEL AREA SECTION
@@ -104,7 +105,6 @@ Min Intercepted Snow = 0.005              # Intercepted snow that can only be me
 Outside Basin Value  = 0                  # Value in mask that indicates outside the basin
 Temperature Lapse Rate   = -0.0065        # Temperature lapse rate (C/m)
 Precipitation Lapse Rate = 3e-06          # Precipitation lapse rate (m/m). Use a linear function to
-Precipitation Multiplier = 0.00015        # assuming precipiatio is positively related to elevation    
 Albedo Accumulation Lambda = 0.95         # Lambda for accmulation period
 Albedo Melting Lambda = 0.7               # Lambda for melting period
 Albedo Accumulation Min = 0.4             # Min albedo value during accumulation period
@@ -135,7 +135,7 @@ Basin Mask File   = ../input/mask.bin
 Stream Map File      = ../input/stream.map.dat
 Stream Network File  = ../input/stream.network.dat
 Stream Class File    = ../input/stream.class.dat
-Riparian Veg File    = NA
+Riparian Veg File    = 
 
 ################ ROAD NETWORK ##################################################
 
@@ -259,7 +259,7 @@ Mannings n             1 = 0.013
 [VEGETATION]
 
 Vegetation Map File = ../input/veg.bin
-Canopy Gap Map File = ../input/CanopyGap.bin
+Canopy Gap Map File = ../input/CanopyGap.bin  #Gap diameter spatial input
 
 
 Number of Vegetation Types = 1
@@ -286,7 +286,6 @@ Max Snow Int Capacity           1  =  0.02
 Mass Release Drip Ratio         1  =  0.4
 Snow Interception Eff           1  =  0.6
 Height                          1  =  2.5 0.5
-Canopy Gap Diameter             1  =  10
 Overstory Monthly LAI           1  =  5.00 5.00 5.00 5.00 5.00 5.00 5.00 5.00 5.00 5.00 5.00 5.00
 Understory Monthly LAI          1  =  3.00 3.00 3.00 3.00 3.00 3.00 3.00 3.00 3.00 3.00 3.00 3.00
 Maximum Resistance              1  =  5000.0 3000.0

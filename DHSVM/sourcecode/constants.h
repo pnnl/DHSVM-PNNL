@@ -70,7 +70,6 @@ extern float MIN_INTERCEPTION_STORAGE;	/* the amount of snow on the canopy
 extern float MIN_RAIN_TEMP;				/* minimum temperature at which rain can occur (C) */
 extern unsigned char OUTSIDEBASIN;		/* Mask value indicating outside the basin */
 extern float PRECIPLAPSE;				/* Precipitation lapse rate in m/timestep / m */
-extern float PRECIPMULTIPLIER;
 extern float MINELEV;
 extern float TEMPLAPSE;					/* Temperature lapse rate in C/m */
 extern int NWINDMAPS;					/* Number of wind maps in case the wind source is MODEL */

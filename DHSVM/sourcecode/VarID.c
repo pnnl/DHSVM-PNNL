@@ -67,6 +67,9 @@ struct {
   007, "Veg.CanopyGap",
        "Canopy Gap", "%.2f", 
        "", "Canopy Gap", NC_FLOAT, FALSE, FALSE, FALSE, 0 },{
+  100, "Met.PrecipMultiplier",
+	   "PptMultiplier", "%.8f",
+	   "", "Precipitation Multiplier", NC_FLOAT, FALSE, FALSE, FALSE, 0 },{
   101, "Evap.ETot",
       "Evapotranspiration (Total)", "%.4g",
       "m/timestep", "Total amount of evapotranspiration",

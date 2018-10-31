@@ -413,11 +413,10 @@ void MassEnergyBalance(OPTIONSTRUCT *Options, int y, int x,
     }
     LocalEvap->EvapSoil =
       SoilEvaporation(Dt, LocalMet->Tair, LocalMet->Slope, LocalMet->Gamma,
-        LocalMet->Lv, LocalMet->AirDens, LocalMet->Vpd,
-        NetRadiation, LowerRa, LocalVeg->MoistureFlux, SType->Porosity[0],
-        SType->Ks[0], SType->Press[0], SType->PoreDist[0],
-        VType->RootDepth[0], &(LocalSoil->Moist[0]),
-        LocalNetwork->Adjust[0]);
+      LocalMet->Lv, LocalMet->AirDens, LocalMet->Vpd,
+      NetRadiation, LowerRa, LocalVeg->MoistureFlux, SType->Porosity[0],
+      SType->FCap[0], SType->Ks[0], SType->Press[0], SType->PoreDist[0],
+      VType->RootDepth[0], &(LocalSoil->Moist[0]), LocalNetwork->Adjust[0]);
   }
   else
     LocalEvap->EvapSoil = 0.0;

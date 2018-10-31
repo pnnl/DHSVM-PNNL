@@ -254,6 +254,7 @@ typedef struct {
   char ShadingDataExt[BUFSIZE + 1];
   char SkyViewDataPath[BUFSIZE + 1];
   char ImperviousFilePath[BUFSIZ + 1];
+  char PrecipMultiplierMapPath[BUFSIZ + 1];                                           
 } OPTIONSTRUCT;
 
 typedef struct {
