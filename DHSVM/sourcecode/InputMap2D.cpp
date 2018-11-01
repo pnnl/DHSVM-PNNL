@@ -10,7 +10,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2018-10-22 11:55:02 d3g096
+ * LAST CHANGE: 2018-11-01 06:39:43 d3g096
  * COMMENTS:
  */
 
@@ -34,12 +34,13 @@ SerialInputMap2D::SerialInputMap2D(const std::string fname, const std::string vn
                                    const int NumberType, const MAPSIZE *Map, const bool mirror)
   : InputMap2D(fname, vname, NumberType, Map, mirror)
 {
-  // empty
+  int gatype(GA_Type(this->my_NumberType));
+  my_ga = GA_Duplicate_type(this->my_Map->dist, "Distribute2DMatrix", gatype);
 }
 
 SerialInputMap2D::~SerialInputMap2D(void)
 {
-  // empty
+  GA_Destroy(my_ga);
 }
 
 // -------------------------------------------------------------
@@ -50,10 +51,7 @@ SerialInputMap2D::my_distribute(unsigned char *buf0, void *LocalMatrix)
 {
   int me(ParallelRank());
   int gNX(this->my_Map->gNX), gNY(this->my_Map->gNY);
-  int gatype(GA_Type(this->my_NumberType));
   int lo[2], hi[2], ld[2];
-
-  int ga = GA_Duplicate_type(this->my_Map->dist, "Distribute2DMatrix", gatype);
 
   if (me == 0) {
     lo[0] = 0;
@@ -62,7 +60,7 @@ SerialInputMap2D::my_distribute(unsigned char *buf0, void *LocalMatrix)
     hi[gaXdim] = gNX-1;
     ld[gaXdim] = gNY;
     ld[gaYdim] = gNX;
-    NGA_Put(ga, &lo[0], &hi[0], (void *)buf0, &ld[0]);
+    NGA_Put(my_ga, &lo[0], &hi[0], (void *)buf0, &ld[0]);
   }
   ParallelBarrier();
 
@@ -81,10 +79,9 @@ SerialInputMap2D::my_distribute(unsigned char *buf0, void *LocalMatrix)
     ld[gaXdim] = this->my_Map->NY;
     ld[gaYdim] = this->my_Map->NX;
   }
-  NGA_Get(ga, &lo[0], &hi[0], LocalMatrix, &ld[0]);
+  NGA_Get(my_ga, &lo[0], &hi[0], LocalMatrix, &ld[0]);
 
   ParallelBarrier();
-  GA_Destroy(ga);
 }
 
 // -------------------------------------------------------------

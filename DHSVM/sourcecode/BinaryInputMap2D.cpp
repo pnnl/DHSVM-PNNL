@@ -7,7 +7,7 @@
 // -------------------------------------------------------------
 // -------------------------------------------------------------
 // Created October 17, 2018 by William A. Perkins
-// Last Change: 2018-10-22 11:55:40 d3g096
+// Last Change: 2018-11-01 11:41:27 d3g096
 // -------------------------------------------------------------
 
 
@@ -45,7 +45,7 @@ BinaryInputMap2D::BinaryInputMap2D(const std::string fname, const std::string vn
 
 BinaryInputMap2D::~BinaryInputMap2D(void)
 {
-  this->my_close();
+  this->close();
 }
 
 // -------------------------------------------------------------
@@ -63,8 +63,10 @@ BinaryInputMap2D::my_open()
 void
 BinaryInputMap2D::my_close()
 {
-  fclose(my_fd);
-  my_fd = NULL;
+  if (my_fd != NULL) {
+    fclose(my_fd);
+    my_fd = NULL;
+  }
 }
 
 // -------------------------------------------------------------

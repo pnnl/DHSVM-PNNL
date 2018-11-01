@@ -7,7 +7,7 @@
 // -------------------------------------------------------------
 // -------------------------------------------------------------
 // Created October 18, 2018 by William A. Perkins
-// Last Change: 2018-10-22 11:53:51 d3g096
+// Last Change: 2018-11-01 11:40:37 d3g096
 // -------------------------------------------------------------
 
 #include <cstdio>
@@ -52,7 +52,7 @@ NetCDFInputMap2D::NetCDFInputMap2D(const std::string fname, const std::string vn
 
 NetCDFInputMap2D::~NetCDFInputMap2D(void)
 {
-  this->my_close();
+  this->close();
 }
 
 // -------------------------------------------------------------

@@ -10,7 +10,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2018-10-23 13:50:17 d3g096
+ * LAST CHANGE: 2018-11-01 11:33:45 d3g096
  * COMMENTS:
  */
 
@@ -54,31 +54,34 @@ public:
   ~InputMap2DFactory(void)
   {}
 
-  InputMap2D *operator() (const std::string& fname, const std::string& vname,
-                          const int& NumberType, const MAPSIZE *Map,
-                          const bool& mirror);
+  void *operator() (const std::string& fname, const std::string& vname,
+                    const int& NumberType, const MAPSIZE *Map,
+                    const bool& mirror);
 };
 
 
 // -------------------------------------------------------------
 // InputMap2DFactory::operator()
 // -------------------------------------------------------------
-InputMap2D *
+void *
 InputMap2DFactory::operator() (const std::string& fname, const std::string& vname,
                                const int& NumberType, const MAPSIZE *Map,
                                const bool& mirror)
 {
-  InputMap2D *result(NULL);
+  void *result(NULL);
   switch (format) {
   case (BIN):
-    result = new BinaryInputMap2D(fname, vname, NumberType, Map, mirror);
+    result =
+      static_cast<InputMap2D *>(new BinaryInputMap2D(fname, vname, NumberType, Map, mirror));
     break;
   case (BYTESWAP):
-    result = new ByteSwapInputMap2d(fname, vname, NumberType, Map, mirror);
+    result =
+      static_cast<InputMap2D *>(new ByteSwapInputMap2d(fname, vname, NumberType, Map, mirror));
     break;
 #ifdef HAVE_NETCDF
   case (NETCDF):
-    result = new NetCDFInputMap2D(fname, vname, NumberType, Map, mirror);
+    result =
+      static_cast<InputMap2D *>(new NetCDFInputMap2D(fname, vname, NumberType, Map, mirror));
     break;
 #endif
   default:
@@ -123,11 +126,12 @@ Read2DMatrix(const char *FileName, void *Matrix, int NumberType,
 {
   int flag;
   bool mirror(false);
-  std::auto_ptr<InputMap2D>
-    map((*input_factory)(FileName, VarName, NumberType, Map, mirror));
+  InputMap2D * map =
+    static_cast<InputMap2D *>((*input_factory)(FileName, VarName, NumberType, Map, mirror));
   map->open();
   flag = map->read(NDataSet, index, Matrix);
   map->close();
+  delete map;
   return flag;
 }
 
@@ -139,8 +143,8 @@ int Read2DMatrixAll(const char *FileName, void *Matrix, int NumberType,
                     MAPSIZE *Map, int NDataSet, const char *VarName, int index)
 {
   int flag;
-  std::auto_ptr<InputMap2D>
-    map((*input_factory)(FileName, VarName, NumberType, Map, true));
+  InputMap2D * map =
+    static_cast<InputMap2D *>((*input_factory)(FileName, VarName, NumberType, Map, true));
   map->open();
   flag = map->read(NDataSet, index, Matrix);
   map->close();
@@ -156,9 +160,9 @@ void *
 InputMap2DAlloc(const char* fname, const char* vname,
                 int NumberType, MAPSIZE *Map, int mirror)
 {
-  InputMap2D *result;
+  void *result;
   result = (*input_factory)(fname, vname, NumberType, Map, mirror);
-  return static_cast<void *>(result);
+  return (result);
 }
 
 // -------------------------------------------------------------

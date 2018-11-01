@@ -468,9 +468,9 @@ int main(int argc, char **argv)
     InputMap2DFree(InFiles.MM5WindMap);
     InputMap2DFree(InFiles.MM5ShortWaveMap);
     InputMap2DFree(InFiles.MM5LongWaveMap);
-    InputMap2DFree(InFiles.MM5ShortWaveMap);
     InputMap2DFree(InFiles.MM5PrecipitationMap);
-  }    
+    GA_Destroy(MM5Map.dist);
+  }
 
   /* record the run time at the end of each time loop */
   finish1 = clock ();
@@ -491,6 +491,8 @@ int main(int argc, char **argv)
 
   TIMING_TASK_END("total", 0);
   TIMING_DONE(me);
+
+  ParallelBarrier();
   
   ParallelFinalize();
   return EXIT_SUCCESS;

@@ -8,7 +8,7 @@
 // -------------------------------------------------------------
 // -------------------------------------------------------------
 // Created October 15, 2018 by William A. Perkins
-// Last Change: 2018-10-22 11:50:18 d3g096
+// Last Change: 2018-11-01 11:38:54 d3g096
 // -------------------------------------------------------------
 
 
@@ -65,7 +65,7 @@ public:
   {}
 
   /// Destructor
-  ~InputMap2D(void)
+  virtual ~InputMap2D(void)
   {
     // children should make sure they're closed
   }
@@ -98,6 +98,9 @@ class SerialInputMap2D
   : public InputMap2D
 {
 protected:
+
+  /// The GA used to distribute this map
+  int my_ga;
 
   /// format specific read
   virtual int my_read_fmt(const int& NDataSet, const int& index, unsigned char *buffer) = 0;
