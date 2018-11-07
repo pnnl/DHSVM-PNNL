@@ -48,6 +48,9 @@ struct {
   int AddLayer;
 } varinfo[] = {
   {
+  000, "Basin.Processor",
+      "Proc", "%.0f",
+      "none", "Assigned processor", NC_FLOAT, FALSE, FALSE, FALSE, 0}, {
   001, "Basin.DEM",
       "DEM", "%.3f",
       "m", "Digital Elevation Model", NC_FLOAT, FALSE, FALSE, FALSE, 0}, {
@@ -67,6 +70,15 @@ struct {
   007, "Veg.CanopyGap",
        "Canopy Gap", "%d", 
        "", "Canopy Gap", NC_BYTE, FALSE, FALSE, FALSE, 0 },{
+  010, "Basin.Slope",
+       "Slope", "%.4f",
+       "none", "Land surface slope", NC_FLOAT, FALSE, FALSE, FALSE, 0}, {
+  011, "Basin.Aspect",
+       "Aspect", "%.3f",
+       "degrees", "Aspect", NC_FLOAT, FALSE, FALSE, FALSE, 0}, {
+  012, "Basin.FlowDir",
+       "FlowDir", "%.0f",
+       "none", "FlowDir", NC_FLOAT, FALSE, FALSE, FALSE, 0}, {
   101, "Evap.ETot",
       "Evapotranspiration (Total)", "%.4g",
       "m/timestep", "Total amount of evapotranspiration",

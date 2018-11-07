@@ -79,7 +79,7 @@ void DumpPix(DATE *Current, int first, FILES *OutFile, EVAPPIX *Evap,
         VEGPIX *Veg, int NSoil, int NVeg, OPTIONSTRUCT *Options, int flag);
 
 #ifdef TOPO_DUMP
-void DumpTopo(MAPSIZE *Map, TOPOPIX **TopoMap);
+void DumpTopo(MAPSIZE *Map, MAPSIZE *GMap, TOPOPIX **TopoMap);
 #endif
 
 void ExecDump(MAPSIZE *GMap, MAPSIZE *Map, DATE *Current, DATE *Start, OPTIONSTRUCT *Options,
