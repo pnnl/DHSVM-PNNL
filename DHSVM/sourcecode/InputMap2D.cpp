@@ -10,18 +10,16 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2018-11-01 06:39:43 d3g096
+ * LAST CHANGE: 2018-11-06 09:51:09 d3g096
  * COMMENTS:
  */
 
 #include <exception>
-
-extern "C" {
-#include "DHSVMerror.h"
-#include "ParallelDHSVM.h"
-}
+#include <ga.h>
 
 #include "InputMap2D.hpp"
+#include "sizeofnt.h"
+#include "ga_helper.h"
 
 // -------------------------------------------------------------
 //  class SerialInputMap2D

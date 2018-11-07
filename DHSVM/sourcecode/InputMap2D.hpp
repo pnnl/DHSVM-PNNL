@@ -8,7 +8,7 @@
 // -------------------------------------------------------------
 // -------------------------------------------------------------
 // Created October 15, 2018 by William A. Perkins
-// Last Change: 2018-11-01 11:38:54 d3g096
+// Last Change: 2018-11-05 09:14:09 d3g096
 // -------------------------------------------------------------
 
 
@@ -16,6 +16,7 @@
 #define _InputMap2D_hpp_
 
 #include <string>
+#include <stdexcept>
 
 #include "MapSize.h"
 
@@ -23,6 +24,43 @@
 //  class InputMap2D
 // -------------------------------------------------------------
 class InputMap2D {
+public:
+
+  // -------------------------------------------------------------
+  //  class InputMap2D::exception
+  // -------------------------------------------------------------
+  class exception
+    : public std::runtime_error
+  {
+  protected:
+
+    /// The DHSVM error code
+    int my_error_code;
+    
+  public:
+
+    /// Default constructor.
+    exception(const std::string& what, const int& code)
+      : std::runtime_error(what), my_error_code(code)
+    {}
+
+    /// Protected copy constructor to avoid unwanted copies.
+    exception(const exception& old)
+      : std::runtime_error(old), my_error_code(old.my_error_code)
+    {}
+
+    /// Destructor
+    ~exception(void) throw()
+    {}
+
+    /// Get the DHSVM error code
+    int code(void) const
+    {
+      return my_error_code;
+    }
+  };
+
+  
 protected:
 
   /// The input file name

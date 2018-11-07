@@ -10,15 +10,21 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2018-10-17 14:56:37 d3g096
+ * LAST CHANGE: 2018-11-06 09:48:12 d3g096
  * COMMENTS:
  */
  
 #ifndef _byte_swap_h_
 #define _byte_swap_h_
 
-extern void byte_swap_short(short *buffer, int number_of_swaps);
-extern void byte_swap_long(long *buffer, int number_of_swaps);
+#ifdef __cplusplus
+extern "C" {
+#endif
+void byte_swap_short(short *buffer, int number_of_swaps);
+void byte_swap_long(long *buffer, int number_of_swaps);
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif

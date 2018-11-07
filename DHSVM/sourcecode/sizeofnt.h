@@ -32,6 +32,13 @@
 #include <netcdf.h>
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 size_t SizeOfNumberType(int NumberType);
 
+#ifdef __cplusplus
+}
+#endif
 #endif

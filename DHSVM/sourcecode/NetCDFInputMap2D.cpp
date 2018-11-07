@@ -7,16 +7,12 @@
 // -------------------------------------------------------------
 // -------------------------------------------------------------
 // Created October 18, 2018 by William A. Perkins
-// Last Change: 2018-11-01 11:40:37 d3g096
+// Last Change: 2018-11-06 13:50:46 d3g096
 // -------------------------------------------------------------
 
 #include <cstdio>
 #include <vector>
 #include <netcdf.h>
-
-extern "C" {
-#include "DHSVMerror.h"
-}
 
 #include "NetCDFInputMap2D.hpp"
 
@@ -30,7 +26,7 @@ nc_check_err(const int ncstatus, const int line, const char *file)
 
   if (ncstatus != NC_NOERR) {
     sprintf(str, "%s, line: %d -- %s", file, line, nc_strerror(ncstatus));
-    ReportError((char *) str, 57);
+    throw InputMap2D::exception(str, 57);
   }
 }
 
@@ -78,7 +74,7 @@ NetCDFInputMap2D::my_open(void)
   if (TempNumberType != my_NumberType) {
     sprintf(msg, "%s: nc_type for %s is different than expected.\n",
 	    my_Name.c_str(), my_VarName.c_str());
-    ReportWarning(msg, 58);
+    throw InputMap2D::exception(msg, 58);
   }
   my_flip = my_check();
 }
@@ -103,9 +99,12 @@ NetCDFInputMap2D::my_check(void)
   
   ncstatus = nc_inq_varid(my_ncid, dimname, &lat_varid);
   nc_check_err(ncstatus, __LINE__, __FILE__);
-  if (dimlen != my_Map->gNY)
-    ReportError(my_VarName.c_str(), 59);
-
+  if (dimlen != my_Map->gNY) {
+    std::string msg(my_VarName);
+    msg += ": incorrect Y dimension length";
+    throw InputMap2D::exception(msg, 59);
+  }
+  
   std::vector<double> Ycoord(dimlen);
 
   // Read the latitude coordinate variable data. 
@@ -125,9 +124,12 @@ NetCDFInputMap2D::my_check(void)
   nc_check_err(ncstatus, __LINE__, __FILE__);
   ncstatus = nc_inq_varid(my_ncid, dimname, &lon_varid);
   nc_check_err(ncstatus, __LINE__, __FILE__);
-  if (dimlen != my_Map->gNX)
-    ReportError(my_VarName.c_str(), 60);
-
+  if (dimlen != my_Map->gNX) {
+    std::string msg(my_VarName);
+    msg += ": incorrect X dimension length";
+    throw InputMap2D::exception(msg, 60);
+  }
+  
   std::vector<double> Xcoord(dimlen);
 
   /* Read the latitude coordinate variable data. */
@@ -142,7 +144,7 @@ NetCDFInputMap2D::my_check(void)
 values in the .nc input in an descending order. You can either change the input \
 .nc file format outside of this program. or you can easily modify this program to \
 fit your needs. \n");
-    ReportError("Improper NetCDF input files", 58);
+    throw InputMap2D::exception("Improper NetCDF input file", 58);
   }
   if (!LatisAsc && LonisAsc) flag = 0;
   if (LatisAsc && LonisAsc) flag = 1;
@@ -157,7 +159,8 @@ void
 NetCDFInputMap2D::my_close(void)
 {
   int ncstatus = nc_close(my_ncid);
-  nc_check_err(ncstatus, __LINE__, __FILE__);
+  // Let's not worry about this
+  // nc_check_err(ncstatus, __LINE__, __FILE__);
 }
 
 // -------------------------------------------------------------
@@ -211,7 +214,7 @@ NetCDFInputMap2D::my_read_fmt(const int& unused_index, const int& index, unsigne
     ncstatus = nc_get_vara_double(my_ncid, my_varid, start, count, (double *)buffer);
     break;
   default:
-    ReportError("NetCDFInputMap2D::my_read_fmt", 40);
+    throw InputMap2D::exception("NetCDFInputMap2D::my_read_fmt: unsupported data type", 40);
     break;
   }
   nc_check_err(ncstatus, __LINE__, __FILE__);

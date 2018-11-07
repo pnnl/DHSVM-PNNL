@@ -10,7 +10,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2018-10-23 13:50:21 d3g096
+ * LAST CHANGE: 2018-11-06 09:50:54 d3g096
  * COMMENTS:
  */
 
@@ -21,6 +21,10 @@
 #include "settings.h"
 #include "MapSize.h"
 #include "fileio.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 void Map2DInit(int FileFormat);
 
@@ -38,6 +42,9 @@ int Read2DMatrix(const char *FileName, void *Matrix, int NumberType,
 int Read2DMatrixAll(const char *FileName, void *Matrix, int NumberType, 
                     MAPSIZE *Map, int NDataSet, const char *VarName, int index);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif 
 

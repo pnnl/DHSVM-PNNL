@@ -9,7 +9,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2018-10-23 15:01:40 d3g096
+# Last Change: 2018-11-06 13:33:23 d3g096
 
 # -------------------------------------------------------------
 # Set up for this subdirectory
@@ -182,6 +182,7 @@ set(DHSVM_SRC
   errorhandler.c
   globals.c
   ${FLEX_tableio_OUTPUTS}
+  ga_helper.c
 )
 
 add_executable(DHSVM
@@ -370,6 +371,7 @@ if (DHSVM_BUILD_TESTS)
     patch_test.c
     ParallelDHSVM.c
     globals.c
+    ga_helper.c
     )
   target_link_libraries(patch_test
     BinIO

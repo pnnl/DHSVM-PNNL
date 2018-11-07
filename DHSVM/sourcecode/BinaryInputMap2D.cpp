@@ -7,24 +7,14 @@
 // -------------------------------------------------------------
 // -------------------------------------------------------------
 // Created October 17, 2018 by William A. Perkins
-// Last Change: 2018-11-01 11:41:27 d3g096
+// Last Change: 2018-11-06 09:49:45 d3g096
 // -------------------------------------------------------------
 
 
-extern "C" {
-#include "sizeofnt.h"
-#include "ParallelDHSVM.h"
-#include "DHSVMerror.h"
-#include "byte_swap.h"
-}
-
 #include "BinaryInputMap2D.hpp"
-
-
-// I don't want to include all of fileio.h
-extern "C" 
-void OpenFile(FILE **FilePtr, const char *FileName, const char *Mode,
-	      unsigned char OverWrite);
+#include "ParallelDHSVM.h"
+#include "sizeofnt.h"
+#include "byte_swap.h"
 
 
 // -------------------------------------------------------------
@@ -54,7 +44,12 @@ BinaryInputMap2D::~BinaryInputMap2D(void)
 void
 BinaryInputMap2D::my_open()
 {
-  OpenFile(&(my_fd), my_Name.c_str(), "r", 0);
+  my_fd = fopen(my_Name.c_str(), "r");
+  if (!my_fd) {
+    std::string msg(my_Name);
+    msg += ": cannot open";
+    throw InputMap2D::exception(msg, 3);
+  }
 }
 
 // -------------------------------------------------------------
@@ -87,11 +82,20 @@ BinaryInputMap2D::my_read_fmt(const int& index, const int& unused_index, unsigne
     origin = SEEK_CUR;
     offset = NX*NY*ElemSize*(index - my_last_index - 1);
   }
-  if (fseek(my_fd, offset, origin)) ReportError(this->my_Name.data(), 39);
-
+  
+  if (fseek(my_fd, offset, origin)) {
+    std::string msg(my_Name);
+    msg += ": fseek error";
+    throw InputMap2D::exception(msg, 39);
+  }
+  
   int NElements(fread(LocalMatrix, ElemSize, NY * NX, this->my_fd));
 
-  if (NElements != NY * NX) ReportError(this->my_Name.data(), 2);
+  if (NElements != NY * NX) {
+    std::string msg(my_Name);
+    msg += ": fread returned wrong size";
+    throw InputMap2D::exception(msg, 2);
+  }
                 
   return NElements;
 }
@@ -132,6 +136,8 @@ ByteSwapInputMap2d::my_read_fmt(const int& index, const int& unused_index, unsig
     byte_swap_short((short *)LocalMatrix, NElements);
   }
   else if (ElemSize != 1) {
-    ReportError(this->my_Name.c_str(), 61);
+    std::string msg(my_Name);
+    msg += ": unknown element size";
+    throw InputMap2D::exception(msg, 61);
   }
 }

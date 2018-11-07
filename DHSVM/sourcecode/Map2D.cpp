@@ -10,17 +10,15 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2018-11-01 11:33:45 d3g096
+ * LAST CHANGE: 2018-11-06 09:51:05 d3g096
  * COMMENTS:
  */
 
 #include <memory>
 
-extern "C" {
 #include "Map2D.h"
 #include "ParallelDHSVM.h"
 #include "DHSVMerror.h"
-}
 
 #include "BinaryInputMap2D.hpp"
 
@@ -124,14 +122,20 @@ int
 Read2DMatrix(const char *FileName, void *Matrix, int NumberType, 
              MAPSIZE *Map, int NDataSet, const char *VarName, int index)
 {
-  int flag;
-  bool mirror(false);
-  InputMap2D * map =
-    static_cast<InputMap2D *>((*input_factory)(FileName, VarName, NumberType, Map, mirror));
-  map->open();
-  flag = map->read(NDataSet, index, Matrix);
-  map->close();
-  delete map;
+  int flag(0);
+  try {
+    bool mirror(false);
+    InputMap2D * map =
+      static_cast<InputMap2D *>((*input_factory)(FileName, VarName, NumberType, Map, mirror));
+    map->open();
+    flag = map->read(NDataSet, index, Matrix);
+    map->close();
+    delete map;
+  } catch (const InputMap2D::exception& e) {
+    std::string msg(e.what());
+    ReportError(msg.data(), e.code());
+  }
+      
   return flag;
 }
 
@@ -142,12 +146,18 @@ extern "C"
 int Read2DMatrixAll(const char *FileName, void *Matrix, int NumberType, 
                     MAPSIZE *Map, int NDataSet, const char *VarName, int index)
 {
-  int flag;
-  InputMap2D * map =
-    static_cast<InputMap2D *>((*input_factory)(FileName, VarName, NumberType, Map, true));
-  map->open();
-  flag = map->read(NDataSet, index, Matrix);
-  map->close();
+  int flag(0);
+  try {
+    InputMap2D * map =
+      static_cast<InputMap2D *>((*input_factory)(FileName, VarName, NumberType, Map, true));
+    map->open();
+    flag = map->read(NDataSet, index, Matrix);
+    map->close();
+    delete map;
+  } catch (const InputMap2D::exception& e) {
+    std::string msg(e.what());
+    ReportError(msg.data(), e.code());
+  }
   return flag;
 }
 
@@ -181,7 +191,14 @@ InputMap2DOpen(void *map2d)
 int
 InputMap2DRead(void *map2d, int NDataSet, int index, void *ldata)
 {
-  return static_cast<InputMap2D *>(map2d)->read(NDataSet, index, ldata);
+  int flag(0);
+  try {
+    flag = static_cast<InputMap2D *>(map2d)->read(NDataSet, index, ldata);
+  } catch (const InputMap2D::exception& e) {
+    std::string msg(e.what());
+    ReportError(msg.data(), e.code());
+  }
+  return flag;
 }
 
 // -------------------------------------------------------------
