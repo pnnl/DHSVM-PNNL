@@ -10,7 +10,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2018-11-07 10:09:43 d3g096
+# Last Change: 2018-11-08 14:42:21 d3g096
 
 set -xue
 
@@ -124,17 +124,18 @@ elif [ $host == "WE32673" ]; then
     # does not work with it.
     
     prefix="/opt/local"
-    CC="$prefix/bin/clang-mp-3.8"
-    CXX="$prefix/bin/clang++-mp-3.8"
+    CC="$prefix/bin/clang-mp-6.0"
+    CXX="$prefix/bin/clang++-mp-6.0"
     export CC CXX
 
     cmake $options \
-        -D MPI_C_COMPILER:STRING="$prefix/bin/mpicc-openmpi-clang38" \
-        -D MPIEXEC:STRING="$prefix/bin/mpiexec-openmpi-clang38" \
-        -D GA_DIR:PATH="$prefix" \
-        -D NETCDF_DIR:PATH="$prefix" \
+        -D MPI_C_COMPILER:STRING="$prefix/bin/mpicc-mpich-clang60" \
+        -D MPIEXEC:STRING="$prefix/bin/mpiexec-mpich-clang60" \
+        -D GA_DIR:PATH="$HOME/Projects/GridPACK" \
+        -D NETCDF_DIR:PATH="$prefix/include" \
         -D DHSVM_USE_X11:BOOL=OFF \
         -D DHSVM_USE_NETCDF:BOOL=ON \
+        -D CMAKE_INSTALL_PREFIX:PATH="$HOME/Projects/DHSVM" \
         $common_flags \
         ..
 
