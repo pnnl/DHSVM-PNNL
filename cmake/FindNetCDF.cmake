@@ -1,71 +1,345 @@
-# - Find NetCDF
-# Find the native NetCDF includes and library
+# -*- mode: cmake -*-
+
 #
-#  NETCDF_INCLUDES    - where to find netcdf.h, etc
-#  NETCDF_LIBRARIES   - Link these libraries when using NetCDF
-#  NETCDF_FOUND       - True if NetCDF found including required interfaces (see below)
+# Amanzi NetCDF Find Module
 #
-# Your package can require certain interfaces to be FOUND by setting these
+# Usage:
+#    Control the search through NetCDF_DIR or setting environment variable
+#    NetCDF_ROOT to the NetCDF installation prefix.
+#    By default only searches for C library. To search for the C++ library
+#    set 'CXX' in the COMPONENTS option in find_package(NetCDF) 
 #
-#  NETCDF_CXX         - require the C++ interface and link the C++ library
-#  NETCDF_F77         - require the F77 interface and link the fortran library
-#  NETCDF_F90         - require the F90 interface and link the fortran library
+#    This module does not search default paths! 
 #
-# The following are not for general use and are included in
-# NETCDF_LIBRARIES if the corresponding option above is set.
+#    Following variables are set:
+#    NetCDF_FOUND            (BOOL)       Flag indicating if NetCDF was found
+#    NetCDF_INCLUDE_DIR      (PATH)       Path to the NetCDF include file
+#    NetCDF_INCLUDE_DIRS     (LIST)       List of all required include files
+#    NetCDF_C_LIBRARIES      (LIST)       List of all required libraries to link to 
+#                                          the NetCDF C library
+#    NetCDF_CXX_LIBRARIES    (LIST)       List of all required libraries to link to 
+#                                          the NetCDF C++ library (If CXX is in COMPONENTS)
 #
-#  NETCDF_LIBRARIES_C    - Just the C interface
-#  NETCDF_LIBRARIES_CXX  - C++ interface, if available
-#  NETCDF_LIBRARIES_F77  - Fortran 77 interface, if available
-#  NETCDF_LIBRARIES_F90  - Fortran 90 interface, if available
+#    Additional variables set
+#    NetCDF_C_LIBRARY        (FILE)       NetCDF C library
+#    NetCDF_CXX_LIBRARY      (FILE)       NetCDF C++ library (If CXX is in the COMPONENTS)
+#    NetCDF_LARGE_DIMS       (BOOL)       Checks the header files for size of 
+#                                          NC_MAX_DIMS, NC_MAX_VARS and NC_MAX_VARS_DIMS
+#                                          Returns TRUE if
+#                                          NC_MAX_DIMS >= 655363
+#                                          NC_MAX_VARS >= 524288
+#                                          NC_MAX_VAR_DIMS >= 8
 #
-# Normal usage would be:
-#  set (NETCDF_F90 "YES")
-#  find_package (NetCDF REQUIRED)
-#  target_link_libraries (uses_f90_interface ${NETCDF_LIBRARIES})
-#  target_link_libraries (only_uses_c_interface ${NETCDF_LIBRARIES_C})
+# #############################################################################
 
-if (NETCDF_INCLUDES AND NETCDF_LIBRARIES)
-  # Already in cache, be silent
-  set (NETCDF_FIND_QUIETLY TRUE)
-endif (NETCDF_INCLUDES AND NETCDF_LIBRARIES)
+# Standard CMake modules see CMAKE_ROOT/Modules
+include(FindPackageHandleStandardArgs)
 
-find_path (NETCDF_INCLUDES netcdf.h
-  HINTS NETCDF_DIR ENV NETCDF_DIR)
+# Amanzi CMake functions see <root>/tools/cmake for source
+include(PrintVariable)
+include(AddImportedLibrary)
+# include(AddPackageDependency)
 
-find_library (NETCDF_LIBRARIES_C       NAMES netcdf)
-mark_as_advanced(NETCDF_LIBRARIES_C)
+# Macro to handle print out
+macro(_netcdf_status mess)
+  if (NOT NetCDF_FIND_QUIETLY)
+    message(STATUS "${mess}")
+  endif()
+endmacro()
 
-set (NetCDF_has_interfaces "YES") # will be set to NO if we're missing any interfaces
-set (NetCDF_libs "${NETCDF_LIBRARIES_C}")
+# Search for the nc-config binary
+find_program(NetCDF_CONFIG_BINARY nc-config
+             HINTS ${NetCDF_DIR} ${NetCDF_BIN_DIR}
+	     PATH_SUFFIXES bin Bin
+	     DOC "NetCDF configuration script")
 
-get_filename_component (NetCDF_lib_dirs "${NETCDF_LIBRARIES_C}" PATH)
 
-macro (NetCDF_check_interface lang header libs)
-  if (NETCDF_${lang})
-    find_path (NETCDF_INCLUDES_${lang} NAMES ${header}
-      HINTS "${NETCDF_INCLUDES}" NO_DEFAULT_PATH)
-    find_library (NETCDF_LIBRARIES_${lang} NAMES ${libs}
-      HINTS "${NetCDF_lib_dirs}" NO_DEFAULT_PATH)
-    mark_as_advanced (NETCDF_INCLUDES_${lang} NETCDF_LIBRARIES_${lang})
-    if (NETCDF_INCLUDES_${lang} AND NETCDF_LIBRARIES_${lang})
-      list (INSERT NetCDF_libs 0 ${NETCDF_LIBRARIES_${lang}}) # prepend so that -lnetcdf is last
-    else (NETCDF_INCLUDES_${lang} AND NETCDF_LIBRARIES_${lang})
-      set (NetCDF_has_interfaces "NO")
-      message (STATUS "Failed to find NetCDF interface for ${lang}")
-    endif (NETCDF_INCLUDES_${lang} AND NETCDF_LIBRARIES_${lang})
-  endif (NETCDF_${lang})
-endmacro (NetCDF_check_interface)
+if (NetCDF_C_LIBRARIES AND NetCDF_INCLUDE_DIRS )
 
-NetCDF_check_interface (CXX netcdfcpp.h netcdf_c++)
-NetCDF_check_interface (F77 netcdf.inc  netcdff)
-NetCDF_check_interface (F90 netcdf.mod  netcdff)
+  # Do nothing. Variables are set. No need to search again
 
-set (NETCDF_LIBRARIES "${NetCDF_libs}" CACHE STRING "All NetCDF libraries required for interface level")
+else(NetCDF_C_LIBRARIES AND NetCDF_INCLUDE_DIRS)
 
-# handle the QUIETLY and REQUIRED arguments and set NETCDF_FOUND to TRUE if
-# all listed variables are TRUE
-include (FindPackageHandleStandardArgs)
-find_package_handle_standard_args (NetCDF DEFAULT_MSG NETCDF_LIBRARIES NETCDF_INCLUDES NetCDF_has_interfaces)
+  # Cache variables
+  if (NetCDF_DIR)
+    set(NetCDF_DIR "${NetCDF_DIR}" CACHE PATH "Path to search for NetCDF include and library files")
+  endif()
 
-mark_as_advanced (NETCDF_LIBRARIES NETCDF_INCLUDES)
+  if (NetCDF_INCLUDE_DIR)
+    set(NetCDF_INCLUDE_DIR "${NetCDF_INCLUDE_DIR}" CACHE PATH "Path to search for NetCDF include files")
+  endif()
+
+  if (NetCDF_LIBRARY_DIR)
+    set(NetCDF_LIBRARY_DIR "${NetCDF_LIBRARY_DIR}" CACHE PATH "Path to search for NetCDF library files")
+  endif()
+
+  if (NOT NetCDF_INCLUDE_DIR )    
+    # Search for include files
+    # Search order preference:
+    #  (1) NetCDF_INCLUDE_DIR - check existence of path AND if the include files exist
+    #  (2) NetCDF_DIR/<include>
+    #  (3) Default CMake paths See cmake --html-help=out.html file for more information.
+    #
+    set(netcdf_inc_names "netcdf.h")
+    if (NetCDF_INCLUDE_DIR)
+      if (EXISTS "${NetCDF_INCLUDE_DIR}")
+  
+        find_path(cdf_test_include_path
+                  NAMES ${netcdf_inc_names}
+                  HINTS ${NetCDF_INCLUDE_DIR}
+                  NO_DEFAULT_PATH)
+
+        if (NOT cdf_test_include_path)
+          message(WARNING "Can not locate ${netcdf_inc_names} in ${NetCDF_INCLUDE_DIR}")
+        endif()
+        set(NetCDF_INCLUDE_DIR "${cdf_test_include_path}")
+  
+      else()
+        message(WARNING "NetCDF_INCLUDE_DIR=${NetCDF_INCLUDE_DIR} does not exist")
+        set(NetCDF_INCLUDE_DIR "NetCDF_INCLUDE_DIR-NOTFOUND")
+      endif()
+  
+    else() 
+  
+      set(netcdf_inc_suffixes "include")
+      if (NetCDF_DIR)
+        if (EXISTS "${NetCDF_DIR}" )
+  
+          find_path(NetCDF_INCLUDE_DIR
+                    NAMES ${netcdf_inc_names}
+                    HINTS ${NetCDF_DIR}
+                    PATH_SUFFIXES ${netcdf_inc_suffixes}
+                    NO_DEFAULT_PATH)
+  
+        else()
+          message(WARNING "NetCDF_DIR=${NetCDF_DIR} does not exist")
+          set(NetCDF_INCLUDE_DIR "NetCDF_INCLUDE_DIR-NOTFOUND")
+        endif()    
+  
+      else()
+  
+        find_path(NetCDF_INCLUDE_DIR
+                  NAMES ${netcdf_inc_names}
+                  PATH_SUFFIXES ${netcdf_inc_suffixes})
+  
+      endif()
+    endif()
+  
+
+    if (NOT NetCDF_INCLUDE_DIR)
+      message(WARNING "Can not locate NetCDF include directory")
+    endif()
+  endif(NOT NetCDF_INCLUDE_DIR)  
+  
+ 
+  if (NOT NetCDF_C_LIBRARIES)
+    # Search for libraries 
+    # Search order preference:
+    #  (1) NetCDF_LIBRARY_DIR - check existence of path AND if the include files exist
+    #  (2) NetCDF_DIR/<lib,Lib>
+    #  (3) Default CMake paths See cmake --html-help=out.html file for more information.
+    #
+    if (NetCDF_LIBRARY_DIR)
+      if (EXISTS "${NetCDF_LIBRARY_DIR}")
+  
+        find_library(_NetCDF_C_LIBRARY
+                     NAMES netcdf
+                     HINTS ${NetCDF_LIBRARY_DIR}
+                     NO_DEFAULT_PATH)
+  
+      else()
+        message(WARNING "NetCDF_LIBRARY_DIR=${NetCDF_LIBRARY_DIR} does not exist")
+        set(NetCDF_C_LIBRARY NetCDF_C_LIBRARY-NOTFOUND)
+      endif()
+  
+    else() 
+      if (NetCDF_DIR)
+        if (EXISTS "${NetCDF_DIR}")
+  
+          find_library(_NetCDF_C_LIBRARY
+                       NAMES netcdf
+                       HINTS ${NetCDF_DIR}
+                       PATH_SUFFIXES "lib" "Lib"
+                       NO_DEFAULT_PATH)
+  
+        else()
+          message(WARNING "NetCDF_DIR=${NetCDF_DIR} does not exist")
+          set(NetCDF_C_LIBRARY "NetCDF_C_LIBRARY-NOTFOUND")
+        endif()    
+  
+      else()
+  
+        find_library(_NetCDF_C_LIBRARY
+                     NAMES netcdf
+                     PATH_SUFFIXES ${netcdf_lib_suffixes})
+              
+      endif()
+    endif()
+  
+    # Define the NetCDF library targets
+    if (_NetCDF_C_LIBRARY) 
+      if (NetCDF_CONFIG_BINARY)
+        execute_process(COMMAND "${NetCDF_CONFIG_BINARY}" "--has-hdf5"
+                        RESULT_VARIABLE _ret_code
+                        OUTPUT_VARIABLE _stdout
+                        ERROR_VARIABLE  _stderr)
+                          
+        string(REGEX REPLACE "[\n\r ]" "" _hdf5_answer ${_stdout})
+        _netcdf_status("${NetCDF_CONFIG_BINARY} --has-hdf5 returned '${_hdf5_answer}'")
+        string(COMPARE EQUAL "${_hdf5_answer}" "yes" _has_hdf5)
+        if (${_has_hdf5} ) 
+          set(NetCDF_NEEDS_HDF5 TRUE)
+          _netcdf_status( "NetCDF requires HDF5")
+        else()
+          set(NetCDF_NEEDS_HDF5 FALSE)
+          _netcdf_status( "NetCDF does not require HDF5")
+        endif()    
+      endif()
+  
+      # If NetCDF was built with HDF5 then add that to the target properties
+      # NetCDF calls HDF5 HL routines and not all HDF5 installations will have 
+      # this library. Warn the user if HL is not detected. Use the 
+      # HDF5_C_LIBRARIES to define link needs since it will contain hdf5 and
+      # hdf5_hl.
+      set(_NetCDF_C_LIBRARY_LINK_LIBS)
+      if (NetCDF_NEEDS_HDF5) 
+
+        find_package(HDF5 QUIET REQUIRED COMPONENTS C HL)
+        if (HDF5_FOUND)
+          if (NOT HDF5_HL_FOUND)
+            message(WARNING "NetCDF calls the HDF5 HL library but this HDF5 does not have one")
+          endif() 
+          set(_NetCDF_C_LIBRARY_LINK_LIBS ${HDF5_HL_LIBRARIES} ${HDF5_C_LIBRARIES})
+          list(APPEND NetCDF_INCLUDE_DIRS ${HDF5_INCLUDE_DIRS})		      
+        endif()    
+      endif()
+  
+      # Now create the target 'netcdf'
+      add_imported_library(netcdf LOCATION "${_NetCDF_C_LIBRARY}" LINK_LANGUAGES "C")
+      if (_NetCDF_C_LIBRARY_LINK_LIBS)
+        set_target_properties(netcdf PROPERTIES
+                              INTERFACE_LINK_LIBRARIES "${_NetCDF_C_LIBRARY_LINK_LIBS}")
+      endif()
+      set(NetCDF_C_LIBRARY netcdf)
+      set(NetCDF_C_LIBRARIES ${NetCDF_C_LIBRARY} ${_NetCDF_C_LIBRARY_LINK_LIBS})
+      set(NetCDF_C_FOUND TRUE)
+  
+    endif(_NetCDF_C_LIBRARY)  
+
+  endif(NOT NetCDF_C_LIBRARIES)      
+
+endif(NetCDF_C_LIBRARIES AND NetCDF_INCLUDE_DIRS)    
+
+
+# Large dimension check here
+if (NetCDF_INCLUDE_DIR) 
+  set(netcdf_h "${NetCDF_INCLUDE_DIR}/netcdf.h" )
+  _netcdf_status( "NetCDF include file ${netcdf_h} will be searched for define values")
+
+  file(STRINGS "${netcdf_h}" netcdf_max_dims_string REGEX "^#define NC_MAX_DIMS")
+  string(REGEX REPLACE "[^0-9]" "" netcdf_max_dims "${netcdf_max_dims_string}")
+
+  file(STRINGS "${netcdf_h}" netcdf_max_vars_string REGEX "^#define NC_MAX_VARS")
+  string(REGEX REPLACE "[^0-9]" "" netcdf_max_vars "${netcdf_max_vars_string}")
+
+  file(STRINGS "${netcdf_h}" netcdf_max_var_dims_string REGEX "^#define NC_MAX_VAR_DIMS")
+  string(REGEX REPLACE "[^0-9]" "" netcdf_max_var_dims "${netcdf_max_var_dims_string}")
+
+  if (
+       ( (netcdf_max_dims EQUAL 65536)  OR (netcdf_max_dims GREATER 65536)  ) AND
+       ( (netcdf_max_vars EQUAL 524288) OR (netcdf_max_vars GREATER 524288) ) AND
+       ( (netcdf_max_var_dims EQUAL 8)  OR  (netcdf_max_var_dims GREATER 8) )
+     )
+    set(NetCDF_LARGE_DIMS TRUE)
+  else()
+    message(WARNING "The NetCDF found in ${NetCDF_DIR} does not have the correct NC_MAX_DIMS, NC_MAX_VARS and NC_MAX_VAR_DIMS\n"
+                    "It may not be compatible with other TPL libraries such MOAB and ExodusII\n" )
+    set(NetCDF_LARGE_DIMS FALSE)
+  endif()
+endif()    
+
+
+# Determine the version
+if (NOT NetCDF_VERSION)
+  if (NetCDF_CONFIG_BINARY)
+    execute_process(COMMAND "${NetCDF_CONFIG_BINARY}" "--version"
+                    RESULT_VARIABLE _ret_code
+                    OUTPUT_VARIABLE _stdout
+                    ERROR_VARIABLE  _stderr)
+                          
+     string(REGEX REPLACE "[\n\r ]" "" _version_answer "${_stdout}")
+     string(REGEX REPLACE "netCDF" "" NetCDF_VERSION "${_version_answer}")
+  endif()   
+endif()
+
+
+# Search for the C++ libraries if requested
+if (NetCDF_FIND_COMPONENTS)
+  list(FIND NetCDF_FIND_COMPONENTS "CXX" _search_cxx_library)
+
+  if (( NOT NetCDF_CXX_LIBRARIES ) AND 
+       ( NOT ("${_search_cxx_library}" LESS "0") ) )
+
+    if (NetCDF_LIBRARY_DIR)
+      if (EXISTS "${NetCDF_LIBRARY_DIR}")
+  
+        find_library(_NetCDF_CXX_LIBRARY
+                     NAMES netcdf_c++
+                     HINTS ${NetCDF_LIBRARY_DIR}
+                     NO_DEFAULT_PATH)
+  
+      else()
+        message(WARNING "NetCDF_LIBRARY_DIR=${NetCDF_LIBRARY_DIR} does not exist")
+        set(NetCDF_CXX_LIBRARY NetCDF_CXX_LIBRARY-NOTFOUND)
+      endif()
+  
+    else() 
+      if (NetCDF_DIR)
+        if (EXISTS "${NetCDF_DIR}")
+  
+          find_library(_NetCDF_CXX_LIBRARY
+                       NAMES netcdf_c++
+                       HINTS ${NetCDF_DIR}
+                       PATH_SUFFIXES "lib" "Lib"
+                       NO_DEFAULT_PATH)
+  
+        else()
+          message(WARNING "NetCDF_DIR=${NetCDF_DIR} does not exist")
+          set(NetCDF_CXX_LIBRARY "NetCDF_CXX_LIBRARY-NOTFOUND")
+        endif()    
+  
+      else()
+  
+        find_library(_NetCDF_CXX_LIBRARY
+                     NAMES netcdf_c++
+                     PATH_SUFFIXES ${netcdf_lib_suffixes})
+              
+      endif()
+    endif()
+
+    if (_NetCDF_CXX_LIBRARY)
+      add_imported_library(netcdf_c++ LOCATION "${_NetCDF_C_LIBRARY}" LINK_LANGUAGES "CXX")
+      set_target_properties(netcdf_c++ PROPERTIES
+                           INTERFACE_LINK_LIBRARIES "${NetCDF_C_LIBRARY}")
+      set(NetCDF_CXX_LIBRARY netcdf_c++)			 
+      set(NetCDF_CXX_FOUND TRUE)
+      set(NetCDF_CXX_LIBRARIES ${NetCDF_CXX_LIBRARY} ${NetCDF_C_LIBRARIES})
+    endif()
+  endif()
+
+endif(NetCDF_FIND_COMPONENTS)    
+
+
+# Send useful message if everything is found
+find_package_handle_standard_args(NetCDF DEFAULT_MSG
+                                  NetCDF_VERSION
+                                  NetCDF_C_LIBRARIES
+                                  NetCDF_INCLUDE_DIRS)
+
+mark_as_advanced(
+  NetCDF_INCLUDE_DIR
+  NetCDF_INCLUDE_DIRS
+  NetCDF_C_LIBRARY
+  NetCDF_CXX_LIBRARY
+  NetCDF_C_LIBRARIES
+)

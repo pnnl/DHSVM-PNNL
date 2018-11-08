@@ -10,7 +10,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2018-10-31 14:39:05 d3g096
+# Last Change: 2018-11-07 10:09:43 d3g096
 
 set -xue
 
@@ -112,7 +112,7 @@ elif [ $host == "tlaloc" ]; then
 	-D GA_EXTRA_LIBS:STRING="-lm" \
         -D DHSVM_TIMING_LEVEL:STRING="1" \
         -D GPTL_DIR:PATH="$prefix/gptl-v5.5.3-2-gbb58395" \
-        -D DHSVM_USE_NETCDF:BOOL=OFF \
+        -D DHSVM_USE_NETCDF:BOOL=ON \
         -D CMAKE_INSTALL_PREFIX:PATH="$prefix/dhsvm" \
         $common_flags \
         ..

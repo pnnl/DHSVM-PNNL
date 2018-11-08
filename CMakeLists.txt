@@ -9,7 +9,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2018-10-18 12:15:01 d3g096
+# Last Change: 2018-11-08 14:38:16 d3g096
 
 # -------------------------------------------------------------
 # General set up
@@ -100,7 +100,7 @@ endif(UNIX)
 if (DHSVM_USE_NETCDF)
   find_package(NetCDF REQUIRED)
   add_definitions(-DHAVE_NETCDF)
-  include_directories(AFTER ${NETCDF_INCLUDES})
+  include_directories(AFTER ${NetCDF_INCLUDE_DIRS})
 endif (DHSVM_USE_NETCDF)
 
 # -------------------------------------------------------------

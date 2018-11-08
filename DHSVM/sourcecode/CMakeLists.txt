@@ -9,7 +9,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2018-11-06 13:33:23 d3g096
+# Last Change: 2018-11-08 14:24:09 d3g096
 
 # -------------------------------------------------------------
 # Set up for this subdirectory
@@ -198,7 +198,7 @@ if (GPTL_FOUND)
 endif (GPTL_FOUND)
 
 list(APPEND DHSVM_LIBS 
-  ${NETCDF_LIBRARIES}
+  ${NetCDF_C_LIBRARIES}
   ${X11_LIBRARIES}
   ${GA_LIBRARIES} 
   ${MPI_C_LIBRARIES}
@@ -326,7 +326,7 @@ if (DHSVM_BUILD_TESTS AND NETCDF_FOUND)
     VarID.c
     )
   target_link_libraries(netcdf_test
-    ${NETCDF_LIBRARIES}
+    ${NetCDF_C_LIBRARIES}
     ${MATH_LIBRARY}
     )
   set_target_properties(netcdf_test
