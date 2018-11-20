@@ -21,6 +21,15 @@ include_directories(BEFORE
   ${CMAKE_CURRENT_BINARY_DIR}/../sourcecode
 )
 
+if (DHSVM_USE_NETCDF)
+  set(NetCDF_LIBS ${NetCDF_C_LIBRARIES} ${MATH_LIBRARY})
+  if (HDF5_IS_PARALLEL)
+    set(NetCDF_LIBS ${NetCDF_LIBS} ${MPI_C_LIBRARIES})
+  endif(HDF5_IS_PARALLEL)
+else(DHSVM_USE_NETCDF)
+  set(NetCDF_LIBS "")
+endif(DHSVM_USE_NETCDF)
+
 # -------------------------------------------------------------
 # libraries of common IO source
 # -------------------------------------------------------------
@@ -68,8 +77,7 @@ if (DHSVM_USE_NETCDF)
     )
   target_link_libraries(MakeModelStateNetCDF
     NetCDFIO
-    ${NetCDF_C_LIBRARIES}
-    ${MATH_LIBRARY}
+    ${NetCDF_LIBS}
     )
 endif (DHSVM_USE_NETCDF)
 
@@ -90,8 +98,7 @@ if (DHSVM_USE_NETCDF)
     )
   target_link_libraries(skyviewNetCDF
     NetCDFIO
-    ${NetCDF_C_LIBRARIES}
-    ${MATH_LIBRARY}
+    ${NetCDF_LIBS}
     )
 endif (DHSVM_USE_NETCDF)
 
@@ -112,8 +119,7 @@ if (DHSVM_USE_NETCDF)
     )
   target_link_libraries(average_shadow_netcdf
     NetCDFIO
-    ${NetCDF_C_LIBRARIES}
-    ${MATH_LIBRARY}
+    ${NetCDF_LIBS}
     )
 endif (DHSVM_USE_NETCDF)
 
@@ -137,8 +143,7 @@ if (DHSVM_USE_NETCDF)
     )
   target_link_libraries(find_nearest_channel_netcdf
     NetCDFIO
-    ${NetCDF_C_LIBRARIES}
-    ${MATH_LIBRARY}
+    ${NetCDF_LIBS}
     )
 endif (DHSVM_USE_NETCDF)
 
@@ -159,8 +164,7 @@ if (DHSVM_USE_NETCDF)
     )
   target_link_libraries(make_shade_maps_netcdf
     NetCDFIO
-    ${NetCDF_C_LIBRARIES}
-    ${MATH_LIBRARY}
+    ${NetCDF_LIBS}
     )
 endif (DHSVM_USE_NETCDF)
 
