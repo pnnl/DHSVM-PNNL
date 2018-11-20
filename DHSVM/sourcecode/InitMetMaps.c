@@ -53,6 +53,7 @@ void InitMetMaps(int NDaySteps, MAPSIZE *Map, MAPSIZE *Radar,
     printf("Initializing meteorological maps\n");
 
   InitEvapMap(Map, EvapMap, SoilMap, Soil, VegMap, Veg, TopoMap);
+  
   InitPrecipMap(Map, PrecipMap, VegMap, Veg, TopoMap);
 
   if (Options->MM5 == TRUE) {
@@ -60,7 +61,7 @@ void InitMetMaps(int NDaySteps, MAPSIZE *Map, MAPSIZE *Radar,
     /* If called for, use the precip lapse map for MM5 precip
        distribution, avoiding lots of function interfaces changes */
     if (strlen(PrecipLapseFile) > 0) {
-      InitPrecipLapseMap(PrecipLapseFile, Map, PrecipLapseMap);
+      InitPrecipLapseMap((char*) NULL, Map, PrecipLapseMap);
     }
     if (Options->Shading == TRUE)
       InitShadeMap(Options, NDaySteps, Map, ShadowMap, SkyViewMap);
@@ -347,12 +348,14 @@ void InitPrecipLapseMap(char *PrecipLapseFile, MAPSIZE *Map, float ***PrecipLaps
 
   if (!(Array = (float *)calloc(Map->NY * Map->NX, sizeof(float))))
     ReportError((char *)Routine, 1);
-  NumberType = NC_FLOAT;
 
-  Read2DMatrix(PrecipLapseFile, Array, NumberType, Map, 0, "", 0);
-  for (y = 0; y < Map->NY; y++) {
-    for (x = 0; x < Map->NX; x++) {
-      (*PrecipLapseMap)[y][x] = Array[y * Map->NX + x];
+  if (PrecipLapseFile != NULL) {
+    NumberType = NC_FLOAT;
+    Read2DMatrix(PrecipLapseFile, Array, NumberType, Map, 0, "PrecipLapse", 0);
+    for (y = 0; y < Map->NY; y++) {
+      for (x = 0; x < Map->NX; x++) {
+        (*PrecipLapseMap)[y][x] = Array[y * Map->NX + x];
+      }
     }
   }
 
