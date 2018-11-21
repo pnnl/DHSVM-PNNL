@@ -10,7 +10,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2018-11-06 09:51:05 d3g096
+ * LAST CHANGE: 2018-11-21 08:31:26 d3g096
  * COMMENTS:
  */
 
@@ -181,7 +181,12 @@ InputMap2DAlloc(const char* fname, const char* vname,
 int
 InputMap2DOpen(void *map2d)
 {
-  static_cast<InputMap2D *>(map2d)->open();
+  try {
+    static_cast<InputMap2D *>(map2d)->open();
+  } catch (const InputMap2D::exception& e) {
+    std::string msg(e.what());
+    ReportError(msg.data(), e.code());
+  }
   return 0;
 }
 
@@ -207,7 +212,12 @@ InputMap2DRead(void *map2d, int NDataSet, int index, void *ldata)
 int
 InputMap2DClose(void *map2d)
 {
-  static_cast<InputMap2D *>(map2d)->close();
+  try {
+    static_cast<InputMap2D *>(map2d)->close();
+  } catch (const InputMap2D::exception& e) {
+    std::string msg(e.what());
+    ReportError(msg.data(), e.code());
+  }
   return 0;
 }
 
