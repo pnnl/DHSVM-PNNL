@@ -7,7 +7,7 @@
 // -------------------------------------------------------------
 // -------------------------------------------------------------
 // Created October 18, 2018 by William A. Perkins
-// Last Change: 2018-11-21 08:33:27 d3g096
+// Last Change: 2018-11-21 10:51:11 d3g096
 // -------------------------------------------------------------
 
 #include <cstdio>
@@ -16,6 +16,7 @@
 #include <netcdf.h>
 
 #include "NetCDFInputMap2D.hpp"
+#include "ga_helper.h"
 
 // -------------------------------------------------------------
 // nc_check_err
@@ -58,27 +59,32 @@ NetCDFInputMap2D::~NetCDFInputMap2D(void)
 void
 NetCDFInputMap2D::my_open(void)
 {
+  int me(ParallelRank());
   int ncstatus;
   int TempNumberType;
   char msg[BUFSIZE + 1];
+
+  if (me == 0) {
   
-  ncstatus = nc_open(my_Name.c_str(), NC_NOWRITE, &my_ncid);
-  nc_check_err(ncstatus, __LINE__, __FILE__);
+    ncstatus = nc_open(my_Name.c_str(), NC_NOWRITE, &my_ncid);
+    nc_check_err(ncstatus, __LINE__, __FILE__);
 
-  /// check whether the variable exists and get its parameters
+    /// check whether the variable exists and get its parameters
 
-  ncstatus = nc_inq_varid(my_ncid, my_VarName.c_str(), &my_varid);
-  nc_check_err(ncstatus, __LINE__, __FILE__);
+    ncstatus = nc_inq_varid(my_ncid, my_VarName.c_str(), &my_varid);
+    nc_check_err(ncstatus, __LINE__, __FILE__);
 
-  ncstatus = nc_inq_var(my_ncid, my_varid, 0, &TempNumberType, &my_ndims, my_dimids, NULL);
-  nc_check_err(ncstatus, __LINE__, __FILE__);
-  if (TempNumberType != my_NumberType) {
-    sprintf(msg, "%s: nc_type for %s is different than expected.\n",
-	    my_Name.c_str(), my_VarName.c_str());
-    std::cerr << msg << std::endl;
-    // throw InputMap2D::exception(msg, 58);
+    ncstatus = nc_inq_var(my_ncid, my_varid, 0, &TempNumberType, &my_ndims, my_dimids, NULL);
+    nc_check_err(ncstatus, __LINE__, __FILE__);
+    if (TempNumberType != my_NumberType) {
+      sprintf(msg, "%s: nc_type for %s is different than expected.\n",
+              my_Name.c_str(), my_VarName.c_str());
+      std::cerr << msg << std::endl;
+      // throw InputMap2D::exception(msg, 58);
+    }
+    my_flip = my_check();
   }
-  my_flip = my_check();
+  GA_Brdcst(&my_flip, sizeof(int), 0);
 }
 
 
@@ -157,7 +163,8 @@ NetCDF input must be prepared with descending y-coordinates as with \
 binary input.\n");
     std::string msg(my_Name);
     msg += ": Improper NetCDF input file: ascending y-coordinate";
-    throw InputMap2D::exception(msg.data(), 58);
+    std::cout << msg << std::endl;
+    // throw InputMap2D::exception(msg.data(), 58);
   }
   if (!LatisAsc && LonisAsc) flag = 0;
   if (LatisAsc && LonisAsc) flag = 1;
@@ -171,9 +178,12 @@ binary input.\n");
 void
 NetCDFInputMap2D::my_close(void)
 {
-  int ncstatus = nc_close(my_ncid);
-  // Let's not worry about this
-  // nc_check_err(ncstatus, __LINE__, __FILE__);
+  int me(ParallelRank());
+  if (me == 0) {
+    int ncstatus = nc_close(my_ncid);
+    // Let's not worry about this
+    // nc_check_err(ncstatus, __LINE__, __FILE__);
+  }
 }
 
 // -------------------------------------------------------------

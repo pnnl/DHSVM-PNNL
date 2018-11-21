@@ -10,12 +10,11 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2018-11-06 09:51:09 d3g096
+ * LAST CHANGE: 2018-11-21 10:51:07 d3g096
  * COMMENTS:
  */
 
 #include <exception>
-#include <ga.h>
 
 #include "InputMap2D.hpp"
 #include "sizeofnt.h"

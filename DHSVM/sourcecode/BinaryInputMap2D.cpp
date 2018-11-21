@@ -7,13 +7,14 @@
 // -------------------------------------------------------------
 // -------------------------------------------------------------
 // Created October 17, 2018 by William A. Perkins
-// Last Change: 2018-11-06 09:49:45 d3g096
+// Last Change: 2018-11-21 10:54:23 d3g096
 // -------------------------------------------------------------
 
 
 #include "BinaryInputMap2D.hpp"
 #include "ParallelDHSVM.h"
 #include "sizeofnt.h"
+#include "ga_helper.h"
 #include "byte_swap.h"
 
 
@@ -44,11 +45,16 @@ BinaryInputMap2D::~BinaryInputMap2D(void)
 void
 BinaryInputMap2D::my_open()
 {
-  my_fd = fopen(my_Name.c_str(), "r");
-  if (!my_fd) {
-    std::string msg(my_Name);
-    msg += ": cannot open";
-    throw InputMap2D::exception(msg, 3);
+  int me(ParallelRank());
+  if (me == 0) {
+    my_fd = fopen(my_Name.c_str(), "r");
+    if (!my_fd) {
+      std::string msg(my_Name);
+      msg += ": cannot open";
+      throw InputMap2D::exception(msg, 3);
+    }
+  } else {
+    my_fd = NULL;
   }
 }
 
@@ -58,10 +64,13 @@ BinaryInputMap2D::my_open()
 void
 BinaryInputMap2D::my_close()
 {
-  if (my_fd != NULL) {
-    fclose(my_fd);
-    my_fd = NULL;
+  int me(ParallelRank());
+  if (me == 0) {
+    if (my_fd != NULL) {
+      fclose(my_fd);
+    }
   }
+  my_fd = NULL;
 }
 
 // -------------------------------------------------------------
