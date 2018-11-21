@@ -7,10 +7,11 @@
 // -------------------------------------------------------------
 // -------------------------------------------------------------
 // Created October 18, 2018 by William A. Perkins
-// Last Change: 2018-11-06 13:50:46 d3g096
+// Last Change: 2018-11-21 08:33:27 d3g096
 // -------------------------------------------------------------
 
 #include <cstdio>
+#include <iostream>
 #include <vector>
 #include <netcdf.h>
 
@@ -74,7 +75,8 @@ NetCDFInputMap2D::my_open(void)
   if (TempNumberType != my_NumberType) {
     sprintf(msg, "%s: nc_type for %s is different than expected.\n",
 	    my_Name.c_str(), my_VarName.c_str());
-    throw InputMap2D::exception(msg, 58);
+    std::cerr << msg << std::endl;
+    // throw InputMap2D::exception(msg, 58);
   }
   my_flip = my_check();
 }
@@ -144,12 +146,23 @@ NetCDFInputMap2D::my_check(void)
 values in the .nc input in an descending order. You can either change the input \
 .nc file format outside of this program. or you can easily modify this program to \
 fit your needs. \n");
-    throw InputMap2D::exception("Improper NetCDF input file", 58);
+    std::string msg(my_Name);
+    msg += ": Improper NetCDF input file: descending x-coordinate";
+    throw InputMap2D::exception(msg.data(), 58);
+  }
+
+  if (LatisAsc) {
+    printf("DHSVM no longer supports NetCDF with y-values in ascending order. \
+NetCDF input must be prepared with descending y-coordinates as with \
+binary input.\n");
+    std::string msg(my_Name);
+    msg += ": Improper NetCDF input file: ascending y-coordinate";
+    throw InputMap2D::exception(msg.data(), 58);
   }
   if (!LatisAsc && LonisAsc) flag = 0;
   if (LatisAsc && LonisAsc) flag = 1;
 
-  return (flag);
+  return (0);
 }
 
 // -------------------------------------------------------------
