@@ -469,6 +469,9 @@ int main(int argc, char **argv)
     InputMap2DFree(InFiles.MM5ShortWaveMap);
     InputMap2DFree(InFiles.MM5LongWaveMap);
     InputMap2DFree(InFiles.MM5PrecipitationMap);
+    if (InFiles.MM5PrecipDistMap != NULL) {
+      InputMap2DFree(InFiles.MM5PrecipDistMap);
+    }
     GA_Destroy(MM5Map.dist);
   }
 
