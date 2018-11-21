@@ -364,15 +364,26 @@ void InitNewStep(INPUTFILES *InFiles, MAPSIZE *Map, TIMESTRUCT *Time,
         ReportError("InitNewStep", 15);
       }
 
-      if (!(Array = (float *)calloc(Map->NY * Map->NX, sizeof(float))))
-        ReportError((char *)Routine, 1);
-      Read2DMatrix(InFiles->PrecipLapseFile, Array, NumberType, Map, Step, "MM5.PrecipDist", Step);
-      for (y = 0; y < Map->NY; y++) {
-        for (x = 0; x < Map->NX; x++) {
-          PrecipLapseMap[y][x] = Array[y * Map->NX + x];
-        }
+      if (InFiles->MM5PrecipDistMap == NULL) {
+        InFiles->MM5PrecipDistMap =
+          InputMap2DAlloc(InFiles->PrecipLapseFile, "MM5.PrecipDist", NumberType, Map, 0);
+        InputMap2DOpen(InFiles->MM5PrecipDistMap);
+        InFiles->MM5LastPrecipDistStep = -1;
       }
-      free(Array);
+      if (Step != InFiles->MM5LastPrecipDistStep) {
+        if (!(Array = (float *)calloc(Map->NY * Map->NX, sizeof(float))))
+          ReportError((char *)Routine, 1);
+
+        InputMap2DRead(InFiles->MM5PrecipDistMap, Step, Step, Array);
+        
+        for (y = 0; y < Map->NY; y++) {
+          for (x = 0; x < Map->NX; x++) {
+            PrecipLapseMap[y][x] = Array[y * Map->NX + x];
+          }
+        }
+        free(Array);
+        InFiles->MM5LastPrecipDistStep = Step;
+      }
     }
 
   }

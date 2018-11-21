@@ -521,7 +521,7 @@ void InitMM5(LISTPTR Input, int NSoilLayers, TIMESTRUCT *Time,
      distribution map file. This avoids wholesale code changes. */
   if (strncmp(StrEnv[MM5_precip_dist].VarStr, "none", 4)) {
     strcpy(InFiles->PrecipLapseFile, StrEnv[MM5_precip_dist].VarStr);
-
+    
     /* Precipitation distribution can be in several forms. */
 
     CopyLCase(VarStr, StrEnv[MM5_precip_freq].VarStr, BUFSIZE + 1);
@@ -538,6 +538,8 @@ void InitMM5(LISTPTR Input, int NSoilLayers, TIMESTRUCT *Time,
   } else {
     strcpy(InFiles->PrecipLapseFile, "");
   }
+  InFiles->MM5PrecipDistMap = NULL;
+  InFiles->MM5LastPrecipDistStep = -1;
 
   if (Options->HeatFlux == TRUE) {
     /* let's not support this right now */

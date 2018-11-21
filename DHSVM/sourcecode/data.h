@@ -105,21 +105,23 @@ typedef struct {
   char MM5Terrain[BUFSIZE + 1];	/* File with MM5 terrain (m) */
   void *MM5TerrainMap;          /* 2D Map file instance for terrain */
   char MM5Lapse[BUFSIZE + 1];	/* File with MM5 Lapse Rate (C/m) */
-  void *MM5LapseMap;            /* 2D Map file instance for terrain */
+  void *MM5LapseMap;            /* 2D Map file instance for temperature lapse */
   char MM5Temp[BUFSIZE + 1];	/* File with MM5 temperature (C) */
-  void *MM5TempMap;             /* 2D Map file instance for terrain */
+  void *MM5TempMap;             /* 2D Map file instance for temperature */
   char MM5Humidity[BUFSIZE + 1];	/* File with MM5 humidity (%) */
-  void *MM5HumidityMap;         /* 2D Map file instance for terrain */
+  void *MM5HumidityMap;         /* 2D Map file instance for relative humidity */
   char MM5Wind[BUFSIZE + 1];	/* File with MM5 wind speed (m/s) */
-  void *MM5WindMap;             /* 2D Map file instance for terrain */
+  void *MM5WindMap;             /* 2D Map file instance for wind speed */
   char MM5ShortWave[BUFSIZE + 1]; /* File with MM5 shortwave (W/m2) */
-  void *MM5ShortWaveMap;        /* 2D Map file instance for terrain */
+  void *MM5ShortWaveMap;        /* 2D Map file instance for short wave radiation */
   char MM5LongWave[BUFSIZE + 1]; /* File with MM5 longwave (W/m2) */
-  void *MM5LongWaveMap;         /* 2D Map file instance for terrain */
+  void *MM5LongWaveMap;         /* 2D Map file instance for long wave radiation */
   char MM5Precipitation[BUFSIZE + 1]; /* File with MM5 precipitation (m/timestep) */
-  void *MM5PrecipitationMap;    /* 2D Map file instance for terrain */
+  void *MM5PrecipitationMap;    /* 2D Map file instance for precipitation */
   char **MM5SoilTemp;		/* Files with MM5 soil temperatures (C) */
   MM5FREQ MM5PrecipDistFreq;    /* Frequency of MM5 precip distribution maps */
+  int MM5LastPrecipDistStep;    /* The precip distribution previously read */
+  void *MM5PrecipDistMap;       /* 2D Map file instance for precip distribution */
   char PrecipLapseFile[BUFSIZE + 1];	/* File with precipitation 
 					   lapse rate map */
   char WindMapPath[BUFSIZE + 1];	/* File with wind factors */
