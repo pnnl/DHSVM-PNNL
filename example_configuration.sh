@@ -205,11 +205,12 @@ elif [ $host = "briareus" ]; then
     cmake $options \
         -D DHSVM_USE_NETCDF:BOOL=OFF \
         -D MPI_C_COMPILER:STRING="mpicc" \
-        -D GA_DIR:STRING="/files0/dhsvm" \
+        -D GA_DIR:STRING="$prefix" \
         -D GA_EXTRA_LIBS:STRING="-libverbs -lm" \
-        -D DHSVM_TIMING_LEVEL:STRING="2" \
+        -D DHSVM_TIMING_LEVEL:STRING="1" \
         -D GPTL_DIR:PATH="$prefix" \
-        -D CMAKE_INSTALL_PREFIX:PATH="/files0/dhsvm" \
+        -D CMAKE_INSTALL_PREFIX:PATH="$prefix" \
+        $common_flags \
         ..
 
 elif [ $host = "briareus-gnu" ]; then
