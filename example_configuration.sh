@@ -10,7 +10,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2018-11-08 14:42:21 d3g096
+# Last Change: 2018-11-26 09:33:56 d3g096
 
 set -xue
 
@@ -93,6 +93,7 @@ if [ $host == "flophouse" ]; then
         -D DHSVM_TIMING_LEVEL:STRING="1" \
         -D GPTL_DIR:PATH="$prefix/gptl-v5.5.3-2-gbb58395" \
         -D DHSVM_USE_NETCDF:BOOL=ON \
+	-D NetCDF_BIN_DIR:PATH="/usr/lib64/openmpi/bin" \
         -D CMAKE_INSTALL_PREFIX:PATH="$prefix/dhsvm" \
         $common_flags \
         ..
