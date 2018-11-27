@@ -7,7 +7,7 @@
 // -------------------------------------------------------------
 // -------------------------------------------------------------
 // Created October 18, 2018 by William A. Perkins
-// Last Change: 2018-11-27 07:48:51 d3g096
+// Last Change: 2018-11-27 09:12:45 d3g096
 // -------------------------------------------------------------
 
 #include <cstdio>
@@ -194,9 +194,11 @@ NetCDFInputMap2D::my_read_fmt(const int& unused_index, const int& index, unsigne
 {
   int ncstatus;
   size_t count[3];
-  size_t start[3] = { index, 0, 0 };
+  size_t start[3] = { 0, 0, 0 };
   size_t timelen;
 
+  start[0] = index;
+  
   count[0] = 1;
   count[1] = my_Map->gNY;
   count[2] = my_Map->gNX;
