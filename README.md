@@ -62,6 +62,42 @@ a distributed multi-dimensional array data structure.
 
 ### NetCDF
 
+DHSVM can use [NetCDF](https://www.unidata.ucar.edu/software/netcdf/)
+for 2D map data input and output. DHSVM can link use the NetCDF
+library whether it was built parallel or not, but NetCDF I/O in
+DHSVM is serial.  Parallel NetCDF I/O is planned.  
+
+Currently,
+[NetCDF input format](https://www.unidata.ucar.edu/software/netcdf/docs/netcdf_introduction.html#netcdf_format)
+should be HDF5-based NetCDF-4. Map data needs to be arranged in
+"north-up" fashion, as binary files are arranged. This means that the
+NetCDF y-coordinate must be descending (ascending y is called
+"bottom-up"). DHSVM will refuse to read the "bottom-up" arrangement.
+([GDAL](https://www.gdal.org/frmt_netcdf.html) utilities can produce
+this format.   
+
+Here is the (abridged) structure of an example DEM NetCDF input file. 
+
+    netcdf rainydem {
+    dimensions:
+            time = UNLIMITED ; // (1 currently)
+            x = 329 ;
+            y = 256 ;
+    variables:
+            double x(x) ;
+                    x:standard_name = "projection_x_coordinate" ;
+                    x:long_name = "x coordinate of projection" ;
+                    x:units = "m" ;
+            double y(y) ;
+                    y:standard_name = "projection_y_coordinate" ;
+                    y:long_name = "y coordinate of projection" ;
+                    y:units = "m" ;
+            float Basin.DEM(time, y, x) ;
+                    Basin.DEM:long_name = "GDAL Band Number 1" ;
+                    Basin.DEM:_FillValue = -9999.f ;
+                    Basin.DEM:grid_mapping = "transverse_mercator" ;
+    }
+
 
 ### CMake
 
@@ -102,8 +138,8 @@ select optional features.  Here are some terse instructions:
     in a tree mirroring the source tree.  For example, DHSVM is
     `build/DHSVM/sourcecode/DHSVM`. 
     
-The original Makefiles are in the source tree and can still be used as
-described in the tutorial if preferred.
+The original Makefiles are still in the source tree but have not been
+maintained.  
 
 ### Snow-only mode ###
 
