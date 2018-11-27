@@ -48,6 +48,8 @@ void MassBalance(DATE *Current, DATE *Start, FILES *Out, AGGREGATED *Total, WATE
   float deltaSWE;       /* change of SWE from last time step */
   float NetWaterIn1;    /* incoming water to the soil (precip-deltaSWE+SnowVaporFlux) */
   float NetWaterIn2;    /* rain or melt */
+
+  TIMING_TASK_START("MassBalance", 2);
   
   /* Calculate the net water going into the soil column */
   if (IsEqualTime(Current, Start))
@@ -116,5 +118,5 @@ void MassBalance(DATE *Current, DATE *Start, FILES *Out, AGGREGATED *Total, WATE
       Total->Rad.BeamIn+Total->Rad.DiffuseIn, Total->Rad.PixelNetShort, 
       Total->Rad.NetShort[0], Total->Rad.NetShort[1], Total->NetRad, Total->Rad.Tair, MassError);
   Total->Snow.OldSwq = Total->Snow.Swq;
-  TIMING_TASK_END("MassBalasce", 2);
+  TIMING_TASK_END("MassBalance", 2);
 }
