@@ -22,12 +22,12 @@
 #include "fifobin.h"
 #include "fifoNetCDF.h"
 #include "DHSVMerror.h"
-#include "ParallelDHSVM.h"
+/* #include "ParallelDHSVM.h" */
 
 /* global function pointers */
-void (*CreateMapFileFmt) (char *FileName, ...);
-int (*Read2DMatrixFmt) (char *FileName, void *Matrix, int NumberType, int NY, int NX, int NDataSet, ...);
-int (*Write2DMatrixFmt) (char *FileName, void *Matrix, int NumberType, int NY, int NX, ...);
+void (*CreateMapFileFmt) (char const *FileName, ...);
+int (*Read2DMatrixFmt) (char const *FileName, void *Matrix, int NumberType, int NY, int NX, int NDataSet, ...);
+int (*Write2DMatrixFmt) (char const *FileName, void *Matrix, int NumberType, int NY, int NX, ...);
 
 /*******************************************************************************
   Function name: InitFileIO()
@@ -92,6 +92,8 @@ void InitFileIO(int FileFormat)
   if (ParallelRank() == 0) 
     printf("Initializing file IO\n");
 
+  Map2DInit(FileFormat);
+
   /************************* Binary format **********************/
   if (FileFormat == BIN) {
     strcpy(fileext, ".bin");
@@ -118,5 +120,6 @@ void InitFileIO(int FileFormat)
   }
   else
     ReportError((char *) Routine, 38);
+  Map2DInit(FileFormat);
 }
 

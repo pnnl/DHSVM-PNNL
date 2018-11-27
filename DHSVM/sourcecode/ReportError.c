@@ -95,13 +95,13 @@ static char *ErrorMessage[] = {
   NULL
 };
 
-void ReportError(char *ErrorString, int ErrorCode)
+void ReportError(const char *ErrorString, int ErrorCode)
 {
   printf("%s %s\n", ErrorMessage[ErrorCode - 1], ErrorString);
   exit(ErrorCode);
 }
 
-void ReportWarning(char *ErrorString, int ErrorCode)
+void ReportWarning(const char *ErrorString, int ErrorCode)
 {
   fprintf(stderr, "%s %s\n", ErrorMessage[ErrorCode - 1], ErrorString);
 }

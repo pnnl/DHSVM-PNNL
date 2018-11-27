@@ -17,7 +17,16 @@
 #define DHSVM_ERROR_H
 
 extern char errorstr[];
-void ReportError(char *ErrorString, int ErrorCode);
-void ReportWarning(char *ErrorString, int ErrorCode);
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+void ReportError(const char *ErrorString, int ErrorCode);
+void ReportWarning(const char *ErrorString, int ErrorCode);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

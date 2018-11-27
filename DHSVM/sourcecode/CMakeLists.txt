@@ -9,7 +9,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2018-05-09 08:09:07 d3g096
+# Last Change: 2018-11-08 14:24:09 d3g096
 
 # -------------------------------------------------------------
 # Set up for this subdirectory
@@ -61,18 +61,29 @@ endif(FLEX_FOUND)
 # -------------------------------------------------------------
 # Binary I/O library
 # -------------------------------------------------------------
-add_library(BinIO STATIC
+set(iosrc
   Calendar.c 
   InitFileIO.c
   FileIOBin.c 
-  FileIONetCDF.c
   Files.c 
   InitArray.c 
   ReportError.c
   SizeOfNT.c 
   VarID.c
   array_alloc.c
-)
+  InputMap2D.cpp
+  BinaryInputMap2D.cpp
+  Map2D.cpp
+  byte_swap.c
+  )
+if(NETCDF_FOUND)
+  list(APPEND iosrc
+    FileIONetCDF.c
+    NetCDFInputMap2D.cpp
+    )
+endif(NETCDF_FOUND)
+
+add_library(BinIO STATIC ${iosrc})
 
 # -------------------------------------------------------------
 # DHSVM Target
@@ -171,11 +182,14 @@ set(DHSVM_SRC
   errorhandler.c
   globals.c
   ${FLEX_tableio_OUTPUTS}
+  ga_helper.c
 )
 
 add_executable(DHSVM
   ${DHSVM_SRC}
 )
+
+set_target_properties(DHSVM PROPERTIES LINKER_LANGUAGE CXX)
 
 set (DHSVM_LIBS BinIO)
 
@@ -184,7 +198,7 @@ if (GPTL_FOUND)
 endif (GPTL_FOUND)
 
 list(APPEND DHSVM_LIBS 
-  ${NETCDF_LIBRARIES}
+  ${NetCDF_C_LIBRARIES}
   ${X11_LIBRARIES}
   ${GA_LIBRARIES} 
   ${MPI_C_LIBRARIES}
@@ -204,6 +218,8 @@ if(DHSVM_SNOW_ONLY)
     )
 
   target_link_libraries(DHSVM_SNOW ${DHSVM_LIBS})
+
+  set_target_properties(DHSVM_SNOW PROPERTIES LINKER_LANGUAGE CXX)
 
 endif(DHSVM_SNOW_ONLY)
 
@@ -310,7 +326,7 @@ if (DHSVM_BUILD_TESTS AND NETCDF_FOUND)
     VarID.c
     )
   target_link_libraries(netcdf_test
-    ${NETCDF_LIBRARIES}
+    ${NetCDF_C_LIBRARIES}
     ${MATH_LIBRARY}
     )
   set_target_properties(netcdf_test
@@ -355,6 +371,7 @@ if (DHSVM_BUILD_TESTS)
     patch_test.c
     ParallelDHSVM.c
     globals.c
+    ga_helper.c
     )
   target_link_libraries(patch_test
     BinIO

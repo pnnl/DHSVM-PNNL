@@ -11,13 +11,13 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2018-10-03 09:10:02 d3g096
+ * LAST CHANGE: 2018-10-18 08:31:11 d3g096
  * COMMENTS:
  */
 #ifndef _MapSize_h_
 #define _MapSize_h_
 
-#include "MapSize.h"
+#include "settings.h"
 
 typedef struct {
   float Rank;
@@ -45,6 +45,5 @@ typedef struct {
   int gNX;                      /* Number of (global) pixels in x direction */
   int gNY;                      /* Number of (global) pixels in x direction */
 } MAPSIZE;
-
 
 #endif

@@ -460,6 +460,20 @@ int main(int argc, char **argv)
   TIMING_TASK_END("Output", 1);
 
   DestroyChannel(&Options, &Map, &ChannelData);
+  if (Options.MM5) {
+    InputMap2DFree(InFiles.MM5TerrainMap);
+    InputMap2DFree(InFiles.MM5LapseMap);
+    InputMap2DFree(InFiles.MM5TempMap);
+    InputMap2DFree(InFiles.MM5HumidityMap);
+    InputMap2DFree(InFiles.MM5WindMap);
+    InputMap2DFree(InFiles.MM5ShortWaveMap);
+    InputMap2DFree(InFiles.MM5LongWaveMap);
+    InputMap2DFree(InFiles.MM5PrecipitationMap);
+    if (InFiles.MM5PrecipDistMap != NULL) {
+      InputMap2DFree(InFiles.MM5PrecipDistMap);
+    }
+    GA_Destroy(MM5Map.dist);
+  }
 
   /* record the run time at the end of each time loop */
   finish1 = clock ();
@@ -480,6 +494,8 @@ int main(int argc, char **argv)
 
   TIMING_TASK_END("total", 0);
   TIMING_DONE(me);
+
+  ParallelBarrier();
   
   ParallelFinalize();
   return EXIT_SUCCESS;
@@ -487,7 +503,8 @@ int main(int argc, char **argv)
 /*****************************************************************************
   Cleanup
 *****************************************************************************/
-void cleanup(DUMPSTRUCT *Dump, CHANNEL *ChannelData, OPTIONSTRUCT *Options)
+void cleanup(DUMPSTRUCT *Dump, CHANNEL *ChannelData, OPTIONSTRUCT *Options,
+             INPUTFILES *InFiles)
 {
 	if (Dump->Aggregate.FilePtr != NULL) 
 	  fclose(Dump->Aggregate.FilePtr);
