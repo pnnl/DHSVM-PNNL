@@ -7,7 +7,7 @@
 // -------------------------------------------------------------
 // -------------------------------------------------------------
 // Created October 18, 2018 by William A. Perkins
-// Last Change: 2018-11-21 10:51:11 d3g096
+// Last Change: 2018-11-27 07:48:51 d3g096
 // -------------------------------------------------------------
 
 #include <cstdio>
@@ -79,8 +79,8 @@ NetCDFInputMap2D::my_open(void)
     if (TempNumberType != my_NumberType) {
       sprintf(msg, "%s: nc_type for %s is different than expected.\n",
               my_Name.c_str(), my_VarName.c_str());
-      std::cerr << msg << std::endl;
-      // throw InputMap2D::exception(msg, 58);
+      // std::cerr << msg << std::endl;
+      throw InputMap2D::exception(msg, 58);
     }
     my_flip = my_check();
   }
