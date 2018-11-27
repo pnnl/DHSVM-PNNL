@@ -74,7 +74,7 @@ should be HDF5-based NetCDF-4. Map data needs to be arranged in
 NetCDF y-coordinate must be descending (ascending y is called
 "bottom-up"). DHSVM will refuse to read the "bottom-up" arrangement.
 ([GDAL](https://www.gdal.org/frmt_netcdf.html) utilities can produce
-this format.   
+this format.)   
 
 Here is the (abridged) structure of an example DEM NetCDF input file. 
 
