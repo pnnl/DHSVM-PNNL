@@ -10,6 +10,7 @@
 // Last Change: 2018-11-21 10:54:23 d3g096
 // -------------------------------------------------------------
 
+#include <iostream>
 
 #include "BinaryInputMap2D.hpp"
 #include "ParallelDHSVM.h"
@@ -82,7 +83,8 @@ BinaryInputMap2D::my_read_fmt(const int& index, const int& unused_index, unsigne
   int NX(this->my_Map->gNX);
   int NY(this->my_Map->gNY);
   size_t ElemSize(SizeOfNumberType(this->my_NumberType));
-  int origin, offset;
+  int origin;
+  unsigned long int offset;
 
   if (my_last_index < 0 || my_last_index > index) {
     origin = SEEK_SET;
@@ -92,6 +94,10 @@ BinaryInputMap2D::my_read_fmt(const int& index, const int& unused_index, unsigne
     offset = NX*NY*ElemSize*(index - my_last_index - 1);
   }
   
+  // std::cout << "Read " << this->my_Name << ": seek from " 
+  // 	    << my_last_index << " to " << index 
+  // 	    << " (offset=" << offset << ")" << std::endl;
+
   if (fseek(my_fd, offset, origin)) {
     std::string msg(my_Name);
     msg += ": fseek error";
