@@ -51,7 +51,7 @@
        - surface temperature
        - ground heat storage
  *****************************************************************************/
-void StoreModelState(char *Path, DATE * Current, MAPSIZE * Map,
+void StoreModelState(char *Path, DATE * Current, MAPSIZE *GMap, MAPSIZE *Map,
   OPTIONSTRUCT * Options, TOPOPIX ** TopoMap,
   PRECIPPIX ** PrecipMap, SNOWPIX ** SnowMap,
   MET_MAP_PIX ** MetMap, VEGPIX ** VegMap, 
@@ -86,7 +86,7 @@ void StoreModelState(char *Path, DATE * Current, MAPSIZE * Map,
     sprintf(FileName, "%sMet.State.%s%s", Path, Str, fileext);
     strcpy(FileLabel, "Basic Meteorology at time step");
 
-    CreateMapFile(FileName, FileLabel, Map);
+    CreateMapFile(FileName, FileLabel, GMap);
 
     if (!(Array = (float *)calloc(Map->NY * Map->NX, sizeof(float))))
       ReportError((char *)Routine, 1);
@@ -177,7 +177,7 @@ void StoreModelState(char *Path, DATE * Current, MAPSIZE * Map,
   sprintf(FileName, "%sInterception.State.%s%s", Path, Str, fileext);
   strcpy(FileLabel, "Interception storage for each vegetation layer");
 
-  CreateMapFile(FileName, FileLabel, Map);
+  CreateMapFile(FileName, FileLabel, GMap);
 
   if (!(Array = (float *)calloc(Map->NY * Map->NX, sizeof(float))))
     ReportError((char *)Routine, 1);
@@ -248,7 +248,7 @@ void StoreModelState(char *Path, DATE * Current, MAPSIZE * Map,
 
   sprintf(FileName, "%sSnow.State.%s%s", Path, Str, fileext);
   strcpy(FileLabel, "Snow pack moisture and temperature state");
-  CreateMapFile(FileName, FileLabel, Map);
+  CreateMapFile(FileName, FileLabel, GMap);
 
   if (!(Array = (float *)calloc(Map->NY * Map->NX, sizeof(float))))
     ReportError((char *)Routine, 1);
@@ -371,7 +371,7 @@ void StoreModelState(char *Path, DATE * Current, MAPSIZE * Map,
 
   sprintf(FileName, "%sSoil.State.%s%s", Path, Str, fileext);
   strcpy(FileLabel, "Soil moisture and temperature state");
-  CreateMapFile(FileName, FileLabel, Map);
+  CreateMapFile(FileName, FileLabel, GMap);
 
   if (!(Array = (float *)calloc(Map->NY * Map->NX, sizeof(float))))
     ReportError((char *)Routine, 1);

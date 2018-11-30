@@ -480,40 +480,48 @@ void InitMM5(LISTPTR Input, int NSoilLayers, TIMESTRUCT *Time,
   if (IsEmptyStr(StrEnv[MM5_temperature].VarStr))
     ReportError(StrEnv[MM5_temperature].KeyName, 51);
   strcpy(InFiles->MM5Temp, StrEnv[MM5_temperature].VarStr);
+  InFiles->MM5TempMap = NULL;
 
   if (IsEmptyStr(StrEnv[MM5_terrain].VarStr))
     ReportError(StrEnv[MM5_terrain].KeyName, 51);
   strcpy(InFiles->MM5Terrain, StrEnv[MM5_terrain].VarStr);
+  InFiles->MM5TerrainMap = NULL;
 
   if (IsEmptyStr(StrEnv[MM5_lapse].VarStr))
     ReportError(StrEnv[MM5_lapse].KeyName, 51);
   strcpy(InFiles->MM5Lapse, StrEnv[MM5_lapse].VarStr);
+  InFiles->MM5LapseMap = NULL;
 
   if (IsEmptyStr(StrEnv[MM5_humidity].VarStr))
     ReportError(StrEnv[MM5_humidity].KeyName, 51);
   strcpy(InFiles->MM5Humidity, StrEnv[MM5_humidity].VarStr);
+  InFiles->MM5HumidityMap = NULL;
 
   if (IsEmptyStr(StrEnv[MM5_wind].VarStr))
     ReportError(StrEnv[MM5_wind].KeyName, 51);
   strcpy(InFiles->MM5Wind, StrEnv[MM5_wind].VarStr);
+  InFiles->MM5WindMap = NULL;
 
   if (IsEmptyStr(StrEnv[MM5_shortwave].VarStr))
     ReportError(StrEnv[MM5_shortwave].KeyName, 51);
   strcpy(InFiles->MM5ShortWave, StrEnv[MM5_shortwave].VarStr);
+  InFiles->MM5ShortWaveMap = NULL;
 
   if (IsEmptyStr(StrEnv[MM5_longwave].VarStr))
     ReportError(StrEnv[MM5_longwave].KeyName, 51);
   strcpy(InFiles->MM5LongWave, StrEnv[MM5_longwave].VarStr);
+  InFiles->MM5LongWaveMap = NULL;
 
   if (IsEmptyStr(StrEnv[MM5_precip].VarStr))
     ReportError(StrEnv[MM5_precip].KeyName, 51);
   strcpy(InFiles->MM5Precipitation, StrEnv[MM5_precip].VarStr);
+  InFiles->MM5PrecipitationMap = NULL;
 
   /* Use PrecipLapseFile to store the name of the MM5 precip
      distribution map file. This avoids wholesale code changes. */
   if (strncmp(StrEnv[MM5_precip_dist].VarStr, "none", 4)) {
     strcpy(InFiles->PrecipLapseFile, StrEnv[MM5_precip_dist].VarStr);
-
+    
     /* Precipitation distribution can be in several forms. */
 
     CopyLCase(VarStr, StrEnv[MM5_precip_freq].VarStr, BUFSIZE + 1);
@@ -530,8 +538,13 @@ void InitMM5(LISTPTR Input, int NSoilLayers, TIMESTRUCT *Time,
   } else {
     strcpy(InFiles->PrecipLapseFile, "");
   }
+  InFiles->MM5PrecipDistMap = NULL;
+  InFiles->MM5LastPrecipDistStep = -1;
 
   if (Options->HeatFlux == TRUE) {
+    /* let's not support this right now */
+    ReportError(Routine, 71);
+    
     if (!(InFiles->MM5SoilTemp = (char **)calloc(sizeof(char *), NSoilLayers)))
       ReportError(Routine, 1);
 

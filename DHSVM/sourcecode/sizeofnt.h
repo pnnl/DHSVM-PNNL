@@ -13,6 +13,8 @@
  * $Id: sizeofnt.h,v 1.4 2003/07/01 21:26:32 olivier Exp $     
  */
 
+#include <sys/types.h>
+
 #ifndef SIZEOFNT_H
 #define SIZEOFNT_H
 
@@ -30,6 +32,13 @@
 #include <netcdf.h>
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 size_t SizeOfNumberType(int NumberType);
 
+#ifdef __cplusplus
+}
+#endif
 #endif

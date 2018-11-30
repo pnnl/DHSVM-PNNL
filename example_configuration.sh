@@ -10,21 +10,22 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2018-05-09 15:25:11 d3g096
+# Last Change: 2018-11-27 09:10:48 d3g096
 
 set -xue
 
 # -------------------------------------------------------------
 # handle command line options
 # -------------------------------------------------------------
-usage="$0 [-d|-r] [name]"
+usage="$0 [-d|-r|-t] [name]"
 
-set -- `getopt dr $*`
+set -- `getopt drt $*`
 if [ $? != 0 ]; then
     echo $usage >&2
     exit 2
 fi
 
+timing="OFF"
 build="RelWithDebInfo"
 for o in $*; do
     case $o in
@@ -36,6 +37,10 @@ for o in $*; do
             build="Release"
             shift
             ;;
+	-t)
+	    timing="ON"
+	    shift
+	    ;;
         --)
             shift
             break
@@ -61,9 +66,10 @@ options="-Wdev --debug-trycompile"
 common_flags="\
         -D CMAKE_BUILD_TYPE:STRING=$build \
         -D DHSVM_SNOW_ONLY:BOOL=ON \
-        -D DHSVM_BUILD_TESTS:BOOL=ON \
+        -D DHSVM_BUILD_TESTS:BOOL=OFF \
         -D DHSVM_USE_RBM:BOOL=OFF \
         -D DHSVM_DUMP_TOPO:BOOL=OFF \
+	-D DHSVM_USE_GPTL:BOOL=$timing \
         -D CMAKE_VERBOSE_MAKEFILE:BOOL=TRUE \
 "
 
@@ -84,10 +90,10 @@ if [ $host == "flophouse" ]; then
         -D MPIEXEC:STRING="/usr/lib64/openmpi/bin/mpiexec" \
         -D GA_DIR:PATH="${prefix}/ga-c++" \
 	-D GA_EXTRA_LIBS:STRING="-lm" \
-        -D DHSVM_USE_GPTL:BOOL=ON \
         -D DHSVM_TIMING_LEVEL:STRING="1" \
         -D GPTL_DIR:PATH="$prefix/gptl-v5.5.3-2-gbb58395" \
         -D DHSVM_USE_NETCDF:BOOL=ON \
+	-D NetCDF_BIN_DIR:PATH="/usr/lib64/openmpi/bin" \
         -D CMAKE_INSTALL_PREFIX:PATH="$prefix/dhsvm" \
         $common_flags \
         ..
@@ -100,15 +106,14 @@ elif [ $host == "tlaloc" ]; then
 
     prefix="/file0/perksoft"
     cmake $options \
-        -D MPI_C_COMPILER:STRING="/usr/lib64/openmpi/bin/mpicc" \
-        -D MPI_CXX_COMPILER:STRING="/usr/lib64/openmpi/bin/mpicxx" \
-        -D MPIEXEC:STRING="/usr/lib64/openmpi/bin/mpiexec" \
+        -D MPI_C_COMPILER:STRING="mpicc" \
+        -D MPI_CXX_COMPILER:STRING="mpicxx" \
+        -D MPIEXEC:STRING="mpiexec" \
         -D GA_DIR:STRING="$prefix/ga-c++" \
 	-D GA_EXTRA_LIBS:STRING="-lm" \
-        -D DHSVM_USE_GPTL:BOOL=ON \
         -D DHSVM_TIMING_LEVEL:STRING="1" \
         -D GPTL_DIR:PATH="$prefix/gptl-v5.5.3-2-gbb58395" \
-        -D DHSVM_USE_NETCDF:BOOL=OFF \
+        -D DHSVM_USE_NETCDF:BOOL=ON \
         -D CMAKE_INSTALL_PREFIX:PATH="$prefix/dhsvm" \
         $common_flags \
         ..
@@ -120,17 +125,18 @@ elif [ $host == "WE32673" ]; then
     # does not work with it.
     
     prefix="/opt/local"
-    CC="$prefix/bin/clang-mp-3.8"
-    CXX="$prefix/bin/clang++-mp-3.8"
+    CC="$prefix/bin/clang-mp-6.0"
+    CXX="$prefix/bin/clang++-mp-6.0"
     export CC CXX
 
     cmake $options \
-        -D MPI_C_COMPILER:STRING="$prefix/bin/mpicc-openmpi-clang38" \
-        -D MPIEXEC:STRING="$prefix/bin/mpiexec-openmpi-clang38" \
-        -D GA_DIR:PATH="$prefix" \
-        -D NETCDF_DIR:PATH="$prefix/include" \
+        -D MPI_C_COMPILER:STRING="$prefix/bin/mpicc-mpich-clang60" \
+        -D MPIEXEC:STRING="$prefix/bin/mpiexec-mpich-clang60" \
+        -D GA_DIR:PATH="$HOME/Projects/GridPACK" \
+	-D NetCDF_BIN_DIR:PATH="/opt/local/bin" \
         -D DHSVM_USE_X11:BOOL=OFF \
         -D DHSVM_USE_NETCDF:BOOL=ON \
+        -D CMAKE_INSTALL_PREFIX:PATH="$HOME/Projects/DHSVM" \
         $common_flags \
         ..
 
@@ -198,14 +204,16 @@ elif [ $host = "briareus" ]; then
     export CC
 
     cmake $options \
-        -D DHSVM_USE_NETCDF:BOOL=OFF \
+        -D DHSVM_USE_NETCDF:BOOL=ON \
         -D MPI_C_COMPILER:STRING="mpicc" \
-        -D GA_DIR:STRING="/files0/dhsvm" \
+        -D GA_DIR:STRING="$prefix" \
+        -D MPI_CXX_COMPILER:STRING="mpicxx" \
         -D GA_EXTRA_LIBS:STRING="-libverbs -lm" \
-        -D DHSVM_USE_GPTL:BOOL=ON \
-        -D DHSVM_TIMING_LEVEL:STRING="2" \
+        -D DHSVM_TIMING_LEVEL:STRING="1" \
         -D GPTL_DIR:PATH="$prefix" \
-        -D CMAKE_INSTALL_PREFIX:PATH="/files0/dhsvm" \
+	-D NetCDF_DIR:PATH="$prefix" \
+        -D CMAKE_INSTALL_PREFIX:PATH="$prefix" \
+        $common_flags \
         ..
 
 elif [ $host = "briareus-gnu" ]; then
@@ -249,6 +257,7 @@ elif [ $host = "constance" ]; then
         -D MPIEXEC:STRING="mpiexec" \
         -D GA_DIR:STRING="$prefix" \
 	-D GA_EXTRA_LIBS:STRING="-libverbs -lm" \
+        -D GPTL_DIR:PATH="$prefix" \
         -D DHSVM_USE_X11:BOOL=OFF \
         -D DHSVM_USE_NETCDF:BOOL=OFF \
         -D CMAKE_INSTALL_PREFIX:PATH="$prefix" \
@@ -266,20 +275,22 @@ elif [ $host = "constance-gnu" ]; then
     
     # GA installed here:
 
-    prefix=/pic/projects/informed_hydro/dhsvm-gnu
+    prefix=/pic/projects/informed_hydro
+    PATH="$prefix/netcdf-gnu:$PATH"
     CC=/share/apps/gcc/4.8.2/bin/gcc
     CXX=/share/apps/gcc/4.8.2/bin/g++
-    export CC CXX
+    export CC CXX PATH
 
     cmake $options \
         -D MPI_C_COMPILER:STRING="/share/apps/openmpi/1.8.3/gcc/4.8.2/bin/mpicc" \
         -D MPIEXEC:STRING="/share/apps/openmpi/1.8.3/gcc/4.8.2/bin/mpiexec" \
-        -D GA_DIR:STRING="$prefix" \
+        -D GA_DIR:STRING="$prefix/dhsvm-gnu" \
 	-D GA_EXTRA_LIBS:STRING="-libverbs -lm -lpthread" \
+        -D GPTL_DIR:PATH="$prefix/dhsvm-gnu" \
         -D DHSVM_USE_X11:BOOL=OFF \
-        -D DHSVM_USE_NETCDF:BOOL=OFF \
-        -D NETCDF_INCLUDES:PATH="${NETCDF_INCLUDE}" \
-        -D CMAKE_INSTALL_PREFIX:PATH="$prefix" \
+        -D DHSVM_USE_NETCDF:BOOL=ON \
+	-D NetCDF_DIR:PATH="$prefix/netcdf-gnu" \
+        -D CMAKE_INSTALL_PREFIX:PATH="$prefix/dhsvm-gnu" \
         $common_flags \
         ..
 
@@ -298,12 +309,15 @@ elif [ $host = "constance-gnu-pr" ]; then
     CC=/share/apps/gcc/4.8.2/bin/gcc
     CXX=/share/apps/gcc/4.8.2/bin/g++
     export CC CXX
+    CFLAGS="-pthread"
+    CXXFLAGS="-pthread"
+    export CFLAGS CXXFLAGS
 
     cmake $options \
         -D MPI_C_COMPILER:STRING="/share/apps/openmpi/1.8.3/gcc/4.8.2/bin/mpicc" \
         -D MPIEXEC:STRING="/share/apps/openmpi/1.8.3/gcc/4.8.2/bin/mpiexec" \
         -D GA_DIR:STRING="$prefix" \
-	-D GA_EXTRA_LIBS:STRING="-lm -lpthread" \
+	-D GA_EXTRA_LIBS:STRING="-lrt -lm" \
         -D DHSVM_USE_X11:BOOL=OFF \
         -D DHSVM_USE_NETCDF:BOOL=OFF \
         -D NETCDF_INCLUDES:PATH="${NETCDF_INCLUDE}" \

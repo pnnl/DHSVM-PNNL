@@ -22,12 +22,12 @@
 #include "fifobin.h"
 #include "fifoNetCDF.h"
 #include "DHSVMerror.h"
-#include "ParallelDHSVM.h"
+/* #include "ParallelDHSVM.h" */
 
 /* global function pointers */
-void (*CreateMapFileFmt) (char *FileName, ...);
-int (*Read2DMatrixFmt) (char *FileName, void *Matrix, int NumberType, int NY, int NX, int NDataSet, ...);
-int (*Write2DMatrixFmt) (char *FileName, void *Matrix, int NumberType, int NY, int NX, ...);
+void (*CreateMapFileFmt) (char const *FileName, ...);
+int (*Read2DMatrixFmt) (char const *FileName, void *Matrix, int NumberType, int NY, int NX, int NDataSet, ...);
+int (*Write2DMatrixFmt) (char const *FileName, void *Matrix, int NumberType, int NY, int NX, ...);
 
 /*******************************************************************************
   Function name: InitFileIO()
@@ -92,6 +92,8 @@ void InitFileIO(int FileFormat)
   if (ParallelRank() == 0) 
     printf("Initializing file IO\n");
 
+  Map2DInit(FileFormat);
+
   /************************* Binary format **********************/
   if (FileFormat == BIN) {
     strcpy(fileext, ".bin");
@@ -118,61 +120,6 @@ void InitFileIO(int FileFormat)
   }
   else
     ReportError((char *) Routine, 38);
+  Map2DInit(FileFormat);
 }
 
-#if 0
-/******************************************************************************/
-/*                            CreateMapFile                                   */
-/******************************************************************************/
-void
-CreateMapFile(char *FileName, char *FileLabel, MAPSIZE *Map)
-{
-  CreateMapFileFmt(FileName, FileLabel, Map);
-}
-
-
-
-/******************************************************************************/
-/*                              Read2DMatrix                                  */
-/******************************************************************************/
-/** 
- * 
- * 
- * @param FileName name of file to read
- * @param Matrix  @e local 2D array (NX, NY) to be filled
- * @param NumberType 
- * @param NY 
- * @param NX 
- * @param NDataSet 
- * @param VarName 
- * @param index 
- * 
- * @return 
- */
-int 
-Read2DMatrix(char *FileName, void *Matrix, int NumberType, MAPSIZE *Map,
-             int NDataSet, char *VarName, int index)
-{
-  const char Routine[] = "Read2DMatrix";
-  int result;
-
-  result = Read2DMatrixFmt(FileName, Matrix, NumberType,
-                           Map->NY, Map->NX, NDataSet, VarName, index);
-  return 0;
-}
-
-/******************************************************************************/
-/*                              Write2DMatrix                                  */
-/******************************************************************************/
-int
-Write2DMatrix(char *FileName, void *Matrix, int NumberType, MAPSIZE *Map,
-              MAPDUMP *DMap, int index)
-{
-  const char Routine[] = "Write2DMatrix";
-  int result;
-  result = Write2DMatrixFmt(FileName, Matrix, NumberType, 
-                            Map->NY, Map->NX, DMap, index);
-  return result;
-}
-
-#endif

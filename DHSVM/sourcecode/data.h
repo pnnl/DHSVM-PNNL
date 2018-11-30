@@ -18,6 +18,7 @@
 
 #include "settings.h"
 #include "Calendar.h"
+#include "MapSize.h"
 #include "channel.h"
 
 typedef struct {
@@ -102,16 +103,25 @@ typedef struct {
   char RadTablePath[BUFSIZE + 1];	/* Same for rad tables */
   char RadarFile[BUFSIZE + 1];	/* File with radar precipitation */
   char MM5Terrain[BUFSIZE + 1];	/* File with MM5 terrain (m) */
+  void *MM5TerrainMap;          /* 2D Map file instance for terrain */
   char MM5Lapse[BUFSIZE + 1];	/* File with MM5 Lapse Rate (C/m) */
+  void *MM5LapseMap;            /* 2D Map file instance for temperature lapse */
   char MM5Temp[BUFSIZE + 1];	/* File with MM5 temperature (C) */
+  void *MM5TempMap;             /* 2D Map file instance for temperature */
   char MM5Humidity[BUFSIZE + 1];	/* File with MM5 humidity (%) */
+  void *MM5HumidityMap;         /* 2D Map file instance for relative humidity */
   char MM5Wind[BUFSIZE + 1];	/* File with MM5 wind speed (m/s) */
-  char MM5ShortWave[BUFSIZE + 1];	/* File with MM5 shortwave (W/m2) */
-  char MM5LongWave[BUFSIZE + 1];	/* File with MM5 longwave (W/m2) */
-  char MM5Precipitation[BUFSIZE + 1];	/* File with MM5 precipitation 
-					   (m/timestep) */
+  void *MM5WindMap;             /* 2D Map file instance for wind speed */
+  char MM5ShortWave[BUFSIZE + 1]; /* File with MM5 shortwave (W/m2) */
+  void *MM5ShortWaveMap;        /* 2D Map file instance for short wave radiation */
+  char MM5LongWave[BUFSIZE + 1]; /* File with MM5 longwave (W/m2) */
+  void *MM5LongWaveMap;         /* 2D Map file instance for long wave radiation */
+  char MM5Precipitation[BUFSIZE + 1]; /* File with MM5 precipitation (m/timestep) */
+  void *MM5PrecipitationMap;    /* 2D Map file instance for precipitation */
   char **MM5SoilTemp;		/* Files with MM5 soil temperatures (C) */
   MM5FREQ MM5PrecipDistFreq;    /* Frequency of MM5 precip distribution maps */
+  int MM5LastPrecipDistStep;    /* The precip distribution previously read */
+  void *MM5PrecipDistMap;       /* 2D Map file instance for precip distribution */
   char PrecipLapseFile[BUFSIZE + 1];	/* File with precipitation 
 					   lapse rate map */
   char WindMapPath[BUFSIZE + 1];	/* File with wind factors */
@@ -142,33 +152,6 @@ typedef struct {
   float Slope;			/* Slope of vapor pressure curve (Pa/C) */
   float Vpd;			/* Vapor pressure deficit (Pa) */
 } PIXMET;
-
-typedef struct {
-  float Rank;
-  int   x;
-  int   y;
-} ITEM;
-
-typedef struct {
-  char System[BUFSIZE + 1];     /* Coordinate system */
-  double Xorig;                 /* X coordinate of Northwest corner */
-  double Yorig;                 /* Y coordinate of Northwest corner */
-  /* int X; */                        /* Current x position */
-  /* int Y; */                       /* Current y position */
-  int NX;                       /* Number of (local) pixels in x direction */
-  int NY;                       /* Number of pixels in y direction */
-  float DX;                     /* Pixel spacing in x-direction */
-  float DY;                     /* Pixel spacing in y-direction */
-  float DXY;                    /* Pixel spacing in diagonal */
-  int OffsetX;                  /* Offset in x-direction compared to basemap */
-  int OffsetY;                  /* Offset in y-direction compared to basemap */
-  int NumCells;                 /* Number of active cells on this processor */
-  int AllCells;                 /* Number of cells within the basin */
-  ITEM *OrderedCells;           /* Structure array to hold the ranked elevations; NumCells in size */
-  int dist;                     /* GA handle that provides parallel distribution */
-  int gNX;                      /* Number of (global) pixels in x direction */
-  int gNY;                      /* Number of (global) pixels in x direction */
-} MAPSIZE;
 
 typedef struct {
   float Tair;					/* Air temperature (C) */
