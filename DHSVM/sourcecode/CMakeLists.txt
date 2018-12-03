@@ -9,7 +9,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2018-11-08 14:24:09 d3g096
+# Last Change: 2018-11-30 13:04:53 d3g096
 
 # -------------------------------------------------------------
 # Set up for this subdirectory
@@ -26,10 +26,6 @@ if (DHSVM_DUMP_TOPO)
   add_definitions(-DTOPO_DUMP)
 endif (DHSVM_DUMP_TOPO)
 
-include_directories(AFTER
-  ${MPI_C_INCLUDE_PATH}
-  ${GA_INCLUDE_DIRS}
-)
 
 if (GPTL_FOUND)
   add_definitions(-DGPTL_TIMING)
@@ -81,6 +77,9 @@ if(NETCDF_FOUND)
     FileIONetCDF.c
     NetCDFInputMap2D.cpp
     )
+  if (DHSVM_PARALLEL_NETCDF)
+    list(APPEND iosrc PNetCDFInputMap2D.cpp )
+  endif (DHSVM_PARALLEL_NETCDF)
 endif(NETCDF_FOUND)
 
 add_library(BinIO STATIC ${iosrc})
@@ -201,7 +200,7 @@ list(APPEND DHSVM_LIBS
   ${NetCDF_C_LIBRARIES}
   ${X11_LIBRARIES}
   ${GA_LIBRARIES} 
-  ${MPI_C_LIBRARIES}
+  ${MPI_CXX_LIBRARIES}
   ${MATH_LIBRARY}
 )
 

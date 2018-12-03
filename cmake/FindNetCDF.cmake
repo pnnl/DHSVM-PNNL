@@ -252,8 +252,9 @@ if (NetCDF_INCLUDE_DIR)
      )
     set(NetCDF_LARGE_DIMS TRUE)
   else()
-    message(WARNING "The NetCDF found in ${NetCDF_DIR} does not have the correct NC_MAX_DIMS, NC_MAX_VARS and NC_MAX_VAR_DIMS\n"
-                    "It may not be compatible with other TPL libraries such MOAB and ExodusII\n" )
+    # this is not important to DHSVM
+    # message(WARNING "The NetCDF found in ${NetCDF_DIR} does not have the correct NC_MAX_DIMS, NC_MAX_VARS and NC_MAX_VAR_DIMS\n"
+    #                 "It may not be compatible with other TPL libraries such MOAB and ExodusII\n" )
     set(NetCDF_LARGE_DIMS FALSE)
   endif()
 endif()    

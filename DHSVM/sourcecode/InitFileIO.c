@@ -108,7 +108,7 @@ void InitFileIO(int FileFormat)
     Write2DMatrixFmt = Write2DMatrixByteSwapBin;
   }
   /************* NetCDF File Format (version 3.4) ****************/
-  else if (FileFormat == NETCDF) {
+  else if (FileFormat == NETCDF || FileFormat == PNETCDF) {
 #ifdef HAVE_NETCDF
     strcpy(fileext, ".nc");
     CreateMapFileFmt = CreateMapFileNetCDF;

@@ -24,6 +24,7 @@
 #define BIN 1			/* binary IO */
 #define NETCDF 2		/* NetCDF format */
 #define BYTESWAP 3		/* binary IO but byteswap reads */
+#define PNETCDF 4
 void InitFileIO(int FileFormat);
 
 /* global file extension string */

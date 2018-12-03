@@ -7,7 +7,7 @@
 // -------------------------------------------------------------
 // -------------------------------------------------------------
 // Created October 18, 2018 by William A. Perkins
-// Last Change: 2018-11-27 09:15:59 d3g096
+// Last Change: 2018-12-03 13:33:46 d3g096
 // -------------------------------------------------------------
 
 #include <cstdio>
@@ -19,10 +19,18 @@
 #include "ga_helper.h"
 
 // -------------------------------------------------------------
+//  class NetCDFInputMap2D
+// -------------------------------------------------------------
+
+// -------------------------------------------------------------
+// static members
+// -------------------------------------------------------------
+
+// -------------------------------------------------------------
 // nc_check_err
 // -------------------------------------------------------------
-static void
-nc_check_err(const int ncstatus, const int line, const char *file)
+void
+NetCDFInputMap2D::nc_check_err(const int& ncstatus, const int& line, const char *file)
 {
   char str[BUFSIZE + 1];
 
@@ -31,10 +39,6 @@ nc_check_err(const int ncstatus, const int line, const char *file)
     throw InputMap2D::exception(str, 57);
   }
 }
-
-// -------------------------------------------------------------
-//  class NetCDFInputMap2D
-// -------------------------------------------------------------
 
 // -------------------------------------------------------------
 // NetCDFInputMap2D:: constructors / destructor
@@ -187,6 +191,21 @@ NetCDFInputMap2D::my_close(void)
 }
 
 // -------------------------------------------------------------
+// NetCDFInputMap2D::my_indexes
+// -------------------------------------------------------------
+void
+NetCDFInputMap2D::my_indexes(size_t start[], size_t count[], const int& index)
+{
+  start[0] = index;
+  start[1] = 0;
+  start[2] = 0;
+  
+  count[0] = 1;
+  count[1] = my_Map->gNY;
+  count[2] = my_Map->gNX;
+}
+
+// -------------------------------------------------------------
 // NetCDFInputMap2D::my_read_fmt
 // -------------------------------------------------------------
 int
@@ -197,18 +216,15 @@ NetCDFInputMap2D::my_read_fmt(const int& unused_index, const int& index, unsigne
   size_t start[3] = { 0, 0, 0 };
   size_t timelen;
 
-  start[0] = index;
-  
-  count[0] = 1;
-  count[1] = my_Map->gNY;
-  count[2] = my_Map->gNX;
+  this->my_indexes(start, count, index);
 
-  /* see whether the time dimension needs to be updated (the assumption is that
-     the same index value refers to the same moment in time.  Since currently we
-     make separate files for separate variables this is OK) */
-  ncstatus = nc_inq_dimlen(my_ncid, my_dimids[0], &timelen);
-  nc_check_err(ncstatus, __LINE__, __FILE__);
-
+  int me(ParallelRank());
+  std::cout << me << ": " << my_Name
+            << ": start = (" << start[0] << "," << start[1] << "," << start[2] << ")"
+            << std::endl;
+  std::cout << me << ": " << my_Name
+            << ": count = (" << count[0] << "," << count[1] << "," << count[2] << ")"
+            << std::endl;
 
   /****************************************************************************/
   /*                             READ VARIABLE                                */
