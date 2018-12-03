@@ -7,7 +7,7 @@
 // -------------------------------------------------------------
 // -------------------------------------------------------------
 // Created November 30, 2018 by William A. Perkins
-// Last Change: 2018-12-03 14:15:27 d3g096
+// Last Change: 2018-12-03 14:42:48 d3g096
 // -------------------------------------------------------------
 
 #include <iostream>
@@ -76,8 +76,8 @@ PNetCDFInputMap2D::my_open(void)
 
     my_flip = my_check();
 
-    std::cerr << my_Name << ": " << my_VarName
-              << ": successfully opened in parallel" << std::endl;
+    // std::cerr << my_Name << ": " << my_VarName
+    //           << ": successfully opened in parallel" << std::endl;
     
   } catch (const InputMap2D::exception& e) {
     std::cerr << me << ": " << my_Name << ": error: " << e.what() << std::endl;

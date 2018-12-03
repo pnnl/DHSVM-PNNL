@@ -7,7 +7,7 @@
 // -------------------------------------------------------------
 // -------------------------------------------------------------
 // Created October 18, 2018 by William A. Perkins
-// Last Change: 2018-12-03 13:33:46 d3g096
+// Last Change: 2018-12-03 14:43:25 d3g096
 // -------------------------------------------------------------
 
 #include <cstdio>
@@ -219,12 +219,12 @@ NetCDFInputMap2D::my_read_fmt(const int& unused_index, const int& index, unsigne
   this->my_indexes(start, count, index);
 
   int me(ParallelRank());
-  std::cout << me << ": " << my_Name
-            << ": start = (" << start[0] << "," << start[1] << "," << start[2] << ")"
-            << std::endl;
-  std::cout << me << ": " << my_Name
-            << ": count = (" << count[0] << "," << count[1] << "," << count[2] << ")"
-            << std::endl;
+  // std::cerr << me << ": " << my_Name
+  //           << ": start = (" << start[0] << "," << start[1] << "," << start[2] << ")"
+  //           << std::endl;
+  // std::cerr << me << ": " << my_Name
+  //           << ": count = (" << count[0] << "," << count[1] << "," << count[2] << ")"
+  //           << std::endl;
 
   /****************************************************************************/
   /*                             READ VARIABLE                                */
