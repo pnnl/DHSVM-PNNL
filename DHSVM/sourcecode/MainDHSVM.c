@@ -222,6 +222,8 @@ int main(int argc, char **argv)
     }
   }
 
+#endif
+
   InitMetMaps(Input, Time.NDaySteps, &Map, &Radar, &Options, InFiles.WindMapPath,
 	      InFiles.PrecipLapseFile, &PrecipLapseMap, &PrismMap,
 	      &ShadowMap, &SkyViewMap, &EvapMap, &PrecipMap, &PptMultiplierMap,
