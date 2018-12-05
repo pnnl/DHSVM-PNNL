@@ -10,7 +10,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2018-11-27 09:10:48 d3g096
+# Last Change: 2018-11-30 10:35:37 d3g096
 
 set -xue
 
@@ -134,6 +134,9 @@ elif [ $host == "WE32673" ]; then
         -D MPIEXEC:STRING="$prefix/bin/mpiexec-mpich-clang60" \
         -D GA_DIR:PATH="$HOME/Projects/GridPACK" \
 	-D NetCDF_BIN_DIR:PATH="/opt/local/bin" \
+        -D HDF5_DIR:PATH="/opt/local" \
+        -D HDF5_INCLUDE_DIRS:PATH="/opt/local/include" \
+        -D HDF5_PREFER_PARALLEL:BOOL=TRUE \
         -D DHSVM_USE_X11:BOOL=OFF \
         -D DHSVM_USE_NETCDF:BOOL=ON \
         -D CMAKE_INSTALL_PREFIX:PATH="$HOME/Projects/DHSVM" \
