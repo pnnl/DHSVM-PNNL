@@ -52,9 +52,17 @@ InitChannel(LISTPTR Input, MAPSIZE *Map, int deltat, CHANNEL *channel,
   /* Read the key-entry pairs from the ROUTING section in the input file */
   for (i = 0; StrEnv[i].SectionName; i++) {
     GetInitString(StrEnv[i].SectionName, StrEnv[i].KeyName, StrEnv[i].Default,
-		  StrEnv[i].VarStr, (unsigned long) BUFSIZE, Input);
-    if (IsEmptyStr(StrEnv[i].VarStr))
+      StrEnv[i].VarStr, (unsigned long)BUFSIZE, Input);
+    if (!strncmp(StrEnv[i].KeyName, "RIPARIAN VEG FILE", 6)) {
+      if (Options->StreamTemp) {
+      if (IsEmptyStr(StrEnv[i].VarStr))
+        ReportError(StrEnv[i].KeyName, 51);
+      }
+    }
+    else {
+      if (IsEmptyStr(StrEnv[i].VarStr))
       ReportError(StrEnv[i].KeyName, 51);
+    }
   }
 
   channel->stream_class = NULL;

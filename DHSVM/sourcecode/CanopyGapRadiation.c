@@ -46,7 +46,7 @@ Comments     :
 ********************************************************************************/
 void CanopyGapRadiation(CanopyGapStruct **Gap, float SunAngle, float Rs,
   float Rsb, float Rsd, float Ld, float TSurf, float Tcanopy, float SoilAlbedo,
-  VEGTABLE *VType, SNOWPIX *LocalSnow, PIXRAD *LocalRad)
+  VEGTABLE *VType, SNOWPIX *LocalSnow, PIXRAD *LocalRad, float Gapping)
 {
 
   /* ==== OPENING PORTION (no overstory if gap presents) ====*/
@@ -55,12 +55,12 @@ void CanopyGapRadiation(CanopyGapStruct **Gap, float SunAngle, float Rs,
 
   /* net shortwave received by the opening*/
   (*Gap)[Opening].NetShort[1] = CanopyGapShortRadiation((*Gap)[Opening].UnderStory,
-    (*Gap)[Opening].GapView, VType->Height[0], VType->GapDiam, SunAngle, Rsb,
+    (*Gap)[Opening].GapView, VType->Height[0], Gapping, SunAngle, Rsb,
     Rsd, VType->ExtnCoeff, SoilAlbedo, VType, LocalSnow, VType->Fract[0]);
   (*Gap)[Opening].NetShort[0] = 0;
 
   /* net longwave received by the opening*/
-  CanopyGapLongRadiation(Gap[Opening], VType->Height[0], VType->GapDiam, Ld, 
+  CanopyGapLongRadiation(Gap[Opening], VType->Height[0], Gapping, Ld, 
     TSurf, VType->Fract[0]);
   (*Gap)[Opening].LongIn[0] = 0.;
 }

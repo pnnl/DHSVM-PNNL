@@ -120,7 +120,7 @@ enum KEYS {
   shading, snotel, outside, rhoverride, precipitation_source, wind_source, 
   temp_lapse, precip_lapse, cressman_radius, cressman_stations, prism_data_path, 
   prism_data_ext, shading_data_path, shading_data_ext, skyview_data_path, 
-  stream_temp, canopy_shading, improv_radiation, gapping, snowslide, sepr,
+  stream_temp, canopy_shading, improv_radiation, gapping, snowslide, sepr, multiplier,
   /* Area */
   coordinate_system, extreme_north, extreme_west, center_latitude,
   center_longitude, time_zone_meridian, number_of_rows,
@@ -131,7 +131,7 @@ enum KEYS {
   ground_roughness, snow_roughness, rain_threshold, snow_threshold,
   snow_water_capacity, reference_height, rain_lai_multiplier,
   snow_lai_multiplier, min_intercepted_snow, outside_basin,
-  temp_lapse_rate, precip_lapse_rate, precip_multiplier, alb_acc_lambda, 
+  temp_lapse_rate, precip_lapse_rate, alb_acc_lambda, 
   alb_melt_lambda, alb_acc_min, alb_melt_min, max_swe, snowslide_parameter1,
   snowslide_parameter2, gapwind_adj,
   /* Station information */
@@ -158,7 +158,7 @@ enum KEYS {
   veg_description = 0, overstory, understory, fraction, hemifraction, trunk_space,
   aerodynamic_att, beam_attn, diff_attn, clumping_factor, leaf_angle_a, leaf_angle_b,
   scat, snow_int_cap, mass_drip_ratio, snow_int_eff, imperv_frac, detention_frac, 
-  detention_decay, height, gap_diam, max_resistance, min_resistance, moisture_threshold, vpd, rpc,
+  detention_decay, height, max_resistance, min_resistance, moisture_threshold, vpd, rpc,
   number_of_root_zones, root_zone_depth, overstory_fraction, understory_fraction, 
   monextn, vf_adj, overstory_monlai, understory_monlai, overstory_monalb, understory_monalb, 
   /* terrain information */

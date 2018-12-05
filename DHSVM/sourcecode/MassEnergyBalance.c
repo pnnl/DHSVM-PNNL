@@ -11,6 +11,8 @@
  * FUNCTIONS:    MassEnergyBalance()
  * COMMENTS:
  * $Id: MassEnergyBalance.c,v3.1.2 2013/08/18 ning Exp $
+ * Last Modified by Zhuoran Duan on 07/06/2018 to change gap map from flag
+ * value to actual diameter map
  */
 #ifdef SNOW_ONLY
   //#define NO_ET
@@ -118,7 +120,7 @@ void MassEnergyBalance(OPTIONSTRUCT *Options, int y, int x,
   NVegLActual = VType->NVegLayers;
   if (LocalSnow->HasSnow == TRUE && VType->UnderStory == TRUE)
     --NVegLActual;
-  if (LocalVeg->Gapping == TRUE) {
+  if (LocalVeg->Gapping > 0.0) {
     LocalVeg->Type[Opening].NVegLActual = VType->NVegLayers - 1;
     if (LocalVeg->Type[Opening].HasSnow == TRUE && VType->UnderStory == TRUE)
       --LocalVeg->Type[Opening].NVegLActual;
@@ -132,7 +134,7 @@ void MassEnergyBalance(OPTIONSTRUCT *Options, int y, int x,
       LocalVeg->Type[i].ETot = 0.;
     }
 
-    R = VType->GapDiam / 2;
+    R = LocalVeg->Gapping / 2.0;
     weight = (PI*R*R) / (DX*DY);
     if (weight > 1)
       ReportError("MassEnergyBalance()", 72);
@@ -151,10 +153,10 @@ void MassEnergyBalance(OPTIONSTRUCT *Options, int y, int x,
     LocalSoil->TSurf, SType->Albedo, VType, LocalSnow, LocalRad);
 
   /* if a gap is present, calculate radiation balance */
-  if (Options->CanopyGapping && LocalVeg->Gapping) {
+  if (Options->CanopyGapping && (LocalVeg->Gapping > 0.0)) {
     CanopyGapRadiation(&(LocalVeg->Type), SineSolarAltitude, LocalMet->Sin,
       LocalMet->SinBeam, LocalMet->SinDiffuse, LocalMet->Lin, LocalSoil->TSurf,
-      LocalVeg->Tcanopy, SType->Albedo, VType, LocalSnow, LocalRad);
+      LocalVeg->Tcanopy, SType->Albedo, VType, LocalSnow, LocalRad, LocalVeg->Gapping);
 
     if (LocalVeg->Type[Forest].HasSnow == TRUE)
       Tsurf = LocalSnow->TSurf;
@@ -180,7 +182,7 @@ void MassEnergyBalance(OPTIONSTRUCT *Options, int y, int x,
     LowerWind = UpperWind;
     LowerRa = UpperRa;
   }
-  if (LocalVeg->Gapping) {
+  if (LocalVeg->Gapping > 0.0) {
     /* calculate the aerodynamic resistance */
     CalcCanopyGapAerodynamic(&(LocalVeg->Type), VType->NVegLayers, VType->Height);
   }
@@ -327,7 +329,7 @@ void MassEnergyBalance(OPTIONSTRUCT *Options, int y, int x,
   }
 
   /************ if canopy gap is present *************/
-  if (LocalVeg->Gapping) {
+  if (LocalVeg->Gapping > 0.0) {
 
     /* calculate intercept rain/snow */
     CanopyGapInterception(Options, &(LocalVeg->Type), HeatFluxOption, y, x,
@@ -423,11 +425,10 @@ void MassEnergyBalance(OPTIONSTRUCT *Options, int y, int x,
     }
     LocalEvap->EvapSoil =
       SoilEvaporation(Dt, LocalMet->Tair, LocalMet->Slope, LocalMet->Gamma,
-        LocalMet->Lv, LocalMet->AirDens, LocalMet->Vpd,
-        NetRadiation, LowerRa, LocalVeg->MoistureFlux, SType->Porosity[0],
-        SType->Ks[0], SType->Press[0], SType->PoreDist[0],
-        VType->RootDepth[0], &(LocalSoil->Moist[0]),
-        LocalNetwork->Adjust[0]);
+      LocalMet->Lv, LocalMet->AirDens, LocalMet->Vpd,
+      NetRadiation, LowerRa, LocalVeg->MoistureFlux, SType->Porosity[0],
+      SType->FCap[0], SType->Ks[0], SType->Press[0], SType->PoreDist[0],
+      VType->RootDepth[0], &(LocalSoil->Moist[0]), LocalNetwork->Adjust[0]);
   }
   else
     LocalEvap->EvapSoil = 0.0;
@@ -436,7 +437,7 @@ void MassEnergyBalance(OPTIONSTRUCT *Options, int y, int x,
   LocalEvap->ETot += LocalEvap->EvapSoil;
 
   /* with canopy gaps */
-  if (LocalVeg->Gapping) {
+  if (LocalVeg->Gapping > 0.0) {
 
     CalcGapSurroudingET(Dt, &(LocalVeg->Type), SType, VType, LocalRad, LocalMet,
       LocalSoil, LocalNetwork, UpperRa, LowerRa);
@@ -454,7 +455,7 @@ void MassEnergyBalance(OPTIONSTRUCT *Options, int y, int x,
 #endif
   
   /* aggregate the gap and non-gap variables based on area weight*/
-  if (LocalVeg->Gapping)
+  if (LocalVeg->Gapping > 0.0)
     AggregateCanopyGap(&(LocalVeg->Type), LocalVeg, LocalSoil, LocalSnow,
 		LocalEvap, LocalPrecip, LocalRad, weight, MaxSoilLayers, MaxVegLayers);
 
