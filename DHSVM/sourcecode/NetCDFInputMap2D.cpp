@@ -47,14 +47,14 @@ NetCDFInputMap2D::NetCDFInputMap2D(const std::string fname, const std::string vn
                                    const int NumberType, const MAPSIZE *Map,
                                    const bool mirror)
   : SerialInputMap2D(fname, vname, NumberType, Map, mirror),
-    my_ncid(0), my_varid(0), my_ndims(0), my_flip(0)
+    my_ncid(-1), my_varid(-1), my_ndims(0), my_flip(0)
 {
   // empty
 }
 
 NetCDFInputMap2D::~NetCDFInputMap2D(void)
 {
-  this->close();
+  if (my_ncid > 0) this->close();
 }
 
 // -------------------------------------------------------------
@@ -87,6 +87,8 @@ NetCDFInputMap2D::my_open(void)
       // throw InputMap2D::exception(msg, 58);
     }
     my_flip = my_check();
+  } else {
+    my_ncid = -1;
   }
   GA_Brdcst(&my_flip, sizeof(int), 0);
 }
@@ -187,6 +189,7 @@ NetCDFInputMap2D::my_close(void)
     int ncstatus = nc_close(my_ncid);
     // Let's not worry about this
     // nc_check_err(ncstatus, __LINE__, __FILE__);
+    my_ncid = -1;
   }
 }
 

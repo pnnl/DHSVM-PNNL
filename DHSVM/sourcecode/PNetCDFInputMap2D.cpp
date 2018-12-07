@@ -34,6 +34,7 @@ PNetCDFInputMap2D::PNetCDFInputMap2D(const std::string fname, const std::string 
 
 PNetCDFInputMap2D::~PNetCDFInputMap2D(void)
 {
+  if (my_ncid > 0) this->close();
 }
 
 // -------------------------------------------------------------
@@ -102,6 +103,7 @@ PNetCDFInputMap2D::my_close(void)
   int ncstatus = nc_close(my_ncid);
   // Let's not worry about this
   // nc_check_err(ncstatus, __LINE__, __FILE__);
+  my_ncid = -1;
 }
 
 // -------------------------------------------------------------
