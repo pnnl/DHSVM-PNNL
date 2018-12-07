@@ -26,7 +26,8 @@ class NetCDFInputMap2D
 protected:
 
   /// An error routine
-  static void nc_check_err(const int& ncstatus, const int& line, const char *file);
+  static void nc_check_err(const int& ncstatus, const int& line, 
+			   const char *sfile, const char *dfile);
 
   /// NetCDF file handle
   int my_ncid;

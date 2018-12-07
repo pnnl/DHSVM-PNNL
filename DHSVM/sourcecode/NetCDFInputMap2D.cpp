@@ -10,10 +10,13 @@
 // Last Change: 2018-12-03 14:43:25 d3g096
 // -------------------------------------------------------------
 
+#include <sys/param.h>
 #include <cstdio>
 #include <iostream>
 #include <vector>
 #include <netcdf.h>
+#include <string.h>
+#include <libgen.h>
 
 #include "NetCDFInputMap2D.hpp"
 #include "ga_helper.h"
@@ -30,12 +33,19 @@
 // nc_check_err
 // -------------------------------------------------------------
 void
-NetCDFInputMap2D::nc_check_err(const int& ncstatus, const int& line, const char *file)
+NetCDFInputMap2D::nc_check_err(const int& ncstatus, const int& line, 
+			       const char *sfile, const char *dfile)
 {
-  char str[BUFSIZE + 1];
-
   if (ncstatus != NC_NOERR) {
-    sprintf(str, "%s, line: %d -- %s", file, line, nc_strerror(ncstatus));
+    char str[BUFSIZE + 1];
+    char sbuf[MAXPATHLEN];
+    char dbuf[MAXPATHLEN];
+    strncpy(sbuf, sfile, MAXPATHLEN);
+    strncpy(dbuf, dfile, MAXPATHLEN);
+
+    sprintf(str, "%s: error at %s, line: %d -- %s", 
+	    basename(dbuf), basename(sbuf), line, 
+	    nc_strerror(ncstatus));
     throw InputMap2D::exception(str, 57);
   }
 }
@@ -71,15 +81,15 @@ NetCDFInputMap2D::my_open(void)
   if (me == 0) {
   
     ncstatus = nc_open(my_Name.c_str(), NC_NOWRITE, &my_ncid);
-    nc_check_err(ncstatus, __LINE__, __FILE__);
+    nc_check_err(ncstatus, __LINE__, __FILE__, my_Name.c_str());
 
     /// check whether the variable exists and get its parameters
 
     ncstatus = nc_inq_varid(my_ncid, my_VarName.c_str(), &my_varid);
-    nc_check_err(ncstatus, __LINE__, __FILE__);
+    nc_check_err(ncstatus, __LINE__, __FILE__, my_Name.c_str());
 
     ncstatus = nc_inq_var(my_ncid, my_varid, 0, &TempNumberType, &my_ndims, my_dimids, NULL);
-    nc_check_err(ncstatus, __LINE__, __FILE__);
+    nc_check_err(ncstatus, __LINE__, __FILE__, my_Name.c_str());
     if (TempNumberType != my_NumberType) {
       sprintf(msg, "%s: nc_type for %s is different than expected.\n",
               my_Name.c_str(), my_VarName.c_str());
@@ -109,10 +119,10 @@ NetCDFInputMap2D::my_check(void)
   bool LatisAsc, LonisAsc;
   
   ncstatus = nc_inq_dim(my_ncid, my_dimids[1], dimname, &dimlen);  
-  nc_check_err(ncstatus, __LINE__, __FILE__);
+  nc_check_err(ncstatus, __LINE__, __FILE__, my_Name.c_str());
   
   ncstatus = nc_inq_varid(my_ncid, dimname, &lat_varid);
-  nc_check_err(ncstatus, __LINE__, __FILE__);
+  nc_check_err(ncstatus, __LINE__, __FILE__, my_Name.c_str());
   if (dimlen != my_Map->gNY) {
     std::string msg(my_VarName);
     msg += ": incorrect Y dimension length";
@@ -123,7 +133,7 @@ NetCDFInputMap2D::my_check(void)
 
   // Read the latitude coordinate variable data. 
   ncstatus = nc_get_var_double(my_ncid, lat_varid, &Ycoord[0]);
-  nc_check_err(ncstatus, __LINE__, __FILE__);
+  nc_check_err(ncstatus, __LINE__, __FILE__, my_Name.c_str());
   
   /* A quick check if the lat, long are in a ascending order. 
      If so, matrix must be flipped so the first value in the matrix will be 
@@ -135,9 +145,9 @@ NetCDFInputMap2D::my_check(void)
     LatisAsc = 0;
 
   ncstatus = nc_inq_dim(my_ncid, my_dimids[2], dimname, &dimlen);
-  nc_check_err(ncstatus, __LINE__, __FILE__);
+  nc_check_err(ncstatus, __LINE__, __FILE__, my_Name.c_str());
   ncstatus = nc_inq_varid(my_ncid, dimname, &lon_varid);
-  nc_check_err(ncstatus, __LINE__, __FILE__);
+  nc_check_err(ncstatus, __LINE__, __FILE__, my_Name.c_str());
   if (dimlen != my_Map->gNX) {
     std::string msg(my_VarName);
     msg += ": incorrect X dimension length";
@@ -148,7 +158,7 @@ NetCDFInputMap2D::my_check(void)
 
   /* Read the latitude coordinate variable data. */
   ncstatus = nc_get_var_double(my_ncid, lon_varid, &Xcoord[0]);
-  nc_check_err(ncstatus, __LINE__, __FILE__);
+  nc_check_err(ncstatus, __LINE__, __FILE__, my_Name.c_str());
   LonisAsc = true;
   if( Xcoord[0] > Xcoord[my_Map->gNX - 1] ) 
     LonisAsc = false;
@@ -261,7 +271,7 @@ NetCDFInputMap2D::my_read_fmt(const int& unused_index, const int& index, unsigne
     throw InputMap2D::exception("NetCDFInputMap2D::my_read_fmt: unsupported data type", 40);
     break;
   }
-  nc_check_err(ncstatus, __LINE__, __FILE__);
+  nc_check_err(ncstatus, __LINE__, __FILE__, my_Name.c_str());
 
   return (my_flip);
 }

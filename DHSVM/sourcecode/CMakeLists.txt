@@ -9,7 +9,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2018-11-30 13:04:53 d3g096
+# Last Change: 2018-12-06 08:32:21 d3g096
 
 # -------------------------------------------------------------
 # Set up for this subdirectory
@@ -26,13 +26,6 @@ if (DHSVM_DUMP_TOPO)
   add_definitions(-DTOPO_DUMP)
 endif (DHSVM_DUMP_TOPO)
 
-
-if (GPTL_FOUND)
-  add_definitions(-DGPTL_TIMING)
-  include_directories(AFTER ${GPTL_INCLUDE_DIRS})
-endif (GPTL_FOUND)
-
-add_definitions(-DTIMING_MAX_LEVEL=${DHSVM_TIMING_LEVEL})
 
 if(CMAKE_BUILD_TYPE MATCHES Debug)
     message("debug mode: turning DEBUG messages on")
@@ -184,18 +177,7 @@ set(DHSVM_SRC
   ga_helper.c
 )
 
-add_executable(DHSVM
-  ${DHSVM_SRC}
-)
-
-set_target_properties(DHSVM PROPERTIES LINKER_LANGUAGE CXX)
-
 set (DHSVM_LIBS BinIO)
-
-if (GPTL_FOUND) 
-  list(APPEND DHSVM_LIBS ${GPTL_LIBRARIES})
-endif (GPTL_FOUND)
-
 list(APPEND DHSVM_LIBS 
   ${NetCDF_C_LIBRARIES}
   ${X11_LIBRARIES}
@@ -204,23 +186,45 @@ list(APPEND DHSVM_LIBS
   ${MATH_LIBRARY}
 )
 
+add_executable(DHSVM ${DHSVM_SRC})
+set_target_properties(DHSVM PROPERTIES LINKER_LANGUAGE CXX)
 target_link_libraries(DHSVM ${DHSVM_LIBS})
 
 if(DHSVM_SNOW_ONLY)
-
-  add_executable(DHSVM_SNOW
-    ${DHSVM_SRC}
-    )
-
+  add_executable(DHSVM_SNOW ${DHSVM_SRC})
   target_compile_definitions(DHSVM_SNOW
     PUBLIC SNOW_ONLY=1
     )
-
   target_link_libraries(DHSVM_SNOW ${DHSVM_LIBS})
-
   set_target_properties(DHSVM_SNOW PROPERTIES LINKER_LANGUAGE CXX)
-
 endif(DHSVM_SNOW_ONLY)
+
+# If specified, build executables that are timed
+
+if (GPTL_FOUND)
+  include_directories(AFTER ${GPTL_INCLUDE_DIRS})
+  add_definitions(-DTIMING_MAX_LEVEL=${DHSVM_TIMING_LEVEL})
+  list(APPEND DHSVM_LIBS ${GPTL_LIBRARIES})
+  
+  add_executable(DHSVM_timed ${DHSVM_SRC})
+    target_compile_definitions(DHSVM_timed
+      PUBLIC GPTL_TIMING=1
+      )
+  set_target_properties(DHSVM_timed PROPERTIES LINKER_LANGUAGE CXX)
+  target_link_libraries(DHSVM_timed ${DHSVM_LIBS})
+
+  if(DHSVM_SNOW_ONLY)
+    add_executable(DHSVM_SNOW_timed ${DHSVM_SRC})
+    target_compile_definitions(DHSVM_SNOW_timed
+      PUBLIC SNOW_ONLY=1 GPTL_TIMING=1
+      )
+    target_link_libraries(DHSVM_SNOW_timed ${DHSVM_LIBS})
+    set_target_properties(DHSVM_SNOW_timed PROPERTIES LINKER_LANGUAGE CXX)
+  endif(DHSVM_SNOW_ONLY)
+
+endif (GPTL_FOUND)
+
+
 
 # -------------------------------------------------------------
 # channel_test
