@@ -53,16 +53,16 @@ PNetCDFInputMap2D::my_open(void)
   try {
     int themode(NC_NOWRITE | NC_MPIIO);
     ncstatus = nc_open_par(my_Name.c_str(), themode, comm, info, &my_ncid);
-    nc_check_err(ncstatus, __LINE__, __FILE__);
+    nc_check_err(ncstatus, __LINE__, __FILE__, my_Name.c_str());
     if (info != MPI_INFO_NULL) MPI_Info_free(&info);
 
     /// check whether the variable exists and get its parameters
 
     ncstatus = nc_inq_varid(my_ncid, my_VarName.c_str(), &my_varid);
-    nc_check_err(ncstatus, __LINE__, __FILE__);
+    nc_check_err(ncstatus, __LINE__, __FILE__, my_Name.c_str());
 
     ncstatus = nc_inq_var(my_ncid, my_varid, 0, &TempNumberType, &my_ndims, my_dimids, NULL);
-    nc_check_err(ncstatus, __LINE__, __FILE__);
+    nc_check_err(ncstatus, __LINE__, __FILE__, my_Name.c_str());
     if (TempNumberType != my_NumberType) {
       sprintf(msg, "%s: nc_type for %s is different than expected.\n",
               my_Name.c_str(), my_VarName.c_str());
@@ -72,7 +72,7 @@ PNetCDFInputMap2D::my_open(void)
 
     // ncstatus = nc_var_par_access(my_ncid, my_varid, NC_INDEPENDENT);
     ncstatus = nc_var_par_access(my_ncid, my_varid, NC_COLLECTIVE);
-    nc_check_err(ncstatus, __LINE__, __FILE__);
+    nc_check_err(ncstatus, __LINE__, __FILE__, my_Name.c_str());
 
     my_flip = my_check();
 
