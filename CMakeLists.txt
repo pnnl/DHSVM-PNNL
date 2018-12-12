@@ -9,7 +9,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2018-11-08 14:38:16 d3g096
+# Last Change: 2018-11-30 13:53:39 d3g096
 
 # -------------------------------------------------------------
 # General set up
@@ -70,12 +70,18 @@ find_package (MPI REQUIRED)
 
 message(STATUS "MPI_C_INCLUDES: ${MPI_C_INCLUDES}")
 message(STATUS "MPI_C_LIBRARIES: ${MPI_C_LIBRARIES}")
+message(STATUS "MPI_CXX_LIBRARIES: ${MPI_CXX_LIBRARIES}")
+
+
+include_directories(AFTER ${MPI_C_INCLUDE_PATH})
 
 # -------------------------------------------------------------
 # Global Arrays is required
 # -------------------------------------------------------------
 message(STATUS "Checking GA ...")
 find_package(GA REQUIRED)
+
+include_directories(BEFORE ${GA_INCLUDE_DIRS})
 
 # -------------------------------------------------------------
 # GPTL is optional, but if asked for, it must be found
@@ -86,8 +92,13 @@ endif (DHSVM_USE_GPTL)
 # -------------------------------------------------------------
 # system-specific options
 # -------------------------------------------------------------
-include ( CheckIncludeFile )
+include (CheckIncludeFile )
 include (CheckFunctionExists)
+
+# check_include_file() ignores CMAKE_REQUIRED_LIBRARIES
+if (POLICY CMP0075)
+  cmake_policy(SET CMP0075 OLD)
+endif (POLICY CMP0075)
 
 # On most UNIX-like platforms, the math library needs to be explicitly linked
 if (UNIX)
@@ -101,6 +112,15 @@ if (DHSVM_USE_NETCDF)
   find_package(NetCDF REQUIRED)
   add_definitions(-DHAVE_NETCDF)
   include_directories(AFTER ${NetCDF_INCLUDE_DIRS})
+
+  # If the header netcdf_par.h is available, assume the NetCDF
+  # installation is parallel, and use it.
+  set(CMAKE_REQUIRED_INCLUDES ${NetCDF_INCLUDE_DIRS} ${MPI_C_INCLUDE_PATH})
+  check_include_file(netcdf_par.h DHSVM_PARALLEL_NETCDF)
+  if (DHSVM_PARALLEL_NETCDF)
+    add_definitions(-DHAVE_PARALLEL_NETCDF)
+    message(STATUS "NetCDF installation appears to be parallel, assuming it is")
+  endif (DHSVM_PARALLEL_NETCDF)
 endif (DHSVM_USE_NETCDF)
 
 # -------------------------------------------------------------
