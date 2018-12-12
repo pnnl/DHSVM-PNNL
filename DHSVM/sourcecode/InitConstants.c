@@ -380,6 +380,9 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
   else
     ReportError(StrEnv[rhoverride].KeyName, 51);
 
+  /* make sure this is initialized */
+  strcpy(Options->PrecipMultiplierMapPath, "");
+
   /* The other met options are only of importance if MM5 is FALSE */
   if (Options->MM5 == TRUE) {
     Options->PrecipType = NOT_APPLICABLE;
