@@ -417,8 +417,19 @@ install(TARGETS DHSVM
   DESTINATION bin
 )
 
+if (GPTL_FOUND)
+   install(TARGETS DHSVM_timed
+     DESTINATION bin
+   )
+endif(GPTL_FOUND)
+
 if(DHSVM_SNOW_ONLY)
   install(TARGETS DHSVM_SNOW
     DESTINATION bin
   )
+  if (GPTL_FOUND)
+     install(TARGETS DHSVM_SNOW_timed
+       DESTINATION bin
+     )
+  endif(GPTL_FOUND)
 endif(DHSVM_SNOW_ONLY)
