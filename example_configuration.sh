@@ -309,10 +309,11 @@ elif [ $host = "constance-gnu-pr" ]; then
     
     # GA installed here:
 
-    prefix=/pic/projects/informed_hydro/dhsvm-gnu-pr
+    prefix=/pic/projects/informed_hydro
+    PATH="$prefix/netcdf-gnu:$PATH"
     CC=/share/apps/gcc/4.8.2/bin/gcc
     CXX=/share/apps/gcc/4.8.2/bin/g++
-    export CC CXX
+    export CC CXX PATH
     CFLAGS="-pthread"
     CXXFLAGS="-pthread"
     export CFLAGS CXXFLAGS
@@ -320,12 +321,14 @@ elif [ $host = "constance-gnu-pr" ]; then
     cmake $options \
         -D MPI_C_COMPILER:STRING="/share/apps/openmpi/1.8.3/gcc/4.8.2/bin/mpicc" \
         -D MPIEXEC:STRING="/share/apps/openmpi/1.8.3/gcc/4.8.2/bin/mpiexec" \
-        -D GA_DIR:STRING="$prefix" \
+        -D GA_DIR:STRING="$prefix/dhsvm-gnu-pr" \
 	-D GA_EXTRA_LIBS:STRING="-lrt -lm" \
+        -D GPTL_DIR:PATH="$prefix/dhsvm-gnu-pr" \
         -D DHSVM_USE_X11:BOOL=OFF \
-        -D DHSVM_USE_NETCDF:BOOL=OFF \
-        -D NETCDF_INCLUDES:PATH="${NETCDF_INCLUDE}" \
-        -D CMAKE_INSTALL_PREFIX:PATH="$prefix" \
+        -D DHSVM_USE_NETCDF:BOOL=ON \
+	-D USE_PROGRESS_RANKS:BOOL=ON \
+	-D NetCDF_DIR:PATH="$prefix/netcdf-gnu" \
+        -D CMAKE_INSTALL_PREFIX:PATH="$prefix/dhsvm-gnu-pr" \
         $common_flags \
         ..
 
