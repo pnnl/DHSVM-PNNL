@@ -383,7 +383,8 @@ int main(int argc, char **argv)
         }
       }
     }
-
+    
+    ParallelBarrier(); 		/* just to make sure timing is correct */
     TIMING_TASK_END("Vertical mass/energy balance", 1);
 
     /* Average all RBM inputs over each segment */
