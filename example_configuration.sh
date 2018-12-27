@@ -251,20 +251,22 @@ elif [ $host = "constance" ]; then
     
     # GA installed here:
 
-    prefix=/pic/projects/informed_hydro/dhsvm-intel
-    CC=/share/apps/intel/2015u1/composer_xe_2015/bin/icc
-    CXX=/share/apps/intel/2015u1/composer_xe_2015/bin/icpc
-    export CC CXX
+    prefix=/pic/projects/informed_hydro
+    PATH="$prefix/netcdf-intel:$PATH"
+    CC=icc
+    CXX=icpc
+    export CC CXX PATH
 
     cmake $options \
         -D MPI_C_COMPILER:STRING="mpicc" \
         -D MPIEXEC:STRING="mpiexec" \
-        -D GA_DIR:STRING="$prefix" \
-	-D GA_EXTRA_LIBS:STRING="-libverbs -lm" \
+        -D GA_DIR:STRING="$prefix/dhsvm-intel" \
+	-D GA_EXTRA_LIBS:STRING="-lm" \
         -D GPTL_DIR:PATH="$prefix" \
         -D DHSVM_USE_X11:BOOL=OFF \
-        -D DHSVM_USE_NETCDF:BOOL=OFF \
-        -D CMAKE_INSTALL_PREFIX:PATH="$prefix" \
+        -D DHSVM_USE_NETCDF:BOOL=ON \
+	-D NetCDF_DIR:PATH="$prefix/netcdf-intel" \
+        -D CMAKE_INSTALL_PREFIX:PATH="$prefix/dhsvm-intel" \
         $common_flags \
         ..
 
