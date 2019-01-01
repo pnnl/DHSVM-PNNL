@@ -55,6 +55,7 @@ int main(int argc, char **argv)
   unsigned char ***ShadowMap = NULL;
   float **SkyViewMap = NULL;
   float ***WindModel = NULL;
+  float **PptMultiplierMap = NULL;                                  
   int MaxStreamID, MaxRoadID;
   clock_t start, finish1;
   double runtime = 0.0;
@@ -223,9 +224,9 @@ int main(int argc, char **argv)
 
 #endif
 
-  InitMetMaps(Time.NDaySteps, &Map, &Radar, &Options, InFiles.WindMapPath,
+  InitMetMaps(Input, Time.NDaySteps, &Map, &Radar, &Options, InFiles.WindMapPath,
 	      InFiles.PrecipLapseFile, &PrecipLapseMap, &PrismMap,
-	      &ShadowMap, &SkyViewMap, &EvapMap, &PrecipMap,
+	      &ShadowMap, &SkyViewMap, &EvapMap, &PrecipMap, &PptMultiplierMap,
 	      &RadarMap, &RadiationMap, SoilMap, &Soil, VegMap, &Veg, TopoMap,
 	      &MM5Input, &WindModel);
 
@@ -339,7 +340,7 @@ int main(int argc, char **argv)
 			       RadarMap, PrismMap, &(SnowMap[y][x]),
 			       SnowAlbedo, &(VegMap[y][x].Type), &(VegMap[y][x]), 
                                MM5Input, WindModel, PrecipLapseMap,
-			       &MetMap, NGraphics, Time.Current.Month,
+			       &MetMap, PptMultiplierMap[y][x], NGraphics, Time.Current.Month,
 			       SkyViewMap[y][x], ShadowMap[Time.DayStep][y][x],
 			       SolarGeo.SunMax, SolarGeo.SineSolarAltitude);
           else
@@ -350,7 +351,7 @@ int main(int argc, char **argv)
 			       RadarMap, PrismMap, &(SnowMap[y][x]),
 			       SnowAlbedo, &(VegMap[y][x].Type), &(VegMap[y][x]), 
                                MM5Input, WindModel, PrecipLapseMap,
-			       &MetMap, NGraphics, Time.Current.Month, 0.0,
+			       &MetMap, PptMultiplierMap[y][x],NGraphics, Time.Current.Month, 0.0,
 			       0.0, SolarGeo.SunMax,
 			       SolarGeo.SineSolarAltitude);
 

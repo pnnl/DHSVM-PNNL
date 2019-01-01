@@ -65,7 +65,7 @@ PIXMET MakeLocalMetData(int y, int x, MAPSIZE *Map, int DayStep,
                         CanopyGapStruct **Gap, VEGPIX *VegMap,
                         float ***MM5Input, float ***WindModel,
                         float **PrecipLapseMap, MET_MAP_PIX ***MetMap,
-                        int NGraphics, int Month, float skyview,
+                        float precipMultiplier, int NGraphics, int Month, float skyview,
                         unsigned char shadow, float SunMax,
                         float SineSolarAltitude)
 {
@@ -245,16 +245,16 @@ PIXMET MakeLocalMetData(int y, int x, MAPSIZE *Map, int DayStep,
           CurrentWeight = ((float) MetWeights[i]) / WeightSum;
           if (Options->PrecipLapse == MAP)
             PrecipMap->Precip += CurrentWeight *
-              LapsePrecip(Stat[i].Data.Precip, 0, 1, PrecipLapseMap[y][x]);
+              LapsePrecip(Stat[i].Data.Precip, 0, 1, PrecipLapseMap[y][x], precipMultiplier);
           else
             PrecipMap->Precip += CurrentWeight *
               LapsePrecip(Stat[i].Data.Precip, Stat[i].Elev, LocalElev,
-                          Stat[i].Data.PrecipLapse);
+                          Stat[i].Data.PrecipLapse, precipMultiplier);
           if (Options->PrecipSepr) {
             PrecipMap->SnowFall += CurrentWeight *
-              LapsePrecip(Stat[i].Data.Snow, Stat[i].Elev, LocalElev, Stat[i].Data.PrecipLapse);
+              LapsePrecip(Stat[i].Data.Snow, Stat[i].Elev, LocalElev, Stat[i].Data.PrecipLapse, precipMultiplier);
             PrecipMap->RainFall += CurrentWeight *
-              LapsePrecip(Stat[i].Data.Rain, Stat[i].Elev, LocalElev, Stat[i].Data.PrecipLapse);
+              LapsePrecip(Stat[i].Data.Rain, Stat[i].Elev, LocalElev, Stat[i].Data.PrecipLapse, precipMultiplier);
           }
         }
       }
@@ -308,7 +308,7 @@ PIXMET MakeLocalMetData(int y, int x, MAPSIZE *Map, int DayStep,
     PrecipMap->RainFall = PrecipMap->Precip - PrecipMap->SnowFall;
   }
 
-  if (VegMap->Gapping) {
+  if (VegMap->Gapping > 0.0 ) {
     for (j = 0; j < CELL_PARTITION; j++) {
       (*Gap)[j].SnowFall = PrecipMap->SnowFall;
       (*Gap)[j].RainFall = PrecipMap->RainFall;
@@ -350,7 +350,7 @@ PIXMET MakeLocalMetData(int y, int x, MAPSIZE *Map, int DayStep,
   else
     LocalSnow->LastSnow = 0;
   /* if canopy gap is present */
-  if (VegMap->Gapping) {
+  if (VegMap->Gapping > 0.0) {
     for (j = 0; j < CELL_PARTITION; j++) {
       if ((*Gap)[j].HasSnow) {
         if ((*Gap)[j].SnowFall > 0.0)

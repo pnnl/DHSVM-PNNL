@@ -245,6 +245,7 @@ typedef struct {
   char ShadingDataExt[BUFSIZE + 1];
   char SkyViewDataPath[BUFSIZE + 1];
   char ImperviousFilePath[BUFSIZ + 1];
+  char PrecipMultiplierMapPath[BUFSIZ + 1];                                           
 } OPTIONSTRUCT;
 
 typedef struct {
@@ -490,7 +491,7 @@ typedef struct
 
 typedef struct {
   int Veg;			            /* Vegetation type */
-  int Gapping;                  /* 1=present, 0=absence*/
+  float Gapping;                  /* gap diameter*/
   float Tcanopy;		        /* Canopy temperature (C) */
   float MoistureFlux;		    /* Amount of water transported from the pixel
                                    to the atmosphere (m/timestep) */
@@ -553,7 +554,6 @@ typedef struct {
   float ExtnCoeff;            /* Light extinction coefficient varied by month */
   float MonthlyExtnCoeff[12]; /* Monthly light extinction (or attenuation coeff); unit: m^-1; 
                              used in improved radiation scheme */
-  float GapDiam;
 } VEGTABLE;
 
 typedef struct {

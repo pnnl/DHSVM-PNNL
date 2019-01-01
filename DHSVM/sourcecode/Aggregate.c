@@ -242,6 +242,16 @@ void Aggregate(MAPSIZE *Map, OPTIONSTRUCT *Options, TOPOPIX **TopoMap,
           Total->Veg.Type[Opening].MeltEnergy += VegMap[y][x].Type[Opening].MeltEnergy;
         }
 
+        if (VegMap[y][x].Gapping > 0.0 ) {
+          Total->Veg.Type[Opening].Qsw += VegMap[y][x].Type[Opening].Qsw;
+          Total->Veg.Type[Opening].Qlin += VegMap[y][x].Type[Opening].Qlin;
+          Total->Veg.Type[Opening].Qlw += VegMap[y][x].Type[Opening].Qlw;
+          Total->Veg.Type[Opening].Qe += VegMap[y][x].Type[Opening].Qe;
+          Total->Veg.Type[Opening].Qs += VegMap[y][x].Type[Opening].Qs;
+          Total->Veg.Type[Opening].Qp += VegMap[y][x].Type[Opening].Qp;
+          Total->Veg.Type[Opening].Swq += VegMap[y][x].Type[Opening].Swq;
+          Total->Veg.Type[Opening].MeltEnergy += VegMap[y][x].Type[Opening].MeltEnergy;
+        }
         /* aggregate soil moisture data */
         Total->Soil.Depth += SoilMap[y][x].Depth;
         DeepDepth = 0.0;

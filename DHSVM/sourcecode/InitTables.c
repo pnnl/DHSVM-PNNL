@@ -293,7 +293,6 @@ int InitVegTable(VEGTABLE **VType, LISTPTR Input, OPTIONSTRUCT *Options, LAYER *
     "DETENTION FRACTION",
     "DETENTION DECAY",
     "HEIGHT",
-    "CANOPY GAP DIAMETER",
     "MAXIMUM RESISTANCE",
     "MINIMUM RESISTANCE",
     "MOISTURE THRESHOLD",
@@ -608,10 +607,6 @@ int InitVegTable(VEGTABLE **VType, LISTPTR Input, OPTIONSTRUCT *Options, LAYER *
           ReportError(KeyName[vf_adj], 51);
         (*VType)[i].Vf = (*VType)[i].Fract[0] * (*VType)[i].VfAdjust;
 
-        if (Options->CanopyGapping == TRUE) {
-          if (!CopyFloat(&((*VType)[i].GapDiam), VarStr[gap_diam], 1))
-            ReportError(KeyName[gap_diam], 51);
-        }
       }
       else {
         if ((*VType)[i].UnderStory == TRUE) {

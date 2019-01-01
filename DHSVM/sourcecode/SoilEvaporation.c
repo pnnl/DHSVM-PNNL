@@ -26,18 +26,17 @@
 *****************************************************************************/
 float SoilEvaporation(int Dt, float Temp, float Slope, float Gamma, float Lv,
 		      float AirDens, float Vpd, float NetRad, float RaSoil,
-		      float Transpiration, float Porosity, float Ks,
+		      float Transpiration, float Porosity, float FCap, float Ks,
 		      float Press, float m, float RootDepth,
 		      float *MoistContent, float Adjust)
 {
   float DesorptionVolume;	/* Amount of water the soil can deliver to the
-				   atmosphere during a timestep (mm) */
-  float EPot;			/* Potential evaporation from soil during
-				   timestep (mm) */
-  float SoilEvap;		/* Amount of evaporation directly from the soil
-				   (mm) */
-  float SoilMoisture;		/* Amount of water in surface soil layer 
-				   (mm) */
+				               atmosphere during a timestep (mm) */
+  float EPot;			/* Potential evaporation from soil during timestep (mm) */
+  float SoilEvap;		/* Amount of evaporation directly from the soil (mm) */
+  float SoilMoisture;   /* Amount of water in surface soil layer (mm) */
+  float MoistThrhld;    /* threshold that limits evap to maintain soil at a moisture level */
+  float tmp;
 
   DesorptionVolume = Desorption(Dt, *MoistContent, Porosity, Ks, Press, m);
 
@@ -69,17 +68,17 @@ float SoilEvaporation(int Dt, float Temp, float Slope, float Gamma, float Lv,
 
   SoilEvap = MIN(EPot, DesorptionVolume);
   SoilEvap *= Adjust;
-
   SoilMoisture = *MoistContent * RootDepth * Adjust;
 
-  if (SoilEvap > SoilMoisture) {
-    SoilEvap = SoilMoisture;
-    *MoistContent = 0.0;
+  MoistThrhld = FCap;
+  tmp = MoistThrhld *RootDepth * Adjust;
+  if (SoilEvap > SoilMoisture - tmp) {
+    SoilEvap = SoilMoisture - tmp;
+    *MoistContent = MoistThrhld;
   }
   else {
     SoilMoisture -= SoilEvap;
     *MoistContent = SoilMoisture / (RootDepth * Adjust);
   }
-
   return SoilEvap;
 }
