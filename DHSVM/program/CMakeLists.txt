@@ -9,7 +9,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2018-11-08 14:26:11 d3g096
+# Last Change: 2018-11-30 11:44:35 d3g096
 
 # -------------------------------------------------------------
 # Set up for this subdirectory
@@ -23,9 +23,10 @@ include_directories(BEFORE
 
 if (DHSVM_USE_NETCDF)
   set(NetCDF_LIBS ${NetCDF_C_LIBRARIES} ${MATH_LIBRARY})
-  if (HDF5_IS_PARALLEL)
+  if (DHSVM_PARALLEL_NETCDF)
     set(NetCDF_LIBS ${NetCDF_LIBS} ${MPI_C_LIBRARIES})
-  endif(HDF5_IS_PARALLEL)
+  endif(DHSVM_PARALLEL_NETCDF)
+  message(STATUS "NetCDF_LIBS=${NetCDF_LIBS}")
 else(DHSVM_USE_NETCDF)
   set(NetCDF_LIBS "")
 endif(DHSVM_USE_NETCDF)

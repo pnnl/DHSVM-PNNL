@@ -64,17 +64,16 @@ a distributed multi-dimensional array data structure.
 
 DHSVM can use [NetCDF](https://www.unidata.ucar.edu/software/netcdf/)
 for 2D map data input and output. DHSVM can link use the NetCDF
-library whether it was built parallel or not, but NetCDF I/O in
-DHSVM is serial.  Parallel NetCDF I/O is planned.  
-
+library whether it was built parallel or not.  
 Currently,
 [NetCDF input format](https://www.unidata.ucar.edu/software/netcdf/docs/netcdf_introduction.html#netcdf_format)
 should be HDF5-based NetCDF-4. Map data needs to be arranged in
 "north-up" fashion, as binary files are arranged. This means that the
 NetCDF y-coordinate must be descending (ascending y is called
 "bottom-up"). DHSVM will refuse to read the "bottom-up" arrangement.
-([GDAL](https://www.gdal.org/frmt_netcdf.html) utilities can produce
-this format.)   
+[GDAL](https://www.gdal.org/frmt_netcdf.html) utilities can produce
+this format using `-co FORMAT=NC4 -co WRITE_BOTTOMUP=NO`. An advantage
+of this format is they can be read directly by various GIS systems.
 
 Here is the (abridged) structure of an example DEM NetCDF input file. 
 
@@ -97,7 +96,26 @@ Here is the (abridged) structure of an example DEM NetCDF input file.
                     Basin.DEM:_FillValue = -9999.f ;
                     Basin.DEM:grid_mapping = "transverse_mercator" ;
     }
+    
+DHSVM can read NetCDF files in two ways: serial and parallel.
+"Serial" means that DHSVM reads 2D input files with one process and
+distributes the contents to other processes.  This is available even
+when the NetCDF library was built to support parallel reads.
+"Parallel" means that all processes read the NetCDF files
+directly. Parallel NetCDF I/O is a work in progress. It is not helpful
+on most systems, but may speed I/O on large clusters that have
+parallel file systems (e.g. Lustre).  
 
+To use serial NetCDF, use the following in the DHSVM configuration:
+
+    Format = NETCDF
+    
+For parallel NetCDF, use
+
+    Format = PNETCDF
+    
+For the latter, the NetCDF library must be built with the parallel
+HDF5 library. 
 
 ### CMake
 
@@ -162,7 +180,9 @@ configuration options:
    -D GPTL_DIR:PATH="/path/to/gptl"
    -D DHSVM_TIMING_LEVEL:STRING="1" 
    
-The resulting executables will produce files named `timing.#` at the
+If configured as such, an additional executable, `DHSVM_timed` is
+built. `DHSVM_SNOW_timed` will also be built if snow-only mode is
+enabled. The resulting executables will produce files named `timing.#` at the
 end of simulation, where `#` is the MPI process number.  These contain
 timing results for several key simulation components.
 

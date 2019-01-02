@@ -10,7 +10,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2018-11-21 08:31:26 d3g096
+ * LAST CHANGE: 2018-11-30 13:19:11 d3g096
  * COMMENTS:
  */
 
@@ -24,6 +24,9 @@
 
 #ifdef HAVE_NETCDF
 #include "NetCDFInputMap2D.hpp"
+#ifdef HAVE_PARALLEL_NETCDF
+#include "PNetCDFInputMap2D.hpp"
+#endif
 #endif
 
 // -------------------------------------------------------------
@@ -81,6 +84,12 @@ InputMap2DFactory::operator() (const std::string& fname, const std::string& vnam
     result =
       static_cast<InputMap2D *>(new NetCDFInputMap2D(fname, vname, NumberType, Map, mirror));
     break;
+#ifdef HAVE_PARALLEL_NETCDF
+  case (PNETCDF):
+    result =
+      static_cast<InputMap2D *>(new PNetCDFInputMap2D(fname, vname, NumberType, Map, mirror));
+    break;
+#endif
 #endif
   default:
     
@@ -107,6 +116,11 @@ Map2DInit(int FileFormat)
 #ifndef HAVE_NETCDF
     ReportError((char *) Routine, 56);
 #endif
+    break;
+  case (PNETCDF):
+#ifndef HAVE_PARALLEL_NETCDF
+    ReportError((char *) Routine, 56);
+#endif    
     break;
   default:
     ReportError((char *) Routine, 38);

@@ -8,7 +8,7 @@
 // -------------------------------------------------------------
 // -------------------------------------------------------------
 // Created October 18, 2018 by William A. Perkins
-// Last Change: 2018-10-22 11:52:21 d3g096
+// Last Change: 2018-11-30 12:02:43 d3g096
 // -------------------------------------------------------------
 
 
@@ -24,6 +24,10 @@ class NetCDFInputMap2D
   : public SerialInputMap2D
 {
 protected:
+
+  /// An error routine
+  static void nc_check_err(const int& ncstatus, const int& line, 
+			   const char *sfile, const char *dfile);
 
   /// NetCDF file handle
   int my_ncid;
@@ -48,6 +52,9 @@ protected:
 
   /// Close the input map file (specialized)
   void my_close();
+
+  /// Fill array index ranges
+  virtual void my_indexes(size_t start[], size_t count[], const int& index);
 
   /// format specific read
   int my_read_fmt(const int& unused_index, const int& index, unsigned char *buffer);

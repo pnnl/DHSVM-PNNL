@@ -129,6 +129,7 @@ void RouteSubSurface(int Dt, MAPSIZE *Map, TOPOPIX **TopoMap,
   FILE *fs;                     /* File pointer. */
   int ga;
   GA_Patch patch;
+  const float zero = 0.0;
 
   /*****************************************************************************
    Allocate memory 
@@ -325,7 +326,8 @@ void RouteSubSurface(int Dt, MAPSIZE *Map, TOPOPIX **TopoMap,
     }
   }
 
-  GA_Zero(ga);
+  GA_Fill(ga, &zero);
+  /* GA_Zero(ga); */
   GA_Acc_patch(ga, Map, &patch);
   ParallelBarrier();
   GA_Get_patch(ga, Map, &patch);

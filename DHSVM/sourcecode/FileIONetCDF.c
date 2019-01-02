@@ -119,6 +119,7 @@ void CreateMapFileNetCDF(char *FileName, ...)
   int ncstatus;
   int ncid;
   int dimids[3];		/* time, north, east */
+  int themode;
 
   /****************************************************************************/
   /*                     HANDLE VARIABLE ARGUMENT LIST                        */
@@ -127,9 +128,11 @@ void CreateMapFileNetCDF(char *FileName, ...)
   va_start(ap, FileName);
   FileLabel = va_arg(ap, char *);
   Map = va_arg(ap, MAPSIZE *);
+ 
 
   /* Go ahead and clobber any existing file */
-  ncstatus = nc_create(FileName, NC_CLOBBER | NC_NOFILL, &ncid);
+  themode = NC_CLOBBER | NC_NETCDF4;
+  ncstatus = nc_create(FileName, themode, &ncid);
   nc_check_err(ncstatus, __LINE__, __FILE__);
 
   /****************************************************************************/

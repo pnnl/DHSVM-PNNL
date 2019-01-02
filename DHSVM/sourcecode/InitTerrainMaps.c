@@ -151,23 +151,11 @@ void InitTopoMap(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * GMap, MAPSIZE 
   flag = Read2DMatrix(StrEnv[demfile].VarStr, Elev, NumberType, Map, 0,
     VarName, 0);
 
-  /* Assign the attributes to the map pixel */
-  /* Reverse the matrix is flag = 1 & netcdf option is selected */
-  if ((Options->FileFormat == NETCDF && flag == 0) || (Options->FileFormat == BIN)) {
-    for (y = 0, i = 0; y < Map->NY; y++) {
-      for (x = 0; x < Map->NX; x++, i++) {
-        (*TopoMap)[y][x].Dem = Elev[i];
-      }
+  for (y = 0, i = 0; y < Map->NY; y++) {
+    for (x = 0; x < Map->NX; x++, i++) {
+      (*TopoMap)[y][x].Dem = Elev[i];
     }
   }
-  else if (Options->FileFormat == NETCDF && flag == 1) {
-    for (y = Map->NY - 1, i = 0; y >= 0; y--) {
-      for (x = 0; x < Map->NX; x++, i++) {
-        (*TopoMap)[y][x].Dem = Elev[i];
-      }
-    }
-  }
-  else ReportError((char *)Routine, 57);
   free(Elev);
 
   /* Read the mask */
@@ -179,23 +167,11 @@ void InitTopoMap(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * GMap, MAPSIZE 
   flag = Read2DMatrix(StrEnv[maskfile].VarStr, Mask, NumberType, Map, 0,
     VarName, 0);
 
-  if ((Options->FileFormat == NETCDF && flag == 0)
-    || (Options->FileFormat == BIN))
-  {
-    for (y = 0, i = 0; y < Map->NY; y++) {
-      for (x = 0; x < Map->NX; x++, i++) {
-        (*TopoMap)[y][x].Mask = Mask[i];
-      }
+  for (y = 0, i = 0; y < Map->NY; y++) {
+    for (x = 0; x < Map->NX; x++, i++) {
+      (*TopoMap)[y][x].Mask = Mask[i];
     }
   }
-  else if (Options->FileFormat == NETCDF && flag == 1) {
-    for (y = Map->NY - 1, i = 0; y >= 0; y--) {
-      for (x = 0; x < Map->NX; x++, i++) {
-        (*TopoMap)[y][x].Mask = Mask[i];
-      }
-    }
-  }
-  else ReportError((char *)Routine, 57);
   free(Mask);
 
   /* get flag to dump topography */
@@ -290,27 +266,13 @@ void InitSoilMap(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * Map,
   flag = Read2DMatrix(StrEnv[soiltype_file].VarStr, Type, NumberType, 
 	Map, 0, VarName, 0);
 
-  if ((Options->FileFormat == NETCDF && flag == 0)
-    || (Options->FileFormat == BIN))
-  {
-    for (y = 0, i = 0; y < Map->NY; y++) {
-      for (x = 0; x < Map->NX; x++, i++) {
-        if (((int)Type[i]) > Soil->NTypes)
-          ReportError(StrEnv[soiltype_file].VarStr, 32);
-        (*SoilMap)[y][x].Soil = Type[i];
-      }
+  for (y = 0, i = 0; y < Map->NY; y++) {
+    for (x = 0; x < Map->NX; x++, i++) {
+      if (((int)Type[i]) > Soil->NTypes)
+        ReportError(StrEnv[soiltype_file].VarStr, 32);
+      (*SoilMap)[y][x].Soil = Type[i];
     }
   }
-  else if (Options->FileFormat == NETCDF && flag == 1) {
-    for (y = Map->NY - 1, i = 0; y >= 0; y--) {
-      for (x = 0; x < Map->NX; x++, i++) {
-        if (((int)Type[i]) > Soil->NTypes)
-          ReportError(StrEnv[soiltype_file].VarStr, 32);
-        (*SoilMap)[y][x].Soil = Type[i];
-      }
-    }
-  }
-  else ReportError((char *)Routine, 57);
 
   /* Read the total soil depth  */
   GetVarName(004, 0, VarName);
@@ -321,24 +283,11 @@ void InitSoilMap(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * Map,
   flag = Read2DMatrix(StrEnv[soildepth_file].VarStr, Depth, NumberType, 
 	Map, 0, VarName, 0);
 
-  /* Assign the attributes to the correct map pixel */
-  if ((Options->FileFormat == NETCDF && flag == 0)
-    || (Options->FileFormat == BIN))
-  {
-    for (y = 0, i = 0; y < Map->NY; y++) {
-      for (x = 0; x < Map->NX; x++, i++) {
-        (*SoilMap)[y][x].Depth = Depth[i];
-      }
+  for (y = 0, i = 0; y < Map->NY; y++) {
+    for (x = 0; x < Map->NX; x++, i++) {
+      (*SoilMap)[y][x].Depth = Depth[i];
     }
   }
-  else if (Options->FileFormat == NETCDF && flag == 1) {
-    for (y = Map->NY - 1, i = 0; y >= 0; y--) {
-      for (x = 0; x < Map->NX; x++, i++) {
-        (*SoilMap)[y][x].Depth = Depth[i];
-      }
-    }
-  }
-  else ReportError((char *)Routine, 57);
 
   for (y = 0, i = 0; y < Map->NY; y++) {
     for (x = 0; x < Map->NX; x++, i++) {
@@ -407,25 +356,12 @@ void InitVegMap(OPTIONSTRUCT * Options, LISTPTR Input, MAPSIZE * Map, VEGPIX ***
       ReportError((char *)Routine, 1);
   }
 
-  if ((Options->FileFormat == NETCDF && flag == 0)
-    || (Options->FileFormat == BIN))
-  {
-    for (y = 0, i = 0; y < Map->NY; y++) {
-      for (x = 0; x < Map->NX; x++, i++) {
-        (*VegMap)[y][x].Veg = Type[i];
-        (*VegMap)[y][x].Tcanopy = 0.0;
-      }
+  for (y = 0, i = 0; y < Map->NY; y++) {
+    for (x = 0; x < Map->NX; x++, i++) {
+      (*VegMap)[y][x].Veg = Type[i];
+      (*VegMap)[y][x].Tcanopy = 0.0;
     }
   }
-  else if (Options->FileFormat == NETCDF && flag == 1) {
-    for (y = Map->NY - 1, i = 0; y >= 0; y--) {
-      for (x = 0; x < Map->NX; x++, i++) {
-        (*VegMap)[y][x].Veg = Type[i];
-        (*VegMap)[y][x].Tcanopy = 0.0;
-      }
-    }
-  }
-  else ReportError((char *)Routine, 57);
 
   free(Type);
 }
@@ -465,32 +401,14 @@ void InitCanopyGapMap(OPTIONSTRUCT *Options, LISTPTR Input, MAPSIZE *Map,
   flag = Read2DMatrix(CanopyMapFileName, Gap, NumberType, Map, 0, VarName, 0);
 
   /* if NetCDF, may need to reverse the matrix */
-  if ((Options->FileFormat == NETCDF && flag == 0)
-    || (Options->FileFormat == BIN))
-  {
-    for (y = 0, i = 0; y < Map->NY; y++) {
-      for (x = 0; x < Map->NX; x++, i++) {
-        (*VegMap)[y][x].Gapping = Gap[i];
-        /* set gapping to false for cells with no overstory */
-        if (VType[(*VegMap)[y][x].Veg - 1].OverStory == FALSE)
-          (*VegMap)[y][x].Gapping = 0.0;
-      }
+  for (y = 0, i = 0; y < Map->NY; y++) {
+    for (x = 0; x < Map->NX; x++, i++) {
+      (*VegMap)[y][x].Gapping = Gap[i];
+      /* set gapping to false for cells with no overstory */
+      if (VType[(*VegMap)[y][x].Veg - 1].OverStory == FALSE)
+        (*VegMap)[y][x].Gapping = 0;
     }
   }
-  else if (Options->FileFormat == NETCDF && flag == 1) {
-    for (y = Map->NY - 1, i = 0; y >= 0; y--) {
-      for (x = 0; x < Map->NX; x++, i++) {
-        (*VegMap)[y][x].Gapping = Gap[i];
-        /* set gapping to false for cells with no overstory */
-        if (VType[(*VegMap)[y][x].Veg - 1].OverStory == FALSE)
-          (*VegMap)[y][x].Gapping = 0.0;
-        /* set gapping to false given glacier cell */
-        if (VType[(*VegMap)[y][x].Veg - 1].Index == GLACIER)
-          (*VegMap)[y][x].Gapping = 0.0;
-      }
-    }
-  }
-  else ReportError((char *)Routine, 57);
 
   for (y = 0; y < Map->NY; y++) {
     for (x = 0; x < Map->NX; x++) {

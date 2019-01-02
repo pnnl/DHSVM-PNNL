@@ -145,6 +145,8 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
     Options->FileFormat = BIN;
   else if (strncmp(StrEnv[format].VarStr, "NETCDF", 3) == 0)
     Options->FileFormat = NETCDF;
+  else if (strncmp(StrEnv[format].VarStr, "PNETCDF", 3) == 0)
+    Options->FileFormat = PNETCDF;
   else if (strncmp(StrEnv[format].VarStr, "BYTESWAP", 3) == 0)
     Options->FileFormat = BYTESWAP;
   else
@@ -379,6 +381,9 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
     Options->Rhoverride = FALSE;
   else
     ReportError(StrEnv[rhoverride].KeyName, 51);
+
+  /* make sure this is intialized */
+  strcpy(Options->PrecipMultiplierMapPath, "");
 
   /* The other met options are only of importance if MM5 is FALSE */
   if (Options->MM5 == TRUE) {

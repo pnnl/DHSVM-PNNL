@@ -10,7 +10,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2018-11-30 10:35:37 d3g096
+# Last Change: 2018-12-12 11:01:36 d3g096
 
 set -xue
 
@@ -68,7 +68,7 @@ common_flags="\
         -D DHSVM_SNOW_ONLY:BOOL=ON \
         -D DHSVM_BUILD_TESTS:BOOL=OFF \
         -D DHSVM_USE_RBM:BOOL=OFF \
-        -D DHSVM_DUMP_TOPO:BOOL=OFF \
+        -D DHSVM_DUMP_TOPO:BOOL=ON \
 	-D DHSVM_USE_GPTL:BOOL=$timing \
         -D CMAKE_VERBOSE_MAKEFILE:BOOL=TRUE \
 "
@@ -84,7 +84,7 @@ if [ $host == "flophouse" ]; then
     # export CFLAGS
 
     prefix="/net/flophouse/files0/perksoft/linux64"
-    cmake $options \
+    cmake3 $options \
         -D MPI_C_COMPILER:STRING="/usr/lib64/openmpi/bin/mpicc" \
         -D MPI_CXX_COMPILER:STRING="/usr/lib64/openmpi/bin/mpicxx" \
         -D MPIEXEC:STRING="/usr/lib64/openmpi/bin/mpiexec" \
@@ -139,6 +139,7 @@ elif [ $host == "WE32673" ]; then
         -D HDF5_PREFER_PARALLEL:BOOL=TRUE \
         -D DHSVM_USE_X11:BOOL=OFF \
         -D DHSVM_USE_NETCDF:BOOL=ON \
+        -D NetCDF_BIN_DIR:PATH=/opt/local/bin \
         -D CMAKE_INSTALL_PREFIX:PATH="$HOME/Projects/DHSVM" \
         $common_flags \
         ..
@@ -250,20 +251,22 @@ elif [ $host = "constance" ]; then
     
     # GA installed here:
 
-    prefix=/pic/projects/informed_hydro/dhsvm-intel
-    CC=/share/apps/intel/2015u1/composer_xe_2015/bin/icc
-    CXX=/share/apps/intel/2015u1/composer_xe_2015/bin/icpc
-    export CC CXX
+    prefix=/pic/projects/informed_hydro
+    PATH="$prefix/netcdf-intel:$PATH"
+    CC=icc
+    CXX=icpc
+    export CC CXX PATH
 
     cmake $options \
         -D MPI_C_COMPILER:STRING="mpicc" \
         -D MPIEXEC:STRING="mpiexec" \
-        -D GA_DIR:STRING="$prefix" \
+        -D GA_DIR:STRING="$prefix/dhsvm-intel" \
 	-D GA_EXTRA_LIBS:STRING="-libverbs -lm" \
         -D GPTL_DIR:PATH="$prefix" \
         -D DHSVM_USE_X11:BOOL=OFF \
-        -D DHSVM_USE_NETCDF:BOOL=OFF \
-        -D CMAKE_INSTALL_PREFIX:PATH="$prefix" \
+        -D DHSVM_USE_NETCDF:BOOL=ON \
+	-D NetCDF_DIR:PATH="$prefix/netcdf-intel" \
+        -D CMAKE_INSTALL_PREFIX:PATH="$prefix/dhsvm-intel" \
         $common_flags \
         ..
 
@@ -308,10 +311,11 @@ elif [ $host = "constance-gnu-pr" ]; then
     
     # GA installed here:
 
-    prefix=/pic/projects/informed_hydro/dhsvm-gnu-pr
+    prefix=/pic/projects/informed_hydro
+    PATH="$prefix/netcdf-gnu:$PATH"
     CC=/share/apps/gcc/4.8.2/bin/gcc
     CXX=/share/apps/gcc/4.8.2/bin/g++
-    export CC CXX
+    export CC CXX PATH
     CFLAGS="-pthread"
     CXXFLAGS="-pthread"
     export CFLAGS CXXFLAGS
@@ -319,12 +323,14 @@ elif [ $host = "constance-gnu-pr" ]; then
     cmake $options \
         -D MPI_C_COMPILER:STRING="/share/apps/openmpi/1.8.3/gcc/4.8.2/bin/mpicc" \
         -D MPIEXEC:STRING="/share/apps/openmpi/1.8.3/gcc/4.8.2/bin/mpiexec" \
-        -D GA_DIR:STRING="$prefix" \
+        -D GA_DIR:STRING="$prefix/dhsvm-gnu-pr" \
 	-D GA_EXTRA_LIBS:STRING="-lrt -lm" \
+        -D GPTL_DIR:PATH="$prefix/dhsvm-gnu-pr" \
         -D DHSVM_USE_X11:BOOL=OFF \
-        -D DHSVM_USE_NETCDF:BOOL=OFF \
-        -D NETCDF_INCLUDES:PATH="${NETCDF_INCLUDE}" \
-        -D CMAKE_INSTALL_PREFIX:PATH="$prefix" \
+        -D DHSVM_USE_NETCDF:BOOL=ON \
+	-D USE_PROGRESS_RANKS:BOOL=ON \
+	-D NetCDF_DIR:PATH="$prefix/netcdf-gnu" \
+        -D CMAKE_INSTALL_PREFIX:PATH="$prefix/dhsvm-gnu-pr" \
         $common_flags \
         ..
 
