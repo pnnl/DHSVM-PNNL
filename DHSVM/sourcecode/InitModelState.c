@@ -50,7 +50,7 @@ void InitModelState(DATE *Start, MAPSIZE *Map, OPTIONSTRUCT *Options, PRECIPPIX 
   SNOWPIX **SnowMap, SOILPIX **SoilMap, LAYER Soil, SOILTABLE *SType,
   VEGPIX **VegMap, LAYER Veg, VEGTABLE *VType, char *Path, SNOWTABLE *SnowAlbedo,
   TOPOPIX **TopoMap, ROADSTRUCT **Network, UNITHYDRINFO *HydrographInfo,
-  float *Hydrograph)
+  float *Hydrograph, AGGREGATED *Total, GLPIX ** GlacierMap)
 {
   const char *Routine = "InitModelState";
   char Str[NAMESIZE + 1];
@@ -274,22 +274,22 @@ void InitModelState(DATE *Start, MAPSIZE *Map, OPTIONSTRUCT *Options, PRECIPPIX 
   free(Array);
 
   for (y = 0; y < Map->NY; y++) {
-	for (x = 0; x < Map->NX; x++) {
-	  if (INBASIN(TopoMap[y][x].Mask)) {
-		if (Options->CanopyGapping) {
-		  for (i = 0; i < CELL_PARTITION; i++)
-			VegMap[y][x].Type[i].Albedo =
-			CalcSnowAlbedo(SnowMap[y][x].TSurf, SnowMap[y][x].LastSnow, SnowAlbedo);
-		}
-		else {
-		  if (SnowMap[y][x].HasSnow)
-			SnowMap[y][x].Albedo = CalcSnowAlbedo(SnowMap[y][x].TSurf, SnowMap[y][x].LastSnow, SnowAlbedo);
-		  else
-			SnowMap[y][x].Albedo = 0;
-		}
-	  }
-
-	}
+    for (x = 0; x < Map->NX; x++) {
+      if (INBASIN(TopoMap[y][x].Mask)) {
+        if (Options->CanopyGapping) {
+          for (i = 0; i < CELL_PARTITION; i++)
+          VegMap[y][x].Type[i].Albedo =
+          CalcSnowAlbedo(SnowMap[y][x].TSurf, SnowMap[y][x].LastSnow, SnowMap[y][x].Swq, SnowAlbedo);
+        }
+        else {
+          if (SnowMap[y][x].HasSnow)
+          SnowMap[y][x].Albedo = 
+            CalcSnowAlbedo(SnowMap[y][x].TSurf, SnowMap[y][x].LastSnow, SnowMap[y][x].Swq, SnowAlbedo);
+          else
+          SnowMap[y][x].Albedo = 0;
+        }
+      }
+    }
   }
 
   /* Restore soil conditions */
@@ -434,6 +434,45 @@ void InitModelState(DATE *Start, MAPSIZE *Map, OPTIONSTRUCT *Options, PRECIPPIX 
       fscanf(HydroStateFile, "%f\n", &(Hydrograph[i]));
     fclose(HydroStateFile);
   }
+
+  /* Initialize the glacier states */
+  for (y = 0; y < Map->NY; y++) {
+    for (x = 0; x < Map->NX; x++) {
+      if (Options->CanopyGapping && VegMap[y][x].Gapping) {
+        SnowMap[y][x].Iwq = 0.0;
+        SnowMap[y][x].IceRemoved = 0.0;
+        for (i = 0; i < CELL_PARTITION; i++) {
+          VegMap[y][x].Type[i].Iwq = 0.0;
+          VegMap[y][x].Type[i].IceRemoved = 0.0;
+        }
+      }
+      else {
+        if (Options->Glacier == GLSTATIC || Options->Glacier == GLDYNAMIC) {
+          GlacierMap[y][x].totmbal = 0.0;
+          GlacierMap[y][x].h = GlacierMap[y][x].s_init - GlacierMap[y][x].b;
+          GlacierMap[y][x].s_out = GlacierMap[y][x].s_init;
+          SnowMap[y][x].Iwq = (GlacierMap[y][x].h) * (900. / 1000.);
+          SnowMap[y][x].iweold = SnowMap[y][x].Iwq;
+          SnowMap[y][x].glwater = 0.0;
+          SnowMap[y][x].Qold = 0.0;
+          SnowMap[y][x].IceRemoved = 0.0;
+
+          if (GlacierMap[y][x].GlMask < 1) {
+            SnowMap[y][x].IceRemoved = SnowMap[y][x].Iwq;
+            GlacierMap[y][x].h = 0.0;
+            GlacierMap[y][x].s_init = GlacierMap[y][x].b;
+            SnowMap[y][x].Iwq = 0.0;
+            SnowMap[y][x].iweold = SnowMap[y][x].Iwq;
+          }
+        }
+        else {
+          SnowMap[y][x].Iwq = 0.0;
+          SnowMap[y][x].IceRemoved = 0.0;
+        }
+      }
+    }
+  }
+
   // Initialize the flood detention storage in each pixel for impervious fraction > 0 situation. 
   for (y = 0; y < Map->NY; y++) {
     for (x = 0; x < Map->NX; x++) {
@@ -450,29 +489,29 @@ void InitModelState(DATE *Start, MAPSIZE *Map, OPTIONSTRUCT *Options, PRECIPPIX 
 	Count = 0;
 	for (y = 0; y < Map->NY; y++) {
 	  for (x = 0; x < Map->NX; x++) {
-		if (INBASIN(TopoMap[y][x].Mask)) {
-		  Count += 1;
-		  if (VegMap[y][x].Gapping > 0.0) {
-			CountGap += 1;
-			for (i = 0; i < CELL_PARTITION; i++) {
-			  VegMap[y][x].Type[i].TPack = SnowMap[y][x].TPack;
-			  VegMap[y][x].Type[i].SurfWater = SnowMap[y][x].SurfWater;
-			  VegMap[y][x].Type[i].LastSnow = SnowMap[y][x].LastSnow;
-			  VegMap[y][x].Type[i].HasSnow = SnowMap[y][x].HasSnow;
-			  for (j = 0; j < Soil.MaxLayers + 1; j++) {
-				if (j < NSoil)
-				  VegMap[y][x].Type[i].Moist[j] = SoilMap[y][x].Moist[j];
-			  }
-			}
-			VegMap[y][x].Type[Opening].Swq = SnowMap[y][x].Swq;
-			VegMap[y][x].Type[Forest].Swq = SnowMap[y][x].Swq;
+      if (INBASIN(TopoMap[y][x].Mask)) {
+        Count += 1;
+        if (VegMap[y][x].Gapping > 0.) {
+        CountGap += 1;
+        for (i = 0; i < CELL_PARTITION; i++) {
+          VegMap[y][x].Type[i].TPack = SnowMap[y][x].TPack;
+          VegMap[y][x].Type[i].SurfWater = SnowMap[y][x].SurfWater;
+          VegMap[y][x].Type[i].LastSnow = SnowMap[y][x].LastSnow;
+          VegMap[y][x].Type[i].HasSnow = SnowMap[y][x].HasSnow;
+          for (j = 0; j < Soil.MaxLayers + 1; j++) {
+          if (j < NSoil)
+            VegMap[y][x].Type[i].Moist[j] = SoilMap[y][x].Moist[j];
+          }
+        }
+        VegMap[y][x].Type[Opening].Swq = SnowMap[y][x].Swq;
+        VegMap[y][x].Type[Forest].Swq = SnowMap[y][x].Swq;
 
-			VegMap[y][x].Type[Opening].GapView =
-			  CalcGapView(0.5 * VegMap[y][x].Gapping,
-				VType[VegMap[y][x].Veg - 1].Height[0],
-				VType[VegMap[y][x].Veg - 1].Vf);
-		  }
-		}
+        VegMap[y][x].Type[Opening].GapView =
+          CalcGapView(0.5 * VegMap[y][x].Gapping,
+          VType[VegMap[y][x].Veg - 1].Height[0],
+          VType[VegMap[y][x].Veg - 1].Vf);
+        }
+      }
 	  }
 	}
 	/* total number of grid cells with a gap structure */
@@ -480,6 +519,3 @@ void InitModelState(DATE *Start, MAPSIZE *Map, OPTIONSTRUCT *Options, PRECIPPIX 
     printf("\n****Canopy Gap****\n%d out of %d cells have a gap structure\n\n", TotNumGap, Count);
   }
 }
-
-
-

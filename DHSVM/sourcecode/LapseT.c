@@ -77,6 +77,4 @@ float LapsePrecip(float Precip, float FromElev, float ToElev,
     LapsedPrecip = 0.0;
 
   return LapsedPrecip;
-
-
 }

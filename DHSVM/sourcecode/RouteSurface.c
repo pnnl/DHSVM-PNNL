@@ -52,7 +52,7 @@ void RouteSurface(MAPSIZE * Map, TIMESTRUCT * Time, TOPOPIX ** TopoMap,
   float StreamFlow;
   int TravelTime;
   int WaveLength;
-  int i, j, x, y, n, k;         /* Counters */
+  int i, j, x, y, n;         /* Counters */
 
 
   /* Allocate memory for Runon Matrix */

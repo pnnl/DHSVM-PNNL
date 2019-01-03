@@ -34,8 +34,9 @@
    InitTerrainMaps()
  *****************************************************************************/
 void InitTerrainMaps(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
+
   LAYER *Soil, LAYER *Veg, TOPOPIX ***TopoMap, SOILTABLE *SType, SOILPIX ***SoilMap, 
-  VEGTABLE *VType, VEGPIX ***VegMap)
+  VEGTABLE *VType, VEGPIX ***VegMap, GLPIX *** GlacierMap)
 
 {
   printf("\nInitializing terrain maps\n");
@@ -43,8 +44,13 @@ void InitTerrainMaps(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
   InitTopoMap(Input, Options, Map, TopoMap);
   InitSoilMap(Input, Options, Map, Soil, *TopoMap, SoilMap);
   InitVegMap(Options, Input, Map, VegMap);
+
   if (Options->CanopyGapping)
     InitCanopyGapMap(Options, Input, Map, Soil, Veg, VType, VegMap, SType, SoilMap);
+
+  if (Options->Glacier == GLSPINUP || Options->Glacier == GLSTATIC || Options->Glacier == GLDYNAMIC) {
+    InitGlacierMaps(Input, Options, Map, GlacierMap);
+  }
 }
 
 /*****************************************************************************
@@ -155,6 +161,7 @@ void InitTopoMap(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * Map,
         (*TopoMap)[y][x].Mask = OUTSIDEBASIN;
     (*TopoMap)[Options->PointY][Options->PointX].Mask = (1 != OUTSIDEBASIN);
   }
+  
   /* find out the minimum grid elevation of the basin */
   MINELEV = 9999;
   for (y = 0, i = 0; y < Map->NY; y++) {
@@ -355,7 +362,6 @@ void InitVegMap(OPTIONSTRUCT * Options, LISTPTR Input, MAPSIZE * Map, VEGPIX ***
   free(Type);
 }
 
-
 /*****************************************************************************
 InitCanopyGapMap()
 *****************************************************************************/
@@ -398,7 +404,7 @@ void InitCanopyGapMap(OPTIONSTRUCT *Options, LISTPTR Input, MAPSIZE *Map,
         (*VegMap)[y][x].Gapping = Gap[i];
         /* set gapping to false for cells with no overstory */
         if (VType[(*VegMap)[y][x].Veg - 1].OverStory == FALSE)
-          (*VegMap)[y][x].Gapping = 0.0;
+          (*VegMap)[y][x].Gapping = 0.;
       }
     }
   }
@@ -408,10 +414,10 @@ void InitCanopyGapMap(OPTIONSTRUCT *Options, LISTPTR Input, MAPSIZE *Map,
         (*VegMap)[y][x].Gapping = Gap[i];
         /* set gapping to false for cells with no overstory */
         if (VType[(*VegMap)[y][x].Veg - 1].OverStory == FALSE)
-          (*VegMap)[y][x].Gapping = 0.0;
+          (*VegMap)[y][x].Gapping = 0.;
         /* set gapping to false given glacier cell */
         if (VType[(*VegMap)[y][x].Veg - 1].Index == GLACIER)
-          (*VegMap)[y][x].Gapping = 0.0;
+          (*VegMap)[y][x].Gapping = 0.;
       }
     }
   }
@@ -451,9 +457,166 @@ void InitCanopyGapMap(OPTIONSTRUCT *Options, LISTPTR Input, MAPSIZE *Map,
   free(Gap);
 }
 
+/*****************************************************************************
+  InitGlacierMaps()
+*****************************************************************************/
+void InitGlacierMaps(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * Map,
+  GLPIX *** GlacierMap)
+{
+  const char *Routine = "InitGlacierMaps";
+  char VarName[BUFSIZE + 1];    /* Variable name */
+  int i;                        /* Counter */
+  int x;                        /* Counter */
+  int y;                        /* Counter */
+  int flag;                     /* either or not reverse the matrix */
+  int NumberType;               /* Number type of data set */
+  unsigned char *GlMask = NULL;
+  unsigned char *wshmask = NULL;
+  float *bedtopo; /*glacier bed topography */
+  float *s_topo; /* Glacier Surface Topography */
+  float *glmbal; /* glacier mass balance */
+  int count;            
 
+  STRINIENTRY StrEnv[] = {
+    {"GLACIER", "GLACIER MASK FILE", "", ""},         /* GLACIER */
+    {"GLACIER", "GLACIER BED TOPO FILE", "", ""},     /* GLACIER */
+    {"GLACIER", "GLACIER SURFACE TOPO FILE", "", ""}, /* GLACIER */
+    {"GLACIER", "DOMAIN MASK FILE", "", ""},          /* GLACIER */
+    {"GLACIER", "GLACIER MASS BALANCE FILE", "", ""}, /* GLACIER */
+    {NULL, NULL, "", NULL}
+  };
 
+  if (!(*GlacierMap = (GLPIX **)calloc(Map->NY, sizeof(GLPIX *))))
+    ReportError((char *)Routine, 1);
+  for (y = 0; y < Map->NY; y++) {
+    if (!((*GlacierMap)[y] = (GLPIX *)calloc(Map->NX, sizeof(GLPIX))))
+      ReportError((char *)Routine, 1);
+  }
 
+  /* Read the key-entry pairs from the input file */
+  for (i = 0; StrEnv[i].SectionName; i++) {
+    GetInitString(StrEnv[i].SectionName, StrEnv[i].KeyName, StrEnv[i].Default,
+      StrEnv[i].VarStr, (unsigned long)BUFSIZE, Input);
+    if (IsEmptyStr(StrEnv[i].VarStr))
+      ReportError(StrEnv[i].KeyName, 51);
+  }
 
+  /* Read the glacier mask */
+  if (Options->Glacier == GLSTATIC || Options->Glacier == GLDYNAMIC) {
+    GetVarName(711, 0, VarName);
+    GetVarNumberType(711, &NumberType);
+    if (!(GlMask = (unsigned char *)calloc(Map->NX * Map->NY,
+      SizeOfNumberType(NumberType))))
+      ReportError((char *)Routine, 1);
+    flag = Read2DMatrix(StrEnv[glmaskfile].VarStr, GlMask, NumberType, Map, 0,
+      VarName, 0);
+    if ((Options->FileFormat == NETCDF && flag == 0) || (Options->FileFormat == BIN)) {
+      for (y = 0, i = 0; y < Map->NY; y++)
+        for (x = 0; x < Map->NX; x++, i++)
+          (*GlacierMap)[y][x].GlMask = GlMask[i];
+    }
+    else if (Options->FileFormat == NETCDF && flag == 1) {
+      for (y = Map->NY - 1, i = 0; y >= 0; y--)
+        for (x = 0; x < Map->NX; x++, i++)
+          (*GlacierMap)[y][x].GlMask = GlMask[i];
+    }
+    else ReportError((char *)Routine, 57);
+    free(GlMask);
+  }
+  /* Read the glacier bed topography data */
+  GetVarName(707, 0, VarName);
+  GetVarNumberType(707, &NumberType);
+  if (!(bedtopo = (float *)calloc(Map->NX * Map->NY, SizeOfNumberType(NumberType))))
+    ReportError((char *)Routine, 1);
+  flag = Read2DMatrix(StrEnv[glbedfile].VarStr, bedtopo, NumberType, Map, 0,
+    VarName, 0);
+  if ((Options->FileFormat == NETCDF && flag == 0) || (Options->FileFormat == BIN)) {
+    for (y = 0, i = 0; y < Map->NY; y++)
+      for (x = 0; x < Map->NX; x++, i++)
+        (*GlacierMap)[y][x].b = bedtopo[i];
+  }
+  else if (Options->FileFormat == NETCDF && flag == 1) {
+    for (y = Map->NY - 1, i = 0; y >= 0; y--)
+      for (x = 0; x < Map->NX; x++, i++)
+        (*GlacierMap)[y][x].b = bedtopo[i];
+  }
+  else
+    ReportError((char *)Routine, 57);
+  free(bedtopo);
 
+  /* Read the glacier surface topography data */
+  if (Options->Glacier == GLSTATIC || Options->Glacier == GLDYNAMIC) {
+    GetVarName(708, 0, VarName);
+    GetVarNumberType(708, &NumberType);
+    if (!(s_topo = (float *)calloc(Map->NX * Map->NY, SizeOfNumberType(NumberType))))
+      ReportError((char *)Routine, 1);
+    flag = Read2DMatrix(StrEnv[stopofile].VarStr, s_topo, NumberType, Map, 0,
+      VarName, 0);
+    if ((Options->FileFormat == NETCDF && flag == 0) || (Options->FileFormat == BIN)) {
+      for (y = 0, i = 0; y < Map->NY; y++)
+        for (x = 0; x < Map->NX; x++, i++)
+          (*GlacierMap)[y][x].s_init = s_topo[i];
+    }
+    else if (Options->FileFormat == NETCDF && flag == 1) {
+      for (y = Map->NY - 1, i = 0; y >= 0; y--)
+        for (x = 0; x < Map->NX; x++, i++)
+          (*GlacierMap)[y][x].s_init = s_topo[i];
+    }
+    else
+      ReportError((char *)Routine, 57);
+    free(s_topo);
+  }
+  /* Read the Basin Mask data */
+  if (Options->Glacier == GLSTATIC || Options->Glacier == GLDYNAMIC) {
+    GetVarName(710, 0, VarName);
+    GetVarNumberType(710, &NumberType);
+    if (!(wshmask = (unsigned char *)calloc(Map->NX * Map->NY,
+      SizeOfNumberType(NumberType))))
+      ReportError((char *)Routine, 1);
+    flag = Read2DMatrix(StrEnv[wshmaskfile].VarStr, wshmask, NumberType, Map, 0,
+      VarName, 0);
+                   
+    if ((Options->FileFormat == NETCDF && flag == 0) || (Options->FileFormat == BIN)) {
+      for (y = 0, i = 0; y < Map->NY; y++) {
+        for (x = 0; x < Map->NX; x++, i++) {
+          (*GlacierMap)[y][x].WshMask = wshmask[i];          
+        }
+      }
+    }        
+    else if (Options->FileFormat == NETCDF && flag == 1) {
+      for (y = Map->NY - 1, i = 0; y >= 0; y--)
+        for (x = 0; x < Map->NX; x++, i++)
+          (*GlacierMap)[y][x].WshMask = wshmask[i];
+    }
+    
+    count = 0;
+    for (y = 0; y < Map->NY; y++) 
+        for (x = 0; x < Map->NX; x++) 
+          if ((*GlacierMap)[y][x].WshMask > 0)
+             count += 1;
+    printf("~~~~~~~~~~~~~~~~~~~~ mask count = %d\n", count);
+    free(wshmask);
+  }
+
+  /* Read the glacier annual mass balance data */
+  if (Options->Glacier == GLSPINUP) {
+    GetVarName(709, 0, VarName);
+    GetVarNumberType(709, &NumberType);
+    if (!(glmbal = (float *)calloc(Map->NX * Map->NY, SizeOfNumberType(NumberType))))
+      ReportError((char *)Routine, 1);
+    flag = Read2DMatrix(StrEnv[glmbalfile].VarStr, glmbal, NumberType, Map, 0,
+      VarName, 0);
+    if ((Options->FileFormat == NETCDF && flag == 0) || (Options->FileFormat == BIN)) {
+      for (y = 0, i = 0; y < Map->NY; y++)
+        for (x = 0; x < Map->NX; x++, i++)
+          (*GlacierMap)[y][x].Mbal = glmbal[i];
+    }
+    else if (Options->FileFormat == NETCDF && flag == 1) {
+      for (y = Map->NY - 1, i = 0; y >= 0; y--)
+        for (x = 0; x < Map->NX; x++, i++)
+          (*GlacierMap)[y][x].Mbal = glmbal[i];
+    }
+    free(glmbal);
+  }
+}
 

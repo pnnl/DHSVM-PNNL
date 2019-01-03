@@ -7,7 +7,7 @@
  * E-MAIL:       ms_wigmosta@pnl.gov
  * ORIG-DATE:    Oct-96
  * DESCRIPTION:  Calculate water mass balance errors
- *               
+ *
  * DESCRIP-END.
  * FUNCTIONS:    MassBalance()
  * COMMENTS:
@@ -25,25 +25,24 @@
 #include "constants.h"
 #include "Calendar.h"
 
-/*****************************************************************************
-  MassBalance()
-  
-  Calculate the average values for the different fluxes and state variables
-  over the basin.  
-  In the current implementation the local radiation
-  elements are not stored for the entire area.  Therefore these components
-  are aggregated in AggregateRadiation() inside MassEnergyBalance().
+ /*****************************************************************************
+   MassBalance()
 
-  The aggregated values are set to zero in the function RestAggregate,
-  which is executed at the beginning of each time step.
-*****************************************************************************/
+   Calculate the average values for the different fluxes and state variables
+   over the basin.
+   In the current implementation the local radiation
+   elements are not stored for the entire area.  Therefore these components
+   are aggregated in AggregateRadiation() inside MassEnergyBalance().
+
+   The aggregated values are set to zero in the function RestAggregate,
+   which is executed at the beginning of each time step.
+ *****************************************************************************/
 void MassBalance(DATE *Current, DATE *Start, FILES *Out, AGGREGATED *Total, WATERBALANCE *Mass)
 {
   float NewWaterStorage;	/* water storage at the end of the time step */
   float Output;			/* total water flux leaving the basin;  */
   float Input;
   float MassError;		/* mass balance error m  */
-
   float deltaSWE;       /* change of SWE from last time step */
   float NetWaterIn1;    /* incoming water to the soil (precip-deltaSWE+SnowVaporFlux) */
   float NetWaterIn2;    /* rain or melt */
@@ -66,7 +65,8 @@ void MassBalance(DATE *Current, DATE *Start, FILES *Out, AGGREGATED *Total, WATE
  
   NewWaterStorage = Total->Soil.IExcess + Total->Road.IExcess + 
     Total->CanopyWater + Total->SoilWater +
-    Total->Snow.Swq + Total->Soil.SatFlow + Total->Soil.DetentionStorage;
+    Total->Snow.Swq + Total->Soil.SatFlow + Total->Soil.DetentionStorage +
+    Total->Snow.Iwq + Total->Snow.IceRemoved;
 
   Output = Total->ChannelInt + Total->RoadInt + Total->Evap.ETot;
   Input = Total->Precip.Precip + Total->Snow.VaporMassFlux +
@@ -87,7 +87,7 @@ void MassBalance(DATE *Current, DATE *Start, FILES *Out, AGGREGATED *Total, WATE
     Total->Snow.CanopyVaporMassFlux;
   Mass->CumCulvertReturnFlow += Total->CulvertReturnFlow;
   Mass->CumCulvertToChannel += Total->CulvertToChannel;
-  
+
   if (IsEqualTime(Current, Start)) {
     fprintf(Out->FilePtr, "         Date        ");
     fprintf(Out->FilePtr, " NetWaterIn1(mm) ");
@@ -95,7 +95,7 @@ void MassBalance(DATE *Current, DATE *Start, FILES *Out, AGGREGATED *Total, WATE
     fprintf(Out->FilePtr, " Precip(m) ");
     fprintf(Out->FilePtr, " Snow(m) ");
     fprintf(Out->FilePtr, " IExcess(m) ");
-    fprintf(Out->FilePtr, " Swq   Melt   ");
+    fprintf(Out->FilePtr, " Swq   Melt Iwq GlMelt IceRemoved ");
     fprintf(Out->FilePtr, " TotalET ");   /* total evapotranspiration*/
     fprintf(Out->FilePtr, " CanopyInt ");   /* canopy intercepted rain + snow*/
     fprintf(Out->FilePtr, " TotSoilMoist ");
@@ -106,13 +106,16 @@ void MassBalance(DATE *Current, DATE *Start, FILES *Out, AGGREGATED *Total, WATE
     fprintf(Out->FilePtr, "\n");
   }
   PrintDate(Current, Out->FilePtr);
-  fprintf(Out->FilePtr, " %g  %g  %g  %g  %g  %g  %g  %g  %g  %g  %g  %g \
+
+  fprintf(Out->FilePtr, " %g  %g  %g  %g  %g  %g  %g  %g  %g  %g  %g  %g %g  %g  %g \
       %g  %g  %g  %g  %g  %g  %g  %g %g  %g \n", NetWaterIn1*1000, NetWaterIn2*1000, 
       Total->Precip.Precip, Total->Precip.SnowFall, Total->Soil.IExcess,
-      Total->Snow.Swq, Total->Snow.Melt, Total->Evap.ETot, 
-      Total->CanopyWater, Total->SoilWater, Total->Soil.SatFlow, Total->Snow.VaporMassFlux,
-	  Total->ChannelInt,  Total->RoadInt, Total->CulvertToChannel, 
+      Total->Snow.Swq, Total->Snow.Melt, Total->Snow.Iwq, Total->Snow.GlMelt, Total->Snow.IceRemoved, 
+      Total->Evap.ETot, Total->CanopyWater, Total->SoilWater, Total->Soil.SatFlow, Total->Snow.VaporMassFlux,
+	    Total->ChannelInt,  Total->RoadInt, Total->CulvertToChannel, 
       Total->Rad.BeamIn+Total->Rad.DiffuseIn, Total->Rad.PixelNetShort, 
       Total->Rad.NetShort[0], Total->Rad.NetShort[1], Total->NetRad, Total->Rad.Tair, MassError);
   Total->Snow.OldSwq = Total->Snow.Swq;
+
 }
+

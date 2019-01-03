@@ -1,3 +1,4 @@
+
 /*
  * SUMMARY:      GetInit.c - Get initialization data from file
  * USAGE:        Not a stand-alone program
@@ -408,7 +409,6 @@ CopyLCase(char *Value, char *Str, const int maxlen)
   }
   return TRUE;
 }
-
 
 /*#####################################################################################*/
 int IsEmptyStr(char *Str)

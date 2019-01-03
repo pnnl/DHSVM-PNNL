@@ -1,3 +1,4 @@
+
 /* -------------------------------------------------------------
    file: DHSVMChannel.c
    ------------------------------------------------------------- */
@@ -327,3 +328,4 @@ uchar ChannelFraction(TOPOPIX * topo, ChannelMapRec * rds)
 
   return (uchar) fract;
 }
+

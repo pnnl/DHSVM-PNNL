@@ -43,13 +43,13 @@ void Aggregate(MAPSIZE *Map, OPTIONSTRUCT *Options, TOPOPIX **TopoMap,
 	       ROADSTRUCT **Network, CHANNEL *ChannelData, float *roadarea)
 {
   int NPixels;			/* Number of pixels in the basin */
-  int NSoilL;			/* Number of soil layers for current pixel */
-  int NVegL;			/* Number of vegetation layers for current pixel */
-  int i;				/* counter */
-  int j;				/* counter */
+  int NSoilL;			  /* Number of soil layers for current pixel */
+  int NVegL;			  /* Number of vegetation layers for current pixel */
+  int i;				    /* counter */
+  int j;				    /* counter */
   int x;
   int y;
-  float DeepDepth;		/* depth to bottom of lowest rooting zone */
+  float DeepDepth;	/* depth to bottom of lowest rooting zone */
 
   NPixels = 0;
   *roadarea = 0.;
@@ -106,9 +106,10 @@ void Aggregate(MAPSIZE *Map, OPTIONSTRUCT *Options, TOPOPIX **TopoMap,
 	if (Snow[y][x].HasSnow)
 		Total->Snow.HasSnow = TRUE;
 		Total->Snow.Swq += Snow[y][x].Swq;
-		Total->Snow.Glacier += Snow[y][x].Glacier;
-		/* Total->Snow.Melt += Snow[y][x].Melt; */
+ 		Total->Snow.Iwq += Snow[y][x].Iwq;
+    Total->Snow.IceRemoved += Snow[y][x].IceRemoved;
 		Total->Snow.Melt += Snow[y][x].Outflow;
+		Total->Snow.GlMelt += Snow[y][x].GlMelt;
 		Total->Snow.PackWater += Snow[y][x].PackWater;
 		Total->Snow.TPack += Snow[y][x].TPack;
 		Total->Snow.SurfWater += Snow[y][x].SurfWater;
@@ -125,7 +126,7 @@ void Aggregate(MAPSIZE *Map, OPTIONSTRUCT *Options, TOPOPIX **TopoMap,
 		Total->Snow.VaporMassFlux += Snow[y][x].VaporMassFlux;
 		Total->Snow.CanopyVaporMassFlux += Snow[y][x].CanopyVaporMassFlux;
 
-		if (VegMap[y][x].Gapping > 0.0 ) {
+		if (VegMap[y][x].Gapping > 0.) {
 		  Total->Veg.Type[Opening].Qsw += VegMap[y][x].Type[Opening].Qsw;
 		  Total->Veg.Type[Opening].Qlin += VegMap[y][x].Type[Opening].Qlin;
 		  Total->Veg.Type[Opening].Qlw += VegMap[y][x].Type[Opening].Qlw;
@@ -222,7 +223,9 @@ void Aggregate(MAPSIZE *Map, OPTIONSTRUCT *Options, TOPOPIX **TopoMap,
 
   /* average snow data */
   Total->Snow.Swq /= NPixels;
+  Total->Snow.Iwq /= NPixels;
   Total->Snow.Melt /= NPixels;
+  Total->Snow.IceRemoved /= NPixels;
   Total->Snow.PackWater /= NPixels;
   Total->Snow.TPack /= NPixels;
   Total->Snow.SurfWater /= NPixels;

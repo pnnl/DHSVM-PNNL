@@ -13,10 +13,10 @@
  *               IsValidDumpID()
  *               IsMultiLayer()
  * COMMENTS:     If the number of IDs increases it might be worthwhile to use a
- *               better, faster search.  This is not done here, because in the 
+ *               better, faster search.  This is not done here, because in the
  *               overall scheme of DHSVM it is not worth the programming effort
  *               right now.
- * $Id: VarID.c,v 1.7 2004/05/04 19:39:00 colleen Exp $     
+ * $Id: VarID.c,v 1.7 2004/05/04 19:39:00 colleen Exp $
  */
 
 #include <stdio.h>
@@ -225,6 +225,26 @@ struct {
       "m/s", "Windspeed", NC_INT, FALSE, FALSE, FALSE, 0}, {
   704, "MetMap.humidity",
       "Humidity", "%.2f", "", "Humidity", NC_INT, FALSE, FALSE, FALSE, 0}, {
+  705, "Snow.Iwq",
+      "Glacier Thickness", "%.3f",
+  "m", "Glacier Thickness", NC_FLOAT, FALSE, FALSE, FALSE, 0}, {
+  706, "Snow.GlMelt",
+    "Glacier Melt", "%.3f",
+    "m", "Glacier Melt", NC_FLOAT, FALSE, FALSE, FALSE, 0}, {
+  707, "Glacier.BMap",
+    "Bed Topo", "%.3f",
+    "m", "Bed Topo", NC_FLOAT, FALSE, FALSE, FALSE, 0}, {
+  708, "Glacier.SMap",
+    "Surface Topo", "%.3f",
+    "m", "Surface Topo", NC_FLOAT, FALSE, FALSE, FALSE, 0}, {
+  709, "Glacier.Mbal",
+    "Glacier MassBalance", "%.3f",
+    "m", "Glacier MassBalance", NC_FLOAT, FALSE, FALSE, FALSE, 0}, {
+  710, "Basin.wshmask",
+    "Watershed Mask", "%d",
+    "m", "Watershed mask", NC_BYTE, FALSE, FALSE, FALSE, 0}, {
+  711, "Glacier.GlMask",
+      "Basin glacier mask", "%d", "", "Basin glacier mask", NC_BYTE, FALSE, FALSE, FALSE, 0}, {
   ENDOFLIST, "", "", "", "", "",
       ENDOFLIST, ENDOFLIST, ENDOFLIST, ENDOFLIST, ENDOFLIST}
 };
@@ -255,14 +275,14 @@ void GetVarName(int ID, int Layer, char *Name)
   while (varinfo[i].ID != ENDOFLIST) {
     if (varinfo[i].ID == ID) {
       if (varinfo[i].IsMultiLayer == TRUE)
-	sprintf(Name, "%d.%s", Layer, varinfo[i].Name);
+        sprintf(Name, "%d.%s", Layer, varinfo[i].Name);
       else
-	strcpy(Name, varinfo[i].Name);
+        strcpy(Name, varinfo[i].Name);
       return;
     }
     i++;
   }
-  ReportError((char *) Routine, 26);
+  ReportError((char *)Routine, 26);
 }
 
 /******************************************************************************/
@@ -277,14 +297,14 @@ void GetVarLongName(int ID, int Layer, char *LongName)
   while (varinfo[i].ID != ENDOFLIST) {
     if (varinfo[i].ID == ID) {
       if (varinfo[i].IsMultiLayer == TRUE)
-	sprintf(LongName, "%s (Layer %d)", varinfo[i].LongName, Layer);
+        sprintf(LongName, "%s (Layer %d)", varinfo[i].LongName, Layer);
       else
-	strcpy(LongName, varinfo[i].LongName);
+        strcpy(LongName, varinfo[i].LongName);
       return;
     }
     i++;
   }
-  ReportError((char *) Routine, 26);
+  ReportError((char *)Routine, 26);
 }
 
 /******************************************************************************/
@@ -303,7 +323,7 @@ void GetVarFormat(int ID, char *Format)
     }
     i++;
   }
-  ReportError((char *) Routine, 26);
+  ReportError((char *)Routine, 26);
 }
 
 /******************************************************************************/
@@ -322,7 +342,7 @@ void GetVarUnits(int ID, char *Units)
     }
     i++;
   }
-  ReportError((char *) Routine, 26);
+  ReportError((char *)Routine, 26);
 }
 
 /******************************************************************************/
@@ -340,19 +360,19 @@ void GetVarFileName(int ID, int Layer, unsigned char Resolution, char *FileName)
     if (varinfo[i].ID == ID) {
       GetVarName(ID, Layer, Name);
       if (Resolution == MAP_OUTPUT) {
-	sprintf(Str, "%sMap.%s%s", FileName, Name, fileext);
+        sprintf(Str, "%sMap.%s%s", FileName, Name, fileext);
       }
       else if (Resolution == IMAGE_OUTPUT) {
-	sprintf(Str, "%sImage.%s%s", FileName, Name, fileext);
+        sprintf(Str, "%sImage.%s%s", FileName, Name, fileext);
       }
       else
-	ReportError((char *) Routine, 21);
+        ReportError((char *)Routine, 21);
       strncpy(FileName, Str, BUFSIZE);
       return;
     }
     i++;
   }
-  ReportError((char *) Routine, 26);
+  ReportError((char *)Routine, 26);
 }
 
 /******************************************************************************/
@@ -371,7 +391,7 @@ void GetVarFileLabel(int ID, char *FileLabel)
     }
     i++;
   }
-  ReportError((char *) Routine, 26);
+  ReportError((char *)Routine, 26);
 }
 
 /******************************************************************************/
@@ -390,7 +410,7 @@ void GetVarNumberType(int ID, int *NumberType)
     }
     i++;
   }
-  ReportError((char *) Routine, 26);
+  ReportError((char *)Routine, 26);
 }
 
 /******************************************************************************/
@@ -423,7 +443,7 @@ unsigned char IsMultiLayer(int ID)
       return varinfo[i].IsMultiLayer;
     i++;
   }
-  ReportError((char *) Routine, 26);
+  ReportError((char *)Routine, 26);
   return FALSE;
 }
 
@@ -440,16 +460,16 @@ int GetVarNLayers(int ID, int MaxSoilLayers, int MaxVegLayers)
   while (varinfo[i].ID != ENDOFLIST) {
     if (varinfo[i].ID == ID) {
       if (varinfo[i].IsVegLayer == TRUE)
-	NLayers = MaxVegLayers + varinfo[i].AddLayer;
+        NLayers = MaxVegLayers + varinfo[i].AddLayer;
       else if (varinfo[i].IsSoilLayer == TRUE)
-	NLayers = MaxSoilLayers + varinfo[i].AddLayer;
+        NLayers = MaxSoilLayers + varinfo[i].AddLayer;
       else
-	NLayers = 1;
+        NLayers = 1;
       return NLayers;
     }
     i++;
   }
-  ReportError((char *) Routine, 26);
+  ReportError((char *)Routine, 26);
   return NLayers;
 }
 
@@ -502,3 +522,4 @@ int main(void)
 }
 
 #endif
+

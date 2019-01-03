@@ -1,3 +1,4 @@
+
 /*
 * SUMMARY:      CanopyGapRadiation.c
 * USAGE:        Part of DHSVM
@@ -295,7 +296,3 @@ float CalcGapView(float R, float H, float F) {
 
   return GapView;
 }
-
-
-
-

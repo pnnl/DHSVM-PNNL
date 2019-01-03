@@ -8,9 +8,9 @@
  * ORIG-DATE:    Apr-1996
  * DESCRIPTION:  header file with constants for DHSVM
  * DESCRIP-END.
- * FUNCTIONS:    
+ * FUNCTIONS:
  * COMMENTS:
- * $Id: constants.h,v 3.1.1 2012/10/18 ning Exp $     
+ * $Id: constants.h,v 3.1.1 2012/10/18 ning Exp $
  */
 
 #ifndef CONSTANTS_H
@@ -43,11 +43,11 @@
 #define RADPHOUR    0.2617994   /* radians per hour: Earth's Rotation (2 PI rad/day) * (1 day/24 h) */
 #define RADPDEG     (PI/180.0)	/* radians per degree */
 #define ROADCROWN   0.02        /* This is the road crown slope, whether insloped,  
-								outsloped or crowned. This value was selected based 
-								on the Road Preconstruction Handbook */
+                                outsloped or crowned. This value was selected based
+                                on the Road Preconstruction Handbook */
 #define SATPERCENT  0.2         /* Fraction of pixels which must exceed 
-								MTHRESH in order to call the mass wasting algorithm
-								when running in the old mode. */
+                                MTHRESH in order to call the mass wasting algorithm
+                                when running in the old mode. */
 #define SOLARCON    1360.	    /* Solar constant (W/m^2) */
 #define STEFAN    (5.6696e-8)	/* Stefan-Boltzmann constant (W/(M^2*C^4) */
 #define VISFRACT    0.5		    /* part of shortwave that is in the visible range of the spectrum */
@@ -56,17 +56,31 @@
 #define Z0_MULTIPLIER 0.13		/* Multiplier for vegetation height to get roughness length (m) */
 #define MinDiff   (1.e-8)
 
+/* Constants in snow density computation */
+#define SNDENS_ETA0     (3.6e6) /* viscosity of snow at T = 0C and density = 0
+                                   used in calculation of true viscosity (Ns/m2) */
+#define SNDENS_C1       0.04
+#define SNDENS_C2       (2.778e-6)
+#define SNDENS_C5       0.08    /* constant used in snow viscosity calculation,
+                                   taken from SNTHRM.89 (/C)*/
+#define SNDENS_C6       0.021   /* constant used in snow viscosity calculation,
+                                   taken from SNTHRM.89 (kg/m3) */
+#define SNDENS_F        0.6     /* internal compaction rate coefficient */
+
+#define KELVIN          273.15
+#define RHO_W            999.84
+
 /**************** extern constants - see globals.c ****************/
 
 extern float LAI_SNOW_MULTIPLIER;		/* multiplier to calculate the amount of available
-										snow interception as a function of LAI */
+                                        snow interception as a function of LAI */
 extern float LAI_WATER_MULTIPLIER;		/* multiplier to determine maximum
-										interception storage as a function of LAI  */
+                                        interception storage as a function of LAI  */
 extern float LIQUID_WATER_CAPACITY;		/* water holding capacity of snow as a
-										fraction of snow-water-equivalent */
+                                        fraction of snow-water-equivalent */
 extern float MAX_SNOW_TEMP;				/* maximum temperature at which snow can occur (C) */
 extern float MIN_INTERCEPTION_STORAGE;	/* the amount of snow on the canopy
-										that can only be melted off. (m) */
+                                        that can only be melted off. (m) */
 extern float MIN_RAIN_TEMP;				/* minimum temperature at which rain can occur (C) */
 extern unsigned char OUTSIDEBASIN;		/* Mask value indicating outside the basin */
 extern float PRECIPLAPSE;				/* Precipitation lapse rate in m/timestep / m */
@@ -76,11 +90,11 @@ extern int NWINDMAPS;					/* Number of wind maps in case the wind source is MODE
 extern float Z0_GROUND;					/* Roughness length for bare soil (m) */
 extern float Z0_SNOW;					/* Roughness length for snow (m) */
 extern float Zref;						/* Reference height (m) */
-
 extern float ALB_ACC_LAMBDA;            /* snow freeze albedo cruve control parameters */
 extern float ALB_MELT_LAMBDA;           /* snow thaw albedo cruve control parameters */
 extern float ALB_ACC_MIN;
 extern float ALB_MELT_MIN;
+extern float GL_ALB;                    /* Glacier Albedo */
 
 extern float MAX_SURFACE_SWE; 	       /* maximum depth of the surface layer in snow water equivalent (m) */
 
@@ -90,3 +104,4 @@ extern int TotNumGap;                  /* total number of grid cells with a gap 
 extern float SNOWSLIDE1;               /* First Parameter in Snowslide equation */
 extern float SNOWSLIDE2;               /* Second Parameter in Snowslide equation */
 #endif
+

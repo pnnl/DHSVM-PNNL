@@ -65,7 +65,6 @@ float WaterTableDepth(int NRootLayers, float TotalDepth, float *RootDepth,
   float MoistureTransfer;	/* amount of soil moisture transferred from
                                the current layer to the layer above (m) */
   int i;			        /* counter */
-  float TotalStorage = 0.0;
   float ExcessFCap;
   float Storage;
   float DeepStorage;

@@ -168,7 +168,7 @@ if (argc != 6 ){
 	 /* if the segment is the outlet, then it has 7 columns.
 	 Here just to skip reading the last save flags */
 	 if (data == 0 || data == -1 ) {
-		fgets(junkc, 100, fnetwork);
+		fgets(junkc, 1000, fnetwork);
 		seg--;
 	 }
 	 else {
@@ -205,7 +205,7 @@ if (argc != 6 ){
 
  /* skip the headers */
  for (i = 0; i < nskip; i++)
-	fgets(junkc, 1000, fmap);
+	fgets(junkc, 100, fmap);
 
  while (!feof(fmap)){
    /* initialize the variables */
@@ -297,4 +297,3 @@ if (argc != 6 ){
 
  return 0;
 }
-
