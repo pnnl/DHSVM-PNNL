@@ -127,8 +127,7 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
     {"CONSTANTS", "GLACIER ALBEDO", "", ""},
     {"CONSTANTS", "ALBEDO ACCUMULATION LAMBDA", "", "" },
     {"CONSTANTS", "ALBEDO MELTING LAMBDA", "", "" },
-    {"CONSTANTS", "ALBEDO ACCUMULATION MIN", "", "" },
-    {"CONSTANTS", "ALBEDO MELTING MIN", "", "" },
+    {"CONSTANTS", "FRESH SNOW ALBEDO", "", "" },
     {"CONSTANTS", "MAX SURFACE SNOW LAYER DEPTH", "", "0.125" },
     {"CONSTANTS", "SNOWSLIDE PARAMETER1", "", "" },
     {"CONSTANTS", "SNOWSLIDE PARAMETER2", "", "" },
@@ -584,13 +583,9 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
     StrEnv[alb_melt_lambda].VarStr, 1))
     ReportError(StrEnv[alb_melt_lambda].KeyName, 51);
 
-  if (!CopyFloat(&ALB_ACC_MIN,
-    StrEnv[alb_acc_min].VarStr, 1))
-    ReportError(StrEnv[alb_acc_min].KeyName, 51);
-
-  if (!CopyFloat(&ALB_MELT_MIN,
-    StrEnv[alb_melt_min].VarStr, 1))
-    ReportError(StrEnv[alb_melt_min].KeyName, 51);
+    if (!CopyFloat(&alb_max,                              
+    StrEnv[fresh_alb].VarStr, 1))
+    ReportError(StrEnv[fresh_alb].KeyName, 51);
     
   /* maximum depth of the surface layer in snow water equivalent (m) */
   if (!CopyFloat(&MAX_SURFACE_SWE,
@@ -612,4 +607,3 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
       ReportError(StrEnv[snowslide_parameter2].KeyName, 51);
   }
 }
-

@@ -29,8 +29,7 @@ float Z0_SNOW;			/* Roughness length for snow (m) */
 float Zref;			    /* Reference height (m) */
 float ALB_ACC_LAMBDA;   /* snow freeze albedo cruve control parameters */
 float ALB_MELT_LAMBDA;  /* snow thaw albedo cruve control parameters */
-float ALB_ACC_MIN;
-float ALB_MELT_MIN;
+float alb_max;          /* fresh snow albedo */
 
 float MAX_SURFACE_SWE; 	/* maximum depth of the surface layer in water equivalent (m) */
 float GAPWIND_FACTOR;
