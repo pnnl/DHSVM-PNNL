@@ -97,7 +97,7 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
     {"OPTIONS", "SNOW SLIDING", "", "" },
     {"OPTIONS", "PRECIPITATION SEPARATION", "", "FALSE" },
     {"OPTIONS", "PRECIPITATION MULTIPLIER MAP", "", "" },
-    {"OPTIONS", "GLACIER", "", "" },
+    {"OPTIONS", "GLACIER", "", "NO_GLACIER" },
     {"AREA", "COORDINATE SYSTEM", "", ""},
     {"AREA", "EXTREME NORTH", "", ""},
     {"AREA", "EXTREME WEST", "", ""},
@@ -350,15 +350,18 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
   /*************************** Determine if Glacier Model is called for ***********************/
   if (strncmp(StrEnv[glacier].VarStr, "NO_GLACIER", 10) == 0)
     Options->Glacier = NO_GLACIER;
+
+#if (HAVE_GLACIER)
   else if (strncmp(StrEnv[glacier].VarStr, "GLSPINUP", 6) == 0)
     Options->Glacier = GLSPINUP;
   else if (strncmp(StrEnv[glacier].VarStr, "GLSTATIC", 6) == 0)
     Options->Glacier = GLSTATIC;
   else if (strncmp(StrEnv[glacier].VarStr, "GLDYNAMIC", 7) == 0)
     Options->Glacier = GLDYNAMIC;
+#endif
   else
-    ReportError(StrEnv[glacier].KeyName, 51);
-
+    ReportError(StrEnv[glacier].VarStr, 51);
+  
 
   /* Determine if listed met stations outside bounding box are used */
   if (strncmp(StrEnv[outside].VarStr, "TRUE", 4) == 0)
@@ -573,8 +576,12 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
   else
     PRECIPLAPSE = NOT_APPLICABLE;
 
-  if (!CopyFloat(&GL_ALB, StrEnv[glacier_albedo].VarStr, 1))
-    ReportError(StrEnv[glacier_albedo].KeyName, 51);
+  if (Options->Glacier != NO_GLACIER) {
+    if (!CopyFloat(&GL_ALB, StrEnv[glacier_albedo].VarStr, 1))
+      ReportError(StrEnv[glacier_albedo].KeyName, 51);
+  } else {
+    GL_ALB = 0.0;
+  }
 
   if (!CopyFloat(&ALB_ACC_LAMBDA,
     StrEnv[alb_acc_lambda].VarStr, 1))

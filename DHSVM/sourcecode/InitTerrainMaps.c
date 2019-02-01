@@ -48,9 +48,13 @@ void InitTerrainMaps(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
   if (Options->CanopyGapping)
     InitCanopyGapMap(Options, Input, Map, Soil, Veg, VType, VegMap, SType, SoilMap);
 
+#ifdef HAVE_GLACIER
+  
   if (Options->Glacier == GLSPINUP || Options->Glacier == GLSTATIC || Options->Glacier == GLDYNAMIC) {
     InitGlacierMaps(Input, Options, Map, GlacierMap);
   }
+
+#endif
 }
 
 /*****************************************************************************
