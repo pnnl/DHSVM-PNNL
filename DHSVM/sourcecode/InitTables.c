@@ -639,6 +639,15 @@ Snow albedo is calculated as a function of the number of days since the
 last observed snow fall. There are separete albedo curves for the freeze
 and thaw conditions.
 
+Modification (Ning): Change the USACE albedo decay curve to a 3-parameter scheme.
+Instead of constraining the minimum snowpack albedo values by two user-defined 
+albedo parameter, the fresh snow albedo is set to be a user-defined parameter, and
+the albedo parameters are suggested to be back calculate to ensure that the resulting
+albedo values are within the physically reasonable range of [0.35 0.9]. Details about 
+the back caculation can be found in:
+Sun et al. (2019). Regional Snow Parameters Estimation for Large-Domain Hydrological 
+Applications in the Western United States. Journal of Geophysical Research - Atmospheres.
+
 ********************************************************************************/
 void InitSnowTable(SNOWTABLE ** SnowAlbedo, int StepsPerDay)
 {
@@ -656,12 +665,10 @@ void InitSnowTable(SNOWTABLE ** SnowAlbedo, int StepsPerDay)
 
   for (i = 0; i < ((DAYPYEAR + 1) * StepsPerDay); i++) {
     (*SnowAlbedo)[i].Freeze =
-      0.85 * pow(ALB_ACC_LAMBDA, pow(((float)i) / StepsPerDay, 0.58));
-    if ((*SnowAlbedo)[i].Freeze < ALB_ACC_MIN)
-      (*SnowAlbedo)[i].Freeze = ALB_ACC_MIN;
+      alb_max * pow(ALB_ACC_LAMBDA, pow(((float)i) / StepsPerDay, 0.58));
+
     (*SnowAlbedo)[i].Thaw =
-      0.85 * pow(ALB_MELT_LAMBDA, pow(((float)i) / StepsPerDay, 0.46));
-    if ((*SnowAlbedo)[i].Thaw < ALB_MELT_MIN)
-      (*SnowAlbedo)[i].Thaw = ALB_MELT_MIN;
+      alb_max * pow(ALB_MELT_LAMBDA, pow(((float)i) / StepsPerDay, 0.46));
+
   }
 }
