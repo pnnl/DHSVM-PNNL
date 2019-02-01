@@ -9,7 +9,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2019-01-03 14:24:51 d3g096
+# Last Change: 2019-02-01 12:30:17 d3g096
 
 # -------------------------------------------------------------
 # General set up
@@ -98,4 +98,7 @@ if (DHSVM_USE_RBM)
   add_subdirectory(RBM)
   add_subdirectory(Create)
 endif (DHSVM_USE_RBM)
+if (DHSVM_GLACIER)
+  add_subdirectory(DHSVM/Lib)
+endif (DHSVM_GLACIER)
 

@@ -9,7 +9,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2019-01-03 14:56:10 d3g096
+# Last Change: 2019-02-01 12:39:54 d3g096
 
 # -------------------------------------------------------------
 # Set up for this subdirectory
@@ -66,11 +66,20 @@ if (DHSVM_GLACIER)
     main_spinup.c
     calc_ela.c
     RunGlacier.c
+    gl_massbalance.c
+    BuildDiffusivity.c
+    BuildSparseArrayElements.c
+    BuildSparseRowColIndices.c
+    SetupIndexArrays.c
     )
   add_definitions(-DHAVE_GLACIER)
   include_directories(BEFORE 
     ${CMAKE_CURRENT_SOURCE_DIR}/../Include
     )
+  set(glacier_lib cxsparse)
+else(DHSVM_GLACIER)
+  set(glacier_src "")
+  set(glacier_lib "")
 endif(DHSVM_GLACIER)
 
 set(DHSVM_SRC
@@ -162,6 +171,7 @@ set(DHSVM_SRC
   equal.c
   errorhandler.c
   globals.c
+  ${glacier_src}
   ${FLEX_tableio_OUTPUTS}
 )
 
@@ -170,6 +180,7 @@ add_executable(DHSVM
 )
 
 target_link_libraries(DHSVM
+  ${glacier_lib}
   BinIO
   ${NETCDF_LIBRARIES}
   ${X11_LIBRARIES}
@@ -187,6 +198,7 @@ if(DHSVM_SNOW_ONLY)
     )
 
   target_link_libraries(DHSVM_SNOW
+    ${glacier_lib}
     BinIO
     ${NETCDF_LIBRARIES}
     ${X11_LIBRARIES}
