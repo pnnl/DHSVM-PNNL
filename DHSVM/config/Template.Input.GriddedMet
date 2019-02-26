@@ -105,8 +105,7 @@ Precipitation Lapse Rate = 3e-06          # Precipitation lapse rate (m/m). Use 
 Precipitation Multiplier = 0.00015        # assuming precipiatio is positively related to elevation    
 Albedo Accumulation Lambda = 0.95         # Lambda for accmulation period
 Albedo Melting Lambda = 0.7               # Lambda for melting period
-Albedo Accumulation Min = 0.4             # Min albedo value during accumulation period
-Albedo Melting Min = 0.3                  # Min albedo value during melting period
+Fresh Snow Albedo  = 0.85
 Max Surface Snow Layer Depth = 0.125      # maximum depth of the surface snow layer in water equivalent (m) 
 Gap Wind Adj Factor = 1.0                 # Adjustment for wind received by gap (0-1)
 Snowslide Parameter1 = 700                # Empirical parameters used to calculate snow holding depth
@@ -258,7 +257,7 @@ Mannings n             1 = 0.013
 [VEGETATION]
 
 Vegetation Map File = ../input/veg.bin
-Canopy Gap Map File = ../input/CanopyGap.bin
+Canopy Gap Map File = ../input/GapDiam.bin
 
 
 Number of Vegetation Types = 1
