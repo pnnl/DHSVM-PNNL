@@ -37,7 +37,7 @@ static ChannelClass *alloc_channel_class(void)
 {
   ChannelClass *p;
 
-  if ((p = (ChannelClass *)malloc(sizeof(ChannelClass))) == NULL) {
+  if ((p = (ChannelClass *) malloc(sizeof(ChannelClass))) == NULL) {
     error_handler(ERRHDL_ERROR, "alloc_channel_class: malloc failed: %s",
       strerror(errno));
     return NULL;
@@ -49,7 +49,7 @@ static ChannelClass *alloc_channel_class(void)
   p->friction = 0.0;
   p->infiltration = 0.0;
   p->crown = CHAN_OUTSLOPED;
-  p->next = (ChannelClass *)NULL;
+  p->next = (ChannelClass *) NULL;
 
   return p;
 }
@@ -70,7 +70,7 @@ find_channel_class
 ------------------------------------------------------------- */
 static ChannelClass *find_channel_class(ChannelClass * list, ClassID id)
 {
-  while (list != (ChannelClass *)NULL) {
+  while (list != (ChannelClass *) NULL) {
     if (list->id == id)
       break;
     list = list->next;
@@ -101,7 +101,7 @@ ChannelClass *channel_read_classes(const char *file, int ChanType)
     NULL},
     {"Friction Coefficient (Manning's n)", TABLE_REAL, TRUE, FALSE, {0.0}, "",
     NULL},
-    {"Maximum Road Infiltration Rate (m/s)", TABLE_REAL, FALSE, FALSE, {0.0},
+    {"Maximum Road Infiltration Rate (m/s)", TABLE_REAL, FALSE, FALSE, {0.0}, 
     "", NULL},
     {"Road Crown Type", TABLE_WORD, FALSE, FALSE, {0}, "", crown_words}
   };
@@ -165,13 +165,13 @@ ChannelClass *channel_read_classes(const char *file, int ChanType)
             "channel_read_classes: %s: width cannot be 0.0", file);
           break;
         case 2:
-          if (class_fields[i].value.real > 0.0)
+          if (class_fields[i].value.real>0.0)
             current->bank_height = class_fields[i].value.real;
           else error_handler(ERRHDL_FATAL,
             "channel_read_classes: %s: bank cannot be 0.0", file);
           break;
         case 3:
-          if (class_fields[i].value.real > 0.0)
+          if (class_fields[i].value.real>0.0)
             current->friction = class_fields[i].value.real;
           else error_handler(ERRHDL_FATAL,
             "channel_read_classes: %s: friction cannot be 0.0", file);
@@ -237,7 +237,7 @@ alloc_channel_segment
 static Channel *alloc_channel_segment(void)
 {
   Channel *seg;
-  if ((seg = (Channel *)malloc(sizeof(Channel))) == NULL) {
+  if ((seg = (Channel *) malloc(sizeof(Channel))) == NULL) {
     error_handler(ERRHDL_ERROR, "alloc_channel_segment: malloc failed: %s",
       strerror(errno));
     return NULL;
@@ -254,7 +254,7 @@ static Channel *alloc_channel_segment(void)
   seg->last_outflow = 0.0;
   seg->inflow = 0.0;
   seg->outflow = 0.0;
-  seg->storage = 0.0;
+  seg->storage= 0.0;
   seg->outlet = NULL;
   seg->next = NULL;
 
@@ -380,7 +380,7 @@ Channel *channel_read_network(const char *file, ChannelClass *class_list, int *M
         switch (i) {
         case 0:
           current->id = chan_fields[i].value.integer;
-          if (current->id > *MaxID) *MaxID = current->id;
+          if(current->id > *MaxID) *MaxID = current->id;
           if (current->id <= 0) {
             error_handler(ERRHDL_ERROR,
               "%s: segment %d: channel id invalid",
@@ -425,20 +425,20 @@ Channel *channel_read_network(const char *file, ChannelClass *class_list, int *M
           if ((current->class2 =
             find_channel_class(class_list, chan_fields[i].value.integer)
             ) == NULL) {
-            error_handler(ERRHDL_ERROR,
-              "%s: segment %d: channel class %d not found",
-              file, current->id, chan_fields[i].value.integer);
-            err++;
+              error_handler(ERRHDL_ERROR,
+                "%s: segment %d: channel class %d not found",
+                file, current->id, chan_fields[i].value.integer);
+              err++;
           }
           break;
         case 5:
-          current->outlet = (Channel *)chan_fields[i].value.integer;
+          current->outlet = (Channel *) chan_fields[i].value.integer;
           break;
         case 6:
           current->record = TRUE;
           break;
         case 7:
-          current->record_name = (char *)strdup(chan_fields[i].field);
+          current->record_name = (char *) strdup(chan_fields[i].field);
           break;
         default:
           error_handler(ERRHDL_FATAL,
@@ -455,7 +455,7 @@ Channel *channel_read_network(const char *file, ChannelClass *class_list, int *M
   specified */
 
   for (current = head; current != NULL; current = current->next) {
-    int outid = (int)current->outlet;
+    int outid = (int) current->outlet;
 
     if (outid != 0) {
       current->outlet = channel_find_segment(head, outid);
@@ -510,9 +510,9 @@ static int channel_route_segment(Channel * segment, int deltat)
     storage = 0.0;
   outflow = (inflow + lateral_inflow) - (storage - segment->storage) / deltat;
 
-  /*  FOR TEST
+  /*  FOR TEST  
   outflow = inflow + lateral_inflow;
-  storage = 0.0;
+  storage = 0.0;   
   */
 
   segment->outflow = outflow * deltat;
@@ -562,7 +562,7 @@ int channel_step_initialize_network(Channel *net)
     net->last_outflow = net->outflow;
     net->last_storage = net->storage;
 
-    /* Initialzie variables for John's RBM model */
+    /* Initialzie variables for John's RBM model */ 
     net->ILW = 0.; /* incident longwave radiation */
     net->NLW = 0.; /* net longwave radiation */
     net->ISW = 0.; /* incident shortwave radiation */
@@ -598,7 +598,7 @@ channel_save_outflow_wtext
 Saves the channel outflow using a text string as the time field
 ------------------------------------------------------------- */
 int
-channel_save_outflow_text(char *tstring, Channel * net, FILE * out,
+  channel_save_outflow_text(char *tstring, Channel * net, FILE * out,
   FILE * out2, int flag)
 {
   int err = 0;
@@ -640,9 +640,9 @@ channel_save_outflow_text(char *tstring, Channel * net, FILE * out,
       if (fprintf(out, "%15s %10d %12.5g %12.5g %12.5g %12.5g",
         tstring, net->id, net->inflow, net->lateral_inflow,
         net->outflow, net->storage - net->last_storage) == EOF) {
-        error_handler(ERRHDL_ERROR,
-          "channel_save_outflow: write error:%s", strerror(errno));
-        err++;
+          error_handler(ERRHDL_ERROR,
+            "channel_save_outflow: write error:%s", strerror(errno));
+          err++;
       }
       if (fprintf(out2, "%12.5g ", net->outflow) == EOF) {
         error_handler(ERRHDL_ERROR,
@@ -673,9 +673,9 @@ channel_save_outflow_text(char *tstring, Channel * net, FILE * out,
     tstring, 0, total_lateral_inflow,
     total_outflow, total_storage,
     total_storage_change, total_error) == EOF) {
-    error_handler(ERRHDL_ERROR,
-      "channel_save_outflow: write error:%s", strerror(errno));
-    err++;
+      error_handler(ERRHDL_ERROR,
+        "channel_save_outflow: write error:%s", strerror(errno));
+      err++;
   }
   fprintf(out2, "\n");
 
@@ -778,7 +778,7 @@ int main(int argc, char **argv)
 
     channel_step_initialize_network(simple);
     simple->inflow = inflow;
-    (void)channel_route_network(simple, interval);
+    (void) channel_route_network(simple, interval);
     outflow = tail->outflow / interval;
     channel_save_outflow(timestep * interval, simple, stdout);
   }
@@ -852,12 +852,13 @@ int channel_read_rveg_param(Channel *head, const char *file, int *MaxID)
       current = current->next;
     }
 
+
     for (i = 0; i < fields; i++) {
       if (rveg_fields[i].read) {
         switch (i) {
         case 0:
           current->id = rveg_fields[i].value.integer;
-          if (current->id > *MaxID)
+          if (current->id > *MaxID) 
             *MaxID = current->id;
           if (current->id <= 0) {
             error_handler(ERRHDL_ERROR, "%s: segment %d: channel id invalid",

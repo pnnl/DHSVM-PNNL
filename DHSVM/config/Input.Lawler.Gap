@@ -19,7 +19,8 @@
 # not use the information.  This allows easy switching between point and basin 
 # mode.  
 # For more information about the specific entries see the DHSVM web page
-
+# the soil parameters are copied from Lan's lowland INPUT File (with extremely 
+# low lateral conductivity $ changed the station from 1 to 2
 ##########################################################################################################
 # OPTIONS SECTION 
 ##########################################################################################################
@@ -27,25 +28,25 @@
 [OPTIONS]                                 # Model Options
 Format               = BIN                # BIN or NETCDF
 Extent               = BASIN              # POINT or BASIN
-Gradient             = TOPOGRAPHY   	    # TOPOGRAPHY or WATERTABLE
+Gradient             = TOPOGRAPHY   	  # TOPOGRAPHY or WATERTABLE
 Flow Routing         = NETWORK            # UNIT_HYDROGRAPH or NETWORK (StrEnv[flow_routing])
 Sensible Heat Flux   = FALSE              # TRUE or FALSE
-Overland Routing     = CONVENTIONAL	      # CONVENTIONAL or KINEMATIC (StrEnv[routing])
-Infiltration	       = STATIC		          # Static or Dynamic
+Overland Routing     = CONVENTIONAL	  # CONVENTIONAL or KINEMATIC (StrEnv[routing])
+Infiltration	     = STATIC		  # Static or Dynamic
 Interpolation        = INVDIST            # NEAREST or INVDIST or VARCRESS
-MM5                  = FALSE		          # TRUE or FALSE
+MM5                  = FALSE		  # TRUE or FALSE
 QPF                  = FALSE              # TRUE or FALSE
 PRISM                = FALSE
 PRISM data path      = 
 PRISM data extension = 
 Gridded Met data     = FALSE              # TRUE or FALSE
 Canopy radiation attenuation mode = FIXED # FIXED or VARIABLE
-Shading              = FALSE    	        # TRUE or FALSE
+Shading              = FALSE    	  # TRUE or FALSE
 Shading data path    = 	
 Shading data extension =  
 Skyview data path    = 
 Snotel               = FALSE              # TRUE or FALSE
-Outside              = FALSE	            # TRUE or FALSE
+Outside              = FALSE	          # TRUE or FALSE
 Rhoverride           = FALSE              # TRUE or FALSE
 Precipitation Source = STATION            # STATION or RADAR
 Wind Source          = STATION            # STATION or MODEL
@@ -58,9 +59,8 @@ Riparian Shading       = FALSE            # used for stream tempeature only
 Variable Light Transmittance = TRUE       # TRUE if light transmittance changes with solar altitude
 Canopy Gapping = TRUE
 Snow Sliding = FALSE
-Precipitation Separation = FALSE          # TRUE if rain and snow are separate MET input (e.g. WRF)
-Glacier = NO_GLACIER                      # NO_GLACIER; GLSPINUP; GLSTATIC; GLDYNAMIC
-Precipitation Multiplier Map =            # no correction be made if leave blank 
+Precipitation Separation = FALSE
+Precipitation Multiplier Map =  # no correction be made if leave blank              
 
 ##########################################################################################################
 # MODEL AREA SECTION
@@ -102,16 +102,15 @@ Snow LAI Multiplier  = 0.0002             # LAI Mulitplier for snow interception
 Min Intercepted Snow = 0.001              # Intercepted snow that can only be melted (m)
 Outside Basin Value  = 0                  # Value in mask that indicates outside the basin
 Temperature Lapse Rate   = -0.0065        # Temperature lapse rate (C/m)
-Precipitation Lapse Rate =  0.000    	    # Precipitation lapse rate (m/m). Use a linear function to 
-Albedo Accumulation Lambda = 0.9 	        # Lambda for accumulation period
-Albedo Melting Lambda = 0.6 		          # Lambda for melting period
-Albedo Accumulation Min = 0.7 		        # Min albedo value during accumulation period
-Albedo Melting Min = 0.55 		            # Min albedo value during melting period
+Precipitation Lapse Rate =  0.000    	  # Precipitation lapse rate (m/m). Use a linear function to 
+Albedo Accumulation Lambda = 0.9 	  # Lambda for accumulation period
+Albedo Melting Lambda = 0.6 		  # Lambda for melting period
+Albedo Accumulation Min = 0.7 		  # Min albedo value during accumulation period
+Albedo Melting Min = 0.55 		  # Min albedo value during melting period
 Max Surface Snow Layer Depth = 0.125      # maximum depth of the surface snow layer in water equivalent (m)
 Gap Wind Adj Factor = 0.9                 # Adjustment for wind received by gap (0-1)
 Snowslide Parameter1 = 700                # Empirical parameters used to calculate snow holding depth
 Snowslide Parameter2 = 0.12               # Empirical parameters used to calculate snow holding depth
-Glacier Albedo = 0.35
 
 ##########################################################################################################
 # TERRAIN INFORMATION SECTION
@@ -133,7 +132,7 @@ Basin Mask File   = ../input/mask.bin
 Stream Map File      = ../input/stream.map.dat
 Stream Network File  = ../input/stream.network.dat
 Stream Class File    = ../input/adjust.classfile
-Riparian Veg File    = NA
+Riparian Veg File    = 
 
 ################################### ROAD NETWORK #########################################################
 
@@ -158,7 +157,6 @@ Unit Hydrograph File =                    # path for unit hydrograph file
 
 [METEOROLOGY]     
 # Meteorological station if [OPTION] Gridded Met data = FALSE
-
 Number of Stations = 1                   # Number of meteorological stations
 Station Name     1 = Lawler              # Name for station 1
 North Coordinate 1 = 5188936             # North coordinate of station 1
@@ -264,7 +262,7 @@ Residual Water Content 1 = 0. 0. 0.
 [VEGETATION]
 
 Vegetation Map File = ../input/Veg.bin
-Canopy Gap Map File = ../input/GapDiam.bin
+Canopy Gap Map File = ../input/GapDiam.bin    # Gap diameter spatial input
 
 Number of Vegetation Types = 1              # Number of different vegetation types
 
@@ -429,3 +427,4 @@ Graphics ID           10 = 1
                                           # just in case (to close the previous
                                           # section)
 #########################################################################################################
+

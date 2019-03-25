@@ -83,10 +83,6 @@ typedef unsigned int unint;
 
 /* indicate ICE or GLACIER class */
 #define GLACIER -1234
-#define GLSPINUP 2
-#define NO_GLACIER 3
-#define GLDYNAMIC 4
-#define GLSTATIC 5
 
 #define TINY       1e-20
 #define DEBUG      FALSE
@@ -121,7 +117,7 @@ enum KEYS {
   shading, snotel, outside, rhoverride, precipitation_source, wind_source, 
   temp_lapse, precip_lapse, cressman_radius, cressman_stations, prism_data_path, 
   prism_data_ext, shading_data_path, shading_data_ext, skyview_data_path, 
-  stream_temp, canopy_shading, improv_radiation, gapping, snowslide, sepr, multiplier, glacier,
+  stream_temp, canopy_shading, improv_radiation, gapping, snowslide, sepr, multiplier,
   /* Area */
   coordinate_system, extreme_north, extreme_west, center_latitude,
   center_longitude, time_zone_meridian, number_of_rows,
@@ -132,9 +128,9 @@ enum KEYS {
   ground_roughness, snow_roughness, rain_threshold, snow_threshold,
   snow_water_capacity, reference_height, rain_lai_multiplier,
   snow_lai_multiplier, min_intercepted_snow, outside_basin,
-  temp_lapse_rate, precip_lapse_rate, glacier_albedo, 
-  alb_acc_lambda, alb_melt_lambda, alb_acc_min, alb_melt_min, max_swe, 
-  snowslide_parameter1,snowslide_parameter2, gapwind_adj,
+  temp_lapse_rate, precip_lapse_rate, alb_acc_lambda, 
+  alb_melt_lambda, alb_acc_min, alb_melt_min, max_swe, snowslide_parameter1,
+  snowslide_parameter2, gapwind_adj,
   /* Station information */
   station_name = 0, station_north, station_east, station_elev, station_file,
   /* RADAR information */
@@ -165,8 +161,6 @@ enum KEYS {
   /* terrain information */
   demfile = 0, maskfile,
   soiltype_file = 0, soildepth_file,
-  /* glacier information */
-  glmaskfile = 0,glbedfile,stopofile,wshmaskfile,glmbalfile,  
   /* DHSVM channel keys */
   stream_network = 0, stream_map, stream_class, riparian_veg,
   road_network, road_map, road_class,

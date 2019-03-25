@@ -81,6 +81,11 @@ void ExecDump(MAPSIZE *Map, DATE *Current, DATE *Start, OPTIONSTRUCT *Options,
       y = Dump->Pix[i].Loc.N;
       x = Dump->Pix[i].Loc.E;
 
+
+
+
+
+
       /* output variable at the pixel */
       flag = 2;
       DumpPix(Current, IsEqualTime(Current, Start), &(Dump->Pix[i].OutFile),
@@ -558,13 +563,13 @@ void DumpMap(MAPSIZE *Map, DATE *Current, MAPDUMP *DMap, TOPOPIX **TopoMap,
       ReportError(VarIDStr, 66);
     break;
 
+
     /* Net radiation (shortwave+longwave) received by the entire pixel*/
   case 303:
     if (DMap->Resolution == MAP_OUTPUT) {
       for (y = 0; y < Map->NY; y++)
         for (x = 0; x < Map->NX; x++)
           ((float *)Array)[y * Map->NX + x] = RadMap[y][x].NetRadiation[0] + RadMap[y][x].NetRadiation[1];
-
       Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map, DMap, Index);
 
     }
@@ -1093,42 +1098,6 @@ void DumpMap(MAPSIZE *Map, DATE *Current, MAPDUMP *DMap, TOPOPIX **TopoMap,
     else
       ReportError(VarIDStr, 66);
     break;
-
-  case 705:
-    if (DMap->Resolution == MAP_OUTPUT) {
-      for (y = 0; y < Map->NY; y++)
-        for (x = 0; x < Map->NX; x++)
-          ((float *)Array)[y * Map->NX + x] = SnowMap[y][x].Iwq;
-      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map, DMap, Index);
-    }
-    else if (DMap->Resolution == IMAGE_OUTPUT) {
-      for (y = 0; y < Map->NY; y++)
-        for (x = 0; x < Map->NX; x++)
-          ((unsigned char *)Array)[y * Map->NX + x] =
-          (unsigned char)((SnowMap[y][x].Iwq - Offset) / Range * MAXUCHAR);
-      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map, DMap, Index);
-    }
-    else
-      ReportError(VarIDStr, 66);
-    break;
-
-  case 706:
-    if (DMap->Resolution == MAP_OUTPUT) {
-      for (y = 0; y < Map->NY; y++)
-        for (x = 0; x < Map->NX; x++)
-          ((float *)Array)[y * Map->NX + x] = SnowMap[y][x].GlMelt;
-      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map, DMap, Index);
-    }
-    else if (DMap->Resolution == IMAGE_OUTPUT) {
-      for (y = 0; y < Map->NY; y++)
-        for (x = 0; x < Map->NX; x++)
-          ((unsigned char *)Array)[y * Map->NX + x] =
-          (unsigned char)((SnowMap[y][x].GlMelt - Offset) / Range * MAXUCHAR);
-      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map, DMap, Index);
-    }
-    else
-      ReportError(VarIDStr, 66);
-    break;
   }
 }
 
@@ -1138,7 +1107,6 @@ DumpPix()
 void DumpPix(DATE *Current, int first, FILES *OutFile, EVAPPIX *Evap,
   PRECIPPIX *Precip, PIXRAD *Rad, SNOWPIX *Snow, SOILPIX *Soil,
   VEGPIX *Veg, int NSoil, int NCanopyStory, OPTIONSTRUCT *Options, int flag)
-
 {
   int i, j;			/* counter */
 
@@ -1149,8 +1117,8 @@ void DumpPix(DATE *Current, int first, FILES *OutFile, EVAPPIX *Evap,
     fprintf(OutFile->FilePtr, "  Precip(m) ");
     fprintf(OutFile->FilePtr, " Snow(m) ");
     fprintf(OutFile->FilePtr, " IExcess(m) ");
-    fprintf(OutFile->FilePtr, "HasSnow SnowCover LastSnow Swq Melt ");
-    fprintf(OutFile->FilePtr, "PackWater TPack Iwq GlMelt ");
+    fprintf(OutFile->FilePtr, "HasSnow SnowCover LastSnow Swq Melt   ");
+    fprintf(OutFile->FilePtr, "PackWater TPack ");
 
     fprintf(OutFile->FilePtr, " TotalET ");   /*total evapotranspiration*/
     for (i = 0; i < NCanopyStory + 1; i++)
@@ -1195,7 +1163,7 @@ void DumpPix(DATE *Current, int first, FILES *OutFile, EVAPPIX *Evap,
       fprintf(OutFile->FilePtr, " InfiltAcc");
 
     if (flag == 2)
-      if (Veg->Gapping > 0.)
+      if (Veg->Gapping > 0.0 )
         fprintf(OutFile->FilePtr, "Gap_SW GAP_LW");
 
     fprintf(OutFile->FilePtr, "\n");
@@ -1212,9 +1180,9 @@ void DumpPix(DATE *Current, int first, FILES *OutFile, EVAPPIX *Evap,
   fprintf(OutFile->FilePtr, " %g ", Soil->IExcess);
 
   /* Snow */
-  fprintf(OutFile->FilePtr, " %1d %1d %4d %g %g %g %g %g %g ",
+  fprintf(OutFile->FilePtr, " %1d %1d %4d %g %g %g %g ",
     Snow->HasSnow, Snow->SnowCoverOver, Snow->LastSnow, Snow->Swq,
-    Snow->Melt, Snow->PackWater, Snow->TPack, Snow->Iwq, Snow->GlMelt);
+    Snow->Melt, Snow->PackWater, Snow->TPack);
 
   fprintf(OutFile->FilePtr, " %g", Evap->ETot);
 
@@ -1276,7 +1244,7 @@ void DumpPix(DATE *Current, int first, FILES *OutFile, EVAPPIX *Evap,
 
   /* Only report the gap radiations values when dumping pixels instead of basin average */
   if (flag == 2)
-    if (Veg->Gapping > 0.)
+    if (Veg->Gapping > 0.0)
       fprintf(OutFile->FilePtr, " %g %g",
         Veg->Type[Opening].NetShort[1], Veg->Type[Opening].LongIn[1]);
 

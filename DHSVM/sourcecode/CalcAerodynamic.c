@@ -81,6 +81,7 @@ void CalcAerodynamic(int NVegLayers, unsigned char OverStory,
   float Z0_Upper;    /* roughness length for overstory (m) */
   float Zt;
   float Zw;
+  float junk;
 
   K2 = VON_KARMAN * VON_KARMAN;
 

@@ -17,12 +17,10 @@
 #define SNOW_H
 
 #include <stdarg.h>
-#include "data.h"
 
 
 void MassRelease(float *InterceptedSnow, float *TempInterceptionStorage,
 		 float *ReleasedMass, float *Drip, float MDRatio);
-
 
 void SnowInterception(OPTIONSTRUCT *Options, int y, int x, int Dt, float F,
               float Vf, float LAI, float MaxInt, float MaxSnowIntCap,
@@ -39,8 +37,7 @@ float SnowMelt(int y, int x, int Dt, float Z, float Displacement, float Z0,
 	       float SnowFall, float Tair, float Vpd, float Wind,
 	       float *PackWater, float *SurfWater, float *Swq,
 	       float *VaporMassFlux, float *TPack, float *TSurf,
-	       float *MeltEnergy, float *Iwq, float *GlMelt, float *depth, float *density,	        
-         float *glwater, float *Qold, OPTIONSTRUCT * Options, float *IceRemoved);
+	       float *MeltEnergy);
 
 float SnowPackEnergyBalance(float TSurf, va_list ap);
 

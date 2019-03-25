@@ -43,7 +43,7 @@ float CalcEffectiveKh(int NSoilLayers, float Top, float Bottom,
 
 float CalcKhDry(float Density);
 
-float CalcSnowAlbedo(float TSurf,float Swq, unsigned short Last, SNOWTABLE *SnowAlbedo);
+float CalcSnowAlbedo(float TSurf, unsigned short Last, SNOWTABLE *SnowAlbedo);
 
 float CalcTransmissivity(float SoilDepth, float WaterTable, float LateralKs,
 			 float KsExponent, float DepthThresh);
@@ -146,8 +146,8 @@ void InitMetMaps(LISTPTR Input, int NDaySteps, MAPSIZE *Map, MAPSIZE *Radar,
 		 unsigned char ****ShadowMap, float ***SkyViewMap,
 		 EVAPPIX ***EvapMap, PRECIPPIX ***PrecipMap, float ***PptMultiplierMap,
 		 RADARPIX ***RadarMap, PIXRAD ***RadMap, SOILPIX **SoilMap, 
-     LAYER *Soil, VEGPIX **VegMap, LAYER *Veg, TOPOPIX **TopoMap, 
-     float ****MM5Input, float ****WindModel);
+                 LAYER *Soil, VEGPIX **VegMap, LAYER *Veg, TOPOPIX **TopoMap, 
+                 float ****MM5Input, float ****WindModel);
 
 void InitMetSources(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
             TOPOPIX **TopoMap, int NSoilLayers, TIMESTRUCT *Time, 
@@ -167,7 +167,7 @@ void InitModelState(DATE *Start, MAPSIZE *Map, OPTIONSTRUCT *Options,
 		    VEGPIX **VegMap, LAYER Veg, VEGTABLE *VType, char *Path,
 		    SNOWTABLE *SnowAlbedo, TOPOPIX **TopoMap,
 		    ROADSTRUCT **Network, UNITHYDRINFO *HydrographInfo,
-		    float *Hydrograph, AGGREGATED *Total, GLPIX ** GlacierMap);
+		    float *Hydrograph);
 
 void InitNetwork(int NY, int NX, float DX, float DY, TOPOPIX **TopoMap, 
 		 SOILPIX **SoilMap, VEGPIX **VegMap, VEGTABLE *VType, 
@@ -186,13 +186,12 @@ void InitNewStep(INPUTFILES *InFiles, MAPSIZE *Map, TIMESTRUCT *Time,
 		 METLOCATION *Stat, char *RadarFileName, MAPSIZE *Radar,
 		 RADARPIX **RadarMap, SOLARGEOMETRY *SolarGeo, 
 		 TOPOPIX **TopoMap, SOILPIX **SoilMap, float ***MM5Input, 
-     float **PrecipLapseMap, float ***WindModel, MAPSIZE *MM5Map);
+                 float **PrecipLapseMap, float ***WindModel, MAPSIZE *MM5Map);
 
 int InitPixDump(LISTPTR Input, MAPSIZE *Map, uchar **BasinMask, char *Path,
 		int NPix, PIXDUMP **Pix, OPTIONSTRUCT *Options);
-    
 void InitPptMultiplierMap(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
-     float ***PptMultiplierMap);    
+  float ***PptMultiplierMap);                            
 
 void InitPrecipLapse(LISTPTR Input, INPUTFILES *InFiles);
 
@@ -239,13 +238,10 @@ void InitTables(int StepsPerDay, LISTPTR Input, OPTIONSTRUCT *Options,
 
 void InitTerrainMaps(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
   LAYER *Soil, LAYER *Veg, TOPOPIX ***TopoMap, SOILTABLE *SType,
-  SOILPIX ***SoilMap, VEGTABLE *VType, VEGPIX ***VegMap, GLPIX ***GlacierMap);
+  SOILPIX ***SoilMap, VEGTABLE *VType, VEGPIX ***VegMap);
 
 void InitTopoMap(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
 		 TOPOPIX ***TopoMap);
-
-void InitGlacierMaps(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
-		     GLPIX *** GlacierMap);
 
 void InitUnitHydrograph(LISTPTR Input, MAPSIZE *Map, TOPOPIX **TopoMap,
 			UNITHYDR ***UnitHydrograph, float **Hydrograph,
@@ -274,10 +270,10 @@ float LapseT(float Temp, float FromElev, float ToElev, float LapseRate);
  
 PIXMET MakeLocalMetData(int y, int x, MAPSIZE *Map, int DayStep,
 			OPTIONSTRUCT *Options, int NStats, METLOCATION *Stat, 
-      uchar *MetWeights, float LocalElev, PIXRAD *RadMap,
+            uchar *MetWeights, float LocalElev, PIXRAD *RadMap,
 			PRECIPPIX *PrecipMap, MAPSIZE *Radar, RADARPIX **RadarMap,
 			float **PrismMap, SNOWPIX *LocalSnow, SNOWTABLE *SnowAlbedo,
-      CanopyGapStruct **Gap, VEGPIX *VegMap,
+            CanopyGapStruct **Gap, VEGPIX *VegMap,
 			float ***MM5Input, float ***WindModel, float **PrecipLapseMap,
 			MET_MAP_PIX ***MetMap, float precipMultiplier, int NGraphics, int Month, float skyview,
 			unsigned char shadow, float SunMax, float SineSolarAltitude);

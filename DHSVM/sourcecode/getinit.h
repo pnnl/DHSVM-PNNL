@@ -98,4 +98,3 @@ void ReadInitFile(char *TemplateFileName, LISTPTR * Input);
 void Strip(char *Buffer);
 
 #endif
-

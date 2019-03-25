@@ -51,7 +51,7 @@ void InitMetMaps(LISTPTR Input, int NDaySteps, MAPSIZE *Map, MAPSIZE *Radar,
 
   InitEvapMap(Map, EvapMap, SoilMap, Soil, VegMap, Veg, TopoMap);
   InitPrecipMap(Map, PrecipMap, VegMap, Veg, TopoMap);
-  InitPptMultiplierMap(Input, Options, Map, PptMultiplierMap);  
+  InitPptMultiplierMap(Input, Options, Map, PptMultiplierMap);                                                            
 
   if (Options->MM5 == TRUE) {
     InitMM5Maps(Soil->MaxLayers, Map->NY, Map->NX, MM5Input, RadMap, Options);
@@ -481,4 +481,4 @@ void InitPptMultiplierMap(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE *Map, f
 	free(Array);
   }
   
-}                
+}                                                                              

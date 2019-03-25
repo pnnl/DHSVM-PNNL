@@ -180,7 +180,8 @@ PIXMET MakeLocalMetData(int y, int x, MAPSIZE *Map, int DayStep,
   /* into account the slope and aspect and topographic shading */
   /* of the local pixel.  If we wanted to use this value directly */
   /* then the correction to the observed beam w.r.t. a horizontal plane */
-  /* would be actual = horizontal*shadefactor/255/sin(solar_altitude) */
+  /* would be   
+  /*        actual = horizontal*shadefactor/255/sin(solar_altitude) */
   /* the sin(solar_altitude) is necessary to convert horizontal into the maximum */
   /* possible flux */
 
@@ -297,7 +298,7 @@ PIXMET MakeLocalMetData(int y, int x, MAPSIZE *Map, int DayStep,
     PrecipMap->RainFall = PrecipMap->Precip - PrecipMap->SnowFall;
   }
 
-  if (VegMap->Gapping > 0.) {
+  if (VegMap->Gapping > 0.0 ) {
     for (j = 0; j < CELL_PARTITION; j++) {
       (*Gap)[j].SnowFall = PrecipMap->SnowFall;
       (*Gap)[j].RainFall = PrecipMap->RainFall;
@@ -328,19 +329,18 @@ PIXMET MakeLocalMetData(int y, int x, MAPSIZE *Map, int DayStep,
   LocalMet.AirDens = 0.003486 * LocalMet.Press / (275 + LocalMet.Tair);
 
   /* Snow albedo as a function of days since last snow */
-  if (LocalSnow->HasSnow || LocalSnow->Iwq > 0.0) {
+  if (LocalSnow->HasSnow) {
     if (PrecipMap->SnowFall > 0.0)
       LocalSnow->LastSnow = 0;
     else
       LocalSnow->LastSnow++;
-    LocalSnow->Albedo = CalcSnowAlbedo(LocalSnow->TSurf, LocalSnow->Swq,
-    LocalSnow->LastSnow, SnowAlbedo);
+    LocalSnow->Albedo = CalcSnowAlbedo(LocalSnow->TSurf, LocalSnow->LastSnow,
+      SnowAlbedo);
   }
   else
     LocalSnow->LastSnow = 0;
-  
   /* if canopy gap is present */
-  if (VegMap->Gapping > 0.) {
+  if (VegMap->Gapping > 0.0) {
     for (j = 0; j < CELL_PARTITION; j++) {
       if ((*Gap)[j].HasSnow) {
         if ((*Gap)[j].SnowFall > 0.0)
@@ -348,7 +348,7 @@ PIXMET MakeLocalMetData(int y, int x, MAPSIZE *Map, int DayStep,
         else
           (*Gap)[j].LastSnow++;
 
-        (*Gap)[j].Albedo = CalcSnowAlbedo((*Gap)[j].TSurf, (*Gap)[j].Swq, (*Gap)[j].LastSnow,
+        (*Gap)[j].Albedo = CalcSnowAlbedo((*Gap)[j].TSurf, (*Gap)[j].LastSnow,
           SnowAlbedo);
       }
       else
@@ -366,4 +366,3 @@ PIXMET MakeLocalMetData(int y, int x, MAPSIZE *Map, int DayStep,
 
   return LocalMet;
 }
-

@@ -60,13 +60,13 @@ void CanopyGapSnowMelt(OPTIONSTRUCT *Options, int y, int x, int Dt,
 {
   float SnowLongIn;			/* Incoming longwave radiation at snow surface (W/m2) */
   float SnowNetShort;		/* Net amount of short wave radiation at the snow surface (W/m2) */
-  float SnowRa;				  /* Aerodynamic resistance for snow */
+  float SnowRa;				/* Aerodynamic resistance for snow */
   float SnowWind;		    /* Wind 2 m above snow */
-  float Tsurf;          /* Surface temperature */
-  float OldTSurf;       /* Effective surface temperature at the end of the last timestep (C)*/
-  float Tmean;          /* Average snow surface temperature*/
-  float tmp;            /* temporary variable */
-  float Tmp;            /* temporary variable */
+  float Tsurf;              /* Surface temperature */
+  float OldTSurf;           /* Effective surface temperature at the end of the last timestep (C)*/
+  float Tmean;              /* Average snow surface temperature*/
+  float tmp;                /* temporary variable */
+  float Tmp;                /* temporary variable */
   float Ls;			        /* Latent heat of sublimation (J/kg) */
 
   /********************* calculate gap snow melt *********************/
@@ -93,10 +93,7 @@ void CanopyGapSnowMelt(OPTIONSTRUCT *Options, int y, int x, int Dt,
         LocalMet->Tair, LocalMet->Vpd, SnowWind,
         &((*Gap)[Opening].PackWater), &((*Gap)[Opening].SurfWater),
         &((*Gap)[Opening].Swq), &((*Gap)[Opening].VaporMassFlux),
-        &((*Gap)[Opening].TPack), &((*Gap)[Opening].TSurf), &((*Gap)[Opening].MeltEnergy),
-        &((*Gap)[Opening].Iwq), &((*Gap)[Opening].GlMelt), &((*Gap)[Opening].depth),
-        &((*Gap)[Opening].density), &((*Gap)[Opening].glwater), &((*Gap)[Opening].Qold),
-        Options, &((*Gap)[Opening].IceRemoved));
+        &((*Gap)[Opening].TPack), &((*Gap)[Opening].TSurf), &((*Gap)[Opening].MeltEnergy));
 
     /* Calculate the terms of the snow energy balance.  This is similar to the
     code in SnowPackEnergyBalance.c */
@@ -327,11 +324,7 @@ void CalcGapSurroudingIntercept(OPTIONSTRUCT *Options, int HeatFluxOption,
         LocalMet->Tair, LocalMet->Vpd, SnowWind,
         &((*Gap)[Forest].PackWater), &((*Gap)[Forest].SurfWater),
         &((*Gap)[Forest].Swq), &((*Gap)[Forest].VaporMassFlux),
-        &((*Gap)[Forest].TPack), &((*Gap)[Forest].TSurf), &((*Gap)[Forest].MeltEnergy),
-        &((*Gap)[Forest].Iwq), &((*Gap)[Forest].GlMelt), &((*Gap)[Forest].depth),
-        &((*Gap)[Forest].density), &((*Gap)[Forest].glwater), &((*Gap)[Forest].Qold),
-        Options, &((*Gap)[Forest].IceRemoved));
-        
+        &((*Gap)[Forest].TPack), &((*Gap)[Forest].TSurf), &((*Gap)[Forest].MeltEnergy));
 
     /* Rainfall was added to SurfWater of the snow pack and has to be set to zero */
     (*Gap)[Forest].RainFall = 0.0;
@@ -505,4 +498,3 @@ void AggregateCanopyGap(CanopyGapStruct **Gap, VEGPIX *LocalVeg,
   LocalEvap->ETot =
     weight*(*Gap)[Opening].ETot + (1-weight)*(*Gap)[Forest].ETot;
 }
-

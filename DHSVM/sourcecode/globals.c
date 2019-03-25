@@ -27,18 +27,14 @@ float TEMPLAPSE;		/* Temperature lapse rate in C/m */
 float Z0_GROUND;		/* Roughness length for bare soil (m) */
 float Z0_SNOW;			/* Roughness length for snow (m) */
 float Zref;			    /* Reference height (m) */
+
 float ALB_ACC_LAMBDA;   /* snow freeze albedo cruve control parameters */
 float ALB_MELT_LAMBDA;  /* snow thaw albedo cruve control parameters */
 float ALB_ACC_MIN;
 float ALB_MELT_MIN;
-
 float MAX_SURFACE_SWE; 	/* maximum depth of the surface layer in water equivalent (m) */
 float GAPWIND_FACTOR;
 int TotNumGap;          /* total number of grid cells with a gap structure */
 
 float SNOWSLIDE1;       /*Avalanche parameter*/
 float SNOWSLIDE2;       /*Avalanche parameter */
-
-float GL_ALB;                   /* Glacier Albedo */
-
-

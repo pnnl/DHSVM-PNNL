@@ -71,8 +71,9 @@ void ShortwaveBalance(OPTIONSTRUCT *Options, unsigned char OverStory,
 float SoilEvaporation(int Dt, float Temp, float Slope, float Gamma, 
               float Lv, float AirDens, float Vpd, float NetRad, 
               float RaSoil, float Transpiration, float Porosity,
-              float Fcap, float Ks, float Press, float m, float RootDepth, 
-              float *MoistContent, float Adjust);
+              float Fcap, float Ks,
+		      float Press, float m, float RootDepth, float *MoistContent, 
+              float Adjust);
 
 float StabilityCorrection(float Z, float d, float Tsurf, float Tair,
 			  float Wind, float Z0);
