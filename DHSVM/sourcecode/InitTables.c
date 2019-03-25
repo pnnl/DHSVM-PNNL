@@ -655,14 +655,14 @@ void InitSnowTable(SNOWTABLE ** SnowAlbedo, int StepsPerDay)
 
   /* Laramie and Schaake (1972) */
   /* Updated based on Storck (2000) */
-
   for (i = 0; i < ((DAYPYEAR + 1) * StepsPerDay); i++) {
     (*SnowAlbedo)[i].Freeze =
-      0.85 * pow(ALB_ACC_LAMBDA, pow(((float)i) / StepsPerDay, 0.58));
+	  ALB_MAX * pow(ALB_ACC_LAMBDA, pow(((float)i) / StepsPerDay, 0.58));
     if ((*SnowAlbedo)[i].Freeze < ALB_ACC_MIN)
       (*SnowAlbedo)[i].Freeze = ALB_ACC_MIN;
+
     (*SnowAlbedo)[i].Thaw =
-      0.85 * pow(ALB_MELT_LAMBDA, pow(((float)i) / StepsPerDay, 0.46));
+	  ALB_MAX * pow(ALB_MELT_LAMBDA, pow(((float)i) / StepsPerDay, 0.46));
     if ((*SnowAlbedo)[i].Thaw < ALB_MELT_MIN)
       (*SnowAlbedo)[i].Thaw = ALB_MELT_MIN;
   }

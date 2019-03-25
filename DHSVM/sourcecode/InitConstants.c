@@ -122,6 +122,7 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
     {"CONSTANTS", "OUTSIDE BASIN VALUE", "", ""},
     {"CONSTANTS", "TEMPERATURE LAPSE RATE", "", ""},
     {"CONSTANTS", "PRECIPITATION LAPSE RATE", "", ""},
+    {"CONSTANTS", "FRESH SNOW ALBEDO", "", "" },                                         
     { "CONSTANTS", "ALBEDO ACCUMULATION LAMBDA", "", "" },
     { "CONSTANTS", "ALBEDO MELTING LAMBDA", "", "" },
     { "CONSTANTS", "ALBEDO ACCUMULATION MIN", "", "" },
@@ -562,13 +563,16 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
     StrEnv[alb_melt_lambda].VarStr, 1))
     ReportError(StrEnv[alb_melt_lambda].KeyName, 51);
 
-  if (!CopyFloat(&ALB_ACC_MIN,
-    StrEnv[alb_acc_min].VarStr, 1))
-    ReportError(StrEnv[alb_acc_min].KeyName, 51);
+  /* parameters of albedo decay curve */
+  if (!CopyFloat(&ALB_ACC_MIN, StrEnv[alb_acc_min].VarStr, 1))                                   
+	  ReportError(StrEnv[alb_acc_min].KeyName, 51);
 
-  if (!CopyFloat(&ALB_MELT_MIN,
-    StrEnv[alb_melt_min].VarStr, 1))
-    ReportError(StrEnv[alb_melt_min].KeyName, 51);
+  if (!CopyFloat(&ALB_MELT_MIN, StrEnv[alb_melt_min].VarStr, 1))                                    
+	  ReportError(StrEnv[alb_melt_min].KeyName, 51);
+
+  /* fresh albedo - this was made a constant 0.85 in previous versions */
+  if (!CopyFloat(&ALB_MAX, StrEnv[fresh_alb].VarStr, 1))
+	  ReportError(StrEnv[fresh_alb].KeyName, 51);
     
   /* maximum depth of the surface layer in snow water equivalent (m) */
   if (!CopyFloat(&MAX_SURFACE_SWE,

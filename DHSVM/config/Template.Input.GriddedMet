@@ -28,18 +28,18 @@
 [OPTIONS]                                 # Model Options
 Format               = BIN                # BIN, BYTESWAP or NETCDF
 Extent               = BASIN              # POINT or BASIN
-Gradient             = TOPOGRAPHY   	  # TOPOGRAPHY or WATERTABLE
+Gradient             = TOPOGRAPHY   	    # TOPOGRAPHY or WATERTABLE
 Flow Routing         = NETWORK            # UNIT_HYDROGRAPH or NETWORK (StrEnv[flow_routing])
 Sensible Heat Flux   = FALSE              # TRUE or FALSE
-Sediment             = FALSE		  # TRUE or FALSE
-Sediment Input File  =		    	  # path for sediment configuration file
-Overland Routing     = CONVENTIONAL	  # CONVENTIONAL or KINEMATIC
+Sediment             = FALSE		          # TRUE or FALSE
+Sediment Input File  =		    	          # path for sediment configuration file
+Overland Routing     = CONVENTIONAL	      # CONVENTIONAL or KINEMATIC
 Interpolation        = INVDIST            # NEAREST or INVDIST or VARCRESS
-Infiltration	     = STATIC		  # Static or Dynamic
-MM5                  = FALSE   		  # TRUE or FALSE
+Infiltration	     = STATIC		            # Static or Dynamic
+MM5                  = FALSE   		        # TRUE or FALSE
 QPF                  = FALSE              # TRUE or FALSE
 PRISM                = FALSE              # TRUE or FALSE
-PRISM data path      =			  # path for PRISM files
+PRISM data path      =			              # path for PRISM files
 PRISM data extension =                    # file extension for PRISM files 
 Gridded Met data     = TRUE               # TRUE or FALSE
 Canopy radiation attenuation mode = FIXED # FIXED or VARIABLE
@@ -48,7 +48,7 @@ Shading data path    = ../input/shadow/Shadow  	  # path for shading files
 Shading data extension = bin              # file extension for shading files 
 Skyview data path    = ../input/shadow/SkyView.bin	  # skyview file
 Snotel               = FALSE              # TRUE or FALSE
-Outside              = FALSE    	  # TRUE or FALSE
+Outside              = FALSE    	        # TRUE or FALSE
 Rhoverride           = FALSE              # TRUE or FALSE
 Precipitation Source = STATION            # STATION or RADAR
 Wind Source          = STATION            # STATION or MODEL
@@ -60,9 +60,10 @@ Stream Temperature   = FALSE              # TRUE or FALSE
 Riparian Shading       = FALSE            # used for stream tempeature only
 Variable Light Transmittance  = TRUE      # TRUE OR FALSE
 Canopy Gapping = TRUE
-Snow Sliding = TRUE
-Precipitation Separation = TRUE
-Precipitation Multiplier Map = ../input/soild.bin # no correction be made if leave blank              
+Snow Sliding = TRUE                       # this function is not available - needs more tests 
+Precipitation Multiplier Map =            # a 2D spatial input in the same format as DEM, soil and veg
+                                          # no correction be made if leave blank              
+Precipitation Separation = FALSE          # TRUE if snow and rain are separately provided in meterological input data (e.g. WRF)
 
 ################################################################################
 # MODEL AREA SECTION
@@ -104,11 +105,14 @@ Snow LAI Multiplier  = 0.0005             # LAI Mulitplier for snow interception
 Min Intercepted Snow = 0.005              # Intercepted snow that can only be melted (m)
 Outside Basin Value  = 0                  # Value in mask that indicates outside the basin
 Temperature Lapse Rate   = -0.0065        # Temperature lapse rate (C/m)
-Precipitation Lapse Rate = 3e-06          # Precipitation lapse rate (m/m). Use a linear function to
-Albedo Accumulation Lambda = 0.95         # Lambda for accmulation period
-Albedo Melting Lambda = 0.7               # Lambda for melting period
-Albedo Accumulation Min = 0.4             # Min albedo value during accumulation period
-Albedo Melting Min = 0.3                  # Min albedo value during melting period
+Precipitation Lapse Rate = 3e-06          # Precipitation lapse rate (m/m). 
+Fresh Snow Albedo  = 0.85                 # Required if use 3-param albedo decay curve (set in [option]); else leave blank
+Albedo Accumulation Lambda = 0.9 	        # Lambda for accumulation period
+Albedo Melting Lambda = 0.6 		          # Lambda for melting period
+Albedo Accumulation Min = 0.7 		        # Min albedo value during accumulation period
+                                          # Required if use 2-param albedo decay curve (set in [option]); else leave blank
+Albedo Melting Min = 0.55 		            # Min albedo value during melting period
+                                          # Required if use 3-param albedo decay curve (set in [option]); else leave blank
 Max Surface Snow Layer Depth = 0.125      # maximum depth of the surface snow layer in water equivalent (m) 
 Gap Wind Adj Factor = 1.0                 # Adjustment for wind received by gap (0-1)
 Snowslide Parameter1 = 700                # Empirical parameters used to calculate snow holding depth

@@ -28,6 +28,8 @@ float Z0_GROUND;		/* Roughness length for bare soil (m) */
 float Z0_SNOW;			/* Roughness length for snow (m) */
 float Zref;			    /* Reference height (m) */
 
+/* snow albedo decay curve */
+float ALB_MAX;          /* fresh snow albedo */                                              
 float ALB_ACC_LAMBDA;   /* snow freeze albedo cruve control parameters */
 float ALB_MELT_LAMBDA;  /* snow thaw albedo cruve control parameters */
 float ALB_ACC_MIN;
