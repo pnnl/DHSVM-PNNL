@@ -54,13 +54,11 @@ Temperature lapse rate   = CONSTANT       # CONSTANT or VARIABLE
 Precipitation lapse rate = CONSTANT       # CONSTANT, MAP, or VARIABLE
 Cressman radius      =                    # in model pixels
 Cressman stations    =                    # the maximum stations for interpolation
-Stream Temperature   = FALSE              # TRUE or FALSE
-Riparian Shading       = FALSE            # used for stream tempeature only
+Stream Temperature   = TRUE               # TRUE or FALSE
+Riparian Shading       = TRUE             # used for stream tempeature only
 Variable Light Transmittance = TRUE       # TRUE if light transmittance changes with solar altitude
 Canopy Gapping = TRUE
 Snow Sliding = FALSE                      # this function is not available - needs more tests
-Precipitation Multiplier Map =            # a 2D spatial input in the same format as DEM, soil and veg
-                                          # no correction be made if leave blank             
 Precipitation Separation = FALSE          # TRUE if snow and rain are separately provided in meterological input data (e.g. WRF)
 
 ##########################################################################################################
@@ -94,8 +92,6 @@ Model End            =  5/15/2008-00:00   # Model end time (MM/DD/YYYY-HH)
 [CONSTANTS]                               # Model constants
 Ground Roughness     = 0.02               # Roughness of soil surface (m)
 Snow Roughness       = 0.01               # Roughness of snow surface (m)
-Rain Threshold       = 0.0                # Minimum temperature at which rain occurs (C)
-Snow Threshold       = 3.0                # Maximum temperature at which snow occurs (C)
 Snow Water Capacity  = 0.01               # Snow liquid water holding capacity(fraction)
 Reference Height     = 70.0               # Reference height (m)
 Rain LAI Multiplier  = 0.0001             # LAI Multiplier for rain interception
@@ -104,16 +100,24 @@ Min Intercepted Snow = 0.001              # Intercepted snow that can only be me
 Outside Basin Value  = 0                  # Value in mask that indicates outside the basin
 Temperature Lapse Rate   = -0.0065        # Temperature lapse rate (C/m)
 Precipitation Lapse Rate =  0.000    	    # Precipitation lapse rate (m/m). 
-Fresh Snow Albedo  = 0.80                 # Fresh snow albedo (0.85 is the default value used in older versions)
-Albedo Accumulation Lambda = 0.9 	        # Lambda for accumulation period
-Albedo Melting Lambda = 0.6 		          # Lambda for melting period
-Albedo Accumulation Min = 0.7 		        # Min albedo value during accumulation period; set to -9999 if min value is not needed.
-Albedo Melting Min = 0.55 		            # Min albedo value during melting period; set to -9999 if min value is not needed.
 Max Surface Snow Layer Depth = 0.125      # maximum depth of the surface snow layer in water equivalent (m)
 Gap Wind Adj Factor = 0.9                 # Adjustment for wind received by gap (0-1)
 Snowslide Parameter1 = 700                # Empirical parameters used to calculate snow holding depth
 Snowslide Parameter2 = 0.12               # Empirical parameters used to calculate snow holding depth
 
+########################################################
+# The following fields in this section can take either a single value (i.e. basin-wide constant parameter value)
+# or the path to a spatial parameter binary file in the same format as DEM, soil and veg  
+
+Precipitation Multiplier Map = ../input/multiplier.bin # no correction be made if leave blank, or a constant applied basin-wide, or a spatial input
+Rain Threshold       = 0.0                             # Minimum temperature at which rain occurs (C)
+Snow Threshold       = ../input/Ts.bin                 # Maximum temperature at which snow occurs (C)
+Fresh Snow Albedo  = ../input/amax.bin                 # Fresh snow albedo (0.85 is the default value used in older versions)
+Albedo Accumulation Lambda = 0.9 	                     # Lambda for accumulation period
+Albedo Melting Lambda = 0.6 		                       # Lambda for melting period
+Albedo Accumulation Min = 0.7 		                     # Min albedo value during accumulation period; set to -9999 if min value is not needed.
+Albedo Melting Min = 0.55 		                         # Min albedo value during melting period; set to -9999 if min value is not needed.
+                                                
 ##########################################################################################################
 # TERRAIN INFORMATION SECTION
 ##########################################################################################################
