@@ -48,7 +48,7 @@
  *****************************************************************************/
 void InitModelState(DATE *Start, MAPSIZE *Map, OPTIONSTRUCT *Options, PRECIPPIX **PrecipMap,
   SNOWPIX **SnowMap, SOILPIX **SoilMap, LAYER Soil, SOILTABLE *SType,
-  VEGPIX **VegMap, LAYER Veg, VEGTABLE *VType, char *Path, SNOWTABLE *SnowAlbedo,
+  VEGPIX **VegMap, LAYER Veg, VEGTABLE *VType, char *Path, 
   TOPOPIX **TopoMap, ROADSTRUCT **Network, UNITHYDRINFO *HydrographInfo,
   float *Hydrograph)
 {
@@ -279,11 +279,11 @@ void InitModelState(DATE *Start, MAPSIZE *Map, OPTIONSTRUCT *Options, PRECIPPIX 
 		if (Options->CanopyGapping) {
 		  for (i = 0; i < CELL_PARTITION; i++)
 			VegMap[y][x].Type[i].Albedo =
-			CalcSnowAlbedo(SnowMap[y][x].TSurf, SnowMap[y][x].LastSnow, SnowAlbedo);
+			CalcSnowAlbedo(SnowMap[y][x].TSurf, SnowMap[y][x].LastSnow, SnowMap[y][x].stable);
 		}
 		else {
 		  if (SnowMap[y][x].HasSnow)
-			SnowMap[y][x].Albedo = CalcSnowAlbedo(SnowMap[y][x].TSurf, SnowMap[y][x].LastSnow, SnowAlbedo);
+			SnowMap[y][x].Albedo = CalcSnowAlbedo(SnowMap[y][x].TSurf, SnowMap[y][x].LastSnow, SnowMap[y][x].stable);
 		  else
 			SnowMap[y][x].Albedo = 0;
 		}

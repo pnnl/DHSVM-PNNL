@@ -37,10 +37,11 @@
 
   Comments     :
 *****************************************************************************/
-void InitSnowMap(MAPSIZE * Map, SNOWPIX *** SnowMap)
+void InitSnowMap(MAPSIZE *Map, SNOWPIX ***SnowMap, TIMESTRUCT *Time)
 {
   const char *Routine = "InitSnowMap";
   int y;			/* counter */
+  int x;
 
   printf("Initializing snow map\n");
 
@@ -50,5 +51,13 @@ void InitSnowMap(MAPSIZE * Map, SNOWPIX *** SnowMap)
   for (y = 0; y < Map->NY; y++) {
     if (!((*SnowMap)[y] = (SNOWPIX *) calloc(Map->NX, sizeof(SNOWPIX))))
       ReportError((char *) Routine, 1);
+  }
+
+  for (y = 0; y < Map->NY; y++) {
+	for (x = 0; x < Map->NX; x++) {
+	  if (!((*SnowMap)[y][x].stable = 
+		(SNOWTABLE *)calloc((int)((DAYPYEAR + 1) * Time->NDaySteps), sizeof(SNOWTABLE))))
+		ReportError((char *)Routine, 1);
+	}
   }
 }

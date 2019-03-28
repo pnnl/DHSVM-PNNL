@@ -225,6 +225,24 @@ struct {
       "m/s", "Windspeed", NC_INT, FALSE, FALSE, FALSE, 0}, {
   704, "MetMap.humidity",
       "Humidity", "%.2f", "", "Humidity", NC_INT, FALSE, FALSE, FALSE, 0}, {
+  800, "Ts",
+      "Snow Temperature Threshold", "%.4f", "", "Snow Temperature Threshold", NC_FLOAT, FALSE, FALSE, FALSE, 0}, {
+  801, "Tr",
+      "Rain Temperature Threshold", "%.4f", "", "Rain Temperature Threshold", NC_FLOAT, FALSE, FALSE, FALSE, 0}, {
+  802, "Snow.amax",
+      "Fresh Snow Albedo", "%.4f", "", "Fresh Snow Albedo", NC_FLOAT, FALSE, FALSE, FALSE, 0}, {        
+  803, "Snow.LamdaAcc",
+      "Albedo lambda during accumulation", "%.4f", "", 
+      "Albedo decay lambda during accumulation", NC_FLOAT, FALSE, FALSE, FALSE, 0}, {
+  804, "Snow.LamdaMelt",
+      "Albedo lambda during melt", "%.4f", "", 
+      "Albedo decay lambda during melt", NC_FLOAT, FALSE, FALSE, FALSE, 0}, {
+  805, "Snow.MinAlbedoAcc",
+      "Min Albedo during accumulation", "%.4f", "", 
+      "Min Albedo during accumulation", NC_FLOAT, FALSE, FALSE, FALSE, 0}, {        
+  806, "Snow.MinAlbedoMelt",
+      "Min Albedo during melt", "%.4f", "", 
+      "Min Albedo during melt", NC_FLOAT, FALSE, FALSE, FALSE, 0}, {   
   ENDOFLIST, "", "", "", "", "",
       ENDOFLIST, ENDOFLIST, ENDOFLIST, ENDOFLIST, ENDOFLIST}
 };

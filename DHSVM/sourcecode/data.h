@@ -253,8 +253,8 @@ typedef struct {
   char ShadingDataPath[BUFSIZE + 1];
   char ShadingDataExt[BUFSIZE + 1];
   char SkyViewDataPath[BUFSIZE + 1];
-  char ImperviousFilePath[BUFSIZ + 1];
-  char PrecipMultiplierMapPath[BUFSIZ + 1];                                           
+  char ImperviousFilePath[BUFSIZ + 1];      
+  char PrecipMultiplierMapPath[BUFSIZ + 1];  
 } OPTIONSTRUCT;
 
 typedef struct {
@@ -335,6 +335,11 @@ typedef struct {
 } SOLARGEOMETRY;
 
 typedef struct {
+  float Freeze;			/* albedo when surface temperature below 0 C */
+  float Thaw;			/* albedo when surface temperature above 0 C */
+} SNOWTABLE;
+
+typedef struct {
   uchar HasSnow;			/* Snow cover flag determined by SWE */
   uchar SnowCoverOver;		/* Flag overstory can be covered */
   unshort LastSnow;			/* Days since last snowfall */
@@ -360,6 +365,17 @@ typedef struct {
   float Qe;				    /* Latent heat exchange */
   float Qp;                 /* advected heat from rain input */
   float MeltEnergy;			/* Energy used to melt snow and change of cold content of snow pack */
+
+  // spatial parameters
+  float Ts;	   				    /* snow temperature threshold */
+  float Tr;	    				/* rain tempeature threshold */
+  float amax;					/* fresh snow albedo */
+  float LamdaAcc;               /* lambda for accumulation period */
+  float LamdaMelt;              /* lambda for melt period */
+  float AccMin;                 /* minimum albedo for accumulation period*/
+  float MeltMin;                /* minimu albedo for melt period*/
+
+  SNOWTABLE *stable;            /* snow albedo table */
 } SNOWPIX;
 
 typedef struct {
@@ -413,11 +429,6 @@ typedef struct {
   float G_Infilt;                /* Mean capillary drive for dynamic maximum infiltration rate (m)   */
   float DepthThresh;    /* Threshold water table depth, beyond which transmissivity decays linearly with water table depth */
 } SOILTABLE;
-
-typedef struct {
-  float Freeze;			/* albedo when surface temperature below 0 C */
-  float Thaw;			/* albedo when surface temperature above 0 C */
-} SNOWTABLE;
 
 typedef struct {
   char Distribution[BUFSIZE+1];	/* Distribution type */

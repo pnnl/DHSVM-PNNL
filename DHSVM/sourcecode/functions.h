@@ -113,7 +113,7 @@ void InitChannelRVeg(TIMESTRUCT *Time, Channel *Channel);
 void InitCharArray(char *Array, int Size);
 
 void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
-		   SOLARGEOMETRY *SolarGeo, TIMESTRUCT *Time);
+	SOLARGEOMETRY *SolarGeo, TIMESTRUCT *Time, SNOWPIX ***SnowMap);  
 
 void InitDump(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
 	      int MaxSoilLayers, int MaxVegLayers, int Dt,
@@ -165,7 +165,7 @@ void InitModelState(DATE *Start, MAPSIZE *Map, OPTIONSTRUCT *Options,
 		    PRECIPPIX **PrecipMap, SNOWPIX **SnowMap,
 		    SOILPIX **SoilMap, LAYER Soil, SOILTABLE *SType,
 		    VEGPIX **VegMap, LAYER Veg, VEGTABLE *VType, char *Path,
-		    SNOWTABLE *SnowAlbedo, TOPOPIX **TopoMap,
+		    TOPOPIX **TopoMap,
 		    ROADSTRUCT **Network, UNITHYDRINFO *HydrographInfo,
 		    float *Hydrograph);
 
@@ -187,11 +187,14 @@ void InitNewStep(INPUTFILES *InFiles, MAPSIZE *Map, TIMESTRUCT *Time,
 		 RADARPIX **RadarMap, SOLARGEOMETRY *SolarGeo, 
 		 TOPOPIX **TopoMap, SOILPIX **SoilMap, float ***MM5Input, 
                  float **PrecipLapseMap, float ***WindModel, MAPSIZE *MM5Map);
+                 
+void InitParameterMaps(OPTIONSTRUCT *Options, MAPSIZE *Map, int Id,
+  char *FileName, SNOWPIX ***SnowMap, int ParamType, float temp);
 
 int InitPixDump(LISTPTR Input, MAPSIZE *Map, uchar **BasinMask, char *Path,
 		int NPix, PIXDUMP **Pix, OPTIONSTRUCT *Options);
-void InitPptMultiplierMap(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
-  float ***PptMultiplierMap);                            
+    
+void InitPptMultiplierMap(OPTIONSTRUCT *Options, MAPSIZE *Map, float ***PptMultiplierMap);                            
 
 void InitPrecipLapse(LISTPTR Input, INPUTFILES *InFiles);
 
@@ -215,7 +218,7 @@ void InitRadMap(MAPSIZE *Map, PIXRAD ***RadMap);
 
 void InitSatVaporTable(void);
 
-void InitSnowMap(MAPSIZE *Map, SNOWPIX ***SnowMap);
+void InitSnowMap(MAPSIZE *Map, SNOWPIX ***SnowMap, TIMESTRUCT *Time);
 
 void InitSoilMap(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
 		 LAYER *Soil, TOPOPIX **TopoMap, SOILPIX ***SoilMap);
@@ -223,7 +226,7 @@ void InitSoilMap(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
 int InitSoilTable(OPTIONSTRUCT *Options, SOILTABLE **SType, 
 			LISTPTR Input, LAYER *Soil, int InfiltOption);
 
-void InitSnowTable(SNOWTABLE **SnowAlbedo, int Dt);
+void InitSnowTable(SNOWTABLE **SnowAlbedo, SNOWPIX *SnowMap, int Dt);
 
 void InitStateDump(LISTPTR Input, int NStates, DATE **DState);
 
@@ -233,9 +236,9 @@ void InitStations(LISTPTR Input, MAPSIZE *Map, int NDaySteps,
 		  OPTIONSTRUCT *Options, int *NStats, METLOCATION **Stat);
 
 void InitTables(int StepsPerDay, LISTPTR Input, OPTIONSTRUCT *Options,
-		SOILTABLE **SType, LAYER *Soil, VEGTABLE **VType,
-		LAYER *Veg, SNOWTABLE **SnowAlbedo);
-
+    MAPSIZE *Map, SOILTABLE **SType, LAYER *Soil, VEGTABLE **VType,
+    LAYER *Veg, SNOWPIX **SnowMap);
+    
 void InitTerrainMaps(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
   LAYER *Soil, LAYER *Veg, TOPOPIX ***TopoMap, SOILTABLE *SType,
   SOILPIX ***SoilMap, VEGTABLE *VType, VEGPIX ***VegMap);
@@ -270,16 +273,15 @@ float LapseT(float Temp, float FromElev, float ToElev, float LapseRate);
  
 PIXMET MakeLocalMetData(int y, int x, MAPSIZE *Map, int DayStep,
 			OPTIONSTRUCT *Options, int NStats, METLOCATION *Stat, 
-            uchar *MetWeights, float LocalElev, PIXRAD *RadMap,
+      uchar *MetWeights, float LocalElev, PIXRAD *RadMap,
 			PRECIPPIX *PrecipMap, MAPSIZE *Radar, RADARPIX **RadarMap,
-			float **PrismMap, SNOWPIX *LocalSnow, SNOWTABLE *SnowAlbedo,
-            CanopyGapStruct **Gap, VEGPIX *VegMap,
+			float **PrismMap, SNOWPIX *LocalSnow, 
+      CanopyGapStruct **Gap, VEGPIX *VegMap,
 			float ***MM5Input, float ***WindModel, float **PrecipLapseMap,
 			MET_MAP_PIX ***MetMap, float precipMultiplier, int NGraphics, int Month, float skyview,
 			unsigned char shadow, float SunMax, float SineSolarAltitude);
 
-void MassBalance(DATE *Current, DATE *Start, FILES *Out, AGGREGATED *Total, 
-            WATERBALANCE *Mass);
+void MassBalance(DATE *Current, DATE *Start, FILES *Out, AGGREGATED *Total, WATERBALANCE *Mass);
 
 void MassEnergyBalance(OPTIONSTRUCT *Options, int y, int x, float SineSolarAltitude,
             float DX, float DY, int Dt, int HeatFluxOption, int CanopyRadAttOption,
