@@ -334,10 +334,6 @@ typedef struct {
   float SunMax;				/* Calculated solar radiation at the top of the atmosphere (W/m^2) */
 } SOLARGEOMETRY;
 
-typedef struct {
-  float Freeze;			/* albedo when surface temperature below 0 C */
-  float Thaw;			/* albedo when surface temperature above 0 C */
-} SNOWTABLE;
 
 typedef struct {
   uchar HasSnow;			/* Snow cover flag determined by SWE */
@@ -375,7 +371,8 @@ typedef struct {
   float AccMin;                 /* minimum albedo for accumulation period*/
   float MeltMin;                /* minimu albedo for melt period*/
 
-  SNOWTABLE *stable;            /* snow albedo table */
+  float Freeze;			/* albedo when surface temperature below 0 C */
+  float Thaw;			/* albedo when surface temperature above 0 C */
 } SNOWPIX;
 
 typedef struct {

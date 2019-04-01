@@ -76,7 +76,7 @@ int main(int argc, char **argv)
                                                                                 /* PIXRAD */
     {0.0, 0.0, 0, NULL, NULL, 0.0, 0, 0.0, 0.0, 0.0, 0.0, NULL, NULL},				  /* ROADSTRUCT*/
 	  {0, 0, 0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-	  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, NULL},     /* SNOWPIX */ 
+	  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},     /* SNOWPIX */ 
     {0, 0.0, NULL, NULL, NULL, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
     0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},			                /* SOILPIX */
     {0, 0, 0.0, 0.0, 0.0, NULL },                                               /* VEGPIX */
@@ -220,7 +220,7 @@ int main(int argc, char **argv)
 
   InitAggregated(&Options, Veg.MaxLayers, Soil.MaxLayers, &Total);
 
-  InitModelState(&(Time.Start), &Map, &Options, PrecipMap, SnowMap, SoilMap,
+  InitModelState(&(Time.Start), Time.NDaySteps, &Map, &Options, PrecipMap, SnowMap, SoilMap,
 		 Soil, SType, VegMap, Veg, VType, Dump.InitStatePath,
 		 TopoMap, Network, &HydrographInfo, Hydrograph);
 
@@ -292,7 +292,7 @@ int main(int argc, char **argv)
 	    if (INBASIN(TopoMap[y][x].Mask)) {
 		  if (Options.Shading)
 	        LocalMet =
-	        MakeLocalMetData(y, x, &Map, Time.DayStep, &Options, NStats,
+	        MakeLocalMetData(y, x, &Map, Time.DayStep, Time.NDaySteps, &Options, NStats,
 			       Stat, MetWeights[y][x], TopoMap[y][x].Dem,
 			       &(RadiationMap[y][x]), &(PrecipMap[y][x]), &Radar,
 			       RadarMap, PrismMap, &(SnowMap[y][x]),
@@ -303,7 +303,7 @@ int main(int argc, char **argv)
 			       SolarGeo.SunMax, SolarGeo.SineSolarAltitude);
 		  else
 	        LocalMet =
-	        MakeLocalMetData(y, x, &Map, Time.DayStep, &Options, NStats,
+	        MakeLocalMetData(y, x, &Map, Time.DayStep, Time.NDaySteps, &Options, NStats,
 			       Stat, MetWeights[y][x], TopoMap[y][x].Dem,
 			       &(RadiationMap[y][x]), &(PrecipMap[y][x]), &Radar,
 			       RadarMap, PrismMap, &(SnowMap[y][x]),

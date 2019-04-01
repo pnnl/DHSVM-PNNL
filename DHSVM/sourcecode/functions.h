@@ -43,7 +43,7 @@ float CalcEffectiveKh(int NSoilLayers, float Top, float Bottom,
 
 float CalcKhDry(float Density);
 
-float CalcSnowAlbedo(float TSurf, unsigned short Last, SNOWTABLE *SnowAlbedo);
+float CalcSnowAlbedo(float TSurf, unsigned short Last, SNOWPIX *LocalSnow, int StepsPerDay);
 
 float CalcTransmissivity(float SoilDepth, float WaterTable, float LateralKs,
 			 float KsExponent, float DepthThresh);
@@ -161,7 +161,7 @@ void InitMM5(LISTPTR Input, int NSoilLayers, TIMESTRUCT *Time,
 void InitMM5Maps(int NSoilLayers, int NY, int NX, float ****MM5Input,
 		 PIXRAD ***RadMap, OPTIONSTRUCT *Options);
 
-void InitModelState(DATE *Start, MAPSIZE *Map, OPTIONSTRUCT *Options,
+void InitModelState(DATE *Start, int StepsPerDay, MAPSIZE *Map, OPTIONSTRUCT *Options,
 		    PRECIPPIX **PrecipMap, SNOWPIX **SnowMap,
 		    SOILPIX **SoilMap, LAYER Soil, SOILTABLE *SType,
 		    VEGPIX **VegMap, LAYER Veg, VEGTABLE *VType, char *Path,
@@ -226,8 +226,6 @@ void InitSoilMap(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
 int InitSoilTable(OPTIONSTRUCT *Options, SOILTABLE **SType, 
 			LISTPTR Input, LAYER *Soil, int InfiltOption);
 
-void InitSnowTable(SNOWTABLE **SnowAlbedo, SNOWPIX *SnowMap, int Dt);
-
 void InitStateDump(LISTPTR Input, int NStates, DATE **DState);
 
 void InitGraphicsDump(LISTPTR Input, int NGraphics, int ***which_graphics);
@@ -271,7 +269,7 @@ float LapsePrecip(float Precip, float FromElev, float ToElev, float PrecipLapse,
 
 float LapseT(float Temp, float FromElev, float ToElev, float LapseRate);
  
-PIXMET MakeLocalMetData(int y, int x, MAPSIZE *Map, int DayStep,
+PIXMET MakeLocalMetData(int y, int x, MAPSIZE *Map, int DayStep, int NDaySteps,
 			OPTIONSTRUCT *Options, int NStats, METLOCATION *Stat, 
       uchar *MetWeights, float LocalElev, PIXRAD *RadMap,
 			PRECIPPIX *PrecipMap, MAPSIZE *Radar, RADARPIX **RadarMap,

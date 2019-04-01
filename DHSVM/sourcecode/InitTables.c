@@ -49,13 +49,6 @@ void InitTables(int StepsPerDay, LISTPTR Input, OPTIONSTRUCT *Options,
   if ((Veg->NTypes = InitVegTable(VType, Input, Options, Veg)) == 0)
     ReportError("Input Options File", 8);
 
-  printf("Initializing snow albedo tables ...\n"); 
-  for (y = 0; y < Map->NY; y++) {
-    for (x = 0; x < Map->NX; x++) { 
-      InitSnowTable(&(SnowMap[y][x]).stable, &(SnowMap[y][x]), StepsPerDay);
-    }
-  }
-  printf("Initializing snow albedo tables complete ...\n");
   InitSatVaporTable();
 }
 
@@ -633,33 +626,3 @@ int InitVegTable(VEGTABLE **VType, LISTPTR Input, OPTIONSTRUCT *Options, LAYER *
   return NVegs;
 }
 
-/********************************************************************************
-InitSnowTable()
-
-Source:
-Laramie, R. L., and J. C. Schaake, Jr., Simulation of the continuous
-snowmelt process, Ralph M. Parsons Laboratory, Mass. Inst. of Technol.,
-1972
-
-Snow albedo is calculated as a function of the number of days since the
-last observed snow fall. There are separete albedo curves for the freeze
-and thaw conditions.
-********************************************************************************/
-void InitSnowTable(SNOWTABLE **SnowAlbedo, SNOWPIX *LocalSnow, int StepsPerDay)
-{
-  int i;
-
-  /* Laramie and Schaake (1972) */
-  /* Updated based on Storck (2000) */
-  for (i = 0; i < ((DAYPYEAR + 1) * StepsPerDay); i++) {
-	(*SnowAlbedo)[i].Freeze =
-	  LocalSnow->amax * pow(LocalSnow->LamdaAcc, pow(((float)i) / StepsPerDay, 0.58));
-    if ((*SnowAlbedo)[i].Freeze < LocalSnow->AccMin)
-      (*SnowAlbedo)[i].Freeze = LocalSnow->AccMin;
-
-    (*SnowAlbedo)[i].Thaw =
-	  LocalSnow->amax * pow(LocalSnow->LamdaMelt, pow(((float)i) / StepsPerDay, 0.46));
-    if ((*SnowAlbedo)[i].Thaw < LocalSnow->MeltMin)
-      (*SnowAlbedo)[i].Thaw = LocalSnow->MeltMin;
-  }
-}

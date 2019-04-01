@@ -54,7 +54,7 @@ Comments     :
 Reference: Shuttleworth, W.J., Evaporation,  In: Maidment, D. R. (ed.),
 Handbook of hydrology,  1993, McGraw-Hill, New York, etc..
 *****************************************************************************/
-PIXMET MakeLocalMetData(int y, int x, MAPSIZE *Map, int DayStep,
+PIXMET MakeLocalMetData(int y, int x, MAPSIZE *Map, int DayStep, int NDaySteps,
                         OPTIONSTRUCT *Options, int NStats,
                         METLOCATION *Stat, uchar *MetWeights,
                         float LocalElev, PIXRAD *RadMap,
@@ -333,8 +333,7 @@ PIXMET MakeLocalMetData(int y, int x, MAPSIZE *Map, int DayStep,
       LocalSnow->LastSnow = 0;
     else
       LocalSnow->LastSnow++;
-    LocalSnow->Albedo = CalcSnowAlbedo(LocalSnow->TSurf, LocalSnow->LastSnow,
-      LocalSnow->stable);
+    LocalSnow->Albedo = CalcSnowAlbedo(LocalSnow->TSurf, LocalSnow->LastSnow, LocalSnow, NDaySteps);
   }
   else
     LocalSnow->LastSnow = 0;
@@ -347,8 +346,7 @@ PIXMET MakeLocalMetData(int y, int x, MAPSIZE *Map, int DayStep,
         else
           (*Gap)[j].LastSnow++;
 
-        (*Gap)[j].Albedo = CalcSnowAlbedo((*Gap)[j].TSurf, (*Gap)[j].LastSnow,
-          LocalSnow->stable);
+        (*Gap)[j].Albedo = CalcSnowAlbedo((*Gap)[j].TSurf, (*Gap)[j].LastSnow, LocalSnow, NDaySteps);
       }
       else
         (*Gap)[j].LastSnow = 0.;

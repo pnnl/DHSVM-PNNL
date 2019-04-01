@@ -46,7 +46,7 @@
      can be specified in the file with dump information.
 
  *****************************************************************************/
-void InitModelState(DATE *Start, MAPSIZE *Map, OPTIONSTRUCT *Options, PRECIPPIX **PrecipMap,
+void InitModelState(DATE *Start, int StepsPerDay, MAPSIZE *Map, OPTIONSTRUCT *Options, PRECIPPIX **PrecipMap,
   SNOWPIX **SnowMap, SOILPIX **SoilMap, LAYER Soil, SOILTABLE *SType,
   VEGPIX **VegMap, LAYER Veg, VEGTABLE *VType, char *Path, 
   TOPOPIX **TopoMap, ROADSTRUCT **Network, UNITHYDRINFO *HydrographInfo,
@@ -274,22 +274,21 @@ void InitModelState(DATE *Start, MAPSIZE *Map, OPTIONSTRUCT *Options, PRECIPPIX 
   free(Array);
 
   for (y = 0; y < Map->NY; y++) {
-	for (x = 0; x < Map->NX; x++) {
-	  if (INBASIN(TopoMap[y][x].Mask)) {
-		if (Options->CanopyGapping) {
-		  for (i = 0; i < CELL_PARTITION; i++)
-			VegMap[y][x].Type[i].Albedo =
-			CalcSnowAlbedo(SnowMap[y][x].TSurf, SnowMap[y][x].LastSnow, SnowMap[y][x].stable);
-		}
-		else {
-		  if (SnowMap[y][x].HasSnow)
-			SnowMap[y][x].Albedo = CalcSnowAlbedo(SnowMap[y][x].TSurf, SnowMap[y][x].LastSnow, SnowMap[y][x].stable);
-		  else
-			SnowMap[y][x].Albedo = 0;
-		}
-	  }
-
-	}
+    for (x = 0; x < Map->NX; x++) {
+      if (INBASIN(TopoMap[y][x].Mask)) {
+        if (Options->CanopyGapping) {
+          for (i = 0; i < CELL_PARTITION; i++)
+          VegMap[y][x].Type[i].Albedo =
+          CalcSnowAlbedo(SnowMap[y][x].TSurf, SnowMap[y][x].LastSnow, &(SnowMap[y][x]), StepsPerDay);
+        }
+        else {
+          if (SnowMap[y][x].HasSnow)
+          SnowMap[y][x].Albedo = CalcSnowAlbedo(SnowMap[y][x].TSurf, SnowMap[y][x].LastSnow, &(SnowMap[y][x]), StepsPerDay);
+          else
+          SnowMap[y][x].Albedo = 0;
+        }
+      }
+    }
   }
 
   /* Restore soil conditions */
