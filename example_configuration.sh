@@ -10,7 +10,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2018-03-30 08:34:41 d3g096
+# Last Change: 2019-01-08 14:07:47 d3g096
 
 set -xue
 
@@ -61,6 +61,7 @@ options="-Wdev --debug-trycompile"
 common_flags="\
         -D CMAKE_BUILD_TYPE:STRING=$build \
         -D DHSVM_SNOW_ONLY:BOOL=ON \
+        -D DHSVM_GLACIER:BOOL=OFF \
         -D DHSVM_BUILD_TESTS:BOOL=ON \
         -D DHSVM_DUMP_TOPO:BOOL=OFF \
 "

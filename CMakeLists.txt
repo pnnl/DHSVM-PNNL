@@ -9,7 +9,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2018-03-30 08:34:35 d3g096
+# Last Change: 2019-02-01 12:30:17 d3g096
 
 # -------------------------------------------------------------
 # General set up
@@ -51,6 +51,9 @@ option (DHSVM_BUILD_TESTS "Build several module test programs in addition to DHS
 
 # Limit calculations to snow pack only
 option (DHSVM_SNOW_ONLY "Builds an addition executable, DHSVM_SNOW, that simulates snow only" OFF)
+
+# Build with Glacier Support
+option (DHSVM_GLACIER "Builds DHSVM executable(s) with glacier simulation support" OFF)
 
 # -------------------------------------------------------------
 # system-specific options
@@ -95,4 +98,7 @@ if (DHSVM_USE_RBM)
   add_subdirectory(RBM)
   add_subdirectory(Create)
 endif (DHSVM_USE_RBM)
+if (DHSVM_GLACIER)
+  add_subdirectory(DHSVM/Lib)
+endif (DHSVM_GLACIER)
 
