@@ -237,7 +237,7 @@ void InitTables(int StepsPerDay, LISTPTR Input, OPTIONSTRUCT *Options,
     MAPSIZE *Map, SOILTABLE **SType, LAYER *Soil, VEGTABLE **VType,
     LAYER *Veg, SNOWPIX **SnowMap);
     
-void InitTerrainMaps(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
+void InitTerrainMaps(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *GMap, MAPSIZE *Map,
   LAYER *Soil, LAYER *Veg, TOPOPIX ***TopoMap, SOILTABLE *SType,
   SOILPIX ***SoilMap, VEGTABLE *VType, VEGPIX ***VegMap);
 
