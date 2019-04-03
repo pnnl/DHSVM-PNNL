@@ -55,14 +55,13 @@ Comments     :
 Reference: Shuttleworth, W.J., Evaporation,  In: Maidment, D. R. (ed.),
 Handbook of hydrology,  1993, McGraw-Hill, New York, etc..
 *****************************************************************************/
-PIXMET MakeLocalMetData(int y, int x, MAPSIZE *Map, int DayStep,
+PIXMET MakeLocalMetData(int y, int x, MAPSIZE *Map, int DayStep, int NDaySteps,
                         OPTIONSTRUCT *Options, int NStats,
                         METLOCATION *Stat, uchar *MetWeights,
                         float LocalElev, PIXRAD *RadMap,
                         PRECIPPIX *PrecipMap, MAPSIZE *Radar,
                         RADARPIX **RadarMap, float **PrismMap,
-                        SNOWPIX *LocalSnow, SNOWTABLE *SnowAlbedo,
-                        CanopyGapStruct **Gap, VEGPIX *VegMap,
+                        SNOWPIX *LocalSnow, CanopyGapStruct **Gap, VEGPIX *VegMap,
                         float ***MM5Input, float ***WindModel,
                         float **PrecipLapseMap, MET_MAP_PIX ***MetMap,
                         float precipMultiplier, int NGraphics, int Month, float skyview,
@@ -296,10 +295,10 @@ PIXMET MakeLocalMetData(int y, int x, MAPSIZE *Map, int DayStep,
   /* Separate precipitation into rainfall and snowfall if rain and snow are not input
   separately such as in WRF output */
   if (! Options->PrecipSepr) {
-    if (PrecipMap->Precip > 0.0 && LocalMet.Tair < MAX_SNOW_TEMP) {
-      if (LocalMet.Tair > MIN_RAIN_TEMP)
+    if (PrecipMap->Precip > 0.0 && LocalMet.Tair < LocalSnow->Ts) {
+      if (LocalMet.Tair > LocalSnow->Tr)
         PrecipMap->SnowFall = PrecipMap->Precip *
-        (MAX_SNOW_TEMP - LocalMet.Tair) / (MAX_SNOW_TEMP - MIN_RAIN_TEMP);
+        (LocalSnow->Ts - LocalMet.Tair) / (LocalSnow->Ts - LocalSnow->Tr);
       else
         PrecipMap->SnowFall = PrecipMap->Precip;
     }
@@ -344,8 +343,7 @@ PIXMET MakeLocalMetData(int y, int x, MAPSIZE *Map, int DayStep,
       LocalSnow->LastSnow = 0;
     else
       LocalSnow->LastSnow++;
-    LocalSnow->Albedo = CalcSnowAlbedo(LocalSnow->TSurf, LocalSnow->LastSnow,
-      SnowAlbedo);
+    LocalSnow->Albedo = CalcSnowAlbedo(LocalSnow->TSurf, LocalSnow->LastSnow, LocalSnow, NDaySteps);
   }
   else
     LocalSnow->LastSnow = 0;
@@ -358,8 +356,7 @@ PIXMET MakeLocalMetData(int y, int x, MAPSIZE *Map, int DayStep,
         else
           (*Gap)[j].LastSnow++;
 
-        (*Gap)[j].Albedo = CalcSnowAlbedo((*Gap)[j].TSurf, (*Gap)[j].LastSnow,
-          SnowAlbedo);
+        (*Gap)[j].Albedo = CalcSnowAlbedo((*Gap)[j].TSurf, (*Gap)[j].LastSnow, LocalSnow, NDaySteps);
       }
       else
         (*Gap)[j].LastSnow = 0.;

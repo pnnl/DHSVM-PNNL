@@ -28,25 +28,25 @@
 [OPTIONS]                                 # Model Options
 Format               = BIN                # BIN or NETCDF
 Extent               = BASIN              # POINT or BASIN
-Gradient             = TOPOGRAPHY   	  # TOPOGRAPHY or WATERTABLE
+Gradient             = TOPOGRAPHY   	    # TOPOGRAPHY or WATERTABLE
 Flow Routing         = NETWORK            # UNIT_HYDROGRAPH or NETWORK (StrEnv[flow_routing])
 Sensible Heat Flux   = FALSE              # TRUE or FALSE
-Overland Routing     = CONVENTIONAL	  # CONVENTIONAL or KINEMATIC (StrEnv[routing])
-Infiltration	     = STATIC		  # Static or Dynamic
+Overland Routing     = CONVENTIONAL	      # CONVENTIONAL or KINEMATIC (StrEnv[routing])
+Infiltration	       = STATIC		          # Static or Dynamic
 Interpolation        = INVDIST            # NEAREST or INVDIST or VARCRESS
-MM5                  = FALSE		  # TRUE or FALSE
+MM5                  = FALSE		          # TRUE or FALSE
 QPF                  = FALSE              # TRUE or FALSE
 PRISM                = FALSE
 PRISM data path      = 
 PRISM data extension = 
 Gridded Met data     = FALSE              # TRUE or FALSE
 Canopy radiation attenuation mode = FIXED # FIXED or VARIABLE
-Shading              = FALSE    	  # TRUE or FALSE
+Shading              = FALSE    	        # TRUE or FALSE
 Shading data path    = 	
 Shading data extension =  
 Skyview data path    = 
 Snotel               = FALSE              # TRUE or FALSE
-Outside              = FALSE	          # TRUE or FALSE
+Outside              = FALSE	            # TRUE or FALSE
 Rhoverride           = FALSE              # TRUE or FALSE
 Precipitation Source = STATION            # STATION or RADAR
 Wind Source          = STATION            # STATION or MODEL
@@ -54,13 +54,12 @@ Temperature lapse rate   = CONSTANT       # CONSTANT or VARIABLE
 Precipitation lapse rate = CONSTANT       # CONSTANT, MAP, or VARIABLE
 Cressman radius      =                    # in model pixels
 Cressman stations    =                    # the maximum stations for interpolation
-Stream Temperature   = FALSE              # TRUE or FALSE
-Riparian Shading       = FALSE            # used for stream tempeature only
+Stream Temperature   = TRUE               # TRUE or FALSE
+Riparian Shading       = TRUE             # used for stream tempeature only
 Variable Light Transmittance = TRUE       # TRUE if light transmittance changes with solar altitude
 Canopy Gapping = TRUE
-Snow Sliding = FALSE
-Precipitation Separation = FALSE
-Precipitation Multiplier Map =  # no correction be made if leave blank              
+Snow Sliding = FALSE                      # this function is not available - needs more tests
+Precipitation Separation = FALSE          # TRUE if snow and rain are separately provided in meterological input data (e.g. WRF)
 
 ##########################################################################################################
 # MODEL AREA SECTION
@@ -93,8 +92,6 @@ Model End            =  5/15/2008-00:00   # Model end time (MM/DD/YYYY-HH)
 [CONSTANTS]                               # Model constants
 Ground Roughness     = 0.02               # Roughness of soil surface (m)
 Snow Roughness       = 0.01               # Roughness of snow surface (m)
-Rain Threshold       = 0.0                # Minimum temperature at which rain occurs (C)
-Snow Threshold       = 3.0                # Maximum temperature at which snow occurs (C)
 Snow Water Capacity  = 0.01               # Snow liquid water holding capacity(fraction)
 Reference Height     = 70.0               # Reference height (m)
 Rain LAI Multiplier  = 0.0001             # LAI Multiplier for rain interception
@@ -102,16 +99,25 @@ Snow LAI Multiplier  = 0.0002             # LAI Mulitplier for snow interception
 Min Intercepted Snow = 0.001              # Intercepted snow that can only be melted (m)
 Outside Basin Value  = 0                  # Value in mask that indicates outside the basin
 Temperature Lapse Rate   = -0.0065        # Temperature lapse rate (C/m)
-Precipitation Lapse Rate =  0.000    	  # Precipitation lapse rate (m/m). Use a linear function to 
-Albedo Accumulation Lambda = 0.9 	  # Lambda for accumulation period
-Albedo Melting Lambda = 0.6 		  # Lambda for melting period
-Albedo Accumulation Min = 0.7 		  # Min albedo value during accumulation period
-Albedo Melting Min = 0.55 		  # Min albedo value during melting period
+Precipitation Lapse Rate =  0.000    	    # Precipitation lapse rate (m/m). 
 Max Surface Snow Layer Depth = 0.125      # maximum depth of the surface snow layer in water equivalent (m)
 Gap Wind Adj Factor = 0.9                 # Adjustment for wind received by gap (0-1)
 Snowslide Parameter1 = 700                # Empirical parameters used to calculate snow holding depth
 Snowslide Parameter2 = 0.12               # Empirical parameters used to calculate snow holding depth
 
+########################################################
+# The following fields in this section can take either a single value (i.e. basin-wide constant parameter value)
+# or the path to a spatial parameter binary file in the same format as DEM, soil and veg  
+
+Precipitation Multiplier Map = ../input/multiplier.bin # no correction be made if leave blank, or a constant applied basin-wide, or a spatial input
+Rain Threshold       = 0.0                             # Minimum temperature at which rain occurs (C)
+Snow Threshold       = ../input/Ts.bin                 # Maximum temperature at which snow occurs (C)
+Fresh Snow Albedo  = ../input/amax.bin                 # Fresh snow albedo (0.85 is the default value used in older versions)
+Albedo Accumulation Lambda = 0.9 	                     # Lambda for accumulation period
+Albedo Melting Lambda = 0.6 		                       # Lambda for melting period
+Albedo Accumulation Min = 0.7 		                     # Min albedo value during accumulation period; set to -9999 if min value is not needed.
+Albedo Melting Min = 0.55 		                         # Min albedo value during melting period; set to -9999 if min value is not needed.
+                                                
 ##########################################################################################################
 # TERRAIN INFORMATION SECTION
 ##########################################################################################################
@@ -132,7 +138,9 @@ Basin Mask File   = ../input/mask.bin
 Stream Map File      = ../input/stream.map.dat
 Stream Network File  = ../input/stream.network.dat
 Stream Class File    = ../input/adjust.classfile
-Riparian Veg File    = 
+
+# enter the path to riparian parameters if Canopy Gapping = TRUE
+Riparian Veg File    = ../input/rveg.baseline.network
 
 ################################### ROAD NETWORK #########################################################
 

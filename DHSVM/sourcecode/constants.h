@@ -77,11 +77,13 @@ extern float Z0_GROUND;					/* Roughness length for bare soil (m) */
 extern float Z0_SNOW;					/* Roughness length for snow (m) */
 extern float Zref;						/* Reference height (m) */
 
+/* snow albedo decay curve */
+extern float ALB_MAX;                   /* fresh snow albedo */                                                               
 extern float ALB_ACC_LAMBDA;            /* snow freeze albedo cruve control parameters */
 extern float ALB_MELT_LAMBDA;           /* snow thaw albedo cruve control parameters */
 extern float ALB_ACC_MIN;
 extern float ALB_MELT_MIN;
-
+extern float PRECIP_MULTIPLIER;        /* precipitatio multiplier */
 extern float MAX_SURFACE_SWE; 	       /* maximum depth of the surface layer in snow water equivalent (m) */
 
 extern float GAPWIND_FACTOR;
