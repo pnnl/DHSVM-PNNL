@@ -72,3 +72,11 @@ If DHSVM is configured with this option,
 an additional executable is built, `DHSVM_SNOW`, which operates in
 snow-only mode. 
 
+### Glacier mode ###
+
+Glacier mode is enabled by configuring with this option,
+
+   -D DHSVM_GLACIER:BOOL=ON
+   
+This will cause all DHSVM executables to have glacier mode enabled.  
+
