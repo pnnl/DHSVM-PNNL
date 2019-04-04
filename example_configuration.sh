@@ -10,22 +10,23 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2018-03-30 08:34:41 d3g096
+# Last Change: 2019-04-03 06:45:04 d3g096
 
 set -xue
 
 # -------------------------------------------------------------
 # handle command line options
 # -------------------------------------------------------------
-usage="$0 [-d|-r] [name]"
+usage="$0 [-d|-r] [-G] [name]"
 
-set -- `getopt d $*`
+set -- `getopt drG $*`
 if [ $? != 0 ]; then
     echo $usage >&2
     exit 2
 fi
 
 build="RelWithDebInfo"
+doglacier="OFF"
 for o in $*; do
     case $o in
         -d)
@@ -34,6 +35,10 @@ for o in $*; do
             ;;
         -r)
             build="Release"
+            shift
+            ;;
+        -G)
+            doglacier="ON"
             shift
             ;;
         --)
@@ -61,6 +66,7 @@ options="-Wdev --debug-trycompile"
 common_flags="\
         -D CMAKE_BUILD_TYPE:STRING=$build \
         -D DHSVM_SNOW_ONLY:BOOL=ON \
+        -D DHSVM_GLACIER:BOOL=$doglacier \
         -D DHSVM_BUILD_TESTS:BOOL=ON \
         -D DHSVM_DUMP_TOPO:BOOL=OFF \
 "
