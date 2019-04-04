@@ -37,7 +37,7 @@
 /*******************************************************************************/
 void InitTables(int StepsPerDay, LISTPTR Input, OPTIONSTRUCT *Options, 
   MAPSIZE *Map, SOILTABLE **SType, LAYER *Soil, VEGTABLE **VType,
-  LAYER *Veg, SNOWPIX **SnowMap)
+  LAYER *Veg)
 {
   int y, x; //counter
   printf("Initializing tables\n");
