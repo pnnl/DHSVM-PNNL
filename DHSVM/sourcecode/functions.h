@@ -113,7 +113,7 @@ void InitChannelRVeg(TIMESTRUCT *Time, Channel *Channel);
 void InitCharArray(char *Array, int Size);
 
 void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
-	SOLARGEOMETRY *SolarGeo, TIMESTRUCT *Time, SNOWPIX ***SnowMap);  
+	SOLARGEOMETRY *SolarGeo, TIMESTRUCT *Time);  
 
 void InitDump(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *GMap, MAPSIZE *Map,
 	      int MaxSoilLayers, int MaxVegLayers, int Dt,
@@ -134,6 +134,9 @@ void InitInterpolationWeights(MAPSIZE *Map, OPTIONSTRUCT *Options,
 
 void InitMapDump(LISTPTR Input, MAPSIZE *GMap, MAPSIZE *Map, int MaxSoilLayers, 
                  int MaxVegLayers, char *Path, int TotalMapImages, int NMaps, MAPDUMP **DMap);
+
+void InitMappedConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
+                         SNOWPIX ***SnowMap);
 
 void InitMassWaste(LISTPTR Input, TIMESTRUCT *Time);
 
@@ -235,7 +238,7 @@ void InitStations(LISTPTR Input, MAPSIZE *Map, int NDaySteps,
 
 void InitTables(int StepsPerDay, LISTPTR Input, OPTIONSTRUCT *Options,
     MAPSIZE *Map, SOILTABLE **SType, LAYER *Soil, VEGTABLE **VType,
-    LAYER *Veg, SNOWPIX **SnowMap);
+    LAYER *Veg);
     
 void InitTerrainMaps(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *GMap, MAPSIZE *Map,
   LAYER *Soil, LAYER *Veg, TOPOPIX ***TopoMap, SOILTABLE *SType,

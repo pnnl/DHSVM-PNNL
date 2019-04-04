@@ -168,13 +168,19 @@ int main(int argc, char **argv)
   /* Start recording time */
   start = clock();
 
-  ReadInitFile(InFiles.Const, &Input);
-  InitConstants(Input, &Options, &GMap, &SolarGeo, &Time, &SnowMap);
+  /* initiate input/output format */
 
-  InitTables(Time.NDaySteps, Input, &Options, &Map, &SType, &Soil, &VType, &Veg,
-	SnowMap); 
+  ReadInitFile(InFiles.Const, &Input);
+  InitConstants(Input, &Options, &GMap, &SolarGeo, &Time);
+
+  InitFileIO(Options.FileFormat);
+  InitTables(Time.NDaySteps, Input, &Options, &Map, &SType, &Soil, &VType, &Veg); 
 
   InitTerrainMaps(Input, &Options, &GMap, &Map, &Soil, &Veg, &TopoMap, SType, &SoilMap, VType, &VegMap);
+
+  InitSnowMap(&Map, &SnowMap, &Time);
+
+  InitMappedConstants(Input, &Options, &Map, &SnowMap);
 
   CheckOut(&Options, Veg, Soil, VType, SType, &Map, TopoMap, VegMap, SoilMap);
 
