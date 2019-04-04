@@ -60,6 +60,9 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
   float TimeStep;		/* Timestep in hours */
   DATE End;			/* End of run */
   DATE Start;			/* Start of run */
+  char FileName[BUFSIZE + 1];	      /* Variable name */
+  int MapId;
+  int ParamType;
 
   STRINIENTRY StrEnv[] = {
     {"OPTIONS", "FORMAT", "", ""},
@@ -95,7 +98,6 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
     {"OPTIONS", "CANOPY GAPPING", "", "" },
     {"OPTIONS", "SNOW SLIDING", "", "" },
     {"OPTIONS", "PRECIPITATION SEPARATION", "", "FALSE" },
-    {"OPTIONS", "PRECIPITATION MULTIPLIER MAP", "", "" },
     {"AREA", "COORDINATE SYSTEM", "", ""},
     {"AREA", "EXTREME NORTH", "", ""},
     {"AREA", "EXTREME WEST", "", ""},
@@ -112,8 +114,6 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
     {"TIME", "MODEL END", "", ""},
     {"CONSTANTS", "GROUND ROUGHNESS", "", ""},
     {"CONSTANTS", "SNOW ROUGHNESS", "", ""},
-    {"CONSTANTS", "RAIN THRESHOLD", "", ""},
-    {"CONSTANTS", "SNOW THRESHOLD", "", ""},
     {"CONSTANTS", "SNOW WATER CAPACITY", "", ""},
     {"CONSTANTS", "REFERENCE HEIGHT", "", ""},
     {"CONSTANTS", "RAIN LAI MULTIPLIER", "", ""},
@@ -122,14 +122,10 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
     {"CONSTANTS", "OUTSIDE BASIN VALUE", "", ""},
     {"CONSTANTS", "TEMPERATURE LAPSE RATE", "", ""},
     {"CONSTANTS", "PRECIPITATION LAPSE RATE", "", ""},
-    { "CONSTANTS", "ALBEDO ACCUMULATION LAMBDA", "", "" },
-    { "CONSTANTS", "ALBEDO MELTING LAMBDA", "", "" },
-    { "CONSTANTS", "ALBEDO ACCUMULATION MIN", "", "" },
-    { "CONSTANTS", "ALBEDO MELTING MIN", "", "" },
     {"CONSTANTS", "MAX SURFACE SNOW LAYER DEPTH", "", "0.125" },
-    { "CONSTANTS", "SNOWSLIDE PARAMETER1", "", "" },
-    { "CONSTANTS", "SNOWSLIDE PARAMETER2", "", "" },
-    { "CONSTANTS", "GAP WIND ADJ FACTOR", "", "" },
+    {"CONSTANTS", "SNOWSLIDE PARAMETER1", "", "" },
+    {"CONSTANTS", "SNOWSLIDE PARAMETER2", "", "" },
+    {"CONSTANTS", "GAP WIND ADJ FACTOR", "", "" },
     {NULL, NULL, "", NULL}
   };
 
@@ -430,12 +426,7 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
       Options->PrecipLapse = VARIABLE;
     else
       ReportError(StrEnv[precip_lapse].KeyName, 51);
-	if (IsEmptyStr(StrEnv[multiplier].VarStr)) {
-	  strcpy(Options->PrecipMultiplierMapPath, "");
-	  printf("No input of precipitation multiplier map - no correction is made", 51);
-	}
-	else
-	  strcpy(Options->PrecipMultiplierMapPath, StrEnv[multiplier].VarStr);
+
   }
 
   /**************** Determine areal extent ****************/
@@ -521,12 +512,6 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
   if (!CopyFloat(&Z0_SNOW, StrEnv[snow_roughness].VarStr, 1))
     ReportError(StrEnv[snow_roughness].KeyName, 51);
 
-  if (!CopyFloat(&MIN_RAIN_TEMP, StrEnv[rain_threshold].VarStr, 1))
-    ReportError(StrEnv[rain_threshold].KeyName, 51);
-
-  if (!CopyFloat(&MAX_SNOW_TEMP, StrEnv[snow_threshold].VarStr, 1))
-    ReportError(StrEnv[snow_threshold].KeyName, 51);
-
   if (!CopyFloat(&LIQUID_WATER_CAPACITY, StrEnv[snow_water_capacity].VarStr, 1))
     ReportError(StrEnv[snow_water_capacity].KeyName, 51);
 
@@ -560,22 +545,7 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
   else
     PRECIPLAPSE = NOT_APPLICABLE;
 
-  if (!CopyFloat(&ALB_ACC_LAMBDA,
-    StrEnv[alb_acc_lambda].VarStr, 1))
-    ReportError(StrEnv[alb_acc_lambda].KeyName, 51);
 
-  if (!CopyFloat(&ALB_MELT_LAMBDA,
-    StrEnv[alb_melt_lambda].VarStr, 1))
-    ReportError(StrEnv[alb_melt_lambda].KeyName, 51);
-
-  if (!CopyFloat(&ALB_ACC_MIN,
-    StrEnv[alb_acc_min].VarStr, 1))
-    ReportError(StrEnv[alb_acc_min].KeyName, 51);
-
-  if (!CopyFloat(&ALB_MELT_MIN,
-    StrEnv[alb_melt_min].VarStr, 1))
-    ReportError(StrEnv[alb_melt_min].KeyName, 51);
-    
   /* maximum depth of the surface layer in snow water equivalent (m) */
   if (!CopyFloat(&MAX_SURFACE_SWE,
     StrEnv[max_swe].VarStr, 1))
@@ -589,15 +559,167 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
       ReportError(StrEnv[gapwind_adj].KeyName, 74);
   }
   if (Options->SnowSlide) {
-
-    /* FIXME: not supported in parallel */
-
-    ReportError("Snow sliding not supported in parallel", 70);
-    
     if (!CopyFloat(&SNOWSLIDE1, StrEnv[snowslide_parameter1].VarStr, 1))
       ReportError(StrEnv[snowslide_parameter1].KeyName, 51);
 
     if (!CopyFloat(&SNOWSLIDE2, StrEnv[snowslide_parameter2].VarStr, 1))
       ReportError(StrEnv[snowslide_parameter2].KeyName, 51);
+  }
+}
+
+
+/******************************************************************************
+ InitMappedConstants
+ ******************************************************************************/
+void
+InitMappedConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
+                    SNOWPIX ***SnowMap)
+{
+  STRINIENTRY StrEnv[] =
+    {
+     {"CONSTANTS", "RAIN THRESHOLD", "", ""},
+     {"CONSTANTS", "SNOW THRESHOLD", "", ""},
+     {"CONSTANTS", "FRESH SNOW ALBEDO", "", "0.85" },                                         
+     {"CONSTANTS", "ALBEDO ACCUMULATION LAMBDA", "", "" },
+     {"CONSTANTS", "ALBEDO MELTING LAMBDA", "", "" },
+     {"CONSTANTS", "ALBEDO ACCUMULATION MIN", "", "" },
+     {"CONSTANTS", "ALBEDO MELTING MIN", "", "" },
+     {"CONSTANTS", "PRECIPITATION MULTIPLIER MAP", "", "" },
+     {NULL, NULL, "", NULL}
+    };
+  int i;
+  int MapId;
+  int ParamType;
+  char FileName[BUFSIZE + 1];	      /* Variable name */
+  
+  /* Read the key-entry pairs from the input file */
+  for (i = 0; StrEnv[i].SectionName; i++)
+    GetInitString(StrEnv[i].SectionName, StrEnv[i].KeyName, StrEnv[i].Default,
+		  StrEnv[i].VarStr, (unsigned long) BUFSIZE, Input);
+
+  /****** snow parameters (take either spatial input or constants) *****/
+  if (IsEmptyStr(StrEnv[rain_threshold].VarStr)) {
+    ReportError(StrEnv[rain_threshold].KeyName, 51);
+  }
+  else {
+	MapId = 801;
+	if (!CopyFloat(&MIN_RAIN_TEMP, StrEnv[rain_threshold].VarStr, 1)) {
+	  printf("%s: spatial parameters are used\n", StrEnv[rain_threshold].KeyName);
+	  ParamType = MAP;
+	  strcpy(FileName, StrEnv[rain_threshold].VarStr);
+	}
+	else
+	  ParamType = CONSTANT;
+
+	/* Initiate spatial input of parameters */
+	InitParameterMaps(Options, Map, MapId, FileName, SnowMap, ParamType, MIN_RAIN_TEMP);
+  }
+
+  if (IsEmptyStr(StrEnv[snow_threshold].VarStr)) {
+    ReportError(StrEnv[snow_threshold].KeyName, 51);
+  }
+  else {
+	MapId = 800;
+    if (!CopyFloat(&MAX_SNOW_TEMP, StrEnv[snow_threshold].VarStr, 1)) {
+      printf("%s: spatial parameters are used\n", StrEnv[snow_threshold].KeyName);
+	  ParamType = MAP;
+      strcpy(FileName, StrEnv[snow_threshold].VarStr);      
+    }
+	else 
+	  ParamType = CONSTANT;
+	InitParameterMaps(Options, Map, MapId, FileName, SnowMap, ParamType, MAX_SNOW_TEMP);
+  }
+
+  if (IsEmptyStr(StrEnv[alb_acc_lambda].VarStr)) {
+    ReportError(StrEnv[alb_acc_lambda].KeyName, 51);
+  }
+  else {
+	MapId = 803;
+    if (!CopyFloat(&ALB_ACC_LAMBDA, StrEnv[alb_acc_lambda].VarStr, 1)) {
+      printf("%s: spatial parameters are used\n", StrEnv[alb_acc_lambda].KeyName);
+	  ParamType = MAP;
+      strcpy(FileName, StrEnv[alb_acc_lambda].VarStr);
+    }
+	else
+	  ParamType = CONSTANT;
+	InitParameterMaps(Options, Map, MapId, FileName, SnowMap, ParamType, ALB_ACC_LAMBDA);
+  }
+
+
+  if (IsEmptyStr(StrEnv[alb_melt_lambda].VarStr)) {
+    ReportError(StrEnv[alb_melt_lambda].KeyName, 51);
+  }
+  else {
+	MapId = 804;
+	if (!CopyFloat(&ALB_MELT_LAMBDA, StrEnv[alb_melt_lambda].VarStr, 1)) {
+	  printf("%s: spatial parameters are used\n", StrEnv[alb_melt_lambda].KeyName);
+	  ParamType = MAP;
+	  strcpy(FileName, StrEnv[alb_melt_lambda].VarStr);
+	}
+	else
+	  ParamType = CONSTANT;
+	InitParameterMaps(Options, Map, MapId, FileName, SnowMap, ParamType, ALB_MELT_LAMBDA);
+  }
+
+
+  if (IsEmptyStr(StrEnv[alb_acc_min].VarStr)) {
+    ReportError(StrEnv[alb_acc_min].KeyName, 51);
+  }
+  else {
+	MapId = 805;
+    if (!CopyFloat(&ALB_ACC_MIN, StrEnv[alb_acc_min].VarStr, 1)) {
+      printf("%s: spatial parameters are used\n", StrEnv[alb_acc_min].KeyName);
+	  ParamType = MAP;
+      strcpy(FileName, StrEnv[alb_acc_min].VarStr);
+	}
+	else
+	  ParamType = CONSTANT;
+	InitParameterMaps(Options, Map, MapId, FileName, SnowMap, ParamType, ALB_ACC_MIN);
+  }
+
+  if (IsEmptyStr(StrEnv[alb_melt_min].VarStr)) {
+    ReportError(StrEnv[alb_melt_min].KeyName, 51);
+  }
+  else {
+	MapId = 806;
+	if (!CopyFloat(&ALB_MELT_MIN, StrEnv[alb_melt_min].VarStr, 1)) {
+	  printf("%s: spatial parameters are used\n", StrEnv[alb_melt_min].KeyName);
+	  ParamType = MAP;
+	  strcpy(FileName, StrEnv[alb_melt_min].VarStr);
+	}
+	else
+	  ParamType = CONSTANT;
+	InitParameterMaps(Options, Map, MapId, FileName, SnowMap, ParamType, ALB_MELT_MIN);
+  }
+
+  /* fresh albedo - this was made a constant 0.85 in previous versions */
+  if (IsEmptyStr(StrEnv[fresh_alb].VarStr)) {
+    ReportError(StrEnv[fresh_alb].KeyName, 51);
+  }
+  else {
+	MapId = 802;
+    if (!CopyFloat(&ALB_MAX, StrEnv[fresh_alb].VarStr, 1)) {
+      printf("%s: spatial parameters are used\n", StrEnv[fresh_alb].KeyName);
+
+	  ParamType = MAP;
+      strcpy(FileName, StrEnv[fresh_alb].VarStr);
+	}
+	else
+	  ParamType = CONSTANT;
+	InitParameterMaps(Options, Map, MapId, FileName, SnowMap, ParamType, ALB_MAX);
+  }
+
+  /* precipitation multiplier that bias correct the precipitation */
+  strcpy(Options->PrecipMultiplierMapPath, "");
+  if (IsEmptyStr(StrEnv[multiplier].VarStr)) {
+    PRECIP_MULTIPLIER = 0;
+    printf("No input of precipitation multiplier map - no correction is made", 51);
+  }
+  else {
+    if (!CopyFloat(&PRECIP_MULTIPLIER, StrEnv[multiplier].VarStr, 1)) {
+      printf("%s: spatial parameters are used\n", StrEnv[multiplier].KeyName);
+      PRECIP_MULTIPLIER = NA;
+      strcpy(Options->PrecipMultiplierMapPath, StrEnv[multiplier].VarStr);
+    }
   }
 }

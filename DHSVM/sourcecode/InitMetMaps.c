@@ -55,7 +55,7 @@ void InitMetMaps(LISTPTR Input, int NDaySteps, MAPSIZE *Map, MAPSIZE *Radar,
   InitEvapMap(Map, EvapMap, SoilMap, Soil, VegMap, Veg, TopoMap);
   
   InitPrecipMap(Map, PrecipMap, VegMap, Veg, TopoMap);
-  InitPptMultiplierMap(Input, Options, Map, PptMultiplierMap);                                                            
+  InitPptMultiplierMap(Options, Map, PptMultiplierMap);                                                            
 
   if (Options->MM5 == TRUE) {
     InitMM5Maps(Soil->MaxLayers, Map->NY, Map->NX, MM5Input, RadMap, Options);
@@ -448,7 +448,7 @@ void InitShadeMap(OPTIONSTRUCT * Options, int NDaySteps, MAPSIZE *Map,
 /*****************************************************************************
 InitPptMultiplierMap()
 *****************************************************************************/
-void InitPptMultiplierMap(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE *Map, float ***PptMultiplierMap)
+void InitPptMultiplierMap(OPTIONSTRUCT * Options, MAPSIZE *Map, float ***PptMultiplierMap)
 {
   const char *Routine = "InitPptMultiplierMap";
   char VarName[BUFSIZE + 1];
@@ -456,37 +456,41 @@ void InitPptMultiplierMap(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE *Map, f
   int x;			/* counter */
   int y;			/* counter */
   int NumberType;		/* number type */
-  float *Array;		
+  float *Array;
 
 
   /* Get the canopy gap map filename from the [VEGETATION] section */
   if (!((*PptMultiplierMap) = (float **)calloc(Map->NY, sizeof(float *))))
-	ReportError((char *)Routine, 1);
+    ReportError((char *)Routine, 1);
   for (y = 0; y < Map->NY; y++) {
-	if (!((*PptMultiplierMap)[y] = (float *)calloc(Map->NX, sizeof(float))))
-	  ReportError((char *)Routine, 1);
+    if (!((*PptMultiplierMap)[y] = (float *)calloc(Map->NX, sizeof(float))))
+      ReportError((char *)Routine, 1);
   }
-  if (IsEmptyStr(Options->PrecipMultiplierMapPath) ){
-	for (y = 0, i = 0; y < Map->NY; y++) {
-	  for (x = 0; x < Map->NX; x++, i++) {
-		(*PptMultiplierMap)[y][x] = 0;
-	  }
-	}
+  if (PRECIP_MULTIPLIER > NA) {
+    for (y = 0, i = 0; y < Map->NY; y++) {
+      for (x = 0; x < Map->NX; x++, i++) {
+        (*PptMultiplierMap)[y][x] = PRECIP_MULTIPLIER;
+      }
+    }
+  }
+  else if (!IsEmptyStr(Options->PrecipMultiplierMapPath)) {
+    /* Read the map path */
+    GetVarName(100, 0, VarName);
+    GetVarNumberType(100, &NumberType);
+    if (!(Array = (float *)calloc(Map->NX * Map->NY, SizeOfNumberType(NumberType))))
+      ReportError((char *)Routine, 1);
+    Read2DMatrix(Options->PrecipMultiplierMapPath, Array, NumberType, Map, 0, VarName, 0);
+
+    for (y = 0, i = 0; y < Map->NY; y++) {
+      for (x = 0; x < Map->NX; x++, i++) {
+        (*PptMultiplierMap)[y][x] = Array[i];
+      }
+    }
+    free(Array);
   }
   else {
-	/* Read the map path */
-	GetVarName(100, 0, VarName);
-	GetVarNumberType(100, &NumberType);
-	if (!(Array = (float *)calloc(Map->NX * Map->NY, SizeOfNumberType(NumberType))))
-	  ReportError((char *)Routine, 1);
-	Read2DMatrix(Options->PrecipMultiplierMapPath, Array, NumberType, Map, 0, VarName, 0);
-
-	for (y = 0, i = 0; y < Map->NY; y++) {
-	  for (x = 0; x < Map->NX; x++, i++) {
-		(*PptMultiplierMap)[y][x] = Array[i];
-	  }
-	}
-	free(Array);
+    printf("No valid input of precipitation multiplier ...\n");
+    exit(88);
   }
-  
-}                                                                              
+
+}                                                               

@@ -17,8 +17,6 @@
 */
 
 
-
-
 #include <ctype.h>
 #include <math.h>
 #include <stdio.h>
@@ -38,9 +36,9 @@
 /*				  InitTables()                                 */
 
 /*******************************************************************************/
-void InitTables(int StepsPerDay, LISTPTR Input, OPTIONSTRUCT *Options,
-  SOILTABLE **SType, LAYER *Soil, VEGTABLE **VType,
-  LAYER *Veg, SNOWTABLE **SnowAlbedo)
+void InitTables(int StepsPerDay, LISTPTR Input, OPTIONSTRUCT *Options, 
+  MAPSIZE *Map, SOILTABLE **SType, LAYER *Soil, VEGTABLE **VType,
+  LAYER *Veg)
 {
   if (ParallelRank() == 0) 
     printf("Initializing tables\n");
@@ -52,7 +50,6 @@ void InitTables(int StepsPerDay, LISTPTR Input, OPTIONSTRUCT *Options,
   if ((Veg->NTypes = InitVegTable(VType, Input, Options, Veg)) == 0)
     ReportError("Input Options File", 8);
 
-  InitSnowTable(SnowAlbedo, StepsPerDay);
   InitSatVaporTable();
 }
 
@@ -606,7 +603,6 @@ int InitVegTable(VEGTABLE **VType, LISTPTR Input, OPTIONSTRUCT *Options, LAYER *
         if (!CopyFloat(&((*VType)[i].VfAdjust), VarStr[vf_adj], 1))
           ReportError(KeyName[vf_adj], 51);
         (*VType)[i].Vf = (*VType)[i].Fract[0] * (*VType)[i].VfAdjust;
-
       }
       else {
         if ((*VType)[i].UnderStory == TRUE) {
@@ -618,7 +614,6 @@ int InitVegTable(VEGTABLE **VType, LISTPTR Input, OPTIONSTRUCT *Options, LAYER *
         }
       }
     }
-
   } /* end of the VEG TYPE loop */
 
   if (impervious) {
@@ -632,40 +627,3 @@ int InitVegTable(VEGTABLE **VType, LISTPTR Input, OPTIONSTRUCT *Options, LAYER *
   return NVegs;
 }
 
-/********************************************************************************
-InitSnowTable()
-
-Source:
-Laramie, R. L., and J. C. Schaake, Jr., Simulation of the continuous
-snowmelt process, Ralph M. Parsons Laboratory, Mass. Inst. of Technol.,
-1972
-
-Snow albedo is calculated as a function of the number of days since the
-last observed snow fall. There are separete albedo curves for the freeze
-and thaw conditions.
-********************************************************************************/
-void InitSnowTable(SNOWTABLE ** SnowAlbedo, int StepsPerDay)
-{
-  const char *Routine = "InitSnowTable";
-  int i;
-
-  if (!
-    (*SnowAlbedo =
-      (SNOWTABLE *)calloc((int)((DAYPYEAR + 1) * StepsPerDay),
-        sizeof(SNOWTABLE))))
-    ReportError((char *)Routine, 1);
-
-  /* Laramie and Schaake (1972) */
-  /* Updated based on Storck (2000) */
-
-  for (i = 0; i < ((DAYPYEAR + 1) * StepsPerDay); i++) {
-    (*SnowAlbedo)[i].Freeze =
-      0.85 * pow(ALB_ACC_LAMBDA, pow(((float)i) / StepsPerDay, 0.58));
-    if ((*SnowAlbedo)[i].Freeze < ALB_ACC_MIN)
-      (*SnowAlbedo)[i].Freeze = ALB_ACC_MIN;
-    (*SnowAlbedo)[i].Thaw =
-      0.85 * pow(ALB_MELT_LAMBDA, pow(((float)i) / StepsPerDay, 0.46));
-    if ((*SnowAlbedo)[i].Thaw < ALB_MELT_MIN)
-      (*SnowAlbedo)[i].Thaw = ALB_MELT_MIN;
-  }
-}
