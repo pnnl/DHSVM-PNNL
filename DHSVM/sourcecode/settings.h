@@ -125,12 +125,21 @@ enum KEYS {
   /* Time */
   time_step, model_start, model_end, 
   /* Constants */
-  ground_roughness, snow_roughness, rain_threshold, snow_threshold,
+  ground_roughness, snow_roughness, 
   snow_water_capacity, reference_height, rain_lai_multiplier,
   snow_lai_multiplier, min_intercepted_snow, outside_basin,
-  temp_lapse_rate, precip_lapse_rate, fresh_alb, alb_acc_lambda, 
-  alb_melt_lambda, alb_acc_min, alb_melt_min, max_swe, snowslide_parameter1,
-  snowslide_parameter2, gapwind_adj, multiplier,
+  temp_lapse_rate, precip_lapse_rate, 
+  max_swe, snowslide_parameter1,
+  snowslide_parameter2, gapwind_adj, 
+  /* Constants that can vary spatially */
+  rain_threshold = 0,
+  snow_threshold,
+  fresh_alb,
+  alb_acc_lambda,
+  alb_melt_lambda,
+  alb_acc_min,
+  alb_melt_min,
+  multiplier,
   /* Station information */
   station_name = 0, station_north, station_east, station_elev, station_file,
   /* RADAR information */

@@ -135,6 +135,9 @@ void InitInterpolationWeights(MAPSIZE *Map, OPTIONSTRUCT *Options,
 void InitMapDump(LISTPTR Input, MAPSIZE *Map, int MaxSoilLayers, int MaxVegLayers,
 		 char *Path, int TotalMapImages, int NMaps, MAPDUMP **DMap);
 
+void InitMappedConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
+                         SNOWPIX ***SnowMap);
+
 void InitMassWaste(LISTPTR Input, TIMESTRUCT *Time);
 
 void InitGridMet(OPTIONSTRUCT *Options, LISTPTR Input, MAPSIZE *Map, TOPOPIX **TopoMap,  

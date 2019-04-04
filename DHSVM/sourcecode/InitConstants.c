@@ -114,8 +114,6 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
     {"TIME", "MODEL END", "", ""},
     {"CONSTANTS", "GROUND ROUGHNESS", "", ""},
     {"CONSTANTS", "SNOW ROUGHNESS", "", ""},
-    {"CONSTANTS", "RAIN THRESHOLD", "", ""},
-    {"CONSTANTS", "SNOW THRESHOLD", "", ""},
     {"CONSTANTS", "SNOW WATER CAPACITY", "", ""},
     {"CONSTANTS", "REFERENCE HEIGHT", "", ""},
     {"CONSTANTS", "RAIN LAI MULTIPLIER", "", ""},
@@ -124,16 +122,10 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
     {"CONSTANTS", "OUTSIDE BASIN VALUE", "", ""},
     {"CONSTANTS", "TEMPERATURE LAPSE RATE", "", ""},
     {"CONSTANTS", "PRECIPITATION LAPSE RATE", "", ""},
-    {"CONSTANTS", "FRESH SNOW ALBEDO", "", "0.85" },                                         
-    { "CONSTANTS", "ALBEDO ACCUMULATION LAMBDA", "", "" },
-    { "CONSTANTS", "ALBEDO MELTING LAMBDA", "", "" },
-    { "CONSTANTS", "ALBEDO ACCUMULATION MIN", "", "" },
-    { "CONSTANTS", "ALBEDO MELTING MIN", "", "" },
     {"CONSTANTS", "MAX SURFACE SNOW LAYER DEPTH", "", "0.125" },
-    { "CONSTANTS", "SNOWSLIDE PARAMETER1", "", "" },
-    { "CONSTANTS", "SNOWSLIDE PARAMETER2", "", "" },
-    { "CONSTANTS", "GAP WIND ADJ FACTOR", "", "" },
-    {"CONSTANTS", "PRECIPITATION MULTIPLIER MAP", "", "" },
+    {"CONSTANTS", "SNOWSLIDE PARAMETER1", "", "" },
+    {"CONSTANTS", "SNOWSLIDE PARAMETER2", "", "" },
+    {"CONSTANTS", "GAP WIND ADJ FACTOR", "", "" },
     {NULL, NULL, "", NULL}
   };
 
@@ -554,6 +546,61 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
   else
     PRECIPLAPSE = NOT_APPLICABLE;
 
+
+  InitMappedConstants(Input, Options, Map, SnowMap);
+  
+
+  /* maximum depth of the surface layer in snow water equivalent (m) */
+  if (!CopyFloat(&MAX_SURFACE_SWE,
+    StrEnv[max_swe].VarStr, 1))
+    ReportError(StrEnv[max_swe].KeyName, 51);
+
+  /* if turn on canopy gap module */
+  if (Options->CanopyGapping) {
+    if (!CopyFloat(&GAPWIND_FACTOR, StrEnv[gapwind_adj].VarStr, 1))
+      ReportError(StrEnv[gapwind_adj].KeyName, 51);
+    if (GAPWIND_FACTOR <= 0 || GAPWIND_FACTOR>1)
+      ReportError(StrEnv[gapwind_adj].KeyName, 74);
+  }
+  if (Options->SnowSlide) {
+    if (!CopyFloat(&SNOWSLIDE1, StrEnv[snowslide_parameter1].VarStr, 1))
+      ReportError(StrEnv[snowslide_parameter1].KeyName, 51);
+
+    if (!CopyFloat(&SNOWSLIDE2, StrEnv[snowslide_parameter2].VarStr, 1))
+      ReportError(StrEnv[snowslide_parameter2].KeyName, 51);
+  }
+}
+
+
+/******************************************************************************
+ InitMappedConstants
+ ******************************************************************************/
+void
+InitMappedConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
+                    SNOWPIX ***SnowMap)
+{
+  STRINIENTRY StrEnv[] =
+    {
+     {"CONSTANTS", "RAIN THRESHOLD", "", ""},
+     {"CONSTANTS", "SNOW THRESHOLD", "", ""},
+     {"CONSTANTS", "FRESH SNOW ALBEDO", "", "0.85" },                                         
+     {"CONSTANTS", "ALBEDO ACCUMULATION LAMBDA", "", "" },
+     {"CONSTANTS", "ALBEDO MELTING LAMBDA", "", "" },
+     {"CONSTANTS", "ALBEDO ACCUMULATION MIN", "", "" },
+     {"CONSTANTS", "ALBEDO MELTING MIN", "", "" },
+     {"CONSTANTS", "PRECIPITATION MULTIPLIER MAP", "", "" },
+     {NULL, NULL, "", NULL}
+    };
+  int i;
+  int MapId;
+  int ParamType;
+  char FileName[BUFSIZE + 1];	      /* Variable name */
+  
+  /* Read the key-entry pairs from the input file */
+  for (i = 0; StrEnv[i].SectionName; i++)
+    GetInitString(StrEnv[i].SectionName, StrEnv[i].KeyName, StrEnv[i].Default,
+		  StrEnv[i].VarStr, (unsigned long) BUFSIZE, Input);
+
   /****** snow parameters (take either spatial input or constants) *****/
   if (IsEmptyStr(StrEnv[rain_threshold].VarStr)) {
     ReportError(StrEnv[rain_threshold].KeyName, 51);
@@ -678,25 +725,5 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
       PRECIP_MULTIPLIER = NA;
       strcpy(Options->PrecipMultiplierMapPath, StrEnv[multiplier].VarStr);
     }
-  }
-
-  /* maximum depth of the surface layer in snow water equivalent (m) */
-  if (!CopyFloat(&MAX_SURFACE_SWE,
-    StrEnv[max_swe].VarStr, 1))
-    ReportError(StrEnv[max_swe].KeyName, 51);
-
-  /* if turn on canopy gap module */
-  if (Options->CanopyGapping) {
-    if (!CopyFloat(&GAPWIND_FACTOR, StrEnv[gapwind_adj].VarStr, 1))
-      ReportError(StrEnv[gapwind_adj].KeyName, 51);
-    if (GAPWIND_FACTOR <= 0 || GAPWIND_FACTOR>1)
-      ReportError(StrEnv[gapwind_adj].KeyName, 74);
-  }
-  if (Options->SnowSlide) {
-    if (!CopyFloat(&SNOWSLIDE1, StrEnv[snowslide_parameter1].VarStr, 1))
-      ReportError(StrEnv[snowslide_parameter1].KeyName, 51);
-
-    if (!CopyFloat(&SNOWSLIDE2, StrEnv[snowslide_parameter2].VarStr, 1))
-      ReportError(StrEnv[snowslide_parameter2].KeyName, 51);
   }
 }
