@@ -113,7 +113,7 @@ void InitChannelRVeg(TIMESTRUCT *Time, Channel *Channel);
 void InitCharArray(char *Array, int Size);
 
 void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
-	SOLARGEOMETRY *SolarGeo, TIMESTRUCT *Time, SNOWPIX ***SnowMap);  
+	SOLARGEOMETRY *SolarGeo, TIMESTRUCT *Time);  
 
 void InitDump(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
 	      int MaxSoilLayers, int MaxVegLayers, int Dt,
@@ -238,7 +238,7 @@ void InitStations(LISTPTR Input, MAPSIZE *Map, int NDaySteps,
 
 void InitTables(int StepsPerDay, LISTPTR Input, OPTIONSTRUCT *Options,
     MAPSIZE *Map, SOILTABLE **SType, LAYER *Soil, VEGTABLE **VType,
-    LAYER *Veg, SNOWPIX **SnowMap);
+    LAYER *Veg);
     
 void InitTerrainMaps(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
   LAYER *Soil, LAYER *Veg, TOPOPIX ***TopoMap, SOILTABLE *SType,

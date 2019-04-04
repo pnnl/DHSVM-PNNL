@@ -52,7 +52,7 @@
   Comments     :
 *****************************************************************************/
 void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
-		   SOLARGEOMETRY *SolarGeo, TIMESTRUCT *Time, SNOWPIX ***SnowMap)
+		   SOLARGEOMETRY *SolarGeo, TIMESTRUCT *Time)
 {
   int i;			/* counter */
   double PointModelX;		/* X-coordinate for POINT model mode */
@@ -496,15 +496,6 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
 
   InitTime(Time, &Start, &End, NULL, NULL, (int) TimeStep);
 
-  /**************** Initiate snow maps and file I/O ****************/
-  /* initiate snow maps */
-  InitSnowMap(Map, SnowMap, Time);
-  printf("Initializing snow map\n"); 
-
-  /* initiate input/output format */
-  InitFileIO(Options->FileFormat);
-  printf("Initializing file input/ouput \n"); 
-  
    /**************** Determine model constants ****************/
 
   if (!CopyFloat(&Z0_GROUND, StrEnv[ground_roughness].VarStr, 1))
@@ -546,9 +537,6 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
   else
     PRECIPLAPSE = NOT_APPLICABLE;
 
-
-  InitMappedConstants(Input, Options, Map, SnowMap);
-  
 
   /* maximum depth of the surface layer in snow water equivalent (m) */
   if (!CopyFloat(&MAX_SURFACE_SWE,
