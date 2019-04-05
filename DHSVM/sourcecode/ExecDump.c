@@ -1109,14 +1109,27 @@ void DumpPix(DATE *Current, int first, FILES *OutFile, EVAPPIX *Evap,
   VEGPIX *Veg, int NSoil, int NCanopyStory, OPTIONSTRUCT *Options, int flag)
 {
   int i, j;			/* counter */
+  float W;      /* available water for runoff - used in NG-IDF */
+  float deltaSWE; /* delta SWE over delta t */
+
+  /* calculate available water for runoff for NG-IDF */
+  if (first == 1)
+    deltaSWE = 0.;
+  else
+    deltaSWE = Snow->OldSwq - Snow->Swq;
+  W = Precip->Precip + deltaSWE + Snow->VaporMassFlux;
+
+  if (W <= 1.e-9)
+    W = 0.;
 
   if (first == 1) {
 
     // Main Aggregate Values File
-    fprintf(OutFile->FilePtr, "         Date        ");
-    fprintf(OutFile->FilePtr, "  Precip(m) ");
-    fprintf(OutFile->FilePtr, " Snow(m) ");
-    fprintf(OutFile->FilePtr, " IExcess(m) ");
+    fprintf(OutFile->FilePtr, "Date ");
+    fprintf(OutFile->FilePtr, "W(mm) ");
+    fprintf(OutFile->FilePtr, "Precip(m) ");
+    fprintf(OutFile->FilePtr, "Snow(m) ");
+    fprintf(OutFile->FilePtr, "IExcess(m) ");
     fprintf(OutFile->FilePtr, "HasSnow SnowCover LastSnow Swq Melt   ");
     fprintf(OutFile->FilePtr, "PackWater TPack ");
 
@@ -1175,6 +1188,7 @@ void DumpPix(DATE *Current, int first, FILES *OutFile, EVAPPIX *Evap,
 
   // Date
   PrintDate(Current, OutFile->FilePtr);
+  fprintf(OutFile->FilePtr, " %g ", W*1000);
   fprintf(OutFile->FilePtr, " %g ", Precip->Precip);
   fprintf(OutFile->FilePtr, " %g ", Precip->SnowFall);
   fprintf(OutFile->FilePtr, " %g ", Soil->IExcess);
@@ -1247,6 +1261,9 @@ void DumpPix(DATE *Current, int first, FILES *OutFile, EVAPPIX *Evap,
     if (Veg->Gapping > 0.0)
       fprintf(OutFile->FilePtr, " %g %g",
         Veg->Type[Opening].NetShort[1], Veg->Type[Opening].LongIn[1]);
+  
+  /* store SWE */
+  Snow->OldSwq = Snow->Swq;
 
 }
 
@@ -1349,10 +1366,6 @@ DumpTopo(MAPSIZE *Map, TOPOPIX **TopoMap)
     }
     Write2DMatrix(FileName, Array, NC_FLOAT, Map, NULL, 0);
   }
-
-
-
-
 
 
   free(Array);
