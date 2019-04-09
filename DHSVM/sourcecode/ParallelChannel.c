@@ -11,7 +11,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2019-04-09 08:53:04 d3g096
+ * LAST CHANGE: 2019-04-09 10:35:45 d3g096
  * COMMENTS:
  *
  *    All processes have a copy of the channel network.  All processes
@@ -28,6 +28,7 @@
 #include <ga.h>
 #include <stdlib.h>
 
+#include "array_alloc.h"
 #include "channel.h"
 #include "ParallelDHSVM.h"
 #include "ParallelChannel.h"
@@ -173,6 +174,71 @@ ChannelGatherLateralInflow(Channel *net, int ga)
 }
 
 
+/******************************************************************************/
+/*                           ChannelGatherHeatBudget                          */
+/******************************************************************************/
+void
+ChannelGatherHeatBudget(ChannelPtr net, int ga)
+{
+  static float one = 1.0;
+  int idx, nsegment, nfield, f;
+  int lo[GA_MAX_DIM], hi[GA_MAX_DIM], ld[GA_MAX_DIM];
+  float **tmp, value;
+  Channel *current;
+
+  nfield = SkyView - ATP + 1;
+
+  for (idx = 0, current = net; current != NULL; ++idx, current = current->next);
+  nsegment = idx;
+  
+  tmp = calloc_2D_float(nfield, nsegment);
+  
+  for (idx = 0, current = net; current != NULL; ++idx, current = current->next) {
+    f = 0;
+    tmp[f++][idx] = current->ATP;
+    tmp[f++][idx] = current->ISW;
+    tmp[f++][idx] = current->Beam;
+    tmp[f++][idx] = current->Diffuse;
+    tmp[f++][idx] = current->NSW;
+    tmp[f++][idx] = current->ILW;
+    tmp[f++][idx] = current->NLW;
+    tmp[f++][idx] = current->VP;
+    tmp[f++][idx] = current->WND;
+    tmp[f++][idx] = current->azimuth;
+    tmp[f++][idx] = current->skyview;
+  }
+
+  
+  lo[0] = 0;
+  lo[1] = ATP;
+  hi[0] = nsegment - 1;
+  hi[1] = SkyView;
+  ld[0] = nfield;
+  ld[1] = nsegment;
+  NGA_Zero_patch(ga, lo, hi);
+  NGA_Acc(ga, lo, hi, &tmp[0][0], ld, &one);
+
+  ParallelBarrier();
+
+  NGA_Get(ga, lo, hi, &tmp[0][0], ld);
+
+  for (idx = 0, current = net; current != NULL; ++idx, current = current->next) {
+    f = 0;
+    current->ATP      = tmp[f++][idx];
+    current->ISW      = tmp[f++][idx];
+    current->Beam     = tmp[f++][idx];
+    current->Diffuse  = tmp[f++][idx];
+    current->NSW      = tmp[f++][idx];
+    current->ILW      = tmp[f++][idx];
+    current->NLW      = tmp[f++][idx];
+    current->VP       = tmp[f++][idx];
+    current->WND      = tmp[f++][idx];
+    current->azimuth  = tmp[f++][idx];
+    current->skyview  = tmp[f++][idx];
+  }
+
+  free_2D_float(tmp);
+}
 
 /******************************************************************************/
 /*                            ChannelDistributeState                          */
@@ -226,6 +292,6 @@ ChannelDistributeState(Channel *net, int ga)
   }
   ParallelBarrier();
 
-
+  
   
 }

@@ -820,26 +820,29 @@ void channel_grid_inc_other(ChannelMapPtr ** map, int col, int row, PIXRAD * Loc
 /*************************************************************************************
 void channel_grid_avg( ): average the heat budget variables by the total cell numbers
 *************************************************************************************/
-void channel_grid_avg(Channel *Channel)
+void channel_grid_avg(Channel *net, int ga)
 {
-  while (Channel) {
-    if (Channel->Ncells > 0 ) {
-      Channel->ISW /= Channel->Ncells ;
+  Channel *current;
+
+  ChannelGatherHeatBudget(net, ga);
+  
+  for (current = net; current != NULL; current = current->next) {
+    if (current->Ncells > 0 ) {
+      current->ISW /= current->Ncells ;
 	  
-      Channel->NSW /= Channel->Ncells;
-      Channel->Beam /= Channel->Ncells;
-      Channel->Diffuse /= Channel->Ncells;
+      current->NSW /= current->Ncells;
+      current->Beam /= current->Ncells;
+      current->Diffuse /= current->Ncells;
 
-      Channel->ILW /= Channel->Ncells ;
-      Channel->NLW /= Channel->Ncells ;
+      current->ILW /= current->Ncells ;
+      current->NLW /= current->Ncells ;
       
-      Channel->VP  /= Channel->Ncells;
-      Channel->WND /= Channel->Ncells;
-      Channel->ATP /= Channel->Ncells;
+      current->VP  /= current->Ncells;
+      current->WND /= current->Ncells;
+      current->ATP /= current->Ncells;
 
-      Channel->skyview /= Channel->Ncells;
+      current->skyview /= current->Ncells;
     }
-    Channel = Channel->next; 
   }
 }
 /*********************************************************************************

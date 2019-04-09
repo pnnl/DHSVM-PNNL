@@ -76,5 +76,5 @@ void channel_grid_free_map(MAPSIZE *Map, ChannelMapPtr **map);
 void channel_grid_inc_other(ChannelMapPtr **map, int col, int row, PIXRAD *LocalRad , 
 							PIXMET *LocalMet, float skyview);
 void Init_segment_ncell(TOPOPIX **TopoMap, ChannelMapPtr **map, int NY, int NX, Channel *net, int ga);
-void channel_grid_avg (Channel *Channel);
+void channel_grid_avg (Channel *Channel, int ga);
 #endif
