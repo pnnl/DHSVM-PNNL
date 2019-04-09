@@ -11,7 +11,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2019-04-09 10:35:45 d3g096
+ * LAST CHANGE: 2019-04-09 11:09:36 d3g096
  * COMMENTS:
  *
  *    All processes have a copy of the channel network.  All processes
@@ -44,6 +44,7 @@ enum _channel_state_slot {
   Diffuse,
   NSW,
   ILW,
+  NLW,
   VP,
   WND,
   Azimuth,
