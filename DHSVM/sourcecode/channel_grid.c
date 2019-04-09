@@ -27,6 +27,7 @@
 #include "DHSVMChannel.h"
 #include "constants.h"
 #include "ParallelDHSVM.h"
+#include "ParallelChannel.h"
 
 /* -------------------------------------------------------------
    local function prototype
@@ -794,24 +795,24 @@ void channel_grid_inc_other(ChannelMapPtr ** map, int col, int row, PIXRAD * Loc
   float len = channel_grid_cell_length(map, col, row);
 
   while (cell != NULL ) {
-	/* ISW is the total incoming shortwave radiation (VIC outputs) */
-	cell->channel->ISW += LocalRad->ObsShortIn;
+    /* ISW is the total incoming shortwave radiation (VIC outputs) */
+    cell->channel->ISW += LocalRad->ObsShortIn;
 	
-	cell->channel->NSW += LocalRad->RBMNetShort;
-	cell->channel->Beam += LocalRad->PixelBeam;
-	cell->channel->Diffuse += LocalRad->PixelDiffuse;
+    cell->channel->NSW += LocalRad->RBMNetShort;
+    cell->channel->Beam += LocalRad->PixelBeam;
+    cell->channel->Diffuse += LocalRad->PixelDiffuse;
 
     cell->channel->ILW += LocalRad->PixelLongIn;
-	cell->channel->NLW += LocalRad->RBMNetLong;
+    cell->channel->NLW += LocalRad->RBMNetLong;
 
     cell->channel->VP += LocalMet->Eact;
     cell->channel->WND += LocalMet->Wind;
     cell->channel->ATP += LocalMet->Tair;
 
-	cell->channel->azimuth += 
-		cell->azimuth*cell->length /cell->channel->length;
+    cell->channel->azimuth += 
+      cell->azimuth*cell->length /cell->channel->length;
 
-	cell->channel->skyview += skyview;
+    cell->channel->skyview += skyview;
 
     cell = cell->next;
   }
@@ -820,58 +821,60 @@ void channel_grid_inc_other(ChannelMapPtr ** map, int col, int row, PIXRAD * Loc
 void channel_grid_avg( ): average the heat budget variables by the total cell numbers
 *************************************************************************************/
 void channel_grid_avg(Channel *Channel)
-{  
+{
   while (Channel) {
     if (Channel->Ncells > 0 ) {
-	  Channel->ISW /= Channel->Ncells ;
+      Channel->ISW /= Channel->Ncells ;
 	  
-	  Channel->NSW /= Channel->Ncells;
-	  Channel->Beam /= Channel->Ncells;
-	  Channel->Diffuse /= Channel->Ncells;
+      Channel->NSW /= Channel->Ncells;
+      Channel->Beam /= Channel->Ncells;
+      Channel->Diffuse /= Channel->Ncells;
 
-	  Channel->ILW /= Channel->Ncells ;
-	  Channel->NLW /= Channel->Ncells ;
+      Channel->ILW /= Channel->Ncells ;
+      Channel->NLW /= Channel->Ncells ;
       
       Channel->VP  /= Channel->Ncells;
       Channel->WND /= Channel->Ncells;
-	  Channel->ATP /= Channel->Ncells;
+      Channel->ATP /= Channel->Ncells;
 
-	  Channel->skyview /= Channel->Ncells;
+      Channel->skyview /= Channel->Ncells;
     }
-	Channel = Channel->next; 
+    Channel = Channel->next; 
   }
 }
 /*********************************************************************************
 Init_segment_ncell : computes the number of grid cell contributing to one segment
 **********************************************************************************/
 void Init_segment_ncell(TOPOPIX **TopoMap, ChannelMapPtr ** map, int NY, 
-						int NX, Channel* net)
+                        int NX, Channel* net, int ga)
 {
   int y,x;
-  ChannelMapPtr cell; 
+  ChannelMapPtr cell;
+  ChannelPtr current;
 
   for (y = 0; y < NY; y++) {
     for (x = 0; x < NX; x++) {      
-	  if (INBASIN(TopoMap[y][x].Mask)) {
-		if (channel_grid_has_channel(map, x, y)){	
-           cell = map[x][y];
-		   while (cell != NULL) {
-			 cell->channel->Ncells++;
-             cell = cell->next;
-		   }   
+      if (INBASIN(TopoMap[y][x].Mask)) {
+        if (channel_grid_has_channel(map, x, y)){	
+          cell = map[x][y];
+          while (cell != NULL) {
+            cell->channel->Ncells++;
+            cell = cell->next;
+          }   
         }
       }
     }
   }
 
-  /* FIXME: this will fail in parallel */
-  // then check all segments
+  ChannelGatherCellCount(net, ga);
+
   for (; net != NULL; net = net->next) {
     if (net->Ncells == 0 ) {
-      error_handler(ERRHDL_ERROR,"Init_segment_ncells: write error:%s", strerror(errno));
+      error_handler(ERRHDL_ERROR,
+                    "Init_segment_ncells: segment %d: crosses no cells",
+                    net->id);
     }
   }
-} 
-
+}
 
 
