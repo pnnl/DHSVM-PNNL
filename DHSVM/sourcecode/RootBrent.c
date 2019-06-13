@@ -133,8 +133,8 @@ float RootBrent(int y, int x, float LowerBound, float UpperBound,
   }
   if ((fa * fb) >= 0) {
     sprintf(ErrorString, "%s: y = %d, x = %d", Routine, y, x);
-    return current;
     ReportWarning(ErrorString, 34);
+    return current;
   }
   fc = fb;
 
