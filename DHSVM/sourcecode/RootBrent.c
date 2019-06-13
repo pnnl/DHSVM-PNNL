@@ -134,8 +134,8 @@ float RootBrent(int y, int x, float LowerBound, float UpperBound,
     j++;
   }
   if ((fa * fb) >= 0) {
-    return current;
     ReportWarning(ErrorString, 34);
+    return current;
   }
   fc = fb;
 
