@@ -71,7 +71,8 @@ void SensibleHeatFlux(int y, int x, int Dt, float Ra, float ZRef,
      sum of the terms of the energy balance equals 0 */
 
   LocalSoil->TSurf =
-    RootBrent(y, x, MinTSurf, MaxTSurf, SurfaceEnergyBalance, Dt, Ra, ZRef,
+    RootBrent(y, x, MinTSurf, MaxTSurf, LocalSoil->TSurf,
+              SurfaceEnergyBalance, Dt, Ra, ZRef,
 	      Displacement, Z0, LocalMet->Wind, NetShort, LongIn,
 	      LocalMet->AirDens, LocalMet->Lv, ETot, KhEff,
 	      SoilType->Ch[0], SoilType->Porosity[0], LocalSoil->Moist[0],
