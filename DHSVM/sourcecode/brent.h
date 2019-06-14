@@ -17,7 +17,7 @@
 #define BRENT_H
 
 float RootBrent(int y, int x, float LowerBound, float UpperBound,
-		float (*Function) (float Estimate, va_list ap), ...);
+		float current, float (*Function) (float Estimate, va_list ap), ...);
 
 #define MACHEPS      3e-8	/* machine floating point precision (float) */
 #define T            1e-5	/* tolerance */

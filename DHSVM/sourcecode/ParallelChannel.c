@@ -11,7 +11,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2018-05-07 13:39:54 d3g096
+ * LAST CHANGE: 2019-04-09 11:09:36 d3g096
  * COMMENTS:
  *
  *    All processes have a copy of the channel network.  All processes
@@ -28,6 +28,7 @@
 #include <ga.h>
 #include <stdlib.h>
 
+#include "array_alloc.h"
 #include "channel.h"
 #include "ParallelDHSVM.h"
 #include "ParallelChannel.h"
@@ -36,10 +37,22 @@ enum _channel_state_slot {
   LateralInflow = 0,
   Inflow,
   Outflow,
-  Storage
+  Storage,
+  ATP,
+  ISW,
+  Beam,
+  Diffuse,
+  NSW,
+  ILW,
+  NLW,
+  VP,
+  WND,
+  Azimuth,
+  SkyView,
+  NCells
 };
 typedef enum _channel_state_slot ChannelStateIdx;
-static const int NChannelState = Storage + 1;
+static const int NChannelState = NCells + 1;
 
 /******************************************************************************/
 /*                                ChannelStateGA                              */
@@ -69,6 +82,47 @@ ChannelStateGA(Channel *net)
 }
 
 /******************************************************************************/
+/*                           ChannelGatherCellCount                           */
+/******************************************************************************/
+void
+ChannelGatherCellCount(Channel *net, int ga)
+{
+  static float one = 1.0;
+  int idx, nsegment;
+  int lo[GA_MAX_DIM], hi[GA_MAX_DIM], ld[GA_MAX_DIM];
+  float *ncells, value;
+  Channel *current;
+
+  for (idx = 0, current = net; current != NULL; ++idx, current = current->next);
+  nsegment = idx;
+  
+  /* this an all-reduce of channel network's lateral inflow */
+
+  ncells = (float *)calloc(nsegment, sizeof(float));
+  for (idx = 0, current = net; current != NULL; ++idx, current = current->next) {
+    ncells[idx] = current->Ncells;
+  }
+
+  lo[0] = 0;
+  lo[1] = NCells;
+  hi[0] = nsegment - 1;
+  hi[1] = NCells;
+  ld[0] = 1;
+  ld[1] = 1;
+  NGA_Zero_patch(ga, lo, hi);
+  NGA_Acc(ga, lo, hi, &ncells[0], ld, &one);
+  ParallelBarrier();
+
+  NGA_Get(ga, lo, hi, &ncells[0], ld);
+
+  for (idx = 0, current = net; current != NULL; ++idx, current = current->next) {
+    current->Ncells = ncells[idx];
+  }
+
+  free(ncells);
+}
+
+/******************************************************************************/
 /*                    ChannelGatherLateralInflow                              */
 /******************************************************************************/
 void
@@ -91,8 +145,6 @@ ChannelGatherLateralInflow(Channel *net, int ga)
   }
 
 #if 1
-
-  /* it appears the NGA_Acc call does not work here, not sure why */
 
   lo[0] = 0;
   lo[1] = LateralInflow;
@@ -122,8 +174,76 @@ ChannelGatherLateralInflow(Channel *net, int ga)
   free(lflow);
 }
 
+
+/******************************************************************************/
+/*                           ChannelGatherHeatBudget                          */
+/******************************************************************************/
+void
+ChannelGatherHeatBudget(ChannelPtr net, int ga)
+{
+  static float one = 1.0;
+  int idx, nsegment, nfield, f;
+  int lo[GA_MAX_DIM], hi[GA_MAX_DIM], ld[GA_MAX_DIM];
+  float **tmp, value;
+  Channel *current;
+
+  nfield = SkyView - ATP + 1;
+
+  for (idx = 0, current = net; current != NULL; ++idx, current = current->next);
+  nsegment = idx;
+  
+  tmp = calloc_2D_float(nfield, nsegment);
+  
+  for (idx = 0, current = net; current != NULL; ++idx, current = current->next) {
+    f = 0;
+    tmp[f++][idx] = current->ATP;
+    tmp[f++][idx] = current->ISW;
+    tmp[f++][idx] = current->Beam;
+    tmp[f++][idx] = current->Diffuse;
+    tmp[f++][idx] = current->NSW;
+    tmp[f++][idx] = current->ILW;
+    tmp[f++][idx] = current->NLW;
+    tmp[f++][idx] = current->VP;
+    tmp[f++][idx] = current->WND;
+    tmp[f++][idx] = current->azimuth;
+    tmp[f++][idx] = current->skyview;
+  }
+
+  
+  lo[0] = 0;
+  lo[1] = ATP;
+  hi[0] = nsegment - 1;
+  hi[1] = SkyView;
+  ld[0] = nfield;
+  ld[1] = nsegment;
+  NGA_Zero_patch(ga, lo, hi);
+  NGA_Acc(ga, lo, hi, &tmp[0][0], ld, &one);
+
+  ParallelBarrier();
+
+  NGA_Get(ga, lo, hi, &tmp[0][0], ld);
+
+  for (idx = 0, current = net; current != NULL; ++idx, current = current->next) {
+    f = 0;
+    current->ATP      = tmp[f++][idx];
+    current->ISW      = tmp[f++][idx];
+    current->Beam     = tmp[f++][idx];
+    current->Diffuse  = tmp[f++][idx];
+    current->NSW      = tmp[f++][idx];
+    current->ILW      = tmp[f++][idx];
+    current->NLW      = tmp[f++][idx];
+    current->VP       = tmp[f++][idx];
+    current->WND      = tmp[f++][idx];
+    current->azimuth  = tmp[f++][idx];
+    current->skyview  = tmp[f++][idx];
+  }
+
+  free_2D_float(tmp);
+}
+
 /******************************************************************************/
 /*                            ChannelDistributeState                          */
+/* Currently Unused                                                           */
 /******************************************************************************/
 void
 ChannelDistributeState(Channel *net, int ga)
@@ -173,6 +293,6 @@ ChannelDistributeState(Channel *net, int ga)
   }
   ParallelBarrier();
 
-
+  
   
 }

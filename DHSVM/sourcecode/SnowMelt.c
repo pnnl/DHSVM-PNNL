@@ -234,7 +234,7 @@ float SnowMelt(int y, int x, int Dt, float Z, float Displacement, float Z0,
     /* Calculate surface layer temperature using "Brent method" */
 
     *TSurf = RootBrent(y, x, (float)(*TSurf - DELTAT), (float) 0.0,
-      SnowPackEnergyBalance, Dt, BaseRa, Z, Displacement,
+      *TSurf, SnowPackEnergyBalance, Dt, BaseRa, Z, Displacement,
       Z0, Wind, ShortRad, LongRadIn, AirDens, Lv, Tair,
       Press, Vpd, EactAir, RainFall, SurfaceSwq, *SurfWater,
       OldTSurf, &RefreezeEnergy, VaporMassFlux);

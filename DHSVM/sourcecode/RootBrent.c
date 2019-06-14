@@ -82,7 +82,7 @@
   Comments     :
 *****************************************************************************/
 float RootBrent(int y, int x, float LowerBound, float UpperBound,
-		float (*Function) (float Estimate, va_list ap), ...)
+		float current, float (*Function) (float Estimate, va_list ap), ...)
 {
   const char *Routine = "RootBrent";
   char ErrorString[MAXSTRING + 1];
@@ -133,7 +133,8 @@ float RootBrent(int y, int x, float LowerBound, float UpperBound,
   }
   if ((fa * fb) >= 0) {
     sprintf(ErrorString, "%s: y = %d, x = %d", Routine, y, x);
-    ReportError(ErrorString, 34);
+    ReportWarning(ErrorString, 34);
+    return current;
   }
   fc = fb;
 
@@ -211,5 +212,6 @@ float RootBrent(int y, int x, float LowerBound, float UpperBound,
     }
   }
   sprintf(ErrorString, "%s: y = %d, x = %d", Routine, y, x);
-  ReportError(ErrorString, 33);
+  ReportWarning(ErrorString, 33);
+  return current;
 }
