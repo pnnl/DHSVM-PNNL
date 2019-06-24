@@ -577,7 +577,7 @@ typedef struct {
  * down here because we want the user's section 1 to have been scanned first.
  * The user has a chance to override it with an option.
  */
-//#include <unistd.h>
+#include <unistd.h>
 #endif
 
 #ifndef YY_EXTRA_TYPE
@@ -1580,7 +1580,7 @@ extern int isatty (int );
         b->yy_bs_column = 0;
     }
 
-        b->yy_is_interactive = file ? (isatty(fileno(file)) > 0) : 0;
+        b->yy_is_interactive = file ? (isatty( fileno(file) ) > 0) : 0;
     
 	errno = oerrno;
 }
@@ -2236,7 +2236,7 @@ table_close(void)
 }
 
 
-#ifdef TEST_MAIN
+#ifdef TEST_TABLE
 
 typedef enum { ONE, TWO, THREE } RecordWord;
 typedef struct _record_ {

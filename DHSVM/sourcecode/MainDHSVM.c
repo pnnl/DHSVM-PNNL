@@ -83,8 +83,7 @@ int main(int argc, char **argv)
     0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0l, 0.0, 0.0
   };
   CHANNEL ChannelData = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, 
-  NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-  NULL, NULL, NULL, NULL, NULL, NULL};
+  NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
   DUMPSTRUCT Dump;
   EVAPPIX **EvapMap = NULL;
   INPUTFILES InFiles;
@@ -115,6 +114,7 @@ int main(int argc, char **argv)
   VEGTABLE *VType = NULL;
   WATERBALANCE Mass =			/* parameter for mass balance calculations */
     { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+
 
 /*****************************************************************************
   Initialization Procedures 
@@ -293,6 +293,7 @@ int main(int argc, char **argv)
       channel_step_initialize_network(ChannelData.roads);
     }
 
+
     for (y = 0; y < Map.NY; y++) {
       for (x = 0; x < Map.NX; x++) {
 	    if (INBASIN(TopoMap[y][x].Mask)) {
@@ -370,6 +371,7 @@ int main(int argc, char **argv)
         UnitHydrograph, &HydrographInfo, Hydrograph,
         &Dump, VegMap, VType, &ChannelData);
 
+
 #endif
 
     if (NGraphics > 0)
@@ -383,6 +385,7 @@ int main(int argc, char **argv)
 	      RadiationMap, SnowMap, SoilMap, &Total, VType, Network, &ChannelData, &roadarea);
     
     MassBalance(&(Time.Current), &(Time.Start), &(Dump.Balance), &Total, &Mass);
+
 
     ExecDump(&Map, &(Time.Current), &(Time.Start), &Options, &Dump, TopoMap,
 	     EvapMap, RadiationMap, PrecipMap, SnowMap, MetMap, VegMap, &Veg, 
@@ -437,12 +440,8 @@ void cleanup(DUMPSTRUCT *Dump, CHANNEL *ChannelData, OPTIONSTRUCT *Options)
 		fclose(ChannelData->streaminflow);
 	  if (ChannelData->streamoutflow != NULL) 
         fclose(ChannelData->streamoutflow);
-	  if (ChannelData->streamISW != NULL) 
-		fclose(ChannelData->streamISW);
 	  if (ChannelData->streamNSW != NULL) 
         fclose(ChannelData->streamNSW);
-	  if (ChannelData->streamILW != NULL) 
-        fclose(ChannelData->streamILW);
 	  if (ChannelData->streamNLW!= NULL) 
         fclose(ChannelData->streamNLW);								  
 	  if (ChannelData->streamVP!= NULL) 
@@ -451,11 +450,5 @@ void cleanup(DUMPSTRUCT *Dump, CHANNEL *ChannelData, OPTIONSTRUCT *Options)
 		fclose(ChannelData->streamWND);	
 	  if (ChannelData->streamATP!= NULL) 
 		fclose(ChannelData->streamATP);
-	  if (ChannelData->streamBeam != NULL)
-		fclose(ChannelData->streamBeam);
-	  if (ChannelData->streamDiffuse != NULL)
-		fclose(ChannelData->streamDiffuse);
-	  if (ChannelData->streamSkyView != NULL)
-		fclose(ChannelData->streamSkyView);
 	}
 }

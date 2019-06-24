@@ -36,16 +36,11 @@ typedef struct {
   /* new output files for John's RBM model */
   FILE *streaminflow;
   FILE *streamoutflow;
-  FILE *streamISW;
   FILE *streamNSW;
-  FILE *streamILW;
   FILE *streamNLW;
   FILE *streamVP;
   FILE *streamWND;
   FILE *streamATP;
-  FILE *streamBeam;
-  FILE *streamDiffuse;
-  FILE *streamSkyView;
 } CHANNEL;
 
 /* -------------------------------------------------------------

@@ -40,23 +40,17 @@ channel_save_outflow_text_cplmt
 {
   int err = 0;
   int Dt;
-  FILE * out, *out2, *out4, *out3, *out5,*out9, *out10, *out11, 
-	  *out13, *out14, *out6, *out7;
+  FILE * out, *out2, *out9, *out10, *out11, *out13, *out14;
 
   Dt = Time->Dt;
 
   out = netfile->streamoutflow;
   out2 = netfile->streaminflow;
-  out4 = netfile->streamISW;
-  out5 = netfile->streamILW;
-  out6 = netfile->streamBeam;
-  out7 = netfile->streamDiffuse;
   out9 = netfile->streamVP;
   out10 = netfile->streamWND;
   out11 = netfile->streamATP;
   out13 = netfile->streamNLW;
   out14 = netfile->streamNSW;
-  out3 = netfile->streamSkyView;
 
   /* print the start date and end date. Note that the true start date is a time step behind the 
   user specified date when the model outputs data */
@@ -71,31 +65,6 @@ channel_save_outflow_text_cplmt
   PrintDate(&(Time->End), out2);
   fprintf(out2, " %d", Dt/3600);
   fprintf(out2, "\n");
-  PrintRBMStartDate(Dt, &(Time->Current), out3);
-  fprintf(out3, " ");
-  PrintDate(&(Time->End), out3);
-  fprintf(out3, " %d", Dt/3600);
-  fprintf(out3, "\n");
-  PrintRBMStartDate(Dt, &(Time->Current), out4);
-  fprintf(out4, " ");
-  PrintDate(&(Time->End), out4);
-  fprintf(out4, " %d", Dt/3600);
-  fprintf(out4, "\n");
-  PrintRBMStartDate(Dt, &(Time->Current), out5);
-  fprintf(out5, " ");
-  PrintDate(&(Time->End), out5);
-  fprintf(out5, " %d", Dt/3600);
-  fprintf(out5, "\n");
-  PrintRBMStartDate(Dt, &(Time->Current), out6);
-  fprintf(out6, " ");
-  PrintDate(&(Time->End), out6);
-  fprintf(out6, " %d", Dt/3600);
-  fprintf(out6, "\n");
-  PrintRBMStartDate(Dt, &(Time->Current), out7);
-  fprintf(out7, " ");
-  PrintDate(&(Time->End), out7);
-  fprintf(out7, " %d", Dt/3600);
-  fprintf(out7, "\n");
   PrintRBMStartDate(Dt, &(Time->Current), out9);
   fprintf(out9, " ");
   PrintDate(&(Time->End), out9);
@@ -126,11 +95,6 @@ channel_save_outflow_text_cplmt
   if (flag == 1) {
     fprintf(out, "                    ");
     fprintf(out2, "                    ");
-	fprintf(out3, "                    ");
-    fprintf(out4, "                    ");
-    fprintf(out5, "                    ");
-	fprintf(out6, "                    ");
-    fprintf(out7, "                    ");
     fprintf(out9, "                    ");
     fprintf(out10, "                    ");
     fprintf(out11, "                    ");
@@ -140,13 +104,6 @@ channel_save_outflow_text_cplmt
     for (; net != NULL; net = net->next) {
 	  fprintf(out, "%12d ", net->id);
       fprintf(out2, "%12d ", net->id);
-	  fprintf(out3, "%12d ", net->id);
-      fprintf(out4, "%8d ", net->id);
-      fprintf(out5, "%8d ", net->id);
-
-	  fprintf(out6, "%8d ", net->id);
-      fprintf(out7, "%8d ", net->id);
-
       fprintf(out9, "%9d ", net->id);
       fprintf(out10, "%8d ", net->id);
       fprintf(out11, "%5d ", net->id);
@@ -156,13 +113,6 @@ channel_save_outflow_text_cplmt
     }
     fprintf(out, "\n");
     fprintf(out2, "\n");
-	fprintf(out3, "\n");
-    fprintf(out4, "\n");
-    fprintf(out5, "\n");
-	
-	fprintf(out6, "\n");
-    fprintf(out7, "\n");
-
     fprintf(out9, "\n");
     fprintf(out10, "\n");
     fprintf(out11, "\n");
@@ -182,18 +132,6 @@ channel_save_outflow_text_cplmt
   }
   if (fprintf(out2, "%15s ", tstring) == EOF) {
     error_handler(ERRHDL_ERROR,"channel_save_inflow: write error:%s", strerror(errno));
-    err++;
-  }
-  if (fprintf(out3, "%15s ", tstring) == EOF) {
-    error_handler(ERRHDL_ERROR,"channel_save_inflow: write error:%s", strerror(errno));
-    err++;
-  }
-  if (fprintf(out4, "%15s ", tstring) == EOF) {
-    error_handler(ERRHDL_ERROR,"channel_save_ISW: write error:%s", strerror(errno));
-    err++;
-  }
-  if (fprintf(out5, "%15s ", tstring) == EOF) {
-    error_handler(ERRHDL_ERROR,"channel_save_ILW: write error:%s", strerror(errno));
     err++;
   }
   if (fprintf(out9, "%15s ", tstring) == EOF) {
@@ -216,14 +154,6 @@ channel_save_outflow_text_cplmt
     error_handler(ERRHDL_ERROR,"channel_save_NetSW: write error:%s", strerror(errno));
     err++;
   }
-  if (fprintf(out6, "%15s ", tstring) == EOF) {
-    error_handler(ERRHDL_ERROR,"channel_save_ILW: write error:%s", strerror(errno));
-    err++;
-  }
-  if (fprintf(out7, "%15s ", tstring) == EOF) {
-    error_handler(ERRHDL_ERROR,"channel_save_ILW: write error:%s", strerror(errno));
-    err++;
-  }
 
   for (; net != NULL; net = net->next) {
     if (fprintf(out, "%12.4f ", net->outflow/Dt) == EOF) {
@@ -234,14 +164,6 @@ channel_save_outflow_text_cplmt
       error_handler(ERRHDL_ERROR, "channel_save_inflow: write error:%s", strerror(errno));
       err++;
 	}
-    if (fprintf(out4, "%8.2f ", net->ISW ) == EOF) {
-      error_handler(ERRHDL_ERROR, "channel_save_ISW: write error:%s", strerror(errno));
-      err++;
-    }
-    if (fprintf(out5, "%8.2f ", net->ILW ) == EOF) {
-      error_handler(ERRHDL_ERROR, "channel_save_ILW: write error:%s", strerror(errno));
-      err++;
-    }
     if (fprintf(out9, "%9.2f ", net->VP ) == EOF) {
       error_handler(ERRHDL_ERROR, "channel_save_ActualVaporPressure: write error:%s", strerror(errno));
       err++;
@@ -262,32 +184,12 @@ channel_save_outflow_text_cplmt
       error_handler(ERRHDL_ERROR, "channel_save_NetSW: write error:%s", strerror(errno));
       err++;
     }
-	if (fprintf(out6, "%8.2f ", net->Beam ) == EOF) {
-      error_handler(ERRHDL_ERROR, "channel_save_ISW: write error:%s", strerror(errno));
-      err++;
-    }
-	if (fprintf(out7, "%8.2f ", net->Diffuse) == EOF) {
-      error_handler(ERRHDL_ERROR, "channel_save_ILW: write error:%s", strerror(errno));
-      err++;
-    }
-	if (fprintf(out3, "%8.2f ", net->skyview) == EOF) {
-      error_handler(ERRHDL_ERROR, "channel_save_ILW: write error:%s", strerror(errno));
-      err++;
-    }
   }
   fprintf(out, "\n");
   fprintf(out2, "\n");
-  fprintf(out3, "\n");
-  fprintf(out4, "\n");
-  fprintf(out5, "\n");
-
-  fprintf(out6, "\n");
-  fprintf(out7, "\n");
-
   fprintf(out9, "\n");
   fprintf(out10, "\n");
   fprintf(out11, "\n");
-
   fprintf(out13, "\n");
   fprintf(out14, "\n");
   }
