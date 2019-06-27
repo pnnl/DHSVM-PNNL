@@ -249,7 +249,7 @@ int main(int argc, char **argv)
 
   /* setup for mass balance calculations */
   Aggregate(&Map, &Options, TopoMap, &Soil, &Veg, VegMap, EvapMap, PrecipMap,
-	      RadiationMap, SnowMap, SoilMap, &Total, VType, Network, &ChannelData, &roadarea);
+	      RadiationMap, SnowMap, SoilMap, &Total, VType, Network, &ChannelData, &roadarea, Time.Dt);
 
   Mass.StartWaterStorage =
     Total.Soil.IExcess + Total.CanopyWater + Total.SoilWater + Total.Snow.Swq +
@@ -382,9 +382,11 @@ int main(int argc, char **argv)
 	   MetMap, Network, &Options);
     
     Aggregate(&Map, &Options, TopoMap, &Soil, &Veg, VegMap, EvapMap, PrecipMap,
-	      RadiationMap, SnowMap, SoilMap, &Total, VType, Network, &ChannelData, &roadarea);
+	      RadiationMap, SnowMap, SoilMap, &Total, VType, Network, &ChannelData, &roadarea, Time.Dt);
     
     MassBalance(&(Time.Current), &(Time.Start), &(Dump.Balance), &Total, &Mass);
+
+
 
 
     ExecDump(&Map, &(Time.Current), &(Time.Start), &Options, &Dump, TopoMap,
