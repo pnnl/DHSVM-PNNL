@@ -152,7 +152,6 @@ void InitChannelDump(OPTIONSTRUCT *Options, CHANNEL * channel,
   char buffer[NAMESIZE];
 
   if (ParallelRank() == 0) {
-
     if (channel->streams != NULL) {
       sprintf(buffer, "%sStream.Flow", DumpPath);
       OpenFile(&(channel->streamout), buffer, "w", TRUE);
@@ -207,6 +206,7 @@ void InitChannelDump(OPTIONSTRUCT *Options, CHANNEL * channel,
     }
   }
 }
+
 
 /* -------------------------------------------------------------
    ChannelCulvertFlow    
