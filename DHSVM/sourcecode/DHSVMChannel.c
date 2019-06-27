@@ -165,15 +165,9 @@ void InitChannelDump(OPTIONSTRUCT *Options, CHANNEL * channel,
         // outflow ( redundant but it's a check
         sprintf(buffer, "%sOutflow.Only", DumpPath);
         OpenFile(&(channel->streamoutflow), buffer, "w", TRUE);
-        // total incoming short wave
-        sprintf(buffer, "%sISW.Only", DumpPath);
-        OpenFile(&(channel->streamISW), buffer, "w", TRUE);
         //net incoming short wave
         sprintf(buffer, "%sNSW.Only", DumpPath);
         OpenFile(&(channel->streamNSW), buffer, "w", TRUE);
-        // total incoming long wave
-        sprintf(buffer, "%sILW.Only", DumpPath);
-        OpenFile(&(channel->streamILW), buffer, "w", TRUE);
         // net incoming long wave
         sprintf(buffer, "%sNLW.Only", DumpPath);
         OpenFile(&(channel->streamNLW), buffer, "w", TRUE);
@@ -186,15 +180,6 @@ void InitChannelDump(OPTIONSTRUCT *Options, CHANNEL * channel,
         //air temperature
         sprintf(buffer, "%sATP.Only", DumpPath);
         OpenFile(&(channel->streamATP), buffer, "w", TRUE);
-        //beam radiation
-        sprintf(buffer, "%sBeam.Only", DumpPath);
-        OpenFile(&(channel->streamBeam), buffer, "w", TRUE);
-        //diffuse radiation
-        sprintf(buffer, "%sDiffuse.Only", DumpPath);
-        OpenFile(&(channel->streamDiffuse), buffer, "w", TRUE);
-        //skyview
-        sprintf(buffer, "%sSkyview.Only", DumpPath);
-        OpenFile(&(channel->streamSkyView), buffer, "w", TRUE);
       }
     }
     if (channel->roads != NULL) {
