@@ -90,7 +90,7 @@ int main(int argc, char **argv)
      0, 0,
      NULL, NULL, NULL, NULL,
      NULL, NULL, NULL, NULL, NULL, NULL,
-     NULL, NULL, NULL, NULL, NULL, NULL
+     NULL
     };
   DUMPSTRUCT Dump;
   EVAPPIX **EvapMap = NULL;
@@ -281,7 +281,8 @@ int main(int argc, char **argv)
 
   /* setup for mass balance calculations */
   Aggregate(&Map, &Options, TopoMap, &Soil, &Veg, VegMap, EvapMap, PrecipMap,
-	      RadiationMap, SnowMap, SoilMap, &Total, VType, Network, &ChannelData, &roadarea);
+            RadiationMap, SnowMap, SoilMap, &Total, VType, Network, &ChannelData,
+            &roadarea, Time.Dt);
 
   Mass.StartWaterStorage =
     Total.Soil.IExcess + Total.CanopyWater + Total.SoilWater + Total.Snow.Swq +
@@ -424,6 +425,7 @@ int main(int argc, char **argv)
         &Dump, VegMap, VType, &ChannelData);
     TIMING_TASK_END("Surface routing", 1);
 
+
 #endif
 
     TIMING_TASK_START("Output", 1);
@@ -438,7 +440,7 @@ int main(int argc, char **argv)
 #endif
     
     Aggregate(&Map, &Options, TopoMap, &Soil, &Veg, VegMap, EvapMap, PrecipMap,
-	      RadiationMap, SnowMap, SoilMap, &Total, VType, Network, &ChannelData, &roadarea);
+	      RadiationMap, SnowMap, SoilMap, &Total, VType, Network, &ChannelData, &roadarea, Time.Dt);
     
     MassBalance(&(Time.Current), &(Time.Start), &(Dump.Balance), &Total, &Mass);
 
@@ -536,12 +538,8 @@ void cleanup(DUMPSTRUCT *Dump, CHANNEL *ChannelData, OPTIONSTRUCT *Options,
 		fclose(ChannelData->streaminflow);
 	  if (ChannelData->streamoutflow != NULL) 
         fclose(ChannelData->streamoutflow);
-	  if (ChannelData->streamISW != NULL) 
-		fclose(ChannelData->streamISW);
 	  if (ChannelData->streamNSW != NULL) 
         fclose(ChannelData->streamNSW);
-	  if (ChannelData->streamILW != NULL) 
-        fclose(ChannelData->streamILW);
 	  if (ChannelData->streamNLW!= NULL) 
         fclose(ChannelData->streamNLW);								  
 	  if (ChannelData->streamVP!= NULL) 
@@ -550,11 +548,5 @@ void cleanup(DUMPSTRUCT *Dump, CHANNEL *ChannelData, OPTIONSTRUCT *Options,
 		fclose(ChannelData->streamWND);	
 	  if (ChannelData->streamATP!= NULL) 
 		fclose(ChannelData->streamATP);
-	  if (ChannelData->streamBeam != NULL)
-		fclose(ChannelData->streamBeam);
-	  if (ChannelData->streamDiffuse != NULL)
-		fclose(ChannelData->streamDiffuse);
-	  if (ChannelData->streamSkyView != NULL)
-		fclose(ChannelData->streamSkyView);
 	}
 }

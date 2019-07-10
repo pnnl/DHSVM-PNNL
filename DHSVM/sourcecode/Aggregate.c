@@ -140,10 +140,11 @@
   which is executed at the beginning of each time step.
 *****************************************************************************/
 void Aggregate(MAPSIZE *Map, OPTIONSTRUCT *Options, TOPOPIX **TopoMap,
-               LAYER *Soil, LAYER *Veg, VEGPIX **VegMap, EVAPPIX **Evap,
-               PRECIPPIX **Precip, PIXRAD **RadMap, SNOWPIX **Snow,
-               SOILPIX **SoilMap, AGGREGATED *Total, VEGTABLE *VType,
-               ROADSTRUCT **Network, CHANNEL *ChannelData, float *roadarea)
+	       LAYER *Soil, LAYER *Veg, VEGPIX **VegMap, EVAPPIX **Evap,
+	       PRECIPPIX **Precip, PIXRAD **RadMap, SNOWPIX **Snow,
+	       SOILPIX **SoilMap, AGGREGATED *Total, VEGTABLE *VType,
+	       ROADSTRUCT **Network, CHANNEL *ChannelData, float *roadarea,
+               int Dt)
 {
   int NPixels;                  /* Number of pixels in the basin */
   int NSoilL;                   /* Number of soil layers for current pixel */
@@ -348,6 +349,12 @@ void Aggregate(MAPSIZE *Map, OPTIONSTRUCT *Options, TOPOPIX **TopoMap,
     Total->Veg.Type[Opening].Swq /= TotNumGap/NPixels;
     Total->Veg.Type[Opening].MeltEnergy /= TotNumGap/NPixels;
   }
+  
+  for (i = 0; i < Veg->MaxLayers + 1; i++) {
+    /* convert EPot from m/s to m */
+    Total->Evap.EPot[i] /= Dt;
+  }
+
 
   free(sums);
   TIMING_TASK_END("Aggregate", 2);
