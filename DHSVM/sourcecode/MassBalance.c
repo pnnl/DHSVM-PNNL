@@ -89,29 +89,29 @@ void MassBalance(DATE *Current, DATE *Start, FILES *Out, AGGREGATED *Total, WATE
   Mass->CumCulvertToChannel += Total->CulvertToChannel;
   
   if (IsEqualTime(Current, Start)) {
-    fprintf(Out->FilePtr, "         Date        ");
-    fprintf(Out->FilePtr, " NetWaterIn1(mm) ");
-    fprintf(Out->FilePtr, " NetWaterIn2(mm) ");
-    fprintf(Out->FilePtr, " Precip(m) ");
-    fprintf(Out->FilePtr, " Snow(m) ");
-    fprintf(Out->FilePtr, " IExcess(m) ");
-    fprintf(Out->FilePtr, " Swq   Melt   ");
-    fprintf(Out->FilePtr, " TotalET ");   /* total evapotranspiration*/
-    fprintf(Out->FilePtr, " CanopyInt ");   /* canopy intercepted rain + snow*/
-    fprintf(Out->FilePtr, " TotSoilMoist ");
-    fprintf(Out->FilePtr, " SatFlow ");
-    fprintf(Out->FilePtr, " SnowVaporFlux ");
+    fprintf(Out->FilePtr, "Date");
+    fprintf(Out->FilePtr, " NetWaterIn1(mm)");
+    fprintf(Out->FilePtr, " NetWaterIn2(mm)");
+    fprintf(Out->FilePtr, " Precip(m)");
+    fprintf(Out->FilePtr, " Snow(m)");
+    fprintf(Out->FilePtr, " IExcess(m)");
+    fprintf(Out->FilePtr, " Swq   Melt");
+    fprintf(Out->FilePtr, " TotalET");   /* total evapotranspiration*/
+    fprintf(Out->FilePtr, " CanopyInt");   /* canopy intercepted rain + snow*/
+    fprintf(Out->FilePtr, " TotSoilMoist");
+    fprintf(Out->FilePtr, " SatFlow");
+    fprintf(Out->FilePtr, " SnowVaporFlux CanopySnowVaporFlux");
     fprintf(Out->FilePtr, " ChannelInt RoadInt CulvertInt"),
     fprintf(Out->FilePtr, " PixelShortIn PixelNetShort NetShort.Layer1 NetShort.Layer2 PixelNetRadiation Tair Error");
     fprintf(Out->FilePtr, "\n");
   }
   PrintDate(Current, Out->FilePtr);
-  fprintf(Out->FilePtr, " %g  %g  %g  %g  %g  %g  %g  %g  %g  %g  %g  %g \
-      %g  %g  %g  %g  %g  %g  %g  %g %g  %g \n", NetWaterIn1*1000, NetWaterIn2*1000, 
+  fprintf(Out->FilePtr, " %g %g %g %g %g %g %g %g %g %g %g %g \
+      %g %g %g %g %g %g %g %g %g %g %g\n", NetWaterIn1*1000, NetWaterIn2*1000, 
       Total->Precip.Precip, Total->Precip.SnowFall, Total->Soil.IExcess,
       Total->Snow.Swq, Total->Snow.Melt, Total->Evap.ETot, 
       Total->CanopyWater, Total->SoilWater, Total->Soil.SatFlow, Total->Snow.VaporMassFlux,
-	  Total->ChannelInt,  Total->RoadInt, Total->CulvertToChannel, 
+      Total->Snow.CanopyVaporMassFlux, Total->ChannelInt,  Total->RoadInt, Total->CulvertToChannel, 
       Total->Rad.BeamIn+Total->Rad.DiffuseIn, Total->Rad.PixelNetShort, 
       Total->Rad.NetShort[0], Total->Rad.NetShort[1], Total->NetRad, Total->Rad.Tair, MassError);
   Total->Snow.OldSwq = Total->Snow.Swq;
