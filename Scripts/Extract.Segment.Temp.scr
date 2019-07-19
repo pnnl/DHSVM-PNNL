@@ -5,8 +5,8 @@
 
 ################## hard coded parameters ##################
 set seg = 51           # selected segment number
-set inputfile = ../Work_Space/Mercer.temp
-set outdir = ../Output  # the output directory
+set inputfile = ../Work_Space/<ProjectName>.temp
+set outdir = ../Output  # output directory
 set startdate = 2002-01-02
 set timestep = 3
 ###########################################################
@@ -14,13 +14,13 @@ set timestep = 3
 set interval=`expr 24\/$timestep |bc`
 
 # extract segments
-awk '{if ($3=="'$seg'") print $0}' $inputfile >! $outdir/junk$seg.temp.txt
+awk '{if ($4=="'$seg'") print $0}' $inputfile >! $outdir/junk$seg.temp.txt
 
 # add the date (MM/DD/YYYY to the output file
 ./add_date.pl $outdir/junk$seg.temp.txt $startdate $timestep > $outdir/junk2$seg.temp.txt
 
 # reformat the output
-awk '{print $1, $6, $7, $8, $9}' $outdir/junk2$seg.temp.txt > $outdir/seg$seg.temp.txt
+awk '{print $1, $7, $8, $9, $10}' $outdir/junk2$seg.temp.txt > $outdir/seg$seg.temp.txt
 
 # compute daily average
 # the 2nd col stores the day count, and the 3rd stores the segment number.
