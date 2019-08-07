@@ -83,7 +83,7 @@ int main(int argc, char **argv)
     0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0l, 0.0, 0.0
   };
   CHANNEL ChannelData = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, 
-  NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+  NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
   DUMPSTRUCT Dump;
   EVAPPIX **EvapMap = NULL;
   INPUTFILES InFiles;
@@ -364,7 +364,7 @@ int main(int argc, char **argv)
 
     if (Options.HasNetwork)
       RouteChannel(&ChannelData, &Time, &Map, TopoMap, SoilMap, &Total, 
-		   &Options, Network, SType, PrecipMap, LocalMet.Tair, LocalMet.Rh);
+		   &Options, Network, SType, PrecipMap, LocalMet.Tair, LocalMet.Rh, SnowMap);
 
     if (Options.Extent == BASIN)
       RouteSurface(&Map, &Time, TopoMap, SoilMap, &Options,
@@ -385,9 +385,6 @@ int main(int argc, char **argv)
 	      RadiationMap, SnowMap, SoilMap, &Total, VType, Network, &ChannelData, &roadarea, Time.Dt);
     
     MassBalance(&(Time.Current), &(Time.Start), &(Dump.Balance), &Total, &Mass);
-
-
-
 
     ExecDump(&Map, &(Time.Current), &(Time.Start), &Options, &Dump, TopoMap,
 	     EvapMap, RadiationMap, PrecipMap, SnowMap, MetMap, VegMap, &Veg, 
@@ -439,18 +436,20 @@ void cleanup(DUMPSTRUCT *Dump, CHANNEL *ChannelData, OPTIONSTRUCT *Options)
 
 	if (Options->StreamTemp) {
 	  if (ChannelData->streaminflow != NULL) 
-		fclose(ChannelData->streaminflow);
+      fclose(ChannelData->streaminflow);
 	  if (ChannelData->streamoutflow != NULL) 
-        fclose(ChannelData->streamoutflow);
+      fclose(ChannelData->streamoutflow);
+    if (ChannelData->streamMelt != NULL)
+      fclose(ChannelData->streamMelt);                                    
 	  if (ChannelData->streamNSW != NULL) 
-        fclose(ChannelData->streamNSW);
+      fclose(ChannelData->streamNSW);
 	  if (ChannelData->streamNLW!= NULL) 
-        fclose(ChannelData->streamNLW);								  
+      fclose(ChannelData->streamNLW);								  
 	  if (ChannelData->streamVP!= NULL) 
-		fclose(ChannelData->streamVP);	
+      fclose(ChannelData->streamVP);	
 	  if (ChannelData->streamWND!= NULL) 
-		fclose(ChannelData->streamWND);	
+      fclose(ChannelData->streamWND);	
 	  if (ChannelData->streamATP!= NULL) 
-		fclose(ChannelData->streamATP);
+      fclose(ChannelData->streamATP);
 	}
 }

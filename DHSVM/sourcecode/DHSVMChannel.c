@@ -35,7 +35,7 @@ InitChannel(LISTPTR Input, MAPSIZE *Map, int deltat, CHANNEL *channel,
     {"ROUTING", "STREAM NETWORK FILE", "", ""},
     {"ROUTING", "STREAM MAP FILE", "", ""},
     {"ROUTING", "STREAM CLASS FILE", "", ""},
-	{"ROUTING", "RIPARIAN VEG FILE", "", ""},
+    {"ROUTING", "RIPARIAN VEG FILE", "", ""},
     {"ROUTING", "ROAD NETWORK FILE", "", "none"},
     {"ROUTING", "ROAD MAP FILE", "", "none"},
     {"ROUTING", "ROAD CLASS FILE", "", "none"},
@@ -145,11 +145,11 @@ void InitChannelDump(OPTIONSTRUCT *Options, CHANNEL * channel,
       // outflow ( redundant but it's a check
       sprintf(buffer, "%sOutflow.Only", DumpPath);
       OpenFile(&(channel->streamoutflow), buffer, "w", TRUE);
-	  //net incoming short wave
+      //net incoming short wave
       sprintf(buffer, "%sNSW.Only", DumpPath);
       OpenFile(&(channel->streamNSW), buffer, "w", TRUE);
-	  // net incoming long wave
-	  sprintf(buffer, "%sNLW.Only", DumpPath);
+      // net incoming long wave
+      sprintf(buffer, "%sNLW.Only", DumpPath);
       OpenFile(&(channel->streamNLW), buffer, "w", TRUE);
       //Vapor pressure
       sprintf(buffer, "%sVP.Only", DumpPath);
@@ -160,6 +160,9 @@ void InitChannelDump(OPTIONSTRUCT *Options, CHANNEL * channel,
       //air temperature
       sprintf(buffer, "%sATP.Only", DumpPath);
       OpenFile(&(channel->streamATP), buffer, "w", TRUE);
+      //melt water in flow
+      sprintf(buffer, "%sMelt.Only", DumpPath);
+      OpenFile(&(channel->streamMelt), buffer, "w", TRUE);                      
 	}
   }
   if (channel->roads != NULL) {
@@ -194,24 +197,24 @@ void
 RouteChannel(CHANNEL *ChannelData, TIMESTRUCT *Time, MAPSIZE *Map,
 	    TOPOPIX **TopoMap, SOILPIX **SoilMap, AGGREGATED *Total, 
 	     OPTIONSTRUCT *Options, ROADSTRUCT **Network, SOILTABLE *SType, 
-		 PRECIPPIX **PrecipMap, float Tair, float Rh)
+		 PRECIPPIX **PrecipMap, float Tair, float Rh, SNOWPIX **SnowMap)
 {
   int x, y;
   int flag;
   char buffer[32];
   float CulvertFlow;
-
+  float temp;
 
   /* give any surface water to roads w/o sinks */
   for (y = 0; y < Map->NY; y++) {
     for (x = 0; x < Map->NX; x++) {
       if (INBASIN(TopoMap[y][x].Mask)) {
-		if (channel_grid_has_channel(ChannelData->road_map, x, y) && 
-			!channel_grid_has_sink(ChannelData->road_map, x, y)) {	/* road w/o sink */
-	      SoilMap[y][x].RoadInt += SoilMap[y][x].IExcess; 
-		  channel_grid_inc_inflow(ChannelData->road_map, x, y, SoilMap[y][x].IExcess * Map->DX * Map->DY);
-		  SoilMap[y][x].IExcess = 0.0f;
-		}
+        if (channel_grid_has_channel(ChannelData->road_map, x, y) && 
+          !channel_grid_has_sink(ChannelData->road_map, x, y)) {	/* road w/o sink */
+            SoilMap[y][x].RoadInt += SoilMap[y][x].IExcess; 
+          channel_grid_inc_inflow(ChannelData->road_map, x, y, SoilMap[y][x].IExcess * Map->DX * Map->DY);
+          SoilMap[y][x].IExcess = 0.0f;
+        }
       }
     }
   }
@@ -237,6 +240,12 @@ RouteChannel(CHANNEL *ChannelData, TIMESTRUCT *Time, MAPSIZE *Map,
 		if (channel_grid_has_channel(ChannelData->stream_map, x, y)) {
 		  channel_grid_inc_inflow(ChannelData->stream_map, x, y,
 				  (SoilMap[y][x].IExcess + CulvertFlow) * Map->DX * Map->DY);
+
+		  if (SnowMap[y][x].Outflow > SoilMap[y][x].IExcess)
+        temp = SoilMap[y][x].IExcess;
+		  else
+        temp = SnowMap[y][x].Outflow;
+		  channel_grid_inc_melt(ChannelData->stream_map, x, y, temp * Map->DX * Map->DY);                                                                                  
 		  SoilMap[y][x].ChannelInt += SoilMap[y][x].IExcess;
 		  Total->CulvertToChannel += CulvertFlow;
 		  SoilMap[y][x].IExcess = 0.0f;

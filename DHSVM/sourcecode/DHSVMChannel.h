@@ -41,6 +41,7 @@ typedef struct {
   FILE *streamVP;
   FILE *streamWND;
   FILE *streamATP;
+  FILE *streamMelt;
 } CHANNEL;
 
 /* -------------------------------------------------------------
@@ -53,7 +54,7 @@ double ChannelCulvertFlow(int y, int x, CHANNEL *ChannelData);
 void RouteChannel(CHANNEL *ChannelData, TIMESTRUCT *Time, MAPSIZE *Map,
 		  TOPOPIX **TopoMap, SOILPIX **SoilMap, AGGREGATED *Total, 
 		  OPTIONSTRUCT *Options, ROADSTRUCT **Network, SOILTABLE *SType, 
-		  PRECIPPIX **PrecipMap, float Tair, float Rh);
+		  PRECIPPIX **PrecipMap, float Tair, float Rh, SNOWPIX **SnowMap);
 void ChannelCut(int y, int x, CHANNEL *ChannelData, ROADSTRUCT *Network);
 uchar ChannelFraction(TOPOPIX *topo, ChannelMapRec *rds);
 

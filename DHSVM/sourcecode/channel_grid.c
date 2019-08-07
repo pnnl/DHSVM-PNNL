@@ -514,7 +514,31 @@ void channel_grid_inc_inflow(ChannelMapPtr ** map, int col, int row, float mass)
     cell = cell->next;
   }
 }
+/* -------------------------------------------------------------
+channel_grid_inc_melt
+Given a flow (or actually mass), this function increases the inflow contributed
+from melt to any channel(s) in the cell in proportion to their length within the
+cell.
+------------------------------------------------------------- */
+void channel_grid_inc_melt(ChannelMapPtr ** map, int col, int row, float mass)
+{
+  ChannelMapPtr cell = map[col][row];
+  float len = channel_grid_cell_length(map, col, row);
 
+  /*
+  if (mass > 0 && len <= 0.0) {
+  error_handler(ERRHDL_ERROR,
+  "channel_grid_inc_inflow: attempt to add flow in cell with no channels! (col=%d, row=%d)",
+  col, row);
+  return;
+  }
+  */
+
+  while (cell != NULL) {
+	cell->channel->melt += mass * cell->length / len;
+	cell = cell->next;
+  }
+}
 /* -------------------------------------------------------------
    channel_grid_outflow
    If the channel(s) within the cell are marked as ``sinks'', this

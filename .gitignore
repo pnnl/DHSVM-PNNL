@@ -1,4 +1,5 @@
 i#OS junk files
+
 [Tt]humbs.db
 *.DS_Store
 
@@ -50,7 +51,7 @@ output/
 
 program/
 **/program/
-
+DHSVM3.2
 
 #input file
 #INPUT.*
@@ -58,3 +59,5 @@ program/
 #input/
 #*.bin
 #*txt
+
+gitignore
