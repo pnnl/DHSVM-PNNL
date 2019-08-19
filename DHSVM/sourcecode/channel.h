@@ -93,6 +93,7 @@ struct _channel_rec_ {
   float WND;	        /* Wind (m/s) */
   float azimuth;        /* segment azimuth (degrees) */
   float skyview;
+  float melt;           /* melt water (cubic meters) */                                                       
   int Ncells;	        /* Number of grid cells crossed by the segment*/
 
   CHANRVEG rveg;        /* riparian veg sub-structure */
@@ -106,13 +107,11 @@ typedef struct _channel_rec_ Channel, *ChannelPtr;
    externally available routines
    ------------------------------------------------------------- */
 
-				/* ChannelClass */
-
+/* ChannelClass */
 ChannelClass *channel_read_classes(const char *file, int ChanType);
 void channel_free_classes(ChannelClass *head);
 
-				/* Channel */
-
+/* Channel */
 Channel *channel_read_network(const char *file, ChannelClass * class_list, int *MaxID);
 int channel_read_rveg_param(Channel *net, const char *file, int *MaxID);
 void channel_routing_parameters(Channel *net, int deltat);
@@ -125,8 +124,7 @@ int channel_save_outflow_text(char *tstring, Channel *net, FILE *out,
 			      FILE *out2, int flag);
 void channel_free_network(Channel *net);
 
-				/* Module */
-
+/* Module */
 void channel_init(void);
 void channel_done(void);
 

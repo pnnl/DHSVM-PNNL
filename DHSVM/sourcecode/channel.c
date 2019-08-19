@@ -250,6 +250,7 @@ static Channel *alloc_channel_segment(void)
   seg->slope = 0.0;
   seg->class2 = NULL;
   seg->lateral_inflow = 0.0;
+  seg->melt = 0.0;                  
   seg->last_inflow = 0.0;
   seg->last_outflow = 0.0;
   seg->inflow = 0.0;
@@ -563,6 +564,7 @@ int channel_step_initialize_network(Channel *net)
     current->last_inflow = current->inflow;
     current->inflow = 0.0;
     current->lateral_inflow = 0.0;
+    current->melt = 0.0;                 
     current->last_outflow = current->outflow;
     current->last_storage = current->storage;
 

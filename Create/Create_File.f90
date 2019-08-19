@@ -25,6 +25,7 @@ character (len=4)  :: path
 character (len=6)  :: fluff
 character (len=8)  :: sequence
 character (len=200):: InDirectry,Project
+character (len=4)  :: Date1
 !
 !
 integer iargc
@@ -65,8 +66,10 @@ open(21,file=TRIM(InDirectry)//'/NLW.Only',status='old')
 open(22,file=TRIM(InDirectry)//'/NSW.Only',status='old')
 open(23,file=TRIM(InDirectry)//'/VP.Only',status='old')
 open(24,file=TRIM(InDirectry)//'/WND.Only',status='old')
-open(25,file=TRIM(InDirectry)//'/Inflow.Only',status='old')
-open(26,file=TRIM(InDirectry)//'/Outflow.Only',status='old')
+open(25,file=TRIM(InDirectry)//'/Melt.Only',status='old')
+open(26,file=TRIM(InDirectry)//'/Inflow.Only',status='old')
+open(27,file=TRIM(InDirectry)//'/Outflow.Only',status='old')
+
 !
 open(30,file=TRIM(Project)//'.forcing',status='unknown')
 !
@@ -88,14 +91,14 @@ allocate (in_flow(narray))
 allocate (out_flow(narray))
 !allocate (lat_flow(narray))
 !allocate (depth(narray))
-allocate (forcing(5,narray))
+allocate (forcing(6,narray))
 !
 do n=1,no_seg
   read(10,*) sequence,nn,path,seg_no(n)
 end do
 !
 nfile=20
-do nf=1,7
+do nf=1,8
   read(nfile,'(A19,1x,A19,1x,i2)') start_date,end_date, no_dt
   write(*,*) 'start ',start_date
   write(*,*) 'end ',end_date
@@ -156,29 +159,30 @@ write(30,'(2(i4.4,i2.2,i2.2,a1,i2.2,1x),2i4)')          &
     ,no_dt,nd_start
 !
 ! Read segment mapping
-!
-nfile=19
-!
 ! Read the segment sequencing from the header of the ATP.Only file
 ! and establish the relationship between DHSVM segment numbers and
 ! the indexed location in the forcing files
 !
+nfile=19
+nfile=nfile+1
+read(nfile,*) Date1, (seg_seq(n),n=1,no_seg)
+do nf=1,no_seg
+  seg_net(seg_seq(nf))=nf
+end do
+
+do nf=2,8
   nfile=nfile+1
-  read(nfile,*) (seg_seq(n),n=1,no_seg)
-  do nf=1,no_seg
-    seg_net(seg_seq(nf))=nf
-  end do
-do nf=2,7
-  nfile=nfile+1
-  read(nfile,*) (dummy(n),n=1,no_seg)
+  read(nfile,*) Date1, (dummy(n),n=1,no_seg)
 !  read(nfile,*) time_stamp0
 !  write(*,"('Initial Time Stamp - ',a19)"), time_stamp0
 end do!
 ! Read the forcings from the DHSVM file
 !
+write(*, *) 'no_cycles=  ', no_cycles 
 do nc=1,no_cycles
+  write(*, *) 'nc=  ', nc 
   nfile=19
-  do nf=1,5
+  do nf=1,6
     nfile=nfile+1
     read(nfile,*) time_stamp,(forcing(nf,n),n=1,no_seg)
   end do
@@ -190,8 +194,8 @@ do nc=1,no_cycles
 !
 ! Read the streamflow from the DHSVM file
 !
-  read(25,*) time_stamp,(in_flow(n),n=1,no_seg)
-  read(26,*) time_stamp,(out_flow(n),n=1,no_seg)
+  read(26,*) time_stamp,(in_flow(n),n=1,no_seg)
+  read(27,*) time_stamp,(out_flow(n),n=1,no_seg)
   do n=1,no_seg
     ! Convert the unit from cubic meter per sec to cubic feet per sec
     in_flow(n) = in_flow(n) * 35.315;
@@ -211,7 +215,9 @@ do nc=1,no_cycles
     nf=seg_no(n)
     nn=seg_net(nf)
     !write(*,*) n,nf,nn
-    write(30,*) n,press,(forcing(nf,nn),nf=1,5)                  &
+    write(30,*) n,press,(forcing(nf,nn),nf=1,6)                  &
+               ,in_flow(nn),out_flow(nn)
+    write(*,*) n,press,(forcing(nf,nn),nf=1,6)                  &
                ,in_flow(nn),out_flow(nn)
   end do
 end do
