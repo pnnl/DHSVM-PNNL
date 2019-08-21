@@ -40,7 +40,7 @@
 void InitNewMonth(TIMESTRUCT *Time, OPTIONSTRUCT *Options, MAPSIZE *Map,
   TOPOPIX **TopoMap, float **PrismMap, unsigned char ***ShadowMap, 
   INPUTFILES *InFiles, int NVegs, VEGTABLE *VType, int NStats,
-  METLOCATION *Stat, char *Path)
+  METLOCATION *Stat, char *Path, VEGPIX ***VegMap)
 {
   const char *Routine = "InitNewMonth";
   char FileName[MAXSTRING + 1];
@@ -113,6 +113,18 @@ void InitNewMonth(TIMESTRUCT *Time, OPTIONSTRUCT *Options, MAPSIZE *Map,
   }
 
   printf("changing LAI, albedo and diffuse transmission parameters\n");
+
+  for (y = 0; y < Map->NY; y++) {
+		for (x = 0; x < Map->NX; x++) {
+      if (INBASIN(TopoMap[y][x].Mask)) {
+        for (j = 0; j < VType[(*VegMap)[y][x].Veg - 1].NVegLayers; j++) {
+          (*VegMap)[y][x].LAI[j] = (*VegMap)[y][x].LAIMonthly[j][Time->Current.Month - 1];
+          /*Due to LAI and FC change, have to change MaxInt to spatial as well*/
+          (*VegMap)[y][x].MaxInt[j] = (*VegMap)[y][x].LAI[j] * (*VegMap)[y][x].Fract[j] * LAI_WATER_MULTIPLIER;
+        }
+      }
+		}
+	}
   for (i = 0; i < NVegs; i++) {
     if (Options->ImprovRadiation) {
       if (VType[i].OverStory == TRUE) {
@@ -122,8 +134,6 @@ void InitNewMonth(TIMESTRUCT *Time, OPTIONSTRUCT *Options, MAPSIZE *Map,
         VType[i].ExtnCoeff = 0.;
     }
     for (j = 0; j < VType[i].NVegLayers; j++) {
-      VType[i].LAI[j] = VType[i].LAIMonthly[j][Time->Current.Month - 1];
-      VType[i].MaxInt[j] = VType[i].LAI[j] * VType[i].Fract[j] * LAI_WATER_MULTIPLIER;
       VType[i].Albedo[j] = VType[i].AlbedoMonthly[j][Time->Current.Month - 1];
     }
 	if (Options->CanopyRadAtt == VARIABLE) {

@@ -514,6 +514,11 @@ typedef struct {
                                    to the atmosphere (m/timestep) */
   float MeltEnergy;			    /* Energy used to melt snow and change of cold content
                                 of snow pack */
+  float *Fract;                  /* Fractional Coverage*/
+  float *LAI;                  /* LAI of the month*/
+  float **LAIMonthly;                  /* LAI of all months*/ 
+  float *MaxInt;                  /* Max Interception*/   
+  float Vf;                       /* spatial - Canopy view factor (0 - 1); Vf = VfAdjust*Fract */   
   CanopyGapStruct *Type;        /* canopy structure */
 } VEGPIX;
 

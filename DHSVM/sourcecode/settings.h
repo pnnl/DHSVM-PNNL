@@ -170,6 +170,7 @@ enum KEYS {
   /* terrain information */
   demfile = 0, maskfile,
   soiltype_file = 0, soildepth_file,
+  vegtype_file = 0, vegfc_file, veglai_file,
   /* DHSVM channel keys */
   stream_network = 0, stream_map, stream_class, riparian_veg,
   road_network, road_map, road_class,
