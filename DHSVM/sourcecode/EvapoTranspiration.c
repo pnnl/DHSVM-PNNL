@@ -173,8 +173,8 @@ void EvapoTranspiration(int Layer, int ImpvRad, int Dt, PIXMET *Met,
   for (i = 0, EAct[Layer] = 0; i < VType->NSoilLayers; i++) {
     *ETot += ESoil[Layer][i];
     EAct[Layer] += ESoil[Layer][i];
-    if (EAct[Layer] < 0)
-      printf("veg[%d]+soil[%d]: EAct=%f; ESoil=%f\n", Layer, i, EAct[Layer], ESoil[Layer][i]);
+   // if (EAct[Layer] < 0)
+   //   printf("veg[%d]+soil[%d]: EAct=%f; ESoil=%f\n", Layer, i, EAct[Layer], ESoil[Layer][i]);
   }
 
 

@@ -86,7 +86,7 @@ int main(int argc, char **argv)
     0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0l, 0.0, 0.0
   };
   CHANNEL ChannelData = {
-     NULL, NULL, NULL, NULL, NULL, NULL, 
+     NULL, NULL, NULL, NULL, NULL, NULL, NULL, 
      0, 0,
      NULL, NULL, NULL, NULL,
      NULL, NULL, NULL, NULL, NULL, NULL,
@@ -414,9 +414,8 @@ int main(int argc, char **argv)
 
     TIMING_TASK_START("Channel routing", 1);
     if (Options.HasNetwork)
-      RouteChannel(&ChannelData, &Time, &Map, TopoMap, SoilMap, &Total,
-        	   &Options, Network, SType, PrecipMap, LocalMet.Tair, LocalMet.Rh);
-    TIMING_TASK_END("Channel routing", 1);
+      RouteChannel(&ChannelData, &Time, &Map, TopoMap, SoilMap, &Total, 
+		   &Options, Network, SType, PrecipMap, LocalMet.Tair, LocalMet.Rh, SnowMap);
 
     TIMING_TASK_START("Surface routing", 1);
     if (Options.Extent == BASIN)
@@ -535,18 +534,20 @@ void cleanup(DUMPSTRUCT *Dump, CHANNEL *ChannelData, OPTIONSTRUCT *Options,
 
 	if (Options->StreamTemp) {
 	  if (ChannelData->streaminflow != NULL) 
-		fclose(ChannelData->streaminflow);
+      fclose(ChannelData->streaminflow);
 	  if (ChannelData->streamoutflow != NULL) 
-        fclose(ChannelData->streamoutflow);
+      fclose(ChannelData->streamoutflow);
+    if (ChannelData->streamMelt != NULL)
+      fclose(ChannelData->streamMelt);                                    
 	  if (ChannelData->streamNSW != NULL) 
-        fclose(ChannelData->streamNSW);
+      fclose(ChannelData->streamNSW);
 	  if (ChannelData->streamNLW!= NULL) 
-        fclose(ChannelData->streamNLW);								  
+      fclose(ChannelData->streamNLW);								  
 	  if (ChannelData->streamVP!= NULL) 
-		fclose(ChannelData->streamVP);	
+      fclose(ChannelData->streamVP);	
 	  if (ChannelData->streamWND!= NULL) 
-		fclose(ChannelData->streamWND);	
+      fclose(ChannelData->streamWND);	
 	  if (ChannelData->streamATP!= NULL) 
-		fclose(ChannelData->streamATP);
+      fclose(ChannelData->streamATP);
 	}
 }

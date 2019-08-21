@@ -713,7 +713,7 @@ InitMappedConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
   strcpy(Options->PrecipMultiplierMapPath, "");
   if (IsEmptyStr(StrEnv[multiplier].VarStr)) {
     PRECIP_MULTIPLIER = 0;
-    printf("No input of precipitation multiplier map - no correction is made", 51);
+    printf("No input of precipitation multiplier map - no correction is made\n", 51);
   }
   else {
     if (!CopyFloat(&PRECIP_MULTIPLIER, StrEnv[multiplier].VarStr, 1)) {
