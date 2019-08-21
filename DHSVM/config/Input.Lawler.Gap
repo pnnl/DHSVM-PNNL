@@ -318,6 +318,8 @@ Canopy View Adj Factor   1 = 1.2
 [OUTPUT]                                  # Information what to output when
 
 Output Directory = ../output/
+Vegetation FC Map File = none    # ../input/veg_fc.bin
+Vegetation LAI Map File = none   # ../input/veg_lai.bin
 Initial State Directory   = ../input/modelstate/
 
 ################ PIXEL DUMPS ###################################################
