@@ -86,7 +86,7 @@ void RadiationBalance(OPTIONSTRUCT *Options, int HeatFluxOption,
   float SineSolarAltitude, float VIC_Rs, float Rs,
   float Rsb, float Rsd, float Ld,
   float Tair, float Tcanopy, float Tsoil, float SoilAlbedo,
-  VEGTABLE *VType, SNOWPIX *LocalSnow, PIXRAD *LocalRad)
+  VEGTABLE *VType, SNOWPIX *LocalSnow, PIXRAD *LocalRad, VEGPIX *LocalVeg)
 {
   float F;			    /* Fraction of pixel covered by top canopy layer [0-1] */
   float h;              /* Canopy height (m) */
@@ -96,7 +96,7 @@ void RadiationBalance(OPTIONSTRUCT *Options, int HeatFluxOption,
                            direct and diffuse radiation, respectively */
   float Tsurf;			/* Surface temperature (C) */
 
-  F = VType->Fract[0];
+  F = LocalVeg->Fract[0];
   h = VType->Height[0];
 
   if (CanopyRadAttOption == VARIABLE) {
@@ -132,7 +132,7 @@ void RadiationBalance(OPTIONSTRUCT *Options, int HeatFluxOption,
         Tau = 0.;
     }
     else if (CanopyRadAttOption == FIXED) { /* conventional radiation scheme */
-      Tau = exp(-VType->Atten * VType->LAI[0]);
+      Tau = exp(-VType->Atten * LocalVeg->LAI[0]);
     }
     /* Nijssen's simplified radiation scheme as in Nijssen and Lettenmaier, 1999 */
     else if (CanopyRadAttOption == VARIABLE) {
@@ -140,7 +140,7 @@ void RadiationBalance(OPTIONSTRUCT *Options, int HeatFluxOption,
          1) LAI * ClumpingFactor = Effective LAI
          2) Formulation is typically based on the cos of the solar zenith angle,
          which is the sin of the solar altitude (SA = 90 - SZA) */
-      Taub = exp(-VType->LAI[0] / VType->ClumpingFactor *
+      Taub = exp(-LocalVeg->LAI[0] / VType->ClumpingFactor *
         (VType->LeafAngleA / SineSolarAltitude + VType->LeafAngleB));
 
       /* transmittance for diffuse radiation (cacluated in CheckOut.c as a function of
@@ -172,7 +172,7 @@ void RadiationBalance(OPTIONSTRUCT *Options, int HeatFluxOption,
     Tsurf = Tair;
 
   /* Calculate longwave radiation balance */
-  LongwaveBalance(Options, OverStory, F, VType->Vf, Ld, Tcanopy, Tsurf, LocalRad);
+  LongwaveBalance(Options, OverStory, F, LocalVeg->Vf, Ld, Tcanopy, Tsurf, LocalRad);
 
   /* For John's RBM input */
   LocalRad->PixelLongIn = Ld;

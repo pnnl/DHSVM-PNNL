@@ -79,7 +79,7 @@ int main(int argc, char **argv)
 	  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},     /* SNOWPIX */ 
     {0, 0.0, NULL, NULL, NULL, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
     0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},			                /* SOILPIX */
-    {0, 0, 0.0, 0.0, 0.0, NULL },                                               /* VEGPIX */
+    {0, 0, 0.0, 0.0, 0.0, NULL, NULL, NULL, NULL },                             /* VEGPIX */
     0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0l, 0.0, 0.0
   };
   CHANNEL ChannelData = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, 
@@ -231,7 +231,7 @@ int main(int argc, char **argv)
 		 TopoMap, Network, &HydrographInfo, Hydrograph);
 
   InitNewMonth(&Time, &Options, &Map, TopoMap, PrismMap, ShadowMap,
-	       &InFiles, Veg.NTypes, VType, NStats, Stat, Dump.InitStatePath);
+	       &InFiles, Veg.NTypes, VType, NStats, Stat, Dump.InitStatePath, &VegMap);
 
   InitNewDay(Time.Current.JDay, &SolarGeo);
 
@@ -275,7 +275,7 @@ int main(int argc, char **argv)
 
     if (IsNewMonth(&(Time.Current), Time.Dt))
       InitNewMonth(&Time, &Options, &Map, TopoMap, PrismMap, ShadowMap,
-		   &InFiles, Veg.NTypes, VType, NStats, Stat, Dump.InitStatePath);
+		   &InFiles, Veg.NTypes, VType, NStats, Stat, Dump.InitStatePath, &VegMap);
 
     if (IsNewDay(Time.DayStep)) {
       InitNewDay(Time.Current.JDay, &SolarGeo);
