@@ -190,7 +190,10 @@ void InitNewStep(INPUTFILES *InFiles, MAPSIZE *Map, TIMESTRUCT *Time,
 		 RADARPIX **RadarMap, SOLARGEOMETRY *SolarGeo, 
 		 TOPOPIX **TopoMap, SOILPIX **SoilMap, float ***MM5Input, 
                  float **PrecipLapseMap, float ***WindModel, MAPSIZE *MM5Map);
-                 
+
+void InitNewWaterYear(TIMESTRUCT *Time, OPTIONSTRUCT *Options, MAPSIZE *Map,
+                TOPOPIX **TopoMap, SNOWPIX **SnowMap);
+
 void InitParameterMaps(OPTIONSTRUCT *Options, MAPSIZE *Map, int Id,
   char *FileName, SNOWPIX ***SnowMap, int ParamType, float temp);
 
@@ -353,6 +356,9 @@ void StoreModelState(char *Path, DATE *Current, MAPSIZE *Map,
              SNOWPIX **SnowMap, MET_MAP_PIX **MetMap, VEGPIX **VegMap, 
              LAYER *Veg, SOILPIX **SoilMap, LAYER *Soil, ROADSTRUCT **Network, 
 		     UNITHYDRINFO *HydrographInfo, float *Hydrograph, CHANNEL *ChannelData);
+
+void SnowStats(DATE *Now, MAPSIZE *Map, OPTIONSTRUCT *Options, 
+        TOPOPIX **TopoMap, SNOWPIX **Snow, int Dt);
 
 float viscosity(float Tair, float Rh);
 

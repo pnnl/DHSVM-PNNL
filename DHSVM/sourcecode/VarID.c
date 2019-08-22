@@ -165,6 +165,15 @@ struct {
   411, "Snow.Albedo",
       "Snow Albedo", "%.4g",
       " ", "Albedo of snow pack surface", NC_FLOAT, FALSE, FALSE, FALSE, 0 }, {
+  412, "Snow.MaxSwe",
+      "Peak SWE", "%.4g",
+      " ", "Peak SWE of current water year", NC_FLOAT, FALSE, FALSE, FALSE, 0 }, {
+  413, "Snow.MaxSweDate",
+      "Peak SWE Date", "%d",
+      " ", "Peak SWE Date of current water year", NC_INT, FALSE, FALSE, FALSE, 0 }, {
+  414, "Snow.MeltOutDate",
+      "Melt out date", "%d",
+      " ", "Snow disappearance date of current water year", NC_INT, FALSE, FALSE, FALSE, 0 }, {
   501, "Soil.Moist",
       "Soil Moisture Content", "%.4g",
       "", "Soil moisture for layer %d", NC_FLOAT, TRUE, FALSE, TRUE, 0}, {

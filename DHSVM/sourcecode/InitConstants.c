@@ -98,6 +98,7 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
     {"OPTIONS", "CANOPY GAPPING", "", "" },
     {"OPTIONS", "SNOW SLIDING", "", "" },
     {"OPTIONS", "PRECIPITATION SEPARATION", "", "FALSE" },
+    {"OPTIONS", "SNOW STATISTICS", "", "FALSE" },
     {"AREA", "COORDINATE SYSTEM", "", ""},
     {"AREA", "EXTREME NORTH", "", ""},
     {"AREA", "EXTREME WEST", "", ""},
@@ -325,6 +326,14 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
     Options->SnowSlide = FALSE;
   else
     ReportError(StrEnv[snowslide].KeyName, 51);
+  
+  /* Determine if dumps snow stats */
+  if (strncmp(StrEnv[snowstats].VarStr, "TRUE", 4) == 0)
+    Options->SnowStats = TRUE;
+  else if (strncmp(StrEnv[snowstats].VarStr, "FALSE", 5) == 0)
+    Options->SnowStats = FALSE;
+  else
+    ReportError(StrEnv[snowstats].KeyName, 51);
   
   /* Determine if use separate input of rain and snow */
   if (strncmp(StrEnv[sepr].VarStr, "TRUE", 4) == 0)
