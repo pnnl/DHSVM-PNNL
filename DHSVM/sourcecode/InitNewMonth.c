@@ -12,6 +12,7 @@
  * FUNCTIONS:    InitNewMonth()
  *               InitNewDay()
  *               InitNewStep()
+ *               InitNewWaterYear()
  * COMMENTS:
  * $Id: InitNewMonth.c,v 3.1 2013/02/06 ning Exp $
  */
@@ -365,4 +366,33 @@ void InitNewStep(INPUTFILES *InFiles, MAPSIZE *Map, TIMESTRUCT *Time,
   if ((Options->MM5 == TRUE && Options->QPF == TRUE) || Options->MM5 == FALSE)
     GetMetData(Options, Time, NSoilLayers, NStats, SolarGeo->SunMax, Stat,
       Radar, RadarMap, RadarFileName);
+}
+
+/*****************************************************************************
+   InitNewWaterYear()
+   At the start of a new water year, re-initiate the SWE stats maps 
+ *****************************************************************************/
+void InitNewWaterYear(TIMESTRUCT *Time, OPTIONSTRUCT *Options, MAPSIZE *Map,
+                TOPOPIX **TopoMap, SNOWPIX **SnowMap)
+{
+  const char *Routine = "InitNewYear";
+  int y, x;
+  if (DEBUG)
+    printf("Initializing new water year \n");
+
+  /* If PRISM precipitation fields are being used to interpolate the
+     observed precipitation fields, then read in the new months field */
+
+  if (Options->SnowStats == TRUE) {
+    printf("resetting SWE stats map %d \n", Time->Current.Year);
+    for (y = 0; y < Map->NY; y++) {
+      for (x = 0; x < Map->NX; x++) {
+        if (INBASIN(TopoMap[y][x].Mask)) {
+          SnowMap[y][x].MaxSwe = 0.0;
+          SnowMap[y][x].MaxSweDate = 0;
+          SnowMap[y][x].MeltOutDate = 0;
+        }
+      }
+    }
+  }
 }

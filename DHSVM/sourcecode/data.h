@@ -248,6 +248,7 @@ typedef struct {
   int CanopyGapping;            /* if canopy gapping is on */
   int SnowSlide;                /* if snow sliding option is true */
   int PrecipSepr;               /* if TRUE use separate input of rain and snow */
+  int SnowStats;               /* if TRUE dumps snow statistics for each water year */
   char PrismDataPath[BUFSIZE + 1];
   char PrismDataExt[BUFSIZE + 1];
   char ShadingDataPath[BUFSIZE + 1];
@@ -373,6 +374,11 @@ typedef struct {
 
   float Freeze;			/* albedo when surface temperature below 0 C */
   float Thaw;			/* albedo when surface temperature above 0 C */
+
+  // SWE stats 
+  float MaxSwe;         /*Peak SWE of the water year*/
+  unint MaxSweDate;       /*Peak SWE date/timestep of the water year*/
+  unint MeltOutDate;    /* Last day of SWE of the water year */
 } SNOWPIX;
 
 typedef struct {

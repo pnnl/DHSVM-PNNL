@@ -27,7 +27,8 @@ SoilEvaporation.o StabilityCorrection.o StoreModelState.o	     \
 SurfaceEnergyBalance.o UnsaturatedFlow.o VarID.o WaterTableDepth.o  \
 channel.o channel_grid.o equal.o errorhandler.o globals.o tableio.o \
 channel_complt.o RiparianShading.o CanopyGapEnergyBalance.o deg2utm.o \
-CanopyGapRadiation.o Avalanche.o DistributeSatflow.o InitParameterMaps.o
+CanopyGapRadiation.o Avalanche.o DistributeSatflow.o InitParameterMaps.o\
+SnowStats.o
 
 SRCS = $(OBJS:%.o=%.c)
 

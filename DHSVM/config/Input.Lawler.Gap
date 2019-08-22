@@ -60,7 +60,8 @@ Variable Light Transmittance = TRUE       # TRUE if light transmittance changes 
 Canopy Gapping = TRUE
 Snow Sliding = FALSE                      # this function is not available - needs more tests
 Precipitation Separation = FALSE          # TRUE if snow and rain are separately provided in meterological input data (e.g. WRF)
-
+Snow Statistics = FALSE                   # TRUE if snow statistics for each water year calculated, needs to specify variable and date in map section
+ 
 ##########################################################################################################
 # MODEL AREA SECTION
 ##########################################################################################################
@@ -339,11 +340,26 @@ Number of Model States     =  0           # Number of model states to dump
 
 State Date               1 = 1/1/1970-00
 
-
 ################ MODEL MAPS ####################################################
 
 Number of Map Variables    = 0            # Number of different variables for
                                           # which you want to output maps
+										  
+Map Variable             1 = 412       #  Peak SWE
+Map Layer                1 = 1            
+Number of Maps           1 = 4          
+Map Date 1               1 = 09/30/2008-00   
+
+Map Variable             2 = 414       # Melt Out Date
+Map Layer                2 = 1            
+Number of Maps           2 = 4          
+Map Date 1               2 = 09/30/2008-00  
+  
+
+Map Variable             3 = 413        # Peak SWE Date
+Map Layer                3 = 1            
+Number of Maps           3 = 4          
+Map Date 1               3 = 09/30/2008-00  
 
 ######################################### MODEL IMAGES #################################################################
 

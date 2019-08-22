@@ -272,6 +272,9 @@ int main(int argc, char **argv)
     /* redistribute snow based on snow surface slope etc */
     if (Options.SnowSlide)
 	    Avalanche(&Map, TopoMap, &Time, &Options, SnowMap);
+    
+    if (IsNewWaterYear(&(Time.Current)))
+      InitNewWaterYear(&Time, &Options, &Map, TopoMap, SnowMap);
 
     if (IsNewMonth(&(Time.Current), Time.Dt))
       InitNewMonth(&Time, &Options, &Map, TopoMap, PrismMap, ShadowMap,
@@ -383,6 +386,9 @@ int main(int argc, char **argv)
     
     Aggregate(&Map, &Options, TopoMap, &Soil, &Veg, VegMap, EvapMap, PrecipMap,
 	      RadiationMap, SnowMap, SoilMap, &Total, VType, Network, &ChannelData, &roadarea, Time.Dt);
+    
+    if (Options.SnowStats)
+      SnowStats(&(Time.Current), &Map, &Options, TopoMap, SnowMap, Time.Dt);
     
     MassBalance(&(Time.Current), &(Time.Start), &(Dump.Balance), &Total, &Mass);
 
