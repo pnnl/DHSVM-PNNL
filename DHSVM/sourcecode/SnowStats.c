@@ -68,7 +68,7 @@ void SnowStats(DATE *Now, MAPSIZE *Map, OPTIONSTRUCT *Options,
           */
          if ((Snow[y][x].Swq < MIN_SWE) && (DNum > Snow[y][x].MaxSweDate) && (Snow[y][x].MeltOutDate == 0)){
             Snow[y][x].MeltOutDate = DNum;    
-            printf("SWE Melt out date is %d \n", Snow[y][x].MeltOutDate);
+            if (DEBUG) printf("SWE Melt out date is %d \n", Snow[y][x].MeltOutDate);
             }
       }
     }
