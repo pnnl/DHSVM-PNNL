@@ -256,6 +256,7 @@ void InitNewStep(INPUTFILES *InFiles, MAPSIZE *Map, TIMESTRUCT *Time,
   int Step;			/* Step in the MM5 Input */
   float *Array = NULL;
   int MM5Y, MM5X;
+  int rdprecip;
   const int NumberType = NC_FLOAT;
 
   /*printf("current time is %4d-%2d-%2d-%2d\n", Time->Current.Year,Time->Current.Month, Time->Current.Day, Time->Current.Hour);*/
@@ -301,9 +302,14 @@ void InitNewStep(INPUTFILES *InFiles, MAPSIZE *Map, TIMESTRUCT *Time,
         }
       }
     }
+
+    /* Terrain does not change during the simulation, so only read it
+       at step 0 */
+    if (Step == 0) {
+      UpdateMM5Field(InFiles->MM5Terrain, Step, Map, MM5Map, Array,
+                     MM5Input[MM5_terrain - 1]);
+    }
     
-    UpdateMM5Field(InFiles->MM5Terrain, Step, Map, MM5Map, Array,
-                   MM5Input[MM5_terrain - 1]);
     UpdateMM5Field(InFiles->MM5Lapse, Step, Map, MM5Map, Array,
                    MM5Input[MM5_lapse - 1]);
 
@@ -317,31 +323,44 @@ void InitNewStep(INPUTFILES *InFiles, MAPSIZE *Map, TIMESTRUCT *Time,
     }
     free(Array);
 
+    /* MM5 precip lapse rate is at the DEM resolution, so needs to be
+       read differently */
+
     if (strlen(InFiles->PrecipLapseFile) > 0) {
+
+      rdprecip = 0;
+      
 
       switch (InFiles->MM5PrecipDistFreq) {
       case (FreqSingle):
-        Step = 0;
+        if (Step == 0) rdprecip = 1;
         break;
       case (FreqMonth):
         Step = Time->Current.Month - 1;
+        rdprecip = 1;
         break;
       case (FreqContinous):
         /* Step unchanged */
+        rdprecip = 1;
         break;
       default:
         ReportError("InitNewStep", 15);
       }
 
-      if (!(Array = (float *)calloc(Map->NY * Map->NX, sizeof(float))))
-        ReportError((char *)Routine, 1);
-      Read2DMatrix(InFiles->PrecipLapseFile, Array, NumberType, Map, Step, "", 0);
-      for (y = 0; y < Map->NY; y++) {
-        for (x = 0; x < Map->NX; x++) {
-          PrecipLapseMap[y][x] = Array[y * Map->NX + x];
+      if (rdprecip) {
+
+        if (!(Array = (float *)calloc(Map->NY * Map->NX, sizeof(float))))
+          ReportError((char *)Routine, 1);
+        
+        
+        Read2DMatrix(InFiles->PrecipLapseFile, Array, NumberType, Map, Step, "", 0);
+        for (y = 0; y < Map->NY; y++) {
+          for (x = 0; x < Map->NX; x++) {
+            PrecipLapseMap[y][x] = Array[y * Map->NX + x];
+          }
         }
+        free(Array);
       }
-      free(Array);
     }
 
   }
