@@ -256,8 +256,11 @@ void InitNewStep(INPUTFILES *InFiles, MAPSIZE *Map, TIMESTRUCT *Time,
   int Step;			/* Step in the MM5 Input */
   float *Array = NULL;
   int MM5Y, MM5X;
-  int rdprecip;
+  int rdprecip, rdstep;
+  uchar first;
   const int NumberType = NC_FLOAT;
+
+  first = IsEqualTime(&(Time->Current), &(Time->Start));
 
   /*printf("current time is %4d-%2d-%2d-%2d\n", Time->Current.Year,Time->Current.Month, Time->Current.Day, Time->Current.Hour);*/
 
@@ -305,8 +308,9 @@ void InitNewStep(INPUTFILES *InFiles, MAPSIZE *Map, TIMESTRUCT *Time,
 
     /* Terrain does not change during the simulation, so only read it
        at step 0 */
-    if (Step == 0) {
-      UpdateMM5Field(InFiles->MM5Terrain, Step, Map, MM5Map, Array,
+    if (first) {
+      rdstep = 0;
+      UpdateMM5Field(InFiles->MM5Terrain, rdstep, Map, MM5Map, Array,
                      MM5Input[MM5_terrain - 1]);
     }
 
@@ -343,15 +347,19 @@ void InitNewStep(INPUTFILES *InFiles, MAPSIZE *Map, TIMESTRUCT *Time,
 
       switch (InFiles->MM5PrecipDistFreq) {
       case (FreqSingle):
-        if (Step == 0) rdprecip = 1;
+        if (first) {
+          rdprecip = 1;
+          rdstep = 0;
+        }
         break;
       case (FreqMonth):
-        Step = Time->Current.Month - 1;
+        rdstep = Time->Current.Month - 1;
         rdprecip = 1;
         break;
       case (FreqContinous):
         /* Step unchanged */
         rdprecip = 1;
+        rdstep = Step;
         break;
       default:
         ReportError("InitNewStep", 15);
@@ -363,7 +371,7 @@ void InitNewStep(INPUTFILES *InFiles, MAPSIZE *Map, TIMESTRUCT *Time,
           ReportError((char *)Routine, 1);
         
         
-        Read2DMatrix(InFiles->PrecipLapseFile, Array, NumberType, Map, Step, "", 0);
+        Read2DMatrix(InFiles->PrecipLapseFile, Array, NumberType, Map, rdstep, "", 0);
         for (y = 0; y < Map->NY; y++) {
           for (x = 0; x < Map->NX; x++) {
             PrecipLapseMap[y][x] = Array[y * Map->NX + x];
