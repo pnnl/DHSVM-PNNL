@@ -461,6 +461,9 @@ void InitMM5(LISTPTR Input, int NSoilLayers, TIMESTRUCT *Time,
     strncpy(InFiles->MM5Lapse, StrEnv[MM5_lapse].VarStr, BUFSIZE);
   } else {
     strcpy(InFiles->MM5Lapse, "");
+    if (Options->TempLapse != CONSTANT) {
+      ReportError(StrEnv[MM5_lapse].VarStr, 51);
+    }
   }
   
   if (IsEmptyStr(StrEnv[MM5_lapse].VarStr))

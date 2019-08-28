@@ -385,13 +385,20 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
   else
     ReportError(StrEnv[rhoverride].KeyName, 51);
 
+  /* Determine the type of temperature lapse rate */
+  if (strncmp(StrEnv[temp_lapse].VarStr, "CONSTANT", 8) == 0)
+    Options->TempLapse = CONSTANT;
+  else if (strncmp(StrEnv[temp_lapse].VarStr, "VARIABLE", 8) == 0)
+    Options->TempLapse = VARIABLE;
+  else
+    ReportError(StrEnv[temp_lapse].KeyName, 51);
+
 
   /* The other met options are only of importance if MM5 is FALSE */
   if (Options->MM5 == TRUE) {
     Options->PrecipType = NOT_APPLICABLE;
     Options->WindSource = NOT_APPLICABLE;
     Options->PrecipLapse = NOT_APPLICABLE;
-    Options->TempLapse = NOT_APPLICABLE;
     if (Options->QPF == TRUE)
       Options->PrecipType = STATION;
     if (Options->QPF == TRUE && Options->Prism == FALSE)
@@ -413,14 +420,6 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
       Options->WindSource = STATION;
     else
       ReportError(StrEnv[wind_source].KeyName, 51);
-
-    /* Determine the type of temperature lapse rate */
-    if (strncmp(StrEnv[temp_lapse].VarStr, "CONSTANT", 8) == 0)
-      Options->TempLapse = CONSTANT;
-    else if (strncmp(StrEnv[temp_lapse].VarStr, "VARIABLE", 8) == 0)
-      Options->TempLapse = VARIABLE;
-    else
-      ReportError(StrEnv[temp_lapse].KeyName, 51);
 
     /* Determine the type of precipitation lapse rate */
     if (strncmp(StrEnv[precip_lapse].VarStr, "CONSTANT", 8) == 0)

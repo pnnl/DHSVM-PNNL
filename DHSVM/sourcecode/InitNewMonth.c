@@ -322,7 +322,7 @@ void InitNewStep(INPUTFILES *InFiles, MAPSIZE *Map, TIMESTRUCT *Time,
     } else if (first) {
       for (y = 0; y < Map->NY; y++) {
         for (x = 0; x < Map->NX; x++) {
-          MM5Input[MM5_lapse - 1][y][x] = Options->TempLapse;
+          MM5Input[MM5_lapse - 1][y][x] = TEMPLAPSE;
         }
       }
     }
