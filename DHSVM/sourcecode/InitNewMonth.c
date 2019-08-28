@@ -309,9 +309,19 @@ void InitNewStep(INPUTFILES *InFiles, MAPSIZE *Map, TIMESTRUCT *Time,
       UpdateMM5Field(InFiles->MM5Terrain, Step, Map, MM5Map, Array,
                      MM5Input[MM5_terrain - 1]);
     }
-    
-    UpdateMM5Field(InFiles->MM5Lapse, Step, Map, MM5Map, Array,
-                   MM5Input[MM5_lapse - 1]);
+
+    /* If a MM5 temperature lapse map is not specified, fill the map
+       with the domain-wide temperature lapse rate */
+    if (strlen(InFiles->MM5Lapse) > 0) {
+      UpdateMM5Field(InFiles->MM5Lapse, Step, Map, MM5Map, Array,
+                     MM5Input[MM5_lapse - 1]);
+    } else if (first) {
+      for (y = 0; y < Map->NY; y++) {
+        for (x = 0; x < Map->NX; x++) {
+          MM5Input[MM5_lapse - 1][y][x] = Options->TempLapse;
+        }
+      }
+    }
 
     if (Options->HeatFlux == TRUE) {
 
