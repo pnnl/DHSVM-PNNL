@@ -273,6 +273,27 @@ uchar IsNewMonth(DATE *Now, int Interval)
 }
 
 /*****************************************************************************
+  IsNewWaterYear()
+*****************************************************************************/
+uchar IsNewWaterYear(DATE *Now)
+{
+  int Year;
+  int Month;
+  int Day;
+  int Hour;
+  int Min;
+  double Sec;
+  double Julian;
+
+  Julian = Now->Julian;
+  JulianDayToGregorian(Julian, &Year, &Month, &Day, &Hour, &Min, &Sec);
+  if (Month == 10 && Day == 1 && Hour == 0)
+    return TRUE;
+  else
+    return FALSE;
+}
+
+/*****************************************************************************
   IsNewDay()
 *****************************************************************************/
 uchar IsNewDay(int DayStep)

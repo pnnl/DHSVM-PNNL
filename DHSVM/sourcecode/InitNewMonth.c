@@ -12,6 +12,7 @@
  * FUNCTIONS:    InitNewMonth()
  *               InitNewDay()
  *               InitNewStep()
+ *               InitNewWaterYear()
  * COMMENTS:
  * $Id: InitNewMonth.c,v 3.1 2013/02/06 ning Exp $
  */
@@ -43,7 +44,7 @@
 void InitNewMonth(TIMESTRUCT *Time, OPTIONSTRUCT *Options, MAPSIZE *Map,
   TOPOPIX **TopoMap, float **PrismMap, unsigned char ***ShadowMap, 
   INPUTFILES *InFiles, int NVegs, VEGTABLE *VType, int NStats,
-  METLOCATION *Stat, char *Path)
+  METLOCATION *Stat, char *Path, VEGPIX ***VegMap)
 {
   const char *Routine = "InitNewMonth";
   char FileName[MAXSTRING + 1];
@@ -145,6 +146,19 @@ void InitNewMonth(TIMESTRUCT *Time, OPTIONSTRUCT *Options, MAPSIZE *Map,
   }
 
   if (domsg) printf("changing LAI, albedo and diffuse transmission parameters\n");
+
+  for (y = 0; y < Map->NY; y++) {
+    for (x = 0; x < Map->NX; x++) {
+      if (INBASIN(TopoMap[y][x].Mask)) {
+        for (j = 0; j < VType[(*VegMap)[y][x].Veg - 1].NVegLayers; j++) {
+          (*VegMap)[y][x].LAI[j] = (*VegMap)[y][x].LAIMonthly[j][Time->Current.Month - 1];
+          /*Due to LAI and FC change, have to change MaxInt to spatial as well*/
+          (*VegMap)[y][x].MaxInt[j] = (*VegMap)[y][x].LAI[j] * (*VegMap)[y][x].Fract[j] * LAI_WATER_MULTIPLIER;
+        }
+      }
+    }
+  }
+
   for (i = 0; i < NVegs; i++) {
     if (Options->ImprovRadiation) {
       if (VType[i].OverStory == TRUE) {
@@ -154,8 +168,6 @@ void InitNewMonth(TIMESTRUCT *Time, OPTIONSTRUCT *Options, MAPSIZE *Map,
         VType[i].ExtnCoeff = 0.;
     }
     for (j = 0; j < VType[i].NVegLayers; j++) {
-      VType[i].LAI[j] = VType[i].LAIMonthly[j][Time->Current.Month - 1];
-      VType[i].MaxInt[j] = VType[i].LAI[j] * VType[i].Fract[j] * LAI_WATER_MULTIPLIER;
       VType[i].Albedo[j] = VType[i].AlbedoMonthly[j][Time->Current.Month - 1];
     }
 	if (Options->CanopyRadAtt == VARIABLE) {
@@ -285,7 +297,11 @@ void InitNewStep(INPUTFILES *InFiles, MAPSIZE *Map, TIMESTRUCT *Time,
   int Step;			/* Step in the MM5 Input */
   float *Array = NULL;
   int MM5Y, MM5X;
+  int rdprecip, rdstep;
+  uchar first;
   const int NumberType = NC_FLOAT;
+
+  first = IsEqualTime(&(Time->Current), &(Time->Start));
 
   /*printf("current time is %4d-%2d-%2d-%2d\n", Time->Current.Year,Time->Current.Month, Time->Current.Day, Time->Current.Hour);*/
 
@@ -330,11 +346,55 @@ void InitNewStep(INPUTFILES *InFiles, MAPSIZE *Map, TIMESTRUCT *Time,
         }
       }
     }
-    
-    UpdateMM5Field(InFiles->MM5Terrain, &(InFiles->MM5TerrainMap), "MM5.Terrain",
-                   Step, Map, MM5Map, Array, MM5Input[MM5_terrain - 1]);
-    UpdateMM5Field(InFiles->MM5Lapse, &(InFiles->MM5LapseMap), "MM5.TemperatureLapse",
-                   Step, Map, MM5Map, Array, MM5Input[MM5_lapse - 1]);
+
+    /* Terrain does not change during the simulation, so only read it
+       at step 0 */
+    if (first) {
+      rdstep = 0;
+      UpdateMM5Field(InFiles->MM5Terrain, rdstep, Map, MM5Map, Array,
+                     MM5Input[MM5_terrain - 1]);
+    }
+
+    if (strlen(InFiles->MM5Lapse) > 0) {
+      rdprecip = 0;
+      rdstep = 0;
+
+      switch (InFiles->MM5LapseFreq) {
+      case (FreqSingle):
+        if (first) {
+          rdprecip = 1;
+          rdstep = 0;
+        }
+        break;
+      case (FreqMonth):
+        rdstep = Time->Current.Month - 1;
+        rdprecip = 1;
+        break;
+      case (FreqContinous):
+        /* Step unchanged */
+        rdprecip = 1;
+        rdstep = Step;
+        break;
+      default:
+        ReportError("InitNewStep", 15);
+      }
+      if (rdprecip) {
+        UpdateMM5Field(InFiles->MM5Lapse, rdstep, Map, MM5Map, Array,
+                       MM5Input[MM5_lapse - 1]);
+      }
+      
+    } else if (first) {
+      
+      /* If a MM5 temperature lapse map is not specified, fill the map
+         with the domain-wide temperature lapse rate (which must be
+         specified). Only need to do this once. */
+      
+      for (y = 0; y < Map->NY; y++) {
+        for (x = 0; x < Map->NX; x++) {
+          MM5Input[MM5_lapse - 1][y][x] = TEMPLAPSE;
+        }
+      }
+    }
 
     if (Options->HeatFlux == TRUE) {
       /* this is not supported at the moment; setting
@@ -348,29 +408,43 @@ void InitNewStep(INPUTFILES *InFiles, MAPSIZE *Map, TIMESTRUCT *Time,
     }
     free(Array);
 
+    /* MM5 precip lapse rate is at the DEM resolution, so needs to be
+       read differently */
+
     if (strlen(InFiles->PrecipLapseFile) > 0) {
+
+      rdprecip = 0;
+      
 
       switch (InFiles->MM5PrecipDistFreq) {
       case (FreqSingle):
-        Step = 0;
+        if (first) {
+          rdprecip = 1;
+          rdstep = 0;
+        }
         break;
       case (FreqMonth):
-        Step = Time->Current.Month - 1;
+        rdstep = Time->Current.Month - 1;
+        rdprecip = 1;
         break;
       case (FreqContinous):
         /* Step unchanged */
+        rdprecip = 1;
+        rdstep = Step;
         break;
       default:
         ReportError("InitNewStep", 15);
       }
 
-      if (InFiles->MM5PrecipDistMap == NULL) {
-        InFiles->MM5PrecipDistMap =
-          InputMap2DAlloc(InFiles->PrecipLapseFile, "MM5.PrecipDist", NumberType, Map, 0);
-        InputMap2DOpen(InFiles->MM5PrecipDistMap);
-        InFiles->MM5LastPrecipDistStep = -1;
-      }
-      if (Step != InFiles->MM5LastPrecipDistStep) {
+      if (rdprecip) {
+        if (InFiles->MM5PrecipDistMap == NULL) {
+          InFiles->MM5PrecipDistMap =
+            InputMap2DAlloc(InFiles->PrecipLapseFile, "MM5.PrecipDist", NumberType, Map, 0);
+          InputMap2DOpen(InFiles->MM5PrecipDistMap);
+          InFiles->MM5LastPrecipDistStep = -1;
+        }
+        if (Step != InFiles->MM5LastPrecipDistStep) {
+          
         if (!(Array = (float *)calloc(Map->NY * Map->NX, sizeof(float))))
           ReportError((char *)Routine, 1);
 
@@ -408,4 +482,33 @@ void InitNewStep(INPUTFILES *InFiles, MAPSIZE *Map, TIMESTRUCT *Time,
   if ((Options->MM5 == TRUE && Options->QPF == TRUE) || Options->MM5 == FALSE)
     GetMetData(Options, Time, NSoilLayers, NStats, SolarGeo->SunMax, Stat,
       Radar, RadarMap, RadarFileName);
+}
+
+/*****************************************************************************
+   InitNewWaterYear()
+   At the start of a new water year, re-initiate the SWE stats maps 
+ *****************************************************************************/
+void InitNewWaterYear(TIMESTRUCT *Time, OPTIONSTRUCT *Options, MAPSIZE *Map,
+                TOPOPIX **TopoMap, SNOWPIX **SnowMap)
+{
+  const char *Routine = "InitNewYear";
+  int y, x;
+  if (DEBUG)
+    printf("Initializing new water year \n");
+
+  /* If PRISM precipitation fields are being used to interpolate the
+     observed precipitation fields, then read in the new months field */
+
+  if (Options->SnowStats == TRUE) {
+    printf("resetting SWE stats map %d \n", Time->Current.Year);
+    for (y = 0; y < Map->NY; y++) {
+      for (x = 0; x < Map->NX; x++) {
+        if (INBASIN(TopoMap[y][x].Mask)) {
+          SnowMap[y][x].MaxSwe = 0.0;
+          SnowMap[y][x].MaxSweDate = 0;
+          SnowMap[y][x].MeltOutDate = 0;
+        }
+      }
+    }
+  }
 }

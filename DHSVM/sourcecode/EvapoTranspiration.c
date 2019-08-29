@@ -31,7 +31,7 @@ void EvapoTranspiration(int Layer, int ImpvRad, int Dt, PIXMET *Met,
   float NetRad, float Rp, VEGTABLE *VType, SOILTABLE *SType,
   float MoistureFlux, float *Moist, float *SoilTemp, float *Int,
   float *EPot, float *EInt, float **ESoil, float *EAct, float *ETot,
-  float *Adjust, float Ra)
+  float *Adjust, float Ra, VEGPIX *LocalVeg)
 {
   float *Rc;			/* canopy resistance associated with
                         conditions in each soil layer (s/m) */
@@ -47,14 +47,14 @@ void EvapoTranspiration(int Layer, int ImpvRad, int Dt, PIXMET *Met,
   int i;			    /* counter */
 
 
-  F = VType->Fract[Layer];
+  F = LocalVeg->Fract[Layer];
   NetRad /= F;
 
   /* Convert the water amounts related to partial canopy cover to a pixel depth
   as if the entire pixel is covered. These depths will be converted back later on. */
   *Int /= F;
   MoistureFlux /= F;
-  VType->MaxInt[Layer] /= F;
+  LocalVeg->MaxInt[Layer] /= F;
 
   /* allocate memory for the canopy resistance array */
   if (!(Rc = (float *)calloc(VType->NSoilLayers, sizeof(float))))
@@ -81,7 +81,7 @@ void EvapoTranspiration(int Layer, int ImpvRad, int Dt, PIXMET *Met,
 
   /* WetArea = pow(*Int/VType->MaxInt[Layer], (double) 2.0/3.0); */
 
-  WetArea = cbrt(*Int / VType->MaxInt[Layer]);
+  WetArea = cbrt(*Int / LocalVeg->MaxInt[Layer]);
   WetArea = MIN(WetArea, 1);
   WetArea = WetArea * WetArea;
   DryArea = 1 - WetArea;
@@ -133,12 +133,12 @@ void EvapoTranspiration(int Layer, int ImpvRad, int Dt, PIXMET *Met,
   EInt[Layer] *= F;
   *ETot += EInt[Layer];
   *Int *= F;
-  VType->MaxInt[Layer] *= F;
+  LocalVeg->MaxInt[Layer] *= F;
 
   /* calculate the canopy conductances associated with the conditions in
   each of the soil layers */
   for (i = 0; i < VType->NSoilLayers; i++)
-    Rc[i] = CanopyResistance(VType->LAI[Layer], VType->RsMin[Layer],
+    Rc[i] = CanopyResistance(LocalVeg->LAI[Layer], VType->RsMin[Layer],
       VType->RsMax[Layer], VType->Rpc[Layer],
       VType->VpdThres[Layer], VType->MoistThres[Layer],
       SType->WP[i], SoilTemp[i], Moist[i], Met->Vpd, Rp);

@@ -43,7 +43,7 @@ void CanopyGapInterception(OPTIONSTRUCT *Options, CanopyGapStruct **Gap,
 
     /* calculate rain interception by the gap*/
     CanopyGapInterceptionStorage((*Gap)[Opening].NVegLActual, VType->MaxInt,
-      VType->Fract, (*Gap)[Opening].IntRain, &((*Gap)[Opening].RainFall));
+      LocalVeg->Fract, (*Gap)[Opening].IntRain, &((*Gap)[Opening].RainFall));
   }
 }
 
@@ -140,7 +140,7 @@ void CanopyGapSnowMelt(OPTIONSTRUCT *Options, int y, int x, int Dt,
     can recalculate the longwave balance */
     Tsurf = Gap[Opening]->TSurf;
     CanopyGapLongRadiation(&((*Gap)[Opening]), VType->Height[0],
-      LocalVeg->Gapping, LocalMet->Lin, LocalVeg->Tcanopy, VType->Fract[0]);
+      LocalVeg->Gapping, LocalMet->Lin, LocalVeg->Tcanopy, LocalVeg->Fract[0]);
     (*Gap)[Opening].LongIn[0] = 0.;
   }
   else {
@@ -223,7 +223,7 @@ void CalcCanopyGapET(CanopyGapStruct **Gap, int NSoil, VEGTABLE *VType,
       Rp, VType, SType, (*Gap)[Opening].MoistureFlux, (*Gap)[Opening].Moist,
       LocalSoil->Temp, &((*Gap)[Opening].IntRain[0]),
       (*Gap)[Opening].EPot, (*Gap)[Opening].EInt, (*Gap)[Opening].ESoil,
-      (*Gap)[Opening].EAct, &((*Gap)[Opening].ETot), LocalNetwork->Adjust, LowerRa);
+      (*Gap)[Opening].EAct, &((*Gap)[Opening].ETot), LocalNetwork->Adjust, LowerRa, LocalVeg);
 
     (*Gap)[Opening].MoistureFlux += (*Gap)[Opening].EAct[1] + (*Gap)[Opening].EInt[1];
 
@@ -266,7 +266,7 @@ Purpose      : .
 *****************************************************************************/
 void CalcGapSurroudingIntercept(OPTIONSTRUCT *Options, int HeatFluxOption,
   int y, int x, int Dt, int NVegLActual, CanopyGapStruct **Gap, VEGTABLE *VType,
-  PIXRAD *LocalRad, PIXMET *LocalMet, float UpperRa, float UpperWind)
+  PIXRAD *LocalRad, PIXMET *LocalMet, float UpperRa, float UpperWind, VEGPIX *LocalVeg)
 {
   float Tsurf;
   float SnowLongIn;			/* Incoming longwave radiation at snow surface (W/m2) */
@@ -275,8 +275,8 @@ void CalcGapSurroudingIntercept(OPTIONSTRUCT *Options, int HeatFluxOption,
   float SnowWind;		    /* Wind 2 m above snow */
 
   if (((*Gap)[Forest].IntSnow[0] || (*Gap)[Forest].SnowFall > 0.0)) {
-    SnowInterception(Options, y, x, Dt, VType->Fract[0], VType->Vf,
-      VType->LAI[0], VType->MaxInt[0], VType->MaxSnowInt, VType->MDRatio,
+    SnowInterception(Options, y, x, Dt, LocalVeg->Fract[0], LocalVeg->Vf,
+      LocalVeg->LAI[0], LocalVeg->MaxInt[0], VType->MaxSnowInt, VType->MDRatio,
       VType->SnowIntEff, UpperRa, LocalMet->AirDens,
       LocalMet->Eact, LocalMet->Lv, LocalRad, LocalMet->Press,
       LocalMet->Tair, LocalMet->Vpd, UpperWind,
@@ -297,15 +297,15 @@ void CalcGapSurroudingIntercept(OPTIONSTRUCT *Options, int HeatFluxOption,
       Tsurf = LocalMet->Tair;
 
     /* update longwave radiation */
-    GapSurroundingLongRadiation(&((*Gap)[Forest]), LocalMet->Lin, VType->Vf,
-      VType->Fract[0], (*Gap)[Forest].Tcanopy, Tsurf);
+    GapSurroundingLongRadiation(&((*Gap)[Forest]), LocalMet->Lin, LocalVeg->Vf,
+      LocalVeg->Fract[0], (*Gap)[Forest].Tcanopy, Tsurf);
   }
   /* if no snow */
   else if (VType->NVegLayers > 0) {
     (*Gap)[Forest].Tcanopy = LocalMet->Tair;
     (*Gap)[Forest].CanopyVaporMassFlux = 0.0;
     (*Gap)[Forest].TempIntStorage = 0.0;
-    InterceptionStorage(NVegLActual, VType->MaxInt, VType->Fract, (*Gap)[Forest].IntRain,
+    InterceptionStorage(NVegLActual, LocalVeg->MaxInt, LocalVeg->Fract, (*Gap)[Forest].IntRain,
       &((*Gap)[Forest].RainFall));
   }
 
@@ -333,8 +333,8 @@ void CalcGapSurroudingIntercept(OPTIONSTRUCT *Options, int HeatFluxOption,
     /* Because we now have a new estimate of the snow surface temperature we
     can recalculate the longwave balance */
     Tsurf = (*Gap)[Forest].TSurf;
-    GapSurroundingLongRadiation(&((*Gap)[Forest]), LocalMet->Lin, VType->Vf,
-      VType->Fract[0], (*Gap)[Forest].Tcanopy, Tsurf);
+    GapSurroundingLongRadiation(&((*Gap)[Forest]), LocalMet->Lin, LocalVeg->Vf,
+      LocalVeg->Fract[0], (*Gap)[Forest].Tcanopy, Tsurf);
   }
   else {
     (*Gap)[Forest].SnowPackOutflow = 0.0;
@@ -356,7 +356,8 @@ Purpose      :
 *****************************************************************************/
 void CalcGapSurroudingET(int Dt, CanopyGapStruct **Gap, 
   SOILTABLE *SType, VEGTABLE *VType, PIXRAD *LocalRad, PIXMET *LocalMet, 
-  SOILPIX *LocalSoil, ROADSTRUCT *LocalNetwork, float UpperRa, float LowerRa)
+  SOILPIX *LocalSoil, ROADSTRUCT *LocalNetwork, float UpperRa, float LowerRa,
+  VEGPIX *LocalVeg)
 
 {
   float Rp;
@@ -365,25 +366,25 @@ void CalcGapSurroudingET(int Dt, CanopyGapStruct **Gap,
   if (VType->OverStory == TRUE) {
     Rp = VISFRACT * (*Gap)[Forest].NetShort[0];
     NetRadiation = (*Gap)[Forest].NetShort[0] +
-      (*Gap)[Forest].LongIn[0] - 2 * VType->Vf * (*Gap)[Forest].LongOut[0];
+      (*Gap)[Forest].LongIn[0] - 2 * LocalVeg->Vf * (*Gap)[Forest].LongOut[0];
     (*Gap)[Forest].NetRadiation[0] = NetRadiation;
 
     EvapoTranspiration(0, 1, Dt, LocalMet, NetRadiation,
       Rp, VType, SType, (*Gap)[Forest].MoistureFlux, (*Gap)[Forest].Moist, LocalSoil->Temp,
       &((*Gap)[Forest].IntRain[0]), (*Gap)[Forest].EPot, (*Gap)[Forest].EInt, (*Gap)[Forest].ESoil,
-      (*Gap)[Forest].EAct, &((*Gap)[Forest].ETot), LocalNetwork->Adjust, UpperRa);
+      (*Gap)[Forest].EAct, &((*Gap)[Forest].ETot), LocalNetwork->Adjust, UpperRa, LocalVeg);
     (*Gap)[Forest].MoistureFlux += (*Gap)[Forest].EAct[0] + (*Gap)[Forest].EInt[0];
 
     if ((*Gap)[Forest].HasSnow != TRUE && VType->UnderStory == TRUE) {
       Rp = VISFRACT * LocalRad->NetShort[1];
       NetRadiation =
         LocalRad->NetShort[1] +
-        LocalRad->LongIn[1] - VType->Fract[1] * LocalRad->LongOut[1];
+        LocalRad->LongIn[1] - LocalVeg->Fract[1] * LocalRad->LongOut[1];
       LocalRad->NetRadiation[1] = NetRadiation;
       EvapoTranspiration(1, 1, Dt, LocalMet, NetRadiation,
         Rp, VType, SType, (*Gap)[Forest].MoistureFlux, (*Gap)[Forest].Moist, LocalSoil->Temp,
         &((*Gap)[Forest].IntRain[1]), (*Gap)[Forest].EPot, (*Gap)[Forest].EInt, (*Gap)[Forest].ESoil,
-        (*Gap)[Forest].EAct, &((*Gap)[Forest].ETot), LocalNetwork->Adjust, LowerRa);
+        (*Gap)[Forest].EAct, &((*Gap)[Forest].ETot), LocalNetwork->Adjust, LowerRa, LocalVeg);
       (*Gap)[Forest].MoistureFlux += (*Gap)[Forest].EAct[1] + (*Gap)[Forest].EInt[1];
     }
     else if (VType->UnderStory == TRUE) {
@@ -425,7 +426,7 @@ on area weight.
 void AggregateCanopyGap(CanopyGapStruct **Gap, VEGPIX *LocalVeg,
   SOILPIX *LocalSoil, SNOWPIX *LocalSnow, EVAPPIX *LocalEvap,
   PRECIPPIX *LocalPrecip, PIXRAD *LocalRad, double weight, int NSoil,
-  int NVeg)
+  int NVeg, int NVegLayers)
 {
   int i, j;
 
@@ -480,10 +481,10 @@ void AggregateCanopyGap(CanopyGapStruct **Gap, VEGPIX *LocalVeg,
   }
   /* ET */
   for (i = 0; i <= NVeg; i++) {
-    LocalEvap->EPot[i] =
-      weight*(*Gap)[Opening].EPot[i] + (1-weight)*(*Gap)[Forest].EPot[i];
-    LocalEvap->EAct[i] =
-      weight*(*Gap)[Opening].EAct[i] + (1-weight)*(*Gap)[Forest].EAct[i];
+      LocalEvap->EPot[i] =
+        weight*(*Gap)[Opening].EPot[i] + (1-weight)*(*Gap)[Forest].EPot[i];
+      LocalEvap->EAct[i] =
+        weight*(*Gap)[Opening].EAct[i] + (1-weight)*(*Gap)[Forest].EAct[i];
   }
   for (i = 0; i < NVeg; i++) {
     LocalEvap->EInt[i] =
@@ -491,8 +492,8 @@ void AggregateCanopyGap(CanopyGapStruct **Gap, VEGPIX *LocalVeg,
   }
   for (i = 0; i < NVeg; i++) {
     for (j = 0; j < NSoil; j++) {
-      LocalEvap->ESoil[i][j] =
-        weight*(*Gap)[Opening].ESoil[i][j] + (1-weight)*(*Gap)[Forest].ESoil[i][j];
+        LocalEvap->ESoil[i][j] =
+          weight*(*Gap)[Opening].ESoil[i][j] + (1-weight)*(*Gap)[Forest].ESoil[i][j];
     }
   }
   LocalEvap->ETot =

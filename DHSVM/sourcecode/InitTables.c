@@ -610,7 +610,7 @@ int InitVegTable(VEGTABLE **VType, LISTPTR Input, OPTIONSTRUCT *Options, LAYER *
             (*VType)[i].MonthlyExtnCoeff[k] = 0;
           (*VType)[i].VfAdjust = 1.0;
           /* assuming 100% coverage if understory=TRUE & overstory=FALSE*/
-          (*VType)[i].Vf = (*VType)[i].Fract[1] * (*VType)[i].VfAdjust;
+          (*VType)[i].Vf = (*VType)[i].Fract[0] * (*VType)[i].VfAdjust;
         }
       }
     }

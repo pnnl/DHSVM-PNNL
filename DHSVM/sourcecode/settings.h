@@ -107,6 +107,8 @@ typedef unsigned int unint;
 #define MAP_OUTPUT 1
 #define IMAGE_OUTPUT 2
 
+#define MIN_SWE 0.005 
+
 // Canopy type used in canopy gapping option
 enum CanopyType {
   Opening,
@@ -121,6 +123,7 @@ enum KEYS {
   temp_lapse, precip_lapse, cressman_radius, cressman_stations, prism_data_path, 
   prism_data_ext, shading_data_path, shading_data_ext, skyview_data_path, 
   stream_temp, canopy_shading, improv_radiation, gapping, snowslide, sepr, 
+  snowstats, 
   /* Area */
   coordinate_system, extreme_north, extreme_west, center_latitude,
   center_longitude, time_zone_meridian, number_of_rows,
@@ -154,7 +157,7 @@ enum KEYS {
   precip_lapse_rate_file = 0,
   /* MM5 information */
   MM5_start = 0, MM5_temperature, MM5_humidity, MM5_wind, MM5_shortwave,
-  MM5_longwave, MM5_precip, MM5_terrain, MM5_lapse,
+  MM5_longwave, MM5_precip, MM5_terrain, MM5_lapse, MM5_lapse_freq,
   MM5_rows, MM5_cols, MM5_ext_north, MM5_ext_west, MM5_dy, MM5_precip_dist, MM5_precip_freq,
   /* grid information */
   grid_ext_north=0, grid_ext_south, grid_ext_east, grid_ext_west, tot_grid, decim,
@@ -173,6 +176,7 @@ enum KEYS {
   /* terrain information */
   demfile = 0, maskfile, dumptopo, decompose,
   soiltype_file = 0, soildepth_file,
+  vegtype_file = 0, vegfc_file, veglai_file,
   /* DHSVM channel keys */
   stream_network = 0, stream_map, stream_class, riparian_veg,
   road_network, road_map, road_class,

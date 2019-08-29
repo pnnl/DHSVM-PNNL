@@ -68,15 +68,21 @@ struct {
       "Travel time", "%d",
       "hours", "Travel time", NC_SHORT, FALSE, FALSE, FALSE, 0}, {
   007, "Veg.CanopyGap",
-       "Canopy Gap", "%d", 
-       "", "Canopy Gap", NC_BYTE, FALSE, FALSE, FALSE, 0 },{
-  010, "Basin.Slope",
+       "Canopy Gap", "%.2f", 
+       "", "Canopy Gap", NC_FLOAT, FALSE, FALSE, FALSE, 0 },{
+  010, "Veg.Fract",
+       "Overstory Fractional Coverage", "%.2f", 
+       "", "Overstory Fractional Coverage", NC_FLOAT, TRUE, FALSE, FALSE, 0 },{
+  011, "Veg.LAI",
+       "Overstory Leaf Area Index", "%.2f", 
+       "", "Overstory Leaf Area Index", NC_FLOAT, TRUE, FALSE, FALSE, 0 },{ 
+  020, "Basin.Slope",
        "Slope", "%.4f",
        "none", "Land surface slope", NC_FLOAT, FALSE, FALSE, FALSE, 0}, {
-  011, "Basin.Aspect",
+  021, "Basin.Aspect",
        "Aspect", "%.3f",
        "degrees", "Aspect", NC_FLOAT, FALSE, FALSE, FALSE, 0}, {
-  012, "Basin.FlowDir",
+  022, "Basin.FlowDir",
        "FlowDir", "%.0f",
        "none", "FlowDir", NC_FLOAT, FALSE, FALSE, FALSE, 0}, {
   100, "Met.PrecipMultiplier",
@@ -171,6 +177,15 @@ struct {
   411, "Snow.Albedo",
       "Snow Albedo", "%.4g",
       " ", "Albedo of snow pack surface", NC_FLOAT, FALSE, FALSE, FALSE, 0 }, {
+  412, "Snow.MaxSwe",
+      "Peak SWE", "%.4g",
+      " ", "Peak SWE of current water year", NC_FLOAT, FALSE, FALSE, FALSE, 0 }, {
+  413, "Snow.MaxSweDate",
+      "Peak SWE Date", "%d",
+      " ", "Peak SWE Date of current water year", NC_INT, FALSE, FALSE, FALSE, 0 }, {
+  414, "Snow.MeltOutDate",
+      "Melt out date", "%d",
+      " ", "Snow disappearance date of current water year", NC_INT, FALSE, FALSE, FALSE, 0 }, {
   501, "Soil.Moist",
       "Soil Moisture Content", "%.4g",
       "", "Soil moisture for layer %d", NC_FLOAT, TRUE, FALSE, TRUE, 0}, {

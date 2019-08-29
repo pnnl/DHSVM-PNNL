@@ -489,7 +489,7 @@ void InitModelState(DATE *Start, int StepsPerDay, MAPSIZE *Map, OPTIONSTRUCT *Op
 			VegMap[y][x].Type[Opening].GapView =
 			  CalcGapView(0.5 * VegMap[y][x].Gapping,
 				VType[VegMap[y][x].Veg - 1].Height[0],
-				VType[VegMap[y][x].Veg - 1].Vf);
+				VegMap[y][x].Vf);
 		  }
 		}
 	  }
