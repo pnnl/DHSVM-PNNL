@@ -314,12 +314,40 @@ void InitNewStep(INPUTFILES *InFiles, MAPSIZE *Map, TIMESTRUCT *Time,
                      MM5Input[MM5_terrain - 1]);
     }
 
-    /* If a MM5 temperature lapse map is not specified, fill the map
-       with the domain-wide temperature lapse rate */
     if (strlen(InFiles->MM5Lapse) > 0) {
-      UpdateMM5Field(InFiles->MM5Lapse, Step, Map, MM5Map, Array,
-                     MM5Input[MM5_lapse - 1]);
+      rdprecip = 0;
+      rdstep = 0;
+
+      switch (InFiles->MM5LapseFreq) {
+      case (FreqSingle):
+        if (first) {
+          rdprecip = 1;
+          rdstep = 0;
+        }
+        break;
+      case (FreqMonth):
+        rdstep = Time->Current.Month - 1;
+        rdprecip = 1;
+        break;
+      case (FreqContinous):
+        /* Step unchanged */
+        rdprecip = 1;
+        rdstep = Step;
+        break;
+      default:
+        ReportError("InitNewStep", 15);
+      }
+      if (rdprecip) {
+        UpdateMM5Field(InFiles->MM5Lapse, rdstep, Map, MM5Map, Array,
+                       MM5Input[MM5_lapse - 1]);
+      }
+      
     } else if (first) {
+      
+      /* If a MM5 temperature lapse map is not specified, fill the map
+         with the domain-wide temperature lapse rate (which must be
+         specified). Only need to do this once. */
+      
       for (y = 0; y < Map->NY; y++) {
         for (x = 0; x < Map->NX; x++) {
           MM5Input[MM5_lapse - 1][y][x] = TEMPLAPSE;
