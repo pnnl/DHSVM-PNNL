@@ -511,11 +511,6 @@ void InitMM5(LISTPTR Input, int NSoilLayers, TIMESTRUCT *Time,
     }
   }
 
-  if (IsEmptyStr(StrEnv[MM5_lapse].VarStr))
-    ReportError(StrEnv[MM5_lapse].KeyName, 51);
-  strcpy(InFiles->MM5Lapse, StrEnv[MM5_lapse].VarStr);
-  InFiles->MM5LapseMap = NULL;
-
   if (IsEmptyStr(StrEnv[MM5_humidity].VarStr))
     ReportError(StrEnv[MM5_humidity].KeyName, 51);
   strcpy(InFiles->MM5Humidity, StrEnv[MM5_humidity].VarStr);

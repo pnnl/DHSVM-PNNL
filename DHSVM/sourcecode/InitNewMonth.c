@@ -348,11 +348,11 @@ void InitNewStep(INPUTFILES *InFiles, MAPSIZE *Map, TIMESTRUCT *Time,
     }
 
     /* Terrain does not change during the simulation, so only read it
-       at step 0 */
+       at start time */
     if (first) {
       rdstep = 0;
-      UpdateMM5Field(InFiles->MM5Terrain, rdstep, Map, MM5Map, Array,
-                     MM5Input[MM5_terrain - 1]);
+      UpdateMM5Field(InFiles->MM5Terrain, &(InFiles->MM5TerrainMap), "MM5.Terrain",
+                     rdstep, Map, MM5Map, Array, MM5Input[MM5_terrain - 1]);
     }
 
     if (strlen(InFiles->MM5Lapse) > 0) {
@@ -379,8 +379,8 @@ void InitNewStep(INPUTFILES *InFiles, MAPSIZE *Map, TIMESTRUCT *Time,
         ReportError("InitNewStep", 15);
       }
       if (rdprecip) {
-        UpdateMM5Field(InFiles->MM5Lapse, rdstep, Map, MM5Map, Array,
-                       MM5Input[MM5_lapse - 1]);
+        UpdateMM5Field(InFiles->MM5Lapse, &(InFiles->MM5LapseMap), "MM5.TemperatureLapse",
+                       rdstep, Map, MM5Map, Array, MM5Input[MM5_lapse - 1]);
       }
       
     } else if (first) {
@@ -414,7 +414,7 @@ void InitNewStep(INPUTFILES *InFiles, MAPSIZE *Map, TIMESTRUCT *Time,
     if (strlen(InFiles->PrecipLapseFile) > 0) {
 
       rdprecip = 0;
-      
+      rdstep = 0;
 
       switch (InFiles->MM5PrecipDistFreq) {
       case (FreqSingle):
@@ -436,19 +436,18 @@ void InitNewStep(INPUTFILES *InFiles, MAPSIZE *Map, TIMESTRUCT *Time,
         ReportError("InitNewStep", 15);
       }
 
-      if (rdprecip) {
-        if (InFiles->MM5PrecipDistMap == NULL) {
-          InFiles->MM5PrecipDistMap =
-            InputMap2DAlloc(InFiles->PrecipLapseFile, "MM5.PrecipDist", NumberType, Map, 0);
-          InputMap2DOpen(InFiles->MM5PrecipDistMap);
-          InFiles->MM5LastPrecipDistStep = -1;
-        }
-        if (Step != InFiles->MM5LastPrecipDistStep) {
-          
+      if (InFiles->MM5PrecipDistMap == NULL) {
+        InFiles->MM5PrecipDistMap =
+          InputMap2DAlloc(InFiles->PrecipLapseFile, "MM5.PrecipDist", NumberType, Map, 0);
+        InputMap2DOpen(InFiles->MM5PrecipDistMap);
+        InFiles->MM5LastPrecipDistStep = -1;
+      }
+      if (rdstep != InFiles->MM5LastPrecipDistStep) {
+        
         if (!(Array = (float *)calloc(Map->NY * Map->NX, sizeof(float))))
           ReportError((char *)Routine, 1);
-
-        InputMap2DRead(InFiles->MM5PrecipDistMap, Step, Step, Array);
+        
+        InputMap2DRead(InFiles->MM5PrecipDistMap, rdstep, rdstep, Array);
         
         for (y = 0; y < Map->NY; y++) {
           for (x = 0; x < Map->NX; x++) {
@@ -456,10 +455,9 @@ void InitNewStep(INPUTFILES *InFiles, MAPSIZE *Map, TIMESTRUCT *Time,
           }
         }
         free(Array);
-        InFiles->MM5LastPrecipDistStep = Step;
+        InFiles->MM5LastPrecipDistStep = rdstep;
       }
     }
-
   }
   /*end if MM5*/
 

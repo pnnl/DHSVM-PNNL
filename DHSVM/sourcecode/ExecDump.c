@@ -1411,7 +1411,7 @@ DumpTopo(MAPSIZE *Map, MAPSIZE *GMap, TOPOPIX **TopoMap)
       }
     }
   }
-  DMap.ID = 011;
+  DMap.ID = 020;
   GetVarAttr(&DMap);
   CreateMapFile(FileName, "Slope", GMap);
   Write2DMatrix(FileName, Array, NC_FLOAT, Map, &DMap, 0);
@@ -1445,7 +1445,7 @@ DumpTopo(MAPSIZE *Map, MAPSIZE *GMap, TOPOPIX **TopoMap)
       }
     }
   }
-  DMap.ID = 011;
+  DMap.ID = 021;
   GetVarAttr(&DMap);
   CreateMapFile(FileName, "Aspect", GMap);
   Write2DMatrix(FileName, Array, NC_FLOAT, Map, &DMap, 0);
@@ -1461,7 +1461,7 @@ DumpTopo(MAPSIZE *Map, MAPSIZE *GMap, TOPOPIX **TopoMap)
       }
     }
   }
-  DMap.ID = 012;
+  DMap.ID = 022;
   GetVarAttr(&DMap);
   CreateMapFile(FileName, "Flow directions", GMap);
   Write2DMatrix(FileName, Array, NC_FLOAT, Map, &DMap, 0);
