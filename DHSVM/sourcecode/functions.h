@@ -227,7 +227,7 @@ void InitSatVaporTable(void);
 void InitSnowMap(MAPSIZE *Map, SNOWPIX ***SnowMap, TIMESTRUCT *Time);
 
 void InitSoilMap(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
-		 LAYER *Soil, TOPOPIX **TopoMap, SOILPIX ***SoilMap);
+		 LAYER *Soil, TOPOPIX **TopoMap, SOILPIX ***SoilMap, SOILTABLE * SType);
 
 int InitSoilTable(OPTIONSTRUCT *Options, SOILTABLE **SType, 
 			LISTPTR Input, LAYER *Soil, int InfiltOption);
