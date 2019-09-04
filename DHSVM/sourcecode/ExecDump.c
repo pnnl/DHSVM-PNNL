@@ -812,6 +812,69 @@ void DumpMap(MAPSIZE *Map, DATE *Current, MAPDUMP *DMap, TOPOPIX **TopoMap,
       ReportError(VarIDStr, 66);
     break;
 
+    case 412:
+    if (DMap->Resolution == MAP_OUTPUT) {
+      for (y = 0; y < Map->NY; y++)
+        for (x = 0; x < Map->NX; x++)
+          ((float *)Array)[y * Map->NX + x] = SnowMap[y][x].MaxSwe;
+      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map,
+        DMap, Index);
+    }
+    else if (DMap->Resolution == IMAGE_OUTPUT) {
+      for (y = 0; y < Map->NY; y++)
+        for (x = 0; x < Map->NX; x++)
+          ((unsigned char *)Array)[y * Map->NX + x] =
+          (unsigned char)((SnowMap[y][x].MaxSwe - Offset) /
+            Range * MAXUCHAR);
+      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map, DMap, Index);
+
+    }
+    else
+      ReportError(VarIDStr, 66);
+    break;
+  
+  case 413:
+    if (DMap->Resolution == MAP_OUTPUT) {
+      for (y = 0; y < Map->NY; y++)
+        for (x = 0; x < Map->NX; x++)
+          ((unsigned int *)Array)[y * Map->NX + x] = SnowMap[y][x].MaxSweDate;
+      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map,
+        DMap, Index);
+    }
+    else if (DMap->Resolution == IMAGE_OUTPUT) {
+      for (y = 0; y < Map->NY; y++)
+        for (x = 0; x < Map->NX; x++)
+          ((unsigned char *)Array)[y * Map->NX + x] =
+          (unsigned char)((SnowMap[y][x].MaxSweDate - Offset) /
+            Range * MAXUCHAR);
+      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map, DMap, Index);
+
+    }
+    else
+      ReportError(VarIDStr, 66);
+    break;
+
+  case 414:
+    if (DMap->Resolution == MAP_OUTPUT) {
+      for (y = 0; y < Map->NY; y++)
+        for (x = 0; x < Map->NX; x++)
+          ((unsigned int *)Array)[y * Map->NX + x] = SnowMap[y][x].MeltOutDate;
+      Write2DMatrix(DMap->FileName, Array, DMap->NumberType, Map,
+        DMap, Index);
+    }
+    else if (DMap->Resolution == IMAGE_OUTPUT) {
+      for (y = 0; y < Map->NY; y++)
+        for (x = 0; x < Map->NX; x++)
+          ((unsigned char *)Array)[y * Map->NX + x] =
+          (unsigned char)((SnowMap[y][x].MeltOutDate - Offset) /
+            Range * MAXUCHAR);
+      Write2DMatrix(DMap->FileName, Array, NC_BYTE, Map, DMap, Index);
+
+    }
+    else
+      ReportError(VarIDStr, 66);
+    break;
+
   case 501:
     if (DMap->Resolution == MAP_OUTPUT) {
       for (y = 0; y < Map->NY; y++) {
@@ -1348,7 +1411,7 @@ DumpTopo(MAPSIZE *Map, MAPSIZE *GMap, TOPOPIX **TopoMap)
       }
     }
   }
-  DMap.ID = 011;
+  DMap.ID = 020;
   GetVarAttr(&DMap);
   CreateMapFile(FileName, "Slope", GMap);
   Write2DMatrix(FileName, Array, NC_FLOAT, Map, &DMap, 0);
@@ -1382,7 +1445,7 @@ DumpTopo(MAPSIZE *Map, MAPSIZE *GMap, TOPOPIX **TopoMap)
       }
     }
   }
-  DMap.ID = 011;
+  DMap.ID = 021;
   GetVarAttr(&DMap);
   CreateMapFile(FileName, "Aspect", GMap);
   Write2DMatrix(FileName, Array, NC_FLOAT, Map, &DMap, 0);
@@ -1398,7 +1461,7 @@ DumpTopo(MAPSIZE *Map, MAPSIZE *GMap, TOPOPIX **TopoMap)
       }
     }
   }
-  DMap.ID = 012;
+  DMap.ID = 022;
   GetVarAttr(&DMap);
   CreateMapFile(FileName, "Flow directions", GMap);
   Write2DMatrix(FileName, Array, NC_FLOAT, Map, &DMap, 0);

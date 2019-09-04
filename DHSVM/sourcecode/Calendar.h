@@ -67,6 +67,7 @@ uchar IsEqualTime(DATE *Day1, DATE *Day2);
 uchar IsLeapYear(int Year);
 uchar IsNewDay(int DayStep);
 uchar IsNewMonth(DATE *Now, int Interval);
+uchar IsNewWaterYear(DATE *Now);
 DATE NextDate(DATE *Current, int Interval);
 int NumberOfSteps(DATE *Start, DATE *End, int Interval);
 void PrintDate(DATE *Day, FILE *OutFile);

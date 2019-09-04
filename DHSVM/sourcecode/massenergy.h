@@ -33,7 +33,7 @@ void EvapoTranspiration(int Layer, int impvRad, int Dt, PIXMET *Met,
               float NetRad, float Rp, VEGTABLE *VType, SOILTABLE *SType,
               float MoistureFlux, float *Moist, float *Temp, float *Int,
               float *EPot, float *EInt, float **ESoil, float *EAct,
-              float *ETot, float *Adjust, float Ra);
+              float *ETot, float *Adjust, float Ra, VEGPIX *LocalVeg);
 
 void InitLocalRad(int HeatFluxOption, float Rs, float Ld, float Tair, 
                float Tcanopy, float Tsoil, VEGTABLE *VType, 
@@ -55,7 +55,7 @@ void RadiationBalance(OPTIONSTRUCT *Options, int HeatFluxOption,
               float SineSolarAltitude, float VICRs,
               float Rs, float Rsd, float Rsb, float Ld, float Tair, float Tcanopy,
               float Tsoil, float SoilAlbedo, VEGTABLE *VType, SNOWPIX *LocalSnow,
-              PIXRAD *LocalRad);
+              PIXRAD *LocalRad, VEGPIX *LocalVeg);
 
 void SensibleHeatFlux(int y, int x, int Dt, float Ra, float ZRef,
 		      float Displacement, float Z0, PIXMET *LocalMet,

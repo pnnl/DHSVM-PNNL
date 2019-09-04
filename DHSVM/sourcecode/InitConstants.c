@@ -98,6 +98,7 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
     {"OPTIONS", "CANOPY GAPPING", "", "" },
     {"OPTIONS", "SNOW SLIDING", "", "" },
     {"OPTIONS", "PRECIPITATION SEPARATION", "", "FALSE" },
+    {"OPTIONS", "SNOW STATISTICS", "", "FALSE" },
     {"AREA", "COORDINATE SYSTEM", "", ""},
     {"AREA", "EXTREME NORTH", "", ""},
     {"AREA", "EXTREME WEST", "", ""},
@@ -328,6 +329,14 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
   else
     ReportError(StrEnv[snowslide].KeyName, 51);
   
+  /* Determine if dumps snow stats */
+  if (strncmp(StrEnv[snowstats].VarStr, "TRUE", 4) == 0)
+    Options->SnowStats = TRUE;
+  else if (strncmp(StrEnv[snowstats].VarStr, "FALSE", 5) == 0)
+    Options->SnowStats = FALSE;
+  else
+    ReportError(StrEnv[snowstats].KeyName, 51);
+  
   /* Determine if use separate input of rain and snow */
   if (strncmp(StrEnv[sepr].VarStr, "TRUE", 4) == 0)
     Options->PrecipSepr = TRUE;
@@ -378,6 +387,14 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
   else
     ReportError(StrEnv[rhoverride].KeyName, 51);
 
+  /* Determine the type of temperature lapse rate */
+  if (strncmp(StrEnv[temp_lapse].VarStr, "CONSTANT", 8) == 0)
+    Options->TempLapse = CONSTANT;
+  else if (strncmp(StrEnv[temp_lapse].VarStr, "VARIABLE", 8) == 0)
+    Options->TempLapse = VARIABLE;
+  else
+    ReportError(StrEnv[temp_lapse].KeyName, 51);
+
   /* make sure this is intialized */
   strcpy(Options->PrecipMultiplierMapPath, "");
 
@@ -386,7 +403,6 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
     Options->PrecipType = NOT_APPLICABLE;
     Options->WindSource = NOT_APPLICABLE;
     Options->PrecipLapse = NOT_APPLICABLE;
-    Options->TempLapse = NOT_APPLICABLE;
     if (Options->QPF == TRUE)
       Options->PrecipType = STATION;
     if (Options->QPF == TRUE && Options->Prism == FALSE)
@@ -408,14 +424,6 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
       Options->WindSource = STATION;
     else
       ReportError(StrEnv[wind_source].KeyName, 51);
-
-    /* Determine the type of temperature lapse rate */
-    if (strncmp(StrEnv[temp_lapse].VarStr, "CONSTANT", 8) == 0)
-      Options->TempLapse = CONSTANT;
-    else if (strncmp(StrEnv[temp_lapse].VarStr, "VARIABLE", 8) == 0)
-      Options->TempLapse = VARIABLE;
-    else
-      ReportError(StrEnv[temp_lapse].KeyName, 51);
 
     /* Determine the type of precipitation lapse rate */
     if (strncmp(StrEnv[precip_lapse].VarStr, "CONSTANT", 8) == 0)
