@@ -72,7 +72,7 @@ struct {
        "", "Canopy Gap", NC_FLOAT, FALSE, FALSE, FALSE, 0 },{
   010, "Veg.Fract",
        "Overstory Fractional Coverage", "%.2f", 
-       "", "Overstory Fractional Coverage", NC_FLOAT, TRUE, FALSE, FALSE, 0 },{
+       "", "Overstory Fractional Coverage", NC_FLOAT, FALSE, FALSE, FALSE, 0 },{
   011, "Veg.LAI",
        "Overstory Leaf Area Index", "%.2f", 
        "", "Overstory Leaf Area Index", NC_FLOAT, TRUE, FALSE, FALSE, 0 },{ 
