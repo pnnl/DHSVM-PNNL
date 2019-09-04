@@ -425,7 +425,8 @@ void InitMM5(LISTPTR Input, int NSoilLayers, TIMESTRUCT *Time,
     {"METEOROLOGY", "MM5 LONGWAVE FILE", "", ""},
     {"METEOROLOGY", "MM5 PRECIPITATION FILE", "", ""},
     {"METEOROLOGY", "MM5 TERRAIN FILE", "", ""},
-    {"METEOROLOGY", "MM5 TEMP LAPSE FILE", "", ""},
+    {"METEOROLOGY", "MM5 TEMP LAPSE FILE", "", "none"},
+    {"METEOROLOGY", "MM5 TEMP LAPSE FREQUENCY", "", "single"},
     {"METEOROLOGY", "MM5 ROWS", "", ""},
     {"METEOROLOGY", "MM5 COLS", "", ""},
     {"METEOROLOGY", "MM5 EXTREME NORTH", "", ""},
@@ -456,9 +457,31 @@ void InitMM5(LISTPTR Input, int NSoilLayers, TIMESTRUCT *Time,
     ReportError(StrEnv[MM5_terrain].KeyName, 51);
   strcpy(InFiles->MM5Terrain, StrEnv[MM5_terrain].VarStr);
 
+  if (strncmp(StrEnv[MM5_lapse].VarStr, "none", 4)) {
+
+    strncpy(InFiles->MM5Lapse, StrEnv[MM5_lapse].VarStr, BUFSIZE);
+
+    CopyLCase(VarStr, StrEnv[MM5_lapse_freq].VarStr, BUFSIZE + 1);
+
+    if (!strncmp(VarStr, "single", 6)) {
+      InFiles->MM5LapseFreq = FreqSingle;
+    } else if (!strncmp(VarStr, "month", 6)) {
+      InFiles->MM5LapseFreq = FreqMonth;
+    } else if (!strncmp(VarStr, "continuous", 10)) {
+      InFiles->MM5LapseFreq = FreqContinous;
+    } else {
+      ReportError(StrEnv[MM5_lapse_freq].VarStr, 70);
+    }
+    
+  } else {
+    strcpy(InFiles->MM5Lapse, "");
+    if (Options->TempLapse != CONSTANT) {
+      ReportError(StrEnv[MM5_lapse].VarStr, 51);
+    }
+  }
+
   if (IsEmptyStr(StrEnv[MM5_lapse].VarStr))
     ReportError(StrEnv[MM5_lapse].KeyName, 51);
-  strcpy(InFiles->MM5Lapse, StrEnv[MM5_lapse].VarStr);
 
   if (IsEmptyStr(StrEnv[MM5_humidity].VarStr))
     ReportError(StrEnv[MM5_humidity].KeyName, 51);
@@ -573,7 +596,11 @@ void InitMM5(LISTPTR Input, int NSoilLayers, TIMESTRUCT *Time,
   printf("wind Map is %s\n", InFiles->MM5Wind);
   printf("shortwave Map is %s\n", InFiles->MM5ShortWave);
   printf("humidity Map is %s\n", InFiles->MM5Humidity);
-  printf("lapse Map is %s\n", InFiles->MM5Lapse);
+  if (strlen(InFiles->MM5Lapse) > 0) {
+    printf("lapse Map is %s\n", InFiles->MM5Lapse);
+  } else {
+    printf("temperature lapse rate is constant\n");
+  }
   printf("terrain Map is %s\n", InFiles->MM5Terrain);
   printf("MM5 offset x is %d \n", MM5Map->OffsetX);
   printf("MM5 offset y is %d \n", MM5Map->OffsetY);
