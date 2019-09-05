@@ -106,7 +106,7 @@ void MassEnergyBalance(OPTIONSTRUCT *Options, int y, int x,
   /*Add a function to modify soil moisture by add/extract SatFlow from previous time step*/
   DistributeSatflow(Dt, DX, DY, LocalSoil->SatFlow, SType->NLayers,
     LocalSoil->Depth, LocalNetwork->Area, VType->RootDepth,
-    SType->Ks, SType->PoreDist, SType->Porosity, SType->FCap,
+    SType->Ks, SType->PoreDist, LocalSoil->Porosity, SType->FCap,
     LocalSoil->Perc, LocalNetwork->PercArea,
     LocalNetwork->Adjust, LocalNetwork->CutBankZone,
     LocalNetwork->BankHeight, &(LocalSoil->TableDepth),
@@ -414,7 +414,7 @@ void MassEnergyBalance(OPTIONSTRUCT *Options, int y, int x,
     LocalEvap->EvapSoil =
       SoilEvaporation(Dt, LocalMet->Tair, LocalMet->Slope, LocalMet->Gamma,
       LocalMet->Lv, LocalMet->AirDens, LocalMet->Vpd,
-      NetRadiation, LowerRa, LocalVeg->MoistureFlux, SType->Porosity[0],
+      NetRadiation, LowerRa, LocalVeg->MoistureFlux, LocalSoil->Porosity[0],
       SType->FCap[0], SType->Ks[0], SType->Press[0], SType->PoreDist[0],
       VType->RootDepth[0], &(LocalSoil->Moist[0]), LocalNetwork->Adjust[0]);
   }
@@ -504,8 +504,8 @@ void MassEnergyBalance(OPTIONSTRUCT *Options, int y, int x,
         LocalSoil->InfiltAcc = 0.0;
       }
       /* Check that the B parameter > 0 */
-      if ((LocalSoil->InfiltAcc > 0.) && (SType->Porosity[0] > LocalSoil->MoistInit)) {
-        B = (SType->Porosity[0] - LocalSoil->MoistInit) * (SType->G_Infilt + SurfaceWater);
+      if ((LocalSoil->InfiltAcc > 0.) && (LocalSoil->Porosity[0] > LocalSoil->MoistInit)) {
+        B = (LocalSoil->Porosity[0] - LocalSoil->MoistInit) * (SType->G_Infilt + SurfaceWater);
         Infiltrability = SType->Ks[0] * exp((LocalSoil->InfiltAcc) / B) /
           (exp((LocalSoil->InfiltAcc) / B) - 1.);
       }
@@ -546,7 +546,7 @@ void MassEnergyBalance(OPTIONSTRUCT *Options, int y, int x,
   UnsaturatedFlow(Dt, DX, DY, Infiltration, RoadbedInfiltration,
     LocalSoil->SatFlow, SType->NLayers, LocalSoil->Depth,
     LocalNetwork->Area, VType->RootDepth, SType->Ks,
-    SType->PoreDist, SType->Porosity, SType->FCap, LocalSoil->Perc,
+    SType->PoreDist, LocalSoil->Porosity, SType->FCap, LocalSoil->Perc,
     LocalNetwork->PercArea, LocalNetwork->Adjust, LocalNetwork->CutBankZone,
     LocalNetwork->BankHeight, &(LocalSoil->TableDepth), &(LocalSoil->IExcess),
     LocalSoil->Moist, InfiltOption);

@@ -63,7 +63,7 @@ void SensibleHeatFlux(int y, int x, int Dt, float Ra, float ZRef,
 
   KhEff = CalcEffectiveKh(NSoilLayers, DZ_TOP, FluxDepth, SoilDepth,
 			  SoilType->KhDry, SoilType->KhSol, LocalSoil->Moist,
-			  SoilType->Porosity, LocalSoil->Temp);
+			  LocalSoil->Porosity, LocalSoil->Temp);
 
   /*   KhEff = 1; */
 
@@ -75,7 +75,7 @@ void SensibleHeatFlux(int y, int x, int Dt, float Ra, float ZRef,
               SurfaceEnergyBalance, Dt, Ra, ZRef,
 	      Displacement, Z0, LocalMet->Wind, NetShort, LongIn,
 	      LocalMet->AirDens, LocalMet->Lv, ETot, KhEff,
-	      SoilType->Ch[0], SoilType->Porosity[0], LocalSoil->Moist[0],
+	      SoilType->Ch[0], LocalSoil->Porosity[0], LocalSoil->Moist[0],
 	      FluxDepth, LocalMet->Tair, TSoilUpper,
 	      TSoilLower, OldTSurf, MeltEnergy);
 
@@ -102,7 +102,7 @@ void SensibleHeatFlux(int y, int x, int Dt, float Ra, float ZRef,
 
   LocalSoil->Qg = KhEff * (TSoilLower - TMean) / FluxDepth;
 
-  HeatCapacity = (1 - SoilType->Porosity[0]) * SoilType->Ch[0];
+  HeatCapacity = (1 - LocalSoil->Porosity[0]) * SoilType->Ch[0];
 
   if (TSoilUpper >= 0.0)
     HeatCapacity += LocalSoil->Moist[0] * CH_WATER;
