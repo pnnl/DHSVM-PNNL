@@ -345,7 +345,6 @@ void InitSoilMap(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * Map,
 
   /* Read the spatial porosity map */
 
-  GetVarName(013, 0, VarName);
   GetVarNumberType(013, &NumberType);
 
   /*Allocate memory for porosity*/  
@@ -365,6 +364,7 @@ void InitSoilMap(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * Map,
     printf("Spatial soil porosity map provided, reading map\n");   
     /*Read data monthy by month*/
     for (NSet = 0; NSet < Soil->MaxLayers; NSet++) {
+      GetVarName(013, NSet, VarName);
       if (!(Porosity = (float *)calloc(Map->NX * Map->NY,
         SizeOfNumberType(NumberType))))
         ReportError((char *)Routine, 1);

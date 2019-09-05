@@ -75,11 +75,11 @@ struct {
        "", "Overstory Fractional Coverage", NC_FLOAT, FALSE, FALSE, FALSE, 0 },{
   011, "Veg.LAI",
        "Overstory Leaf Area Index", "%.2f", 
-       "", "Overstory Leaf Area Index", NC_FLOAT, TRUE, FALSE, FALSE, 0 },{ 
+       "", "Overstory Leaf Area Index", NC_FLOAT, FALSE, FALSE, FALSE, 0 },{
   012, "Soil.KsLat",
        "Soil Lateral Conductivity", "%.2f", 
-       "", "Soil Lateral Conductivity", NC_FLOAT, TRUE, FALSE, FALSE, 0 },{
-  013, "Soil.Porostity",
+       "", "Soil Lateral Conductivity", NC_FLOAT, FALSE, FALSE, FALSE, 0 },{
+  013, "Soil.Porosity",
        "Soil Porosity", "%.2f", 
        "", "Soil Porosity", NC_FLOAT, TRUE, FALSE, FALSE, 0 },{  
   020, "Basin.Slope",
