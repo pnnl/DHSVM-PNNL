@@ -452,8 +452,7 @@ void draw(DATE *Day, int first, int DayStep, MAPSIZE *Map, int NGraphics,
               for (j = 0; j < Map->NY; j++) {
                 if (INBASIN(TopoMap[j][i].Mask)) {
                   temp =
-                    SoilMap[j][i].Moist[0] / SType[SoilMap[j][i].Soil -
-                    1].Porosity[0] * 100.0;
+                    SoilMap[j][i].Moist[0] / SoilMap[j][i].Porosity[0] * 100.0;
                   if (temp > max)
                     max = temp;
                   if (temp < min)
@@ -472,8 +471,7 @@ void draw(DATE *Day, int first, int DayStep, MAPSIZE *Map, int NGraphics,
               for (j = 0; j < Map->NY; j++) {
                 if (INBASIN(TopoMap[j][i].Mask)) {
                   temp =
-                    SoilMap[j][i].Moist[1] / SType[SoilMap[j][i].Soil -
-                    1].Porosity[1] * 100.0;
+                    SoilMap[j][i].Moist[1] / SoilMap[j][i].Porosity[1] * 100.0;
                   if (temp > max)
                     max = temp;
                   if (temp < min)
@@ -492,7 +490,7 @@ void draw(DATE *Day, int first, int DayStep, MAPSIZE *Map, int NGraphics,
               for (j = 0; j < Map->NY; j++) {
                 if (INBASIN(TopoMap[j][i].Mask)) {
                   temp = SoilMap[j][i].Moist[2] /
-                    SType[SoilMap[j][i].Soil - 1].Porosity[2] * 100.0;
+                    SoilMap[j][i].Porosity[2] * 100.0;
                   if (temp > max)
                     max = temp;
                   if (temp < min)
@@ -602,8 +600,7 @@ void draw(DATE *Day, int first, int DayStep, MAPSIZE *Map, int NGraphics,
                 if (INBASIN(TopoMap[j][i].Mask)) {
 
                   temp =
-                    SoilMap[j][i].Moist[3] / SType[SoilMap[j][i].Soil -
-                    1].Porosity[2] * 100.0;
+                    SoilMap[j][i].Moist[3] / SoilMap[j][i].Porosity[2] * 100.0;
                   if (temp > max)
                     max = temp;
                   if (temp < min)
