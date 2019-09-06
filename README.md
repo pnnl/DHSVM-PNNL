@@ -35,7 +35,9 @@ __Enhancement & Fixes__
 # Parallel Version
 
 This branch of DHSVM has been modified to run in parallel using
-[Global Arrays](http://hpc.pnl.gov/globalarrays/). 
+[Global Arrays](http://hpc.pnl.gov/globalarrays/).  Performance
+improvements are documented by
+[Perkins et al., 2019](https://doi.org/10.1002/essoar.10500884.2).
 
 ## Hydrologic Processes / Options not Implemented in Parallel 
 
@@ -115,7 +117,9 @@ For parallel NetCDF, use
     Format = PNETCDF
     
 For the latter, the NetCDF library must be built with the parallel
-HDF5 library. 
+HDF5 library.  The benefits of parallel NetCDF have not been really
+demonstrated yet, but it would probably only be helpful on systems
+with parallel file systems (e.g. Lustre).  
 
 ### CMake
 
@@ -163,7 +167,7 @@ maintained.
 
 If DHSVM is configured with this option,
 
-   -D DHSVM_SNOW_ONLY:BOOL=ON
+    -D DHSVM_SNOW_ONLY:BOOL=ON
    
 an additional executable is built, `DHSVM_SNOW`, which operates in
 snow-only mode. 
@@ -176,9 +180,9 @@ during simulations.  This requires the
 be available on the system.  To enable timing, use the following
 configuration options:
 
-   -D DHSVM_USE_GPTL:BOOL=ON 
-   -D GPTL_DIR:PATH="/path/to/gptl"
-   -D DHSVM_TIMING_LEVEL:STRING="1" 
+    -D DHSVM_USE_GPTL:BOOL=ON 
+    -D GPTL_DIR:PATH="/path/to/gptl"
+    -D DHSVM_TIMING_LEVEL:STRING="1" 
    
 If configured as such, an additional executable, `DHSVM_timed` is
 built. `DHSVM_SNOW_timed` will also be built if snow-only mode is
