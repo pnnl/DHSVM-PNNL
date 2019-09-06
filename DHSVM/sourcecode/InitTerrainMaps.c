@@ -237,6 +237,7 @@ void InitSoilMap(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * Map,
   float *Porosity = NULL;		/* Soil Porosity */
   int flag;
   int NSet;
+  int sidx;
   
   STRINIENTRY StrEnv[] = {
     {"SOILS", "SOIL MAP FILE", "", ""},
@@ -320,6 +321,8 @@ void InitSoilMap(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * Map,
           (*SoilMap)[y][x].KsLat = SType[(*SoilMap)[y][x].Soil - 1].KsLat;
       }
     }
+    free(KsLat);
+    KsLat = NULL;
   } else {
     if (ParallelRank() == 0) {
       printf("Spatial lateral conductivity map not provided, generating map\n");
@@ -338,7 +341,8 @@ void InitSoilMap(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * Map,
   /*Allocate memory for porosity*/  
   for (y = 0; y < Map->NY; y++) {
     for (x = 0; x < Map->NX; x++) {
-      if (!((*SoilMap)[y][x].Porosity = (float *)calloc(Soil->NLayers[(*SoilMap)[y][x].Soil - 1], sizeof(float *))))
+      if (!((*SoilMap)[y][x].Porosity =
+            (float *)calloc(Soil->MaxLayers, sizeof(float *))))
         ReportError((char *)Routine, 1);
     }
   }
@@ -359,34 +363,43 @@ void InitSoilMap(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * Map,
                                        SizeOfNumberType(NumberType))))
         ReportError((char *)Routine, 1);
       flag = Read2DMatrix(StrEnv[porosity_file].VarStr, Porosity, NumberType, Map, NSet, VarName, 0);
-      
+
       for (y = 0, i = 0; y < Map->NY; y++) {
         for (x = 0; x < Map->NX; x++, i++) {
-          if (NSet < Soil->NLayers[(*SoilMap)[y][x].Soil - 1]) {
-            if (KsLat[i] > 0.0)
-              (*SoilMap)[y][x].Porosity[NSet] = Porosity[i];
-            else
-              (*SoilMap)[y][x].Porosity[NSet] = SType[(*SoilMap)[y][x].Soil - 1].Porosity[NSet];
-            /*Make sure porosity larger than FCap and WP*/
-            if (((*SoilMap)[y][x].Porosity[NSet] < SType[(*SoilMap)[y][x].Soil - 1].FCap[NSet])
-                || ((*SoilMap)[y][x].Porosity[NSet] < SType[(*SoilMap)[y][x].Soil - 1].WP[NSet]))
-              ReportError(SType[(*SoilMap)[y][x].Soil - 1].Desc, 11);
+          if (INBASIN((TopoMap)[y][x].Mask)) {
+            sidx = (*SoilMap)[y][x].Soil - 1;
+            if (NSet < Soil->NLayers[sidx]) {
+              if (Porosity[i] > 0.0)
+                (*SoilMap)[y][x].Porosity[NSet] = Porosity[i];
+              else
+                (*SoilMap)[y][x].Porosity[NSet] = SType[sidx].Porosity[NSet];
+              /*Make sure porosity larger than FCap and WP*/
+              if (((*SoilMap)[y][x].Porosity[NSet] < SType[sidx].FCap[NSet])
+                  || ((*SoilMap)[y][x].Porosity[NSet] < SType[sidx].WP[NSet]))
+                ReportError(SType[sidx].Desc, 11);
+            }
           }            
         }
       }
     }
+    free(Porosity);
+    Porosity = NULL;
   } else {
     if (ParallelRank() == 0) {
       printf("Spatial soil porosity map not provided, generating map\n");
     }
     for (y = 0, i = 0; y < Map->NY; y++) {
       for (x = 0; x < Map->NX; x++, i++) {
-        for (NSet = 0; NSet < Soil->NLayers[(*SoilMap)[y][x].Soil - 1]; NSet++) {
-            (*SoilMap)[y][x].Porosity[NSet] = SType[(*SoilMap)[y][x].Soil - 1].Porosity[NSet];
-          /*Make sure porosity larger than FCap and WP*/
-          if (((*SoilMap)[y][x].Porosity[NSet] < SType[(*SoilMap)[y][x].Soil - 1].FCap[NSet])
-            || ((*SoilMap)[y][x].Porosity[NSet] <SType[(*SoilMap)[y][x].Soil - 1].WP[NSet]))
-              ReportError(SType[(*SoilMap)[y][x].Soil - 1].Desc, 11);
+        if (INBASIN((TopoMap)[y][x].Mask)) {
+          /* FIXME: this assumes a valid soil type index */
+          sidx = (*SoilMap)[y][x].Soil - 1;
+          for (NSet = 0; NSet < Soil->NLayers[sidx]; NSet++) {
+            (*SoilMap)[y][x].Porosity[NSet] = SType[sidx].Porosity[NSet];
+            /*Make sure porosity larger than FCap and WP*/
+            if (((*SoilMap)[y][x].Porosity[NSet] < SType[sidx].FCap[NSet])
+                || ((*SoilMap)[y][x].Porosity[NSet] <SType[sidx].WP[NSet]))
+              ReportError(SType[sidx].Desc, 11);
+          }
         } 
       }
     }
