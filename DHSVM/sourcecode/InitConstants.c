@@ -612,7 +612,9 @@ InitMappedConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
   else {
 	MapId = 801;
 	if (!CopyFloat(&MIN_RAIN_TEMP, StrEnv[rain_threshold].VarStr, 1)) {
-	  printf("%s: spatial parameters are used\n", StrEnv[rain_threshold].KeyName);
+          if (ParallelRank() == 0) {
+            printf("%s: spatial parameters are used\n", StrEnv[rain_threshold].KeyName);
+          }
 	  ParamType = MAP;
 	  strcpy(FileName, StrEnv[rain_threshold].VarStr);
 	}
@@ -629,13 +631,15 @@ InitMappedConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
   else {
 	MapId = 800;
     if (!CopyFloat(&MAX_SNOW_TEMP, StrEnv[snow_threshold].VarStr, 1)) {
-      printf("%s: spatial parameters are used\n", StrEnv[snow_threshold].KeyName);
-	  ParamType = MAP;
+      if (ParallelRank() == 0) {
+        printf("%s: spatial parameters are used\n", StrEnv[snow_threshold].KeyName);
+      }
+      ParamType = MAP;
       strcpy(FileName, StrEnv[snow_threshold].VarStr);      
     }
-	else 
-	  ParamType = CONSTANT;
-	InitParameterMaps(Options, Map, MapId, FileName, SnowMap, ParamType, MAX_SNOW_TEMP);
+    else 
+      ParamType = CONSTANT;
+    InitParameterMaps(Options, Map, MapId, FileName, SnowMap, ParamType, MAX_SNOW_TEMP);
   }
 
   if (IsEmptyStr(StrEnv[alb_acc_lambda].VarStr)) {
@@ -644,13 +648,15 @@ InitMappedConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
   else {
 	MapId = 803;
     if (!CopyFloat(&ALB_ACC_LAMBDA, StrEnv[alb_acc_lambda].VarStr, 1)) {
-      printf("%s: spatial parameters are used\n", StrEnv[alb_acc_lambda].KeyName);
-	  ParamType = MAP;
+      if (ParallelRank() == 0) {
+        printf("%s: spatial parameters are used\n", StrEnv[alb_acc_lambda].KeyName);
+      }
+      ParamType = MAP;
       strcpy(FileName, StrEnv[alb_acc_lambda].VarStr);
     }
-	else
-	  ParamType = CONSTANT;
-	InitParameterMaps(Options, Map, MapId, FileName, SnowMap, ParamType, ALB_ACC_LAMBDA);
+    else
+      ParamType = CONSTANT;
+    InitParameterMaps(Options, Map, MapId, FileName, SnowMap, ParamType, ALB_ACC_LAMBDA);
   }
 
 
@@ -660,7 +666,9 @@ InitMappedConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
   else {
 	MapId = 804;
 	if (!CopyFloat(&ALB_MELT_LAMBDA, StrEnv[alb_melt_lambda].VarStr, 1)) {
-	  printf("%s: spatial parameters are used\n", StrEnv[alb_melt_lambda].KeyName);
+          if (ParallelRank() == 0) {
+            printf("%s: spatial parameters are used\n", StrEnv[alb_melt_lambda].KeyName);
+          }
 	  ParamType = MAP;
 	  strcpy(FileName, StrEnv[alb_melt_lambda].VarStr);
 	}
@@ -676,13 +684,15 @@ InitMappedConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
   else {
 	MapId = 805;
     if (!CopyFloat(&ALB_ACC_MIN, StrEnv[alb_acc_min].VarStr, 1)) {
-      printf("%s: spatial parameters are used\n", StrEnv[alb_acc_min].KeyName);
-	  ParamType = MAP;
+      if (ParallelRank() == 0) {
+        printf("%s: spatial parameters are used\n", StrEnv[alb_acc_min].KeyName);
+      }
+      ParamType = MAP;
       strcpy(FileName, StrEnv[alb_acc_min].VarStr);
-	}
-	else
-	  ParamType = CONSTANT;
-	InitParameterMaps(Options, Map, MapId, FileName, SnowMap, ParamType, ALB_ACC_MIN);
+    }
+    else
+      ParamType = CONSTANT;
+    InitParameterMaps(Options, Map, MapId, FileName, SnowMap, ParamType, ALB_ACC_MIN);
   }
 
   if (IsEmptyStr(StrEnv[alb_melt_min].VarStr)) {
@@ -691,8 +701,10 @@ InitMappedConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
   else {
 	MapId = 806;
 	if (!CopyFloat(&ALB_MELT_MIN, StrEnv[alb_melt_min].VarStr, 1)) {
-	  printf("%s: spatial parameters are used\n", StrEnv[alb_melt_min].KeyName);
-	  ParamType = MAP;
+          if (ParallelRank() == 0) {          
+            printf("%s: spatial parameters are used\n", StrEnv[alb_melt_min].KeyName);
+          }
+          ParamType = MAP;
 	  strcpy(FileName, StrEnv[alb_melt_min].VarStr);
 	}
 	else
@@ -707,14 +719,15 @@ InitMappedConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
   else {
 	MapId = 802;
     if (!CopyFloat(&ALB_MAX, StrEnv[fresh_alb].VarStr, 1)) {
-      printf("%s: spatial parameters are used\n", StrEnv[fresh_alb].KeyName);
-
-	  ParamType = MAP;
+      if (ParallelRank() == 0) {
+        printf("%s: spatial parameters are used\n", StrEnv[fresh_alb].KeyName);
+      }
+      ParamType = MAP;
       strcpy(FileName, StrEnv[fresh_alb].VarStr);
-	}
-	else
-	  ParamType = CONSTANT;
-	InitParameterMaps(Options, Map, MapId, FileName, SnowMap, ParamType, ALB_MAX);
+    }
+    else
+      ParamType = CONSTANT;
+    InitParameterMaps(Options, Map, MapId, FileName, SnowMap, ParamType, ALB_MAX);
   }
 
   /* precipitation multiplier that bias correct the precipitation */
@@ -725,7 +738,9 @@ InitMappedConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
   }
   else {
     if (!CopyFloat(&PRECIP_MULTIPLIER, StrEnv[multiplier].VarStr, 1)) {
-      printf("%s: spatial parameters are used\n", StrEnv[multiplier].KeyName);
+      if (ParallelRank() == 0) {
+        printf("%s: spatial parameters are used\n", StrEnv[multiplier].KeyName);
+      }
       PRECIP_MULTIPLIER = NA;
       strcpy(Options->PrecipMultiplierMapPath, StrEnv[multiplier].VarStr);
     }
