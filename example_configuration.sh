@@ -10,22 +10,23 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2019-10-08 08:43:02 d3g096
+# Last Change: 2019-10-08 08:45:26 d3g096
 
 set -xue
 
 # -------------------------------------------------------------
 # handle command line options
 # -------------------------------------------------------------
-usage="$0 [-d|-r] [name]"
+usage="$0 [-d|-r] [-8] [-t] [name]"
 
-opts=`getopt drt8 $*`
+opts=`getopt dr8 $*`
 if [ $? != 0 ]; then
     echo $usage >&2
     exit 2
 fi
 set -- $opts
 
+d8="OFF"
 build="RelWithDebInfo"
 for o in $*; do
     case $o in
@@ -35,6 +36,10 @@ for o in $*; do
             ;;
         -r)
             build="Release"
+            shift
+            ;;
+        -8)
+            d8="ON"
             shift
             ;;
         --)
