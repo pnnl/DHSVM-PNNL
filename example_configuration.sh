@@ -10,22 +10,23 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2018-12-12 11:01:36 d3g096
+# Last Change: 2019-09-25 14:49:01 d3g096
 
 set -xue
 
 # -------------------------------------------------------------
 # handle command line options
 # -------------------------------------------------------------
-usage="$0 [-d|-r|-t] [name]"
+usage="$0 [-d|-r] [-8] [-t] [name]"
 
-set -- `getopt drt $*`
+set -- `getopt drt8 $*`
 if [ $? != 0 ]; then
     echo $usage >&2
     exit 2
 fi
 
 timing="OFF"
+d8="OFF"
 build="RelWithDebInfo"
 for o in $*; do
     case $o in
@@ -41,6 +42,10 @@ for o in $*; do
 	    timing="ON"
 	    shift
 	    ;;
+        -8)
+            d8="ON"
+            shift
+            ;;
         --)
             shift
             break
@@ -70,6 +75,7 @@ common_flags="\
         -D DHSVM_USE_RBM:BOOL=OFF \
         -D DHSVM_DUMP_TOPO:BOOL=ON \
 	-D DHSVM_USE_GPTL:BOOL=$timing \
+        -D DHSVM_D8:BOOL=$d8 \
         -D CMAKE_VERBOSE_MAKEFILE:BOOL=TRUE \
 "
 
