@@ -10,7 +10,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2018-03-30 08:34:41 d3g096
+# Last Change: 2019-10-08 08:43:02 d3g096
 
 set -xue
 
@@ -19,11 +19,12 @@ set -xue
 # -------------------------------------------------------------
 usage="$0 [-d|-r] [name]"
 
-set -- `getopt d $*`
+opts=`getopt drt8 $*`
 if [ $? != 0 ]; then
     echo $usage >&2
     exit 2
 fi
+set -- $opts
 
 build="RelWithDebInfo"
 for o in $*; do
@@ -61,8 +62,12 @@ options="-Wdev --debug-trycompile"
 common_flags="\
         -D CMAKE_BUILD_TYPE:STRING=$build \
         -D DHSVM_SNOW_ONLY:BOOL=ON \
-        -D DHSVM_BUILD_TESTS:BOOL=ON \
-        -D DHSVM_DUMP_TOPO:BOOL=OFF \
+        -D DHSVM_BUILD_TESTS:BOOL=OFF \
+        -D DHSVM_USE_RBM:BOOL=ON \
+        -D DHSVM_DUMP_TOPO:BOOL=ON \
+	-D DHSVM_USE_GPTL:BOOL=$timing \
+        -D DHSVM_D8:BOOL=$d8 \
+        -D CMAKE_VERBOSE_MAKEFILE:BOOL=TRUE \
 "
 
 if [ $host == "flophouse" ]; then
