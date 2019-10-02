@@ -10,7 +10,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2019-09-25 14:49:01 d3g096
+# Last Change: 2019-10-02 08:11:28 d3g096
 
 set -xue
 
@@ -19,11 +19,12 @@ set -xue
 # -------------------------------------------------------------
 usage="$0 [-d|-r] [-8] [-t] [name]"
 
-set -- `getopt drt8 $*`
+opts=`getopt drt8 $*`
 if [ $? != 0 ]; then
     echo $usage >&2
     exit 2
 fi
+set -- $opts
 
 timing="OFF"
 d8="OFF"
@@ -72,7 +73,7 @@ common_flags="\
         -D CMAKE_BUILD_TYPE:STRING=$build \
         -D DHSVM_SNOW_ONLY:BOOL=ON \
         -D DHSVM_BUILD_TESTS:BOOL=OFF \
-        -D DHSVM_USE_RBM:BOOL=OFF \
+        -D DHSVM_USE_RBM:BOOL=ON \
         -D DHSVM_DUMP_TOPO:BOOL=ON \
 	-D DHSVM_USE_GPTL:BOOL=$timing \
         -D DHSVM_D8:BOOL=$d8 \
