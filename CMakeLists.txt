@@ -9,7 +9,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2019-09-25 14:26:06 d3g096
+# Last Change: 2019-10-02 09:45:51 d3g096
 
 # -------------------------------------------------------------
 # General set up
@@ -152,3 +152,13 @@ if (DHSVM_USE_RBM)
   add_subdirectory(Create)
 endif (DHSVM_USE_RBM)
 
+# -------------------------------------------------------------
+# Installation
+# -------------------------------------------------------------
+install(FILES
+  ${DHSVM_SRC_DIR}/README.md
+  ${DHSVM_SRC_DIR}/tutorial DHSVM-RBM.pdf
+  ${DHSVM_SRC_DIR}/tutorial DHSVM v3.1.pdf
+  DESTINATION share/DHSVM
+  )
+  
