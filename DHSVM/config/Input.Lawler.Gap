@@ -242,7 +242,7 @@ Precipitation lapse rate =
 ##########################################################################################################
 [SOILS]                                   # Soil information
 Soil Map File   = ../input/soil.bin
-Soil Conductivity Map File = none  # mm/s
+Soil Conductivity Map File = none  # Unit: mm/s
 Soil Porosity Map File = none 
 Soil Depth File = ../input/soild.bin
 Number of Soil Types = 1           
