@@ -10,7 +10,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2019-10-08 08:45:26 d3g096
+# Last Change: 2019-10-08 13:28:20 d3g096
 
 set -xue
 
@@ -70,7 +70,6 @@ common_flags="\
         -D DHSVM_BUILD_TESTS:BOOL=OFF \
         -D DHSVM_USE_RBM:BOOL=ON \
         -D DHSVM_DUMP_TOPO:BOOL=ON \
-	-D DHSVM_USE_GPTL:BOOL=$timing \
         -D DHSVM_D8:BOOL=$d8 \
         -D CMAKE_VERBOSE_MAKEFILE:BOOL=TRUE \
 "
