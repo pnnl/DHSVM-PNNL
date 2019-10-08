@@ -121,7 +121,7 @@ static void slope_aspect(float dx, float dy, float celev, float
    out flow to the cells outside of the basin mask (Ning, 2013)
 ------------------------------------------------------------- */
 static void flow_fractions(float dx, float dy, float slope, float aspect,
-			   float nelev[NDIRS], float *grad,
+			   float celev, float nelev[NDIRS], float *grad,
 			   unsigned char dir[NDIRS], unsigned int *total_dir)
 {
   float cosine = cos(aspect);
@@ -129,6 +129,9 @@ static void flow_fractions(float dx, float dy, float slope, float aspect,
   float total_width, effective_width;
   float *cos, *sin;
   int n;
+  float drop[NDIRS]; 
+  float maxdrop; 
+  int steepest;
  
   /* allocate memory */
   if (!(cos = (float*) calloc(NDIRS/2, sizeof(float))))
@@ -142,16 +145,16 @@ static void flow_fractions(float dx, float dy, float slope, float aspect,
        aspect in the opposite direction */
     if (cosine > 0 && nelev[5] == (float) OUTSIDEBASIN)
 		cos[1] = -cosine;
-	else cos[1] = cosine;
-	if (cosine < 0 && nelev[1] == (float) OUTSIDEBASIN)
-        cos[0] = -cosine;
-	else cos[0] = cosine;
-    if (sine > 0 && nelev[3] == (float) OUTSIDEBASIN) 
-		sin[0] = -sine;
-	else sin[0] = sine;
-	if (sine < 0 && nelev[7] == (float) OUTSIDEBASIN)
-        sin[1] = -sine;
-	else sin[1] = sine;
+    else cos[1] = cosine;
+    if (cosine < 0 && nelev[1] == (float) OUTSIDEBASIN)
+          cos[0] = -cosine;
+    else cos[0] = cosine;
+      if (sine > 0 && nelev[3] == (float) OUTSIDEBASIN) 
+      sin[0] = -sine;
+    else sin[0] = sine;
+    if (sine < 0 && nelev[7] == (float) OUTSIDEBASIN)
+          sin[1] = -sine;
+    else sin[1] = sine;
 
     /* compute flow widths */
     total_width = fabs(sine) * dx + fabs(cosine) * dy;
@@ -181,8 +184,54 @@ static void flow_fractions(float dx, float dy, float slope, float aspect,
 	}
 	break;
   case 8:
-    ReportError("flow_fractions",65);
-    assert(0);			
+    /*For D8 flow directions, water discharges to ONE of its eight neighbors: 
+    to one located in the direction of steepest descent. This requires the DEM
+    to be pre-filled for D8 routing scheme as flat area will confuse the model*/
+    steepest = -9999;
+    maxdrop = -9999;
+    /*Determine flow direction based on deepest drop */
+    for (n = 0; n < NDIRS; n++) {
+      /*Make sure flow is inside boundary*/
+      if (nelev[n] == (float) OUTSIDEBASIN){
+        dir[n] = 0;
+        drop[n] = 0;
+      }
+      else {
+        /*Find steepest descent*/
+        if ( n == 0 || n == 2 || n == 4 ||n == 6)
+          drop[n] = (celev - nelev[n]) / sqrt( dx * dx + dy * dy);
+        else 
+          drop[n] = (celev - nelev[n]) / dx;
+	  
+        if ((drop[n] < 0.0)&&(drop[n] > -0.001)){
+          //printf("Reset minor negative flow slope from %f to 0.0\n", drop[n]);
+          drop[n]=0.0;
+        }
+
+        if (drop[n] >= 0 && drop[n] > maxdrop){
+          steepest = n;
+          maxdrop = drop[n];
+        }
+      }
+    }
+
+    *total_dir = 0;
+    if (steepest >= 0){
+      dir[steepest] = 1.0;
+      *total_dir += dir[steepest];
+
+      /* This requires dx = dy */
+      if ( steepest == 0 || steepest == 2 || steepest == 4 ||steepest == 6)
+        total_width = sqrt( dx * dx + dy * dy);
+      else 
+        total_width = dx; 
+    }
+    else{
+      printf("one grid cell has minor sink, set flow width to cell size\n");
+      total_width = dx; 
+    }
+      *grad = slope * total_width;
+    		
     break;
   default:
     ReportError("flow_fractions",65);
@@ -231,7 +280,7 @@ void ElevationSlopeAspect(MAPSIZE * Map, TOPOPIX ** TopoMap)
 
 	/* fill Dirs in TopoMap too */
 	flow_fractions(Map->DX, Map->DY, TopoMap[y][x].Slope,
-		       TopoMap[y][x].Aspect,
+		       TopoMap[y][x].Aspect, TopoMap[y][x].Dem,
 		       neighbor_elev, &(TopoMap[y][x].FlowGrad),
 		       TopoMap[y][x].Dir, &(TopoMap[y][x].TotalDir));
 	   
@@ -366,7 +415,7 @@ void HeadSlopeAspect(MAPSIZE * Map, TOPOPIX ** TopoMap, SOILPIX ** SoilMap,
 		  }
 		  slope_aspect(Map->DX, Map->DY, SoilMap[y][x].WaterLevel, neighbor_elev,
 		     &slope, &aspect);
-		  flow_fractions(Map->DX, Map->DY, slope, aspect, neighbor_elev,
+		  flow_fractions(Map->DX, Map->DY, slope, aspect, SoilMap[y][x].WaterLevel, neighbor_elev,
 		       &(FlowGrad[y][x]), Dir[y][x], &(TotalDir[y][x])); 
       }
     }
@@ -407,7 +456,7 @@ void SnowSlopeAspect(MAPSIZE *Map, TOPOPIX **TopoMap, SNOWPIX **Snow,
 
         slope_aspect(Map->DX, Map->DY, (TopoMap[y][x].Dem + Snow[y][x].Swq), neighbor_elev,
           &slope, &aspect);
-        flow_fractions(Map->DX, Map->DY, slope, aspect, neighbor_elev,
+        flow_fractions(Map->DX, Map->DY, slope, aspect, (TopoMap[y][x].Dem + Snow[y][x].Swq), neighbor_elev,
           &(SubSnowGrad[y][x]), Dir[y][x], &(TotalDir[y][x]));
 
         /* Reset SubSnowGrad to slope, don't want width in computation */

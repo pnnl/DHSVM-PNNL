@@ -293,7 +293,7 @@ void InitSoilMap(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * Map,
         for (y = 0, i = 0; y < Map->NY; y++) {
           for (x = 0; x < Map->NX; x++, i++) {
             if (KsLat[i] > 0.0)
-              (*SoilMap)[y][x].KsLat = KsLat[i];
+              (*SoilMap)[y][x].KsLat = KsLat[i]/1000.0;
             else
               (*SoilMap)[y][x].KsLat = SType[(*SoilMap)[y][x].Soil - 1].KsLat;
           }
@@ -303,7 +303,7 @@ void InitSoilMap(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * Map,
         for (y = Map->NY - 1, i = 0; y >= 0; y--) {
           for (x = 0; x < Map->NX; x++, i++) {
             if (KsLat[i] > 0.0)
-              (*SoilMap)[y][x].KsLat = KsLat[i];
+              (*SoilMap)[y][x].KsLat = KsLat[i]/1000.0;
             else
               (*SoilMap)[y][x].KsLat = SType[(*SoilMap)[y][x].Soil - 1].KsLat;
           }
