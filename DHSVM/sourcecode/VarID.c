@@ -76,7 +76,7 @@ struct {
   012, "Soil.KsLat",
        "Soil Lateral Conductivity", "%.6f", 
        "", "Soil Lateral Conductivity", NC_FLOAT, FALSE, FALSE, FALSE, 0 },{
-  013, "Soil.Porostity",
+  013, "Soil.Porosity",
        "Soil Porosity", "%.3f", 
        "", "Soil Porosity", NC_FLOAT, TRUE, FALSE, FALSE, 0 },{  
   100, "Met.PrecipMultiplier",
