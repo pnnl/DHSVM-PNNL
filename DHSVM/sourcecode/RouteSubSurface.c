@@ -214,7 +214,7 @@ void RouteSubSurface(int Dt, MAPSIZE *Map, TOPOPIX **TopoMap,
                      SoilMap[y][x].TableDepth : BankHeight);
 			
             Transmissivity = CalcTransmissivity(SoilMap[y][x].Depth, depth,
-                                                SType[SoilMap[y][x].Soil - 1].KsLat,
+                                                SoilMap[y][x].KsLat,
                                                 SType[SoilMap[y][x].Soil - 1].KsLatExp,
                                                 SType[SoilMap[y][x].Soil - 1].DepthThresh);
 			
@@ -244,7 +244,7 @@ void RouteSubSurface(int Dt, MAPSIZE *Map, TOPOPIX **TopoMap,
               fract_used = 0.;
             Transmissivity =
               CalcTransmissivity(BankHeight, SoilMap[y][x].TableDepth,
-				 SType[SoilMap[y][x].Soil - 1].KsLat,
+				 SoilMap[y][x].KsLat,
 				 SType[SoilMap[y][x].Soil - 1].KsLatExp,
                                  SType[SoilMap[y][x].Soil - 1].DepthThresh);
 			
@@ -295,7 +295,7 @@ void RouteSubSurface(int Dt, MAPSIZE *Map, TOPOPIX **TopoMap,
               gradient = 0.0;
             Transmissivity =
               CalcTransmissivity(BankHeight, SoilMap[y][x].TableDepth,
-				 SType[SoilMap[y][x].Soil - 1].KsLat,
+				 SoilMap[y][x].KsLat,
 				 SType[SoilMap[y][x].Soil - 1].KsLatExp,
                                  SType[SoilMap[y][x].Soil - 1].DepthThresh);
 
