@@ -163,6 +163,19 @@ select optional features.  Here are some terse instructions:
 The original Makefiles are still in the source tree but have not been
 maintained.  
 
+### Experimental Surface/Subsurface Mode ###
+
+The normal DHSVM surface/subsurface routing scheme uses 4 neighbors
+and directs cell outflow to all down-gradient neighbors ("D4").  Another
+method, which uses 8 neighbors and directs outflow only to the
+neighbor with the steepest gradient ("D8").  The latter has proved useful
+in very low-gradient areas that span several cells.  To enable D8
+routing add this option
+
+    -D DHSVM_D8:BOOL=ON
+    
+to the configuration. D4 is the default.  
+
 ### Snow-only mode ###
 
 If DHSVM is configured with this option,
