@@ -602,7 +602,7 @@ channel_save_outflow_wtext
 Saves the channel outflow using a text string as the time field
 ------------------------------------------------------------- */
 int
-  channel_save_outflow_text(char *tstring, Channel * net, FILE * out,
+  channel_save_outflow_text(char *tstring, Channel * thenet, FILE * out,
   FILE * out2, int flag)
 {
   int err = 0;
@@ -611,10 +611,11 @@ int
   float total_storage = 0.0;
   float total_storage_change = 0.0;
   float total_error = 0.0;
+  ChannelPtr net;
 
   if (flag == 1) {
     fprintf(out2, "DATE ");
-    for (; net != NULL; net = net->next) {
+    for (net = thenet; net != NULL; net = net->next) {
       total_lateral_inflow += net->lateral_inflow;
       if (net->outlet == NULL) {
         total_outflow += net->outflow;
@@ -632,7 +633,7 @@ int
     err++;
   }
 
-  for (; net != NULL; net = net->next) {
+  for (net = thenet; net != NULL; net = net->next) {
     total_lateral_inflow += net->lateral_inflow;
     if (net->outlet == NULL) {
       total_outflow += net->outflow;
