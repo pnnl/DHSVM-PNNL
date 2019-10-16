@@ -9,7 +9,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2019-10-16 12:16:55 d3g096
+# Last Change: 2019-10-16 12:20:31 d3g096
 
 # -------------------------------------------------------------
 # General set up
@@ -154,30 +154,28 @@ endif (DHSVM_USE_RBM)
 # Installation
 # -------------------------------------------------------------
 install(FILES
-  ${DHSVM_SRC_DIR}/README.md
-  ${DHSVM_SRC_DIR}/tutorial DHSVM-RBM.pdf
-  ${DHSVM_SRC_DIR}/tutorial DHSVM v3.1.pdf
+  ${DHSVM_SOURCE_DIR}/README.md
   DESTINATION share/DHSVM
   )
 
 install(FILES
-  ${DHSVM_SRC_DIR}/Scripts/add_date.pl
-  ${DHSVM_SRC_DIR}/Scripts/build_DHSVM_network.pl
-  ${DHSVM_SRC_DIR}/Scripts/Extract.Segment.Temp.scr
-  ${DHSVM_SRC_DIR}/Scripts/make_stream_connectivity.c
-  ${DHSVM_SRC_DIR}/Scripts/postprocess_rbm_output.py
+  ${DHSVM_SOURCE_DIR}/Scripts/add_date.pl
+  ${DHSVM_SOURCE_DIR}/Scripts/build_DHSVM_network.pl
+  ${DHSVM_SOURCE_DIR}/Scripts/Extract.Segment.Temp.scr
+  ${DHSVM_SOURCE_DIR}/Scripts/make_stream_connectivity.c
+  ${DHSVM_SOURCE_DIR}/Scripts/postprocess_rbm_output.py
   DESTINATION share/DHSVM/Scripts
   )
 
 install(FILES
-  ${DHSVM_SRC_DIR}/CreateStreamNetwork_PythonV/channelclass.py
-  ${DHSVM_SRC_DIR}/CreateStreamNetwork_PythonV/createstreamnetwork.py
-  ${DHSVM_SRC_DIR}/CreateStreamNetwork_PythonV/createstreamnetwork_tutorial.pdf
-  ${DHSVM_SRC_DIR}/CreateStreamNetwork_PythonV/roadaspect.py
-  ${DHSVM_SRC_DIR}/CreateStreamNetwork_PythonV/rowcolmap.py
-  ${DHSVM_SRC_DIR}/CreateStreamNetwork_PythonV/soildepthscript.py
-  ${DHSVM_SRC_DIR}/CreateStreamNetwork_PythonV/streammapfile.py
-  ${DHSVM_SRC_DIR}/CreateStreamNetwork_PythonV/wshdslope.py
+  ${DHSVM_SOURCE_DIR}/CreateStreamNetwork_PythonV/channelclass.py
+  ${DHSVM_SOURCE_DIR}/CreateStreamNetwork_PythonV/createstreamnetwork.py
+  ${DHSVM_SOURCE_DIR}/CreateStreamNetwork_PythonV/createstreamnetwork_tutorial.pdf
+  ${DHSVM_SOURCE_DIR}/CreateStreamNetwork_PythonV/roadaspect.py
+  ${DHSVM_SOURCE_DIR}/CreateStreamNetwork_PythonV/rowcolmap.py
+  ${DHSVM_SOURCE_DIR}/CreateStreamNetwork_PythonV/soildepthscript.py
+  ${DHSVM_SOURCE_DIR}/CreateStreamNetwork_PythonV/streammapfile.py
+  ${DHSVM_SOURCE_DIR}/CreateStreamNetwork_PythonV/wshdslope.py
   DESTINATION share/DHSVM/Scripts/CreateStreamNetwork_PythonV
   )
 
