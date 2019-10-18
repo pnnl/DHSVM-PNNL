@@ -44,7 +44,7 @@ void InitTerrainMaps(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE * GMap, MAPSI
 
   InitTopoMap(Input, Options, GMap, Map, TopoMap);
   InitSoilMap(Input, Options, Map, Soil, *TopoMap, SoilMap, SType);
-  InitVegMap(Options, Input, Map, VegMap, VType);
+  InitVegMap(Options, Input, Map, VegMap, *TopoMap, VType);
   if (Options->CanopyGapping)
     InitCanopyGapMap(Options, Input, Map, Soil, Veg, VType, VegMap, SType, SoilMap);
 }
@@ -442,7 +442,7 @@ void InitSoilMap(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * Map,
   InitVegMap()
 *****************************************************************************/
 void InitVegMap(OPTIONSTRUCT * Options, LISTPTR Input, MAPSIZE * Map, VEGPIX *** VegMap,
-                VEGTABLE *VType)
+                TOPOPIX ** TopoMap, VEGTABLE *VType)
 {
   const char *Routine = "InitVegMap";
   char VarName[BUFSIZE + 1];
@@ -514,23 +514,26 @@ void InitVegMap(OPTIONSTRUCT * Options, LISTPTR Input, MAPSIZE * Map, VEGPIX ***
 
     for (y = 0, i = 0; y < Map->NY; y++) {
       for (x = 0; x < Map->NX; x++, i++) {
-        /*Allocate Memory*/
-        if (!((*VegMap)[y][x].Fract = (float *)calloc(VType[(*VegMap)[y][x].Veg - 1].NVegLayers, sizeof(float))))
-          ReportError((char *)Routine, 1);
-        if ( VType[(*VegMap)[y][x].Veg - 1].OverStory == TRUE) {
-          if (FC[i] > 0.0)
-            (*VegMap)[y][x].Fract[0] = FC[i];
-          else
-            (*VegMap)[y][x].Fract[0] = VType[(*VegMap)[y][x].Veg - 1].Fract[0];
-          /*If understory exists, set default understory FC=1.0*/
-          if (VType[(*VegMap)[y][x].Veg - 1].UnderStory == TRUE)
-            (*VegMap)[y][x].Fract[1] = 1.0;
+        if (INBASIN((TopoMap)[y][x].Mask)) {
+          int vidx = (*VegMap)[y][x].Veg - 1;
+          /*Allocate Memory*/
+          if (!((*VegMap)[y][x].Fract =
+                (float *)calloc(VType[vidx].NVegLayers, sizeof(float))))
+            ReportError((char *)Routine, 1);
+          if ( VType[vidx].OverStory == TRUE) {
+            if (FC[i] > 0.0)
+              (*VegMap)[y][x].Fract[0] = FC[i];
+            else
+              (*VegMap)[y][x].Fract[0] = VType[(*VegMap)[y][x].Veg - 1].Fract[0];
+            /*If understory exists, set default understory FC=1.0*/
+            if (VType[(*VegMap)[y][x].Veg - 1].UnderStory == TRUE)
+              (*VegMap)[y][x].Fract[1] = 1.0;
+          }
+          else{
+            if (VType[(*VegMap)[y][x].Veg - 1].UnderStory == TRUE)
+              (*VegMap)[y][x].Fract[0] = 1.0;
+          }
         }
-        else{
-          if (VType[(*VegMap)[y][x].Veg - 1].UnderStory == TRUE)
-            (*VegMap)[y][x].Fract[0] = 1.0;
-        }
-        
       }
     }
     free(FC);
@@ -540,19 +543,22 @@ void InitVegMap(OPTIONSTRUCT * Options, LISTPTR Input, MAPSIZE * Map, VEGPIX ***
     }
     for (y = 0, i = 0; y < Map->NY; y++) {
       for (x = 0; x < Map->NX; x++, i++) {
-        /*Allocate Memory*/
-        if (!((*VegMap)[y][x].Fract = (float *)calloc(VType[(*VegMap)[y][x].Veg - 1].NVegLayers, sizeof(float))))
-          ReportError((char *)Routine, 1);
-        
-        if ( VType[(*VegMap)[y][x].Veg - 1].OverStory == TRUE) {
-          (*VegMap)[y][x].Fract[0] = VType[(*VegMap)[y][x].Veg - 1].Fract[0];
-          /*If understory exists, set default understory FC=1.0*/
-          if (VType[(*VegMap)[y][x].Veg - 1].UnderStory == TRUE)
-            (*VegMap)[y][x].Fract[1] = 1.0;
-        }
-        else{
-          if (VType[(*VegMap)[y][x].Veg - 1].UnderStory == TRUE)
-            (*VegMap)[y][x].Fract[0] = 1.0;
+        if (INBASIN((TopoMap)[y][x].Mask)) {
+          int vidx = (*VegMap)[y][x].Veg - 1;
+          /*Allocate Memory*/
+          if (!((*VegMap)[y][x].Fract = (float *)calloc(VType[vidx].NVegLayers, sizeof(float))))
+            ReportError((char *)Routine, 1);
+          
+          if ( VType[(*VegMap)[y][x].Veg - 1].OverStory == TRUE) {
+            (*VegMap)[y][x].Fract[0] = VType[vidx].Fract[0];
+            /*If understory exists, set default understory FC=1.0*/
+            if (VType[vidx].UnderStory == TRUE)
+              (*VegMap)[y][x].Fract[1] = 1.0;
+          }
+          else{
+            if (VType[vidx].UnderStory == TRUE)
+              (*VegMap)[y][x].Fract[0] = 1.0;
+          }
         }
       }
     }
@@ -560,10 +566,13 @@ void InitVegMap(OPTIONSTRUCT * Options, LISTPTR Input, MAPSIZE * Map, VEGPIX ***
   
   /*Calculate Vf */
   for (y = 0, i = 0; y < Map->NY; y++) {
-      for (x = 0; x < Map->NX; x++, i++) {
-        if ( VType[(*VegMap)[y][x].Veg - 1].NVegLayers >0) 
-          (*VegMap)[y][x].Vf = (*VegMap)[y][x].Fract[0] * VType[(*VegMap)[y][x].Veg - 1].VfAdjust;
+    for (x = 0; x < Map->NX; x++, i++) {
+      if (INBASIN((TopoMap)[y][x].Mask)) {
+        int vidx = (*VegMap)[y][x].Veg - 1;
+        if ( VType[vidx].NVegLayers >0) 
+          (*VegMap)[y][x].Vf = (*VegMap)[y][x].Fract[0] * VType[vidx].VfAdjust;
       }
+    }
   }
 
   /* Read the vegetation LAI map */
@@ -579,12 +588,15 @@ void InitVegMap(OPTIONSTRUCT * Options, LISTPTR Input, MAPSIZE * Map, VEGPIX ***
     /*Allocate Memory: if FC file avaiable, assume max 2 layers of vegtation*/  
     for (y = 0; y < Map->NY; y++) {
       for (x = 0; x < Map->NX; x++) {
-        
-        if (!((*VegMap)[y][x].LAIMonthly = (float **)calloc(VType[(*VegMap)[y][x].Veg - 1].NVegLayers , sizeof(float *))))
-          ReportError((char *)Routine, 1);
-        for (j = 0; j < VType[(*VegMap)[y][x].Veg - 1].NVegLayers; j++) {
-          if (!((*VegMap)[y][x].LAIMonthly[j] = (float *)calloc(12, sizeof(float))))
+        if (INBASIN((TopoMap)[y][x].Mask)) {
+          int vidx = (*VegMap)[y][x].Veg - 1;
+          if (!((*VegMap)[y][x].LAIMonthly =
+                (float **)calloc(VType[vidx].NVegLayers , sizeof(float *))))
             ReportError((char *)Routine, 1);
+          for (j = 0; j < VType[(*VegMap)[y][x].Veg - 1].NVegLayers; j++) {
+            if (!((*VegMap)[y][x].LAIMonthly[j] = (float *)calloc(12, sizeof(float))))
+              ReportError((char *)Routine, 1);
+          }
         }
       }
     }
@@ -602,18 +614,21 @@ void InitVegMap(OPTIONSTRUCT * Options, LISTPTR Input, MAPSIZE * Map, VEGPIX ***
     
       for (y = 0, i = 0; y < Map->NY; y++) {
         for (x = 0; x < Map->NX; x++, i++) {
-          if ( VType[(*VegMap)[y][x].Veg - 1].OverStory == TRUE) {
-            if (LAIMonthly[i] > 0.0)
-              (*VegMap)[y][x].LAIMonthly[0][NSet] = LAIMonthly[i];
-            else
-              (*VegMap)[y][x].LAIMonthly[0][NSet] = VType[(*VegMap)[y][x].Veg - 1].LAIMonthly[0][NSet];
+          if (INBASIN((TopoMap)[y][x].Mask)) {
+            int vidx = (*VegMap)[y][x].Veg - 1;
+            if ( VType[(*VegMap)[y][x].Veg - 1].OverStory == TRUE) {
+              if (LAIMonthly[i] > 0.0)
+                (*VegMap)[y][x].LAIMonthly[0][NSet] = LAIMonthly[i];
+              else
+                (*VegMap)[y][x].LAIMonthly[0][NSet] = VType[vidx].LAIMonthly[0][NSet];
           
-            if ( VType[(*VegMap)[y][x].Veg - 1].UnderStory  == TRUE )
-              (*VegMap)[y][x].LAIMonthly[1][NSet] = VType[(*VegMap)[y][x].Veg - 1].LAIMonthly[1][NSet];
-          }
-          else{
-            if ( VType[(*VegMap)[y][x].Veg - 1].UnderStory == TRUE)
-              (*VegMap)[y][x].LAIMonthly[0][NSet] = VType[(*VegMap)[y][x].Veg - 1].LAIMonthly[0][NSet];
+              if ( VType[vidx].UnderStory  == TRUE )
+                (*VegMap)[y][x].LAIMonthly[1][NSet] = VType[vidx].LAIMonthly[1][NSet];
+            }
+            else{
+              if ( VType[vidx].UnderStory == TRUE)
+                (*VegMap)[y][x].LAIMonthly[0][NSet] = VType[vidx].LAIMonthly[0][NSet];
+            }
           }
         }
       }
@@ -627,12 +642,15 @@ void InitVegMap(OPTIONSTRUCT * Options, LISTPTR Input, MAPSIZE * Map, VEGPIX ***
 
     for (y = 0; y < Map->NY; y++) {
       for (x = 0; x < Map->NX; x++) {
-        
-        if (!((*VegMap)[y][x].LAIMonthly = (float **)calloc(VType[(*VegMap)[y][x].Veg - 1].NVegLayers , sizeof(float *))))
-          ReportError((char *)Routine, 1);
-        for (j = 0; j < VType[(*VegMap)[y][x].Veg - 1].NVegLayers; j++) {
-          if (!((*VegMap)[y][x].LAIMonthly[j] = (float *)calloc(12, sizeof(float))))
+        if (INBASIN((TopoMap)[y][x].Mask)) {
+          int vidx = (*VegMap)[y][x].Veg - 1;
+          if (!((*VegMap)[y][x].LAIMonthly =
+                (float **)calloc(VType[vidx].NVegLayers , sizeof(float *))))
             ReportError((char *)Routine, 1);
+          for (j = 0; j < VType[vidx].NVegLayers; j++) {
+            if (!((*VegMap)[y][x].LAIMonthly[j] = (float *)calloc(12, sizeof(float))))
+              ReportError((char *)Routine, 1);
+          }
         }
       }
     }
@@ -640,16 +658,19 @@ void InitVegMap(OPTIONSTRUCT * Options, LISTPTR Input, MAPSIZE * Map, VEGPIX ***
     for (NSet = 0; NSet < 12; NSet++) {
       for (y = 0, i = 0; y < Map->NY; y++) {
         for (x = 0; x < Map->NX; x++, i++) {
+          if (INBASIN((TopoMap)[y][x].Mask)) {
+            int vidx = (*VegMap)[y][x].Veg - 1;
           
-          if ( VType[(*VegMap)[y][x].Veg - 1].OverStory == TRUE) {        
-            (*VegMap)[y][x].LAIMonthly[0][NSet] = VType[(*VegMap)[y][x].Veg - 1].LAIMonthly[0][NSet];
-            if ( VType[(*VegMap)[y][x].Veg - 1].UnderStory == TRUE ){
-              (*VegMap)[y][x].LAIMonthly[1][NSet] = VType[(*VegMap)[y][x].Veg - 1].LAIMonthly[1][NSet]; 
+            if ( VType[vidx].OverStory == TRUE) {        
+              (*VegMap)[y][x].LAIMonthly[0][NSet] = VType[vidx].LAIMonthly[0][NSet];
+              if ( VType[vidx].UnderStory == TRUE ){
+                (*VegMap)[y][x].LAIMonthly[1][NSet] = VType[vidx].LAIMonthly[1][NSet]; 
+              }
             }
-          }
-          else{
-            if ( VType[(*VegMap)[y][x].Veg - 1].UnderStory == TRUE){
-              (*VegMap)[y][x].LAIMonthly[0][NSet] = VType[(*VegMap)[y][x].Veg - 1].LAIMonthly[0][NSet];
+            else{
+              if ( VType[vidx].UnderStory == TRUE){
+                (*VegMap)[y][x].LAIMonthly[0][NSet] = VType[vidx].LAIMonthly[0][NSet];
+              }
             }
           }
         }
@@ -658,13 +679,18 @@ void InitVegMap(OPTIONSTRUCT * Options, LISTPTR Input, MAPSIZE * Map, VEGPIX ***
   }
 
   for (y = 0; y < Map->NY; y++) {
-		for (x = 0; x < Map->NX; x++) {
-      /*Allocate memory to LAI values*/
-      if (!((*VegMap)[y][x].LAI = (float *)calloc(VType[(*VegMap)[y][x].Veg - 1].NVegLayers, sizeof(float))))
-        printf("works at line 547\n");
-              // ReportError((char *)Routine, 1);
-      if (!((*VegMap)[y][x].MaxInt = (float *)calloc(VType[(*VegMap)[y][x].Veg - 1].NVegLayers, sizeof(float))))
-                ReportError((char *)Routine, 1);
+    for (x = 0; x < Map->NX; x++) {
+      if (INBASIN((TopoMap)[y][x].Mask)) {
+        int vidx = (*VegMap)[y][x].Veg - 1;
+        /*Allocate memory to LAI values*/
+        if (!((*VegMap)[y][x].LAI =
+              (float *)calloc(VType[vidx].NVegLayers, sizeof(float))))
+          printf("works at line 547\n");
+        // ReportError((char *)Routine, 1);
+        if (!((*VegMap)[y][x].MaxInt =
+              (float *)calloc(VType[vidx].NVegLayers, sizeof(float))))
+          ReportError((char *)Routine, 1);
+      }
     }
   }
 }

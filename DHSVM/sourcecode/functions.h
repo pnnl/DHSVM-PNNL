@@ -255,7 +255,7 @@ void InitUnitHydrograph(LISTPTR Input, MAPSIZE *Map, TOPOPIX **TopoMap,
 			UNITHYDRINFO *HydrographInfo);
 
 void InitVegMap( OPTIONSTRUCT *Options, LISTPTR Input, MAPSIZE *Map, VEGPIX ***VegMap,
-				VEGTABLE *VType);
+                 TOPOPIX ** TopoMap, VEGTABLE *VType);
 
 int InitVegTable(VEGTABLE **VType, LISTPTR Input, OPTIONSTRUCT *Options, LAYER *Veg);
 
