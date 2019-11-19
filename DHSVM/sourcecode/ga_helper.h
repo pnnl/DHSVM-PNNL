@@ -10,13 +10,14 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2018-11-06 09:42:24 d3g096
+ * LAST CHANGE: 2019-11-19 09:23:10 d3g096
  * COMMENTS:
  */
 
 #ifndef _ga_helper_h_
 #define _ga_helper_h_
 
+#include <mpi.h>
 #include <ga.h>
 
 extern const int gaXdim, gaYdim;

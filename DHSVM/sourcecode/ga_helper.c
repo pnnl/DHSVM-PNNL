@@ -10,7 +10,7 @@
  *
  * DESCRIP-END.cd
  * FUNCTIONS:    
- * LAST CHANGE: 2018-11-06 09:21:58 d3g096
+ * LAST CHANGE: 2019-11-19 09:24:36 d3g096
  * COMMENTS:
  */
 
@@ -28,8 +28,11 @@ void
 ParallelInitialize(int *argc, char ***argv)
 {
   int ierr;
-  ierr = 0;
-  GA_Initialize_args(argc, argv);
+  ierr = MPI_Init(argc, argv);
+  if (ierr != 0) {
+    ReportError("ParallelInitialize: MPI_Init: ", 70);
+  }
+  GA_Initialize();
   if (!MA_init(MT_C_DBL, 500000, 500000)) {
     ReportError("ParallelInitialize: MA_init: ", 70);
     ierr += 1;
