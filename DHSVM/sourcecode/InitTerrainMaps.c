@@ -44,7 +44,7 @@ void InitTerrainMaps(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE * GMap, MAPSI
 
   InitTopoMap(Input, Options, GMap, Map, TopoMap);
   InitSoilMap(Input, Options, Map, Soil, *TopoMap, SoilMap, SType);
-  InitVegMap(Options, Input, Map, VegMap, *TopoMap, VType);
+  InitVegMap(Options, Input, Map, Veg, VegMap, *TopoMap, VType);
   if (Options->CanopyGapping)
     InitCanopyGapMap(Options, Input, Map, Soil, Veg, VType, VegMap, SType, SoilMap);
 }
@@ -441,8 +441,9 @@ void InitSoilMap(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * Map,
 /*****************************************************************************
   InitVegMap()
 *****************************************************************************/
-void InitVegMap(OPTIONSTRUCT * Options, LISTPTR Input, MAPSIZE * Map, VEGPIX *** VegMap,
-                TOPOPIX ** TopoMap, VEGTABLE *VType)
+void InitVegMap(OPTIONSTRUCT * Options, LISTPTR Input, MAPSIZE * Map, 
+		LAYER *Veg, VEGPIX *** VegMap, TOPOPIX ** TopoMap, 
+		VEGTABLE *VType)
 {
   const char *Routine = "InitVegMap";
   char VarName[BUFSIZE + 1];
@@ -465,6 +466,9 @@ void InitVegMap(OPTIONSTRUCT * Options, LISTPTR Input, MAPSIZE * Map, VEGPIX ***
     {"VEGETATION", "VEGETATION LAI MAP FILE", "", "none"},
     {NULL, NULL, "", NULL}
   };
+  int ierr;
+
+  ierr = 0;
 
   /* Assign the attributes to the correct map pixel */
   if (!(*VegMap = (VEGPIX **)calloc(Map->NY, sizeof(VEGPIX *))))
@@ -492,9 +496,24 @@ void InitVegMap(OPTIONSTRUCT * Options, LISTPTR Input, MAPSIZE * Map, VEGPIX ***
   
   for (y = 0, i = 0; y < Map->NY; y++) {
     for (x = 0; x < Map->NX; x++, i++) {
-      (*VegMap)[y][x].Veg = Type[i];
-      (*VegMap)[y][x].Tcanopy = 0.0;
+      if (INBASIN((TopoMap)[y][x].Mask)) {
+	if (1 <= Type[i] && Type[i] <= Veg->NTypes) {
+	  (*VegMap)[y][x].Veg = Type[i];
+	  (*VegMap)[y][x].Tcanopy = 0.0;
+	} else {
+	  int gx, gy;
+	  Local2Global(Map, x, y, &gx, &gy);
+	  printf("%d: error: bad vegetation type (%d) at (%d, %d)\n",
+		  ParallelRank(), Type[i], gx, gy);
+	  ierr++;
+	}
+      }
     }
+  }
+
+  GA_Igop(&ierr, 1, "+");
+  if (ierr > 0) {
+    ReportError("Bad index in vegtation type map", 51);
   }
 
   free(Type);
