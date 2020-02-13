@@ -9,7 +9,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2018-11-30 13:53:39 d3g096
+# Last Change: 2019-10-16 12:20:31 d3g096
 
 # -------------------------------------------------------------
 # General set up
@@ -26,6 +26,11 @@ list (APPEND CMAKE_MODULE_PATH "${DHSVM_SOURCE_DIR}/cmake")
 # -------------------------------------------------------------
 
 enable_language(CXX)
+
+# Option to set the surface/subsurface drainage direction
+option(DHSVM_D8
+  "Switch surface/subsurface drainage algorithm to 8-neighbor steepest descent"
+  OFF)
 
 # Option to dump topography maps, for debugging
 option (DHSVM_DUMP_TOPO
@@ -124,12 +129,10 @@ if (DHSVM_USE_NETCDF)
 endif (DHSVM_USE_NETCDF)
 
 # -------------------------------------------------------------
-# X11 is optional
+# X11 is no longer supported
 # -------------------------------------------------------------
 if (DHSVM_USE_X11)
-  find_package(X11 REQUIRED)
-  add_definitions(-DHAVE_X11)
-  include_directories(AFTER ${X11_INCLUDE_DIR})
+  message(WARNING "X11 is disabled in parallel DHSVM")
 endif (DHSVM_USE_X11)
 
 # -------------------------------------------------------------
@@ -146,4 +149,33 @@ if (DHSVM_USE_RBM)
   add_subdirectory(RBM)
   add_subdirectory(Create)
 endif (DHSVM_USE_RBM)
+
+# -------------------------------------------------------------
+# Installation
+# -------------------------------------------------------------
+install(FILES
+  ${DHSVM_SOURCE_DIR}/README.md
+  DESTINATION share/DHSVM
+  )
+
+install(FILES
+  ${DHSVM_SOURCE_DIR}/Scripts/add_date.pl
+  ${DHSVM_SOURCE_DIR}/Scripts/build_DHSVM_network.pl
+  ${DHSVM_SOURCE_DIR}/Scripts/Extract.Segment.Temp.scr
+  ${DHSVM_SOURCE_DIR}/Scripts/make_stream_connectivity.c
+  ${DHSVM_SOURCE_DIR}/Scripts/postprocess_rbm_output.py
+  DESTINATION share/DHSVM/Scripts
+  )
+
+install(FILES
+  ${DHSVM_SOURCE_DIR}/CreateStreamNetwork_PythonV/channelclass.py
+  ${DHSVM_SOURCE_DIR}/CreateStreamNetwork_PythonV/createstreamnetwork.py
+  ${DHSVM_SOURCE_DIR}/CreateStreamNetwork_PythonV/createstreamnetwork_tutorial.pdf
+  ${DHSVM_SOURCE_DIR}/CreateStreamNetwork_PythonV/roadaspect.py
+  ${DHSVM_SOURCE_DIR}/CreateStreamNetwork_PythonV/rowcolmap.py
+  ${DHSVM_SOURCE_DIR}/CreateStreamNetwork_PythonV/soildepthscript.py
+  ${DHSVM_SOURCE_DIR}/CreateStreamNetwork_PythonV/streammapfile.py
+  ${DHSVM_SOURCE_DIR}/CreateStreamNetwork_PythonV/wshdslope.py
+  DESTINATION share/DHSVM/Scripts/CreateStreamNetwork_PythonV
+  )
 

@@ -115,11 +115,13 @@ set(ga_test_src "
 
 int main(int argc, char **argv)
 {
-  GA_Initialize_args(&argc, &argv);
+  MPI_Init(&argc, &argv);
+  GA_Initialize();
 
   // FIXME: Find a simple but sensible test for GA
 
   GA_Terminate();
+  MPI_Finalize();
 
   return 0;
 }

@@ -9,7 +9,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2016-12-27 14:01:20 d3g096
+# Last Change: 2019-10-02 08:14:22 d3g096
 
 
 # -------------------------------------------------------------
@@ -27,4 +27,9 @@ include_directories(BEFORE
 add_executable(Create_File
   Create_File.f90
   Julian.f90
-)
+  )
+
+# -------------------------------------------------------------
+# Installation
+# -------------------------------------------------------------
+install(TARGETS Create_File DESTINATION bin)
