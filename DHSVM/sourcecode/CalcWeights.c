@@ -274,8 +274,8 @@ void CalcWeights(METLOCATION * Station, int NStats, int NX, int NY,
         }
 
         if (totalweight < 250 || totalweight > 260)
-          printf("error in interpolation weight at pixel y %d x %d : %d \n", y,
-            x, totalweight);
+          /*printf("error in interpolation weight at pixel y %d x %d : %d \n", y,
+            x, totalweight); */
         stat[tempid] += 1;
       }
 
