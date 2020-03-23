@@ -76,9 +76,18 @@ struct {
   012, "Soil.KsLat",
        "Soil Lateral Conductivity", "%.6f", 
        "", "Soil Lateral Conductivity", NC_FLOAT, FALSE, FALSE, FALSE, 0 },{
-  013, "Soil.Porostity",
+  013, "Soil.Porosity",
        "Soil Porosity", "%.3f", 
        "", "Soil Porosity", NC_FLOAT, TRUE, FALSE, FALSE, 0 },{  
+  020, "Basin.Slope",
+       "Slope", "%.4f",
+       "none", "Land surface slope", NC_FLOAT, FALSE, FALSE, FALSE, 0}, {
+  021, "Basin.Aspect",
+       "Aspect", "%.3f",
+       "degrees", "Aspect", NC_FLOAT, FALSE, FALSE, FALSE, 0}, {
+  022, "Basin.FlowDir",
+       "FlowDir", "%.0f",
+       "none", "FlowDir", NC_FLOAT, FALSE, FALSE, FALSE, 0}, {
   100, "Met.PrecipMultiplier",
 	   "PptMultiplier", "%.8f",
 	   "", "Precipitation Multiplier", NC_FLOAT, FALSE, FALSE, FALSE, 0 },{

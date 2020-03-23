@@ -9,7 +9,7 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2019-08-22 06:00:50 d3g096
+# Last Change: 2019-10-08 08:44:21 d3g096
 
 # -------------------------------------------------------------
 # Set up for this subdirectory
@@ -25,6 +25,15 @@ include_directories(BEFORE
 if (DHSVM_DUMP_TOPO)
   add_definitions(-DTOPO_DUMP)
 endif (DHSVM_DUMP_TOPO)
+
+if (DHSVM_D8)
+  add_definitions(-DNDIRS=8)
+endif(DHSVM_D8)
+
+if(CMAKE_BUILD_TYPE MATCHES Debug)
+    message("debug mode: turning DEBUG messages on")
+    add_definitions(-DDEBUG=1)
+endif(CMAKE_BUILD_TYPE MATCHES Debug)
 
 # tablio.c generation
 if (FLEX_FOUND)

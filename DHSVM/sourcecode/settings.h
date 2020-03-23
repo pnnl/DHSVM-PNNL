@@ -93,7 +93,14 @@ typedef unsigned int unint;
 #define MAXSTRING    255
 #define NAMESIZE     127
 
-#define NDIRS          4	/* Number of directions in which water can flow, must equal 4 */
+#if !defined(NDIRS)
+#define NDIRS          4        /* Number of directions in which water can flow, must equal 4 */
+#endif
+
+#if !((NDIRS == 4) || (NDIRS == 8))
+#error "NDIRS must be 4 or 8"
+#endif
+
 #define NNEIGHBORS     8    /* Number of directions in which water can flow based on fine grid, must equal 8 */
 
 
