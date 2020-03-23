@@ -18,7 +18,7 @@
 #include "functions.h"
 #include "constants.h"
 
-void deg2utm(float la, float lo, float *x, float *y)
+void deg2utm(float la, float lo, float *x, float *y, int zone)
 {
    float a, c, v, e2, e2cuadrada, S, deltaS, epsilon, a1, a2, j2, j4, j6;
    float alfa, beta, gama, Bm, xx, yy, ta;
@@ -32,8 +32,12 @@ void deg2utm(float la, float lo, float *x, float *y)
    
    lat = la * ( PI / 180 );
    lon = lo * ( PI / 180 );
-
-   Huso = floor ( ( lo / 6 ) + 31);
+   
+   /* The coordinates of DHSVM raster input are based on a single utm zone although some large basins
+      can cross more than 1 utm zones. To map the meteorological grids to DHSVM spatial input (from lat & lon
+      to utm x & y), the utm zone is fixed in conversion based on user input. */ 
+   //Huso = floor ( ( lo / 6 ) + 31);
+   Huso = abs(zone);
    S = 6 * Huso  - 183;
    deltaS = lon - ( S * ( PI / 180 ) );
 

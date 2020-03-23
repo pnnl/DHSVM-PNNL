@@ -32,7 +32,7 @@
 #include "getinit.h"
 #include "constants.h"
 #include "rad.h"
-
+                          
  /*******************************************************************************
    Function name: InitMetSources()
 
@@ -238,7 +238,7 @@ void InitGridMet(OPTIONSTRUCT *Options, LISTPTR Input, MAPSIZE *Map,
   char tempfilename[BUFSIZE + 1];
   FILE *PrismStatFile;
   char junk[BUFSIZE + 1], infileformat[BUFSIZE + 1];
-  DIR *dir;
+  DIR *dir;                   
   struct dirent *ent;
 
   STRINIENTRY StrEnv[] = {
@@ -250,6 +250,7 @@ void InitGridMet(OPTIONSTRUCT *Options, LISTPTR Input, MAPSIZE *Map,
 	{ "METEOROLOGY", "GRID_DECIMAL", "", "" },
     { "METEOROLOGY", "MET FILE PATH", "", "" },
     { "METEOROLOGY", "FILE PREFIX", "", "" },
+    { "METEOROLOGY", "UTM ZONE", "", "" },                                      
     { NULL, NULL, "", NULL },
   };
 
@@ -300,6 +301,10 @@ void InitGridMet(OPTIONSTRUCT *Options, LISTPTR Input, MAPSIZE *Map,
     ReportError(StrEnv[file_prefix].KeyName, 51);
   strcpy(Grid->fileprefix, StrEnv[file_prefix].VarStr);
 
+  /* UTM zone used as reference for all spatial input files */
+  if (!CopyInt(&(Grid->utmzone), StrEnv[utm_zone].VarStr, 1))
+    ReportError(StrEnv[utm_zone].KeyName, 51);                                              
+
   /* Allocate memory for the stations */
   if (!(*Stat = (METLOCATION *)calloc(Grid->NGrids, sizeof(METLOCATION))))
     ReportError(Routine, 1);
@@ -314,7 +319,7 @@ void InitGridMet(OPTIONSTRUCT *Options, LISTPTR Input, MAPSIZE *Map,
   m = 0;
   if ((dir = opendir(Grid->filepath)) != NULL) {
     /* print all the files and directories within directory */
-    while ((ent = readdir(dir)) != NULL) {
+    while ((ent = readdir(dir)) != NULL) {                        
       if (!strcmp(ent->d_name, ".") || !strcmp(ent->d_name, "..")) {
         continue;
       }
@@ -322,8 +327,9 @@ void InitGridMet(OPTIONSTRUCT *Options, LISTPTR Input, MAPSIZE *Map,
         sscanf(ent->d_name, junk, &lat, &lon);
 
         /* convert lat and lon to utm */
-        deg2utm(lat, lon, &East, &North);		
+        deg2utm(lat, lon, &East, &North, Grid->utmzone);		
 		sprintf((*Stat)[k].Name, "data_%f_%f\n", lat, lon);
+    printf("%f, %f, %f, %f\n", lat, lon, East, North);
 		
 		(*Stat)[k].Loc.N = Round(((Map->Yorig - 0.5 * Map->DY) - North) / Map->DY);
         (*Stat)[k].Loc.E = Round((East - (Map->Xorig + 0.5 * Map->DX)) / Map->DX);
@@ -331,24 +337,24 @@ void InitGridMet(OPTIONSTRUCT *Options, LISTPTR Input, MAPSIZE *Map,
 
         /* met grids must be with the bounding box of the basin */
 		if (((*Stat)[k].Loc.N >= Map->NY || (*Stat)[k].Loc.N < 0 ||
-          (*Stat)[k].Loc.E >= Map->NX || (*Stat)[k].Loc.E < 0)) {
-          //printf("..... Station %d outside the basin bounding box: %s ignored\n", m, (*Stat)[k].Name);
+          (*Stat)[k].Loc.E >= Map->NX || (*Stat)[k].Loc.E < 0)) {                                   
+          //printf("..... Station %d outside the basin bounding box: %s ignored\n", m, (*Stat)[k].Name);           
 		  k = k;
 		}
         else {
           /* only include grids within the mask */
           if (Options->Outside == FALSE) {
             if (INBASIN(TopoMap[(*Stat)[k].Loc.N][(*Stat)[k].Loc.E].Mask)) {
-              
+                                                                         
 			  /* open met data file */
               sprintf((*Stat)[k].MetFile.FileName, infileformat, Grid->filepath, Grid->fileprefix, lat, lon);
-
+                                                                  
               if (!((*Stat)[k].MetFile.FilePtr = fopen((*Stat)[k].MetFile.FileName, "r"))) {
                 printf("..... %s doesn't exist\n", (*Stat)[k].MetFile.FileName);
                 continue;
-              }
-              printf("..... Station %d: %s is selected\n", m, (*Stat)[k].Name);
-              k = k + 1;
+              }                                        
+              printf("..... Station %d: %s is selected\n", m, (*Stat)[k].Name);            
+              k = k + 1;             
             }
           }
           else {
@@ -356,8 +362,8 @@ void InitGridMet(OPTIONSTRUCT *Options, LISTPTR Input, MAPSIZE *Map,
               if (!((*Stat)[k].MetFile.FilePtr = fopen((*Stat)[k].MetFile.FileName, "r"))) {
                 //printf("..... %s doesn't exist\n", (*Stat)[k].MetFile.FileName);
                 continue;
-              }
-              printf("..... Station %d: %s is selected\n", m, (*Stat)[k].Name);
+              }                                        
+              printf("..... Station %d: %s is selected\n", m, (*Stat)[k].Name);               
               k = k + 1;
             }
           }
@@ -452,11 +458,11 @@ void InitMM5(LISTPTR Input, int NSoilLayers, TIMESTRUCT *Time,
   if (IsEmptyStr(StrEnv[MM5_temperature].VarStr))
     ReportError(StrEnv[MM5_temperature].KeyName, 51);
   strcpy(InFiles->MM5Temp, StrEnv[MM5_temperature].VarStr);
-
+                             
   if (IsEmptyStr(StrEnv[MM5_terrain].VarStr))
     ReportError(StrEnv[MM5_terrain].KeyName, 51);
   strcpy(InFiles->MM5Terrain, StrEnv[MM5_terrain].VarStr);
-
+                                
   if (strncmp(StrEnv[MM5_lapse].VarStr, "none", 4)) {
 
     strncpy(InFiles->MM5Lapse, StrEnv[MM5_lapse].VarStr, BUFSIZE);
@@ -486,23 +492,24 @@ void InitMM5(LISTPTR Input, int NSoilLayers, TIMESTRUCT *Time,
   if (IsEmptyStr(StrEnv[MM5_humidity].VarStr))
     ReportError(StrEnv[MM5_humidity].KeyName, 51);
   strcpy(InFiles->MM5Humidity, StrEnv[MM5_humidity].VarStr);
-
+                                 
   if (IsEmptyStr(StrEnv[MM5_wind].VarStr))
     ReportError(StrEnv[MM5_wind].KeyName, 51);
   strcpy(InFiles->MM5Wind, StrEnv[MM5_wind].VarStr);
+                             
 
   if (IsEmptyStr(StrEnv[MM5_shortwave].VarStr))
     ReportError(StrEnv[MM5_shortwave].KeyName, 51);
   strcpy(InFiles->MM5ShortWave, StrEnv[MM5_shortwave].VarStr);
-
+                                  
   if (IsEmptyStr(StrEnv[MM5_longwave].VarStr))
     ReportError(StrEnv[MM5_longwave].KeyName, 51);
   strcpy(InFiles->MM5LongWave, StrEnv[MM5_longwave].VarStr);
-
+                                 
   if (IsEmptyStr(StrEnv[MM5_precip].VarStr))
     ReportError(StrEnv[MM5_precip].KeyName, 51);
   strcpy(InFiles->MM5Precipitation, StrEnv[MM5_precip].VarStr);
-
+                                      
   /* Use PrecipLapseFile to store the name of the MM5 precip
      distribution map file. This avoids wholesale code changes. */
   if (strncmp(StrEnv[MM5_precip_dist].VarStr, "none", 4)) {
@@ -524,8 +531,8 @@ void InitMM5(LISTPTR Input, int NSoilLayers, TIMESTRUCT *Time,
   } else {
     strcpy(InFiles->PrecipLapseFile, "");
   }
-
-  if (Options->HeatFlux == TRUE) {
+                                   
+  if (Options->HeatFlux == TRUE) {                               
     if (!(InFiles->MM5SoilTemp = (char **)calloc(sizeof(char *), NSoilLayers)))
       ReportError(Routine, 1);
 
@@ -564,7 +571,7 @@ void InitMM5(LISTPTR Input, int NSoilLayers, TIMESTRUCT *Time,
 
   if (MM5Map->OffsetX > 0 || MM5Map->OffsetY < 0)
     ReportError("Input Options File", 31);
-
+                
   printf("MM5 extreme north / south is %f %f \n", MM5Map->Yorig,
     MM5Map->Yorig - MM5Map->NY * MM5Map->DY);
   printf("MM5 extreme west / east is %f %f\n", MM5Map->Xorig,
@@ -592,10 +599,11 @@ void InitMM5(LISTPTR Input, int NSoilLayers, TIMESTRUCT *Time,
     }
   } else {
     printf("Precip is distributed evenly within MM5 cell\n");
-  }
+  }                                                            
   printf("wind Map is %s\n", InFiles->MM5Wind);
   printf("shortwave Map is %s\n", InFiles->MM5ShortWave);
   printf("humidity Map is %s\n", InFiles->MM5Humidity);
+                                                         
   if (strlen(InFiles->MM5Lapse) > 0) {
     printf("lapse Map is %s\n", InFiles->MM5Lapse);
   } else {
@@ -614,6 +622,7 @@ void InitMM5(LISTPTR Input, int NSoilLayers, TIMESTRUCT *Time,
   printf("fail if %d > %d\n",
     (int)((Map->NX - MM5Map->OffsetX) * Map->DX / MM5Map->DY),
     MM5Map->NX);
+  
   if ((int)((Map->NY + MM5Map->OffsetY) * Map->DY / MM5Map->DY) > MM5Map->NY
     || (int)((Map->NX - MM5Map->OffsetX) * Map->DX / MM5Map->DY) >
     MM5Map->NX)
@@ -690,7 +699,7 @@ void InitRadar(LISTPTR Input, MAPSIZE * Map, TIMESTRUCT * Time,
     ReportError(StrEnv[radar_grid].KeyName, 51);
   Radar->DX = Radar->DY;
 
-  Radar->DXY = sqrt(Radar->DX * Radar->DX + Radar->DY * Radar->DY);
+  Radar->DXY = sqrt(Radar->DX * Radar->DX + Radar->DY * Radar->DY);     
   Radar->X = 0;
   Radar->Y = 0;
   Radar->OffsetX = Round(((float)(Radar->Xorig - Map->Xorig)) /

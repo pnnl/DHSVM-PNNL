@@ -165,7 +165,7 @@ enum KEYS {
   MM5_rows, MM5_cols, MM5_ext_north, MM5_ext_west, MM5_dy, MM5_precip_dist, MM5_precip_freq,
   /* grid information */
   grid_ext_north=0, grid_ext_south, grid_ext_east, grid_ext_west, tot_grid, decim,
-  grid_met_file, file_prefix,
+  grid_met_file, file_prefix, utm_zone,
   /* Soil information */
   soil_description = 0, lateral_ks, exponent, depth_thresh, max_infiltration, capillary_drive,
   soil_albedo, number_of_layers, porosity, pore_size, bubbling_pressure, field_capacity,
