@@ -324,7 +324,7 @@ void InitGridMet(OPTIONSTRUCT *Options, LISTPTR Input, MAPSIZE *Map,
         /* convert lat and lon to utm */
         deg2utm(lat, lon, &East, &North);		
 	sprintf((*Stat)[k].Name, "data_%f_%f\n", lat, lon);
-	//printf("data_%f_%f %f %f\n", lat, lon, East, North);
+	printf("data_%f_%f %f %f\n", lat, lon, East, North);
 	
 	(*Stat)[k].Loc.N = Round(((Map->Yorig - 0.5 * Map->DY) - North) / Map->DY);
         (*Stat)[k].Loc.E = Round((East - (Map->Xorig + 0.5 * Map->DX)) / Map->DX);
