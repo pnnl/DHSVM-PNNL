@@ -120,6 +120,8 @@ void InitDump(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
 	      TOPOPIX **TopoMap, DUMPSTRUCT *Dump, int *NGraphics,
 	      int **which_graphics);
 
+void InitVegUpdate(LISTPTR Input, int NUpdate, DATE ** DUpdate);
+
 void InitEvapMap(MAPSIZE *Map, EVAPPIX ***EvapMap, SOILPIX **SoilMap,
 		 LAYER *Soil, VEGPIX **VegMap, LAYER *Veg, TOPOPIX **TopoMap);
 
@@ -245,7 +247,7 @@ void InitTables(int StepsPerDay, LISTPTR Input, OPTIONSTRUCT *Options,
     
 void InitTerrainMaps(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
   LAYER *Soil, LAYER *Veg, TOPOPIX ***TopoMap, SOILTABLE *SType,
-  SOILPIX ***SoilMap, VEGTABLE *VType, VEGPIX ***VegMap);
+  SOILPIX ***SoilMap, VEGTABLE *VType, VEGPIX ***VegMap, DYNAVEG *DVeg);
 
 void InitTopoMap(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
 		 TOPOPIX ***TopoMap);
@@ -255,7 +257,9 @@ void InitUnitHydrograph(LISTPTR Input, MAPSIZE *Map, TOPOPIX **TopoMap,
 			UNITHYDRINFO *HydrographInfo);
 
 void InitVegMap( OPTIONSTRUCT *Options, LISTPTR Input, MAPSIZE *Map, VEGPIX ***VegMap,
-				VEGTABLE *VType);
+				VEGTABLE *VType, DYNAVEG *DVeg);
+
+uchar IsVegDate(DATE *Current, DYNAVEG *DVeg);
 
 int InitVegTable(VEGTABLE **VType, LISTPTR Input, OPTIONSTRUCT *Options, LAYER *Veg);
 
@@ -359,6 +363,9 @@ void StoreModelState(char *Path, DATE *Current, MAPSIZE *Map,
 
 void SnowStats(DATE *Now, MAPSIZE *Map, OPTIONSTRUCT *Options, 
         TOPOPIX **TopoMap, SNOWPIX **Snow, int Dt);
+
+void UpdateVegMap(DATE *Current, OPTIONSTRUCT * Options, LISTPTR Input, MAPSIZE * Map,
+                LAYER *Veg, VEGPIX *** VegMap, VEGTABLE *VType, DYNAVEG *DVeg);
 
 float viscosity(float Tair, float Rh);
 
