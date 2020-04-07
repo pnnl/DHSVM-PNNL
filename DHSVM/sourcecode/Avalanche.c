@@ -57,7 +57,7 @@ void Avalanche(MAPSIZE *Map, TOPOPIX **TopoMap, TIMESTRUCT *Time, OPTIONSTRUCT *
   int y;                         /* counter */
   int i, j, k;
   float Snowout;
-  int ga;
+  int ga, nevent;
   GA_Patch patch;
 
   /*****************************************************************************
@@ -87,6 +87,8 @@ void Avalanche(MAPSIZE *Map, TOPOPIX **TopoMap, TIMESTRUCT *Time, OPTIONSTRUCT *
       patch.patch[y][x] = 0.0;
     } 
   }
+
+  nevent = 0;
 
   for (y = 0; y < Map->NY; y++) {
     for (x = 0; x < Map->NX; x++) {
@@ -119,6 +121,9 @@ void Avalanche(MAPSIZE *Map, TOPOPIX **TopoMap, TIMESTRUCT *Time, OPTIONSTRUCT *
 
           /* Assign the avalanched snow to appropriate surrounding pixels */
           if (SubTotalDir[y][x] > 0) {
+
+	    nevent += 1;
+
             Snowout /= (float)SubTotalDir[y][x];
 
             for (k = 0; k < NDIRS; k++) {
@@ -142,32 +147,40 @@ void Avalanche(MAPSIZE *Map, TOPOPIX **TopoMap, TIMESTRUCT *Time, OPTIONSTRUCT *
                as I found it:
 
                Snowout = 0.0; */
-            int nx = x + patch.ixoff;
-            int ny = y + patch.iyoff;
-            patch.patch[x + patch.ixoff][y + patch.iyoff] += Snowout;
+            patch.patch[y + patch.iyoff][x + patch.ixoff] += Snowout;
             /* Snow[y][x].Swq = Snowout; */
           }
-        }
+        } 
+	else {
+	  patch.patch[y + patch.iyoff][x + patch.ixoff] += Snow[y][x].Swq;
+	}
       }
     }
   }
 
-  GA_Acc_patch(ga, Map, &patch);
-  ParallelBarrier();
+  /* In general, redistribution of Swq by avalanche should be
+     rare. Avoid unnecessary communication if no events occur. */
 
-  /* get the accumulated surface flow back from the GA (local array
-     does not include ghosts) */
+  GA_Igop(&nevent, 1, "+");
 
-  GA_Get_patch(ga, Map, &patch);
+  if (nevent > 0) {
+
+    GA_Acc_patch(ga, Map, &patch);
+    ParallelBarrier();
+
+    /* get the accumulated surface flow back from the GA (local array
+       does not include ghosts) */
+
+    GA_Get_patch(ga, Map, &patch);
     
-  for (y = 0; y < Map->NY; y++) {
-    for (x = 0; x < Map->NX; x++) {
-      if (INBASIN(TopoMap[y][x].Mask)) {
-        Snow[y][x].Swq = patch.patch[y+patch.iyoff][x+patch.ixoff];
+    for (y = 0; y < Map->NY; y++) {
+      for (x = 0; x < Map->NX; x++) {
+	if (INBASIN(TopoMap[y][x].Mask)) {
+	  Snow[y][x].Swq = patch.patch[y+patch.iyoff][x+patch.ixoff];
+	}
       }
     }
   }
-
   GA_Free_patch(&patch);
 
   free_3D_uchar(SubDir);
