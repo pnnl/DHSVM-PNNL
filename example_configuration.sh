@@ -236,14 +236,12 @@ elif [ $host = "briareus-gnu" ]; then
 
     prefix=/files0/dhsvm
 
-    CC="/share/apps/gcc/4.5.0/bin/gcc"
-    export CC
-
     cmake \
-    -D DHSVM_USE_NETCDF:BOOL=OFF \
-    -D MPI_C_COMPILER:STRING="/share/apps/openmpi/1.4.3/gnu/bin/mpicc" \
-    -D GA_DIR:STRING="/files0/dhsvm" \
-    -D CMAKE_INSTALL_PREFIX:PATH="/files0/dhsvm" \
+        -D DHSVM_USE_NETCDF:BOOL=OFF \
+        -D MPI_C_COMPILER:STRING="mpicc" \
+        -D MPI_CXX_COMPILER:STRING="mpicxx" \
+        -D GA_DIR:STRING="/files0/dhsvm" \
+        -D CMAKE_INSTALL_PREFIX:PATH="/files0/dhsvm" \
     ..
 
 elif [ $host = "constance" ]; then
