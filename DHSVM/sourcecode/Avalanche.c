@@ -19,6 +19,8 @@
 #include "functions.h"
 #include "constants.h"
 #include "slopeaspect.h"
+#include "array_alloc.h"
+#include "ParallelDHSVM.h"
 
  /*****************************************************************************
    Avalanche()
@@ -55,6 +57,8 @@ void Avalanche(MAPSIZE *Map, TOPOPIX **TopoMap, TIMESTRUCT *Time, OPTIONSTRUCT *
   int y;                         /* counter */
   int i, j, k;
   float Snowout;
+  int ga;
+  GA_Patch patch;
 
   /*****************************************************************************
      Allocate memory
@@ -71,6 +75,18 @@ void Avalanche(MAPSIZE *Map, TOPOPIX **TopoMap, TIMESTRUCT *Time, OPTIONSTRUCT *
 
   /* calculate snow surface slope in the same approach as subflow direction */
   SnowSlopeAspect(Map, TopoMap, Snow, SubSnowGrad, SubDir, SubTotalDir);
+  
+  ga = Map->dist;
+  GA_Zero(ga);
+
+  /* make a local array to store IExcess that covers the locally
+     owned part of the domain plus ghost cells */
+  GA_Alloc_patch_ghost(ga, Map, &patch);
+  for (y = 0; y < patch.NY; ++y) {
+    for (x = 0; x < patch.NX; ++x) {
+      patch.patch[y][x] = 0.0;
+    } 
+  }
 
   for (y = 0; y < Map->NY; y++) {
     for (x = 0; x < Map->NX; x++) {
@@ -94,32 +110,66 @@ void Avalanche(MAPSIZE *Map, TOPOPIX **TopoMap, TIMESTRUCT *Time, OPTIONSTRUCT *
           Snowout = Snow[y][x].Swq;
           Snow[y][x].Swq = 0.0;
           
-
+          /* This seems premature. It probably needs to be done after
+             redistribution */
           Snow[y][x].TSurf = 0.0;
           Snow[y][x].TPack = 0.0;
           Snow[y][x].PackWater = 0.0;
           Snow[y][x].SurfWater = 0.0;
-          
+
           /* Assign the avalanched snow to appropriate surrounding pixels */
           if (SubTotalDir[y][x] > 0) {
             Snowout /= (float)SubTotalDir[y][x];
 
+            for (k = 0; k < NDIRS; k++) {
+              int nx = xdirection[k] + x;
+              int ny = ydirection[k] + y;
+              if (valid_cell(Map, nx, ny)) {
+                nx += patch.ixoff;
+                ny += patch.iyoff;
+                patch.patch[ny][nx] += Snowout * SubDir[y][x][k];
+                /* Snow[ny][nx].Swq += Snowout * SubDir[y][x][k]; */
+              }
+            }
+
           }
           else {
-            Snowout = 0.0;
-            Snow[y][x].Swq = Snowout;
-          }
-          for (k = 0; k < NDIRS; k++) {
-            int nx = xdirection[k] + x;
-            int ny = ydirection[k] + y;
-            if (valid_cell(Map, nx, ny)) {
-              Snow[ny][nx].Swq += Snowout * SubDir[y][x][k];
-            }
+            /* (WAP) If we get here, there are apparently no neighbors
+               to receive the slide, which seems really unlikely given
+               the slope_deg condition above (the test is still
+               necessary, though). This should mean that Snowout goes
+               back into cell x,y Swq. It should not just disappear,
+               as I found it:
+
+               Snowout = 0.0; */
+            int nx = x + patch.ixoff;
+            int ny = y + patch.iyoff;
+            patch.patch[x + patch.ixoff][y + patch.iyoff] += Snowout;
+            /* Snow[y][x].Swq = Snowout; */
           }
         }
       }
     }
   }
+
+  GA_Acc_patch(ga, Map, &patch);
+  ParallelBarrier();
+
+  /* get the accumulated surface flow back from the GA (local array
+     does not include ghosts) */
+
+  GA_Get_patch(ga, Map, &patch);
+    
+  for (y = 0; y < Map->NY; y++) {
+    for (x = 0; x < Map->NX; x++) {
+      if (INBASIN(TopoMap[y][x].Mask)) {
+        Snow[y][x].Swq = patch.patch[y+patch.iyoff][x+patch.ixoff];
+      }
+    }
+  }
+
+  GA_Free_patch(&patch);
+
   free_3D_uchar(SubDir);
   free_2D_uint(SubTotalDir);
   free_2D_float(slope_deg);
