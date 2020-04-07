@@ -1,63 +1,64 @@
-i#OS junk files
 
-[Tt]humbs.db
-*.DS_Store
 
+
+
+
+
+
+
+#*.bin
+#*txt
+#INPUT.*
+#Project files
+#Subversion files
+#Tooling
 #Visual Studio files
-*.o
+#input file
+#input/
+#modelstate/
+#output file
+**/program/
+*.DS_Store
+*.[Cc]ache
 *.[Oo]bj
-*.user
 *.aps
-*.pch
-*.vspscc
-*.vssscc
-*_i.c
-*_p.c
+*.bak
+*.ilk
+*.lib
+*.log
 *.ncb
+*.o
+*.pch
+*.pyc
+*.resharper
+*.sbr
+*.sdf
 *.suo
 *.tlb
 *.tlh
-*.bak
-*.[Cc]ache
-*.ilk
-*.log
-*.lib
-*.sbr
-*.sdf
-*.pyc
+*.user
+*.vspscc
+*.vssscc
 *.xml
 *NARR_Morr*
-ipch/
-obj/
-[Bb]in
-[Dd]ebug*/
-[Rr]elease*/
-Ankh.NoLoad
-#Tooling
-_ReSharper*/
-*.resharper
-[Tt]est[Rr]esult*
-
-#Project files
-[Bb]uild/
-
-#Subversion files
-.svn
-
-#output file
-output/
+*_i.c
+*_p.c
 *develop/
 *gitignore
-
-program/
-**/program/
+.svn
+/build.tlaloc
+Ankh.NoLoad
 DHSVM3.2
-
-#input file
-#INPUT.*
-#modelstate/
-#input/
-#*.bin
-#*txt
-
+[Bb]in
+[Bb]uild/
+[Dd]ebug*/
+[Rr]elease*/
+[Tt]est[Rr]esult*
+[Tt]humbs.db
+_ReSharper*/
 gitignore
+i#OS junk files
+ipch/
+obj/
+output/
+program/
