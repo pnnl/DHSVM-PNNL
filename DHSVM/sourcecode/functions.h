@@ -60,7 +60,7 @@ void CheckOut(OPTIONSTRUCT *Options, LAYER Veg, LAYER Soil,
 
 unsigned char dequal(double a, double b);
 
-void deg2utm(float la, float lo, float *x, float *y);
+void deg2utm(float la, float lo, float *x, float *y, int zone);
 
 void draw(DATE *Day, int first, int DayStep, MAPSIZE *Map, int NGraphics,
 	  int *which_graphics, VEGTABLE *VType, SOILTABLE *SType, SNOWPIX **SnowMap, 
