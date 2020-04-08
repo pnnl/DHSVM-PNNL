@@ -166,6 +166,18 @@ int main(int argc, char **argv)
     printf("WARNING: USING SNOW ONLY MODULES (prescribed in makefile)!\n");
     printf("----------------------------------\n");
 #endif
+    switch (NDIRS) {
+    case (4):
+      printf("\nNOTE: Using default 4-neighbor routing scheme\n");
+      break;
+    case (8):
+      printf("\nWARNING: Using experimental 8-neighbor routing scheme\n");
+      break;
+    default:
+      printf("\nERROR: Unknown routing scheme using %d neighbors, you should stop now\n", NDIRS);
+      break;
+    }
+      
     printf("\nSTARTING INITIALIZATION PROCEDURES\n\n");
   }
 
