@@ -191,8 +191,9 @@ typedef struct {
 } METLOCATION;
 
 typedef struct {
-  int NGrids;            
-  int Decimal;  
+  int utmzone;                  /* utm zone used as reference for all geospatial input */
+  int NGrids;                   /* total met grids used for memory allocation, must >= actual grids used */
+  int Decimal;                  /* decimal point of met grid coordinates as used in the file name */
   float LatNorth;               /* extreme north latitude */
   float LonEast;                /* extreme east longitude */
   float LatSouth;               /* extreme south latitude */

@@ -252,6 +252,7 @@ void InitGridMet(OPTIONSTRUCT *Options, LISTPTR Input, MAPSIZE *GMap, MAPSIZE *M
     { "METEOROLOGY", "GRID_DECIMAL", "", "" },
     { "METEOROLOGY", "MET FILE PATH", "", "" },
     { "METEOROLOGY", "FILE PREFIX", "", "" },
+    { "METEOROLOGY", "UTM ZONE", "", "" },                                      
     { NULL, NULL, "", NULL },
   };
 
@@ -302,6 +303,10 @@ void InitGridMet(OPTIONSTRUCT *Options, LISTPTR Input, MAPSIZE *GMap, MAPSIZE *M
     ReportError(StrEnv[file_prefix].KeyName, 51);
   strcpy(Grid->fileprefix, StrEnv[file_prefix].VarStr);
 
+  /* UTM zone used as reference for all spatial input files */
+  if (!CopyInt(&(Grid->utmzone), StrEnv[utm_zone].VarStr, 1))
+    ReportError(StrEnv[utm_zone].KeyName, 51);                                              
+
   /* Allocate memory for the stations */
   if (!(*Stat = (METLOCATION *)calloc(Grid->NGrids, sizeof(METLOCATION))))
     ReportError(Routine, 1);
@@ -325,8 +330,9 @@ void InitGridMet(OPTIONSTRUCT *Options, LISTPTR Input, MAPSIZE *GMap, MAPSIZE *M
         sscanf(ent->d_name, junk, &lat, &lon);
 
         /* convert lat and lon to utm */
-        deg2utm(lat, lon, &East, &North);		
-        sprintf((*Stat)[k].Name, "data_%f_%f\n", lat, lon);
+        deg2utm(lat, lon, &East, &North, Grid->utmzone);		
+		sprintf((*Stat)[k].Name, "data_%f_%f\n", lat, lon);
+    printf("%f, %f, %f, %f\n", lat, lon, East, North);
 		
         (*Stat)[k].Loc.N = Round(((GMap->Yorig - 0.5 * GMap->DY) - North) / GMap->DY);
         (*Stat)[k].Loc.E = Round((East - (GMap->Xorig + 0.5 * GMap->DX)) / GMap->DX);
