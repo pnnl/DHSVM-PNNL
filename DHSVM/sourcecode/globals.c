@@ -9,6 +9,15 @@
  * $Id: globals.c,v 1.4 2003/07/01 21:26:30 olivier Exp $
  */
 
+int NDIRS;                      /* How many neighbors are used in surface/subsurface routing */
+/* These indices are so neighbors can be looked up quickly */
+int xdirection4[] = {  0,  1,  0, -1 };
+int ydirection4[] = { -1,  0,  1,  0 };
+int xdirection8[] = { -1,  0,  1,  1,  1,  0, -1, -1 };
+int ydirection8[] = {  1,  1,  1,  0, -1, -1, -1,  0 };
+int *xdirection;
+int *ydirection;
+
 float LAI_SNOW_MULTIPLIER;	    /* multiplier to calculate the amount of 
 				                   available snow interception as a function of LAI */
 float LAI_WATER_MULTIPLIER;	    /* multiplier to determine maximum interception 

@@ -99,6 +99,7 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
     {"OPTIONS", "SNOW SLIDING", "", "" },
     {"OPTIONS", "PRECIPITATION SEPARATION", "", "FALSE" },
     {"OPTIONS", "SNOW STATISTICS", "", "FALSE" },
+    {"OPTIONS", "ROUTING NEIGHBORS", "", "4"},
     {"AREA", "COORDINATE SYSTEM", "", ""},
     {"AREA", "EXTREME NORTH", "", ""},
     {"AREA", "EXTREME WEST", "", ""},
@@ -158,6 +159,23 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
   }
   else
     ReportError(StrEnv[extent].KeyName, 51);
+
+  /* Determine how many neighbors are used for surface/subsurface routing */
+  if (!CopyInt(&(NDIRS), StrEnv[routing_neighbors].VarStr, 1))
+      ReportError(StrEnv[routing_neighbors].KeyName, 51);
+  switch (NDIRS) {
+  case (4):
+    xdirection = &xdirection4[0];
+    ydirection = &ydirection4[0];
+    break;
+  case (8):
+    xdirection = &xdirection8[0];
+    ydirection = &ydirection8[0];
+    break;
+  default:
+      ReportError(StrEnv[routing_neighbors].KeyName, 51);
+  }
+  printf("Using %d neighbors for surface/subsurface routing\n", NDIRS);
 
   /* Determine how the flow gradient should be calculated */
   if (Options->Extent != POINT) {

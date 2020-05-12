@@ -40,22 +40,6 @@
 #include "slopeaspect.h"
 #include "DHSVMerror.h"
 
-/* These indices are so neighbors can be looked up quickly */
-int xdirection[NDIRS] = {
-#if NDIRS == 4
-  0, 1, 0, -1
-#elif NDIRS == 8
-  -1, 0, 1, 1, 1, 0, -1, -1
-#endif
-};
-int ydirection[NDIRS] = {
-#if NDIRS == 4
-  -1, 0, 1, 0
-#elif NDIRS == 8
-  1, 1, 1, 0, -1, -1, -1, 0
-#endif
-};
-
 float temp_aspect[NNEIGHBORS] = {
   225., 180., 135., 90., 45., 0., 315., 270.
 };
