@@ -10,23 +10,22 @@
 # DESCRIP-END.
 # COMMENTS:
 #
-# Last Change: 2019-10-08 13:28:20 d3g096
+# Last Change: 2020-05-12 10:09:21 d3g096
 
 set -xue
 
 # -------------------------------------------------------------
 # handle command line options
 # -------------------------------------------------------------
-usage="$0 [-d|-r] [-8] [-t] [name]"
+usage="$0 [-d|-r] [-t] [name]"
 
-opts=`getopt dr8 $*`
+opts=`getopt dr $*`
 if [ $? != 0 ]; then
     echo $usage >&2
     exit 2
 fi
 set -- $opts
 
-d8="OFF"
 build="RelWithDebInfo"
 for o in $*; do
     case $o in
@@ -36,10 +35,6 @@ for o in $*; do
             ;;
         -r)
             build="Release"
-            shift
-            ;;
-        -8)
-            d8="ON"
             shift
             ;;
         --)
@@ -70,7 +65,6 @@ common_flags="\
         -D DHSVM_BUILD_TESTS:BOOL=OFF \
         -D DHSVM_USE_RBM:BOOL=ON \
         -D DHSVM_DUMP_TOPO:BOOL=ON \
-        -D DHSVM_D8:BOOL=$d8 \
         -D CMAKE_VERBOSE_MAKEFILE:BOOL=TRUE \
 "
 
