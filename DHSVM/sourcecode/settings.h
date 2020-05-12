@@ -96,14 +96,7 @@ typedef unsigned int unint;
 #define MAXSTRING    255
 #define NAMESIZE     127
 
-#if !defined(NDIRS)
-#define NDIRS          4        /* Number of directions in which water can flow, must equal 4 */
-#endif
-
-#if !((NDIRS == 4) || (NDIRS == 8))
-#error "NDIRS must be 4 or 8"
-#endif
-
+#define MAXDIRS        8
 #define NNEIGHBORS     8    /* Number of directions in which water can flow based on fine grid, must equal 8 */
 
 
@@ -130,7 +123,7 @@ enum KEYS {
   temp_lapse, precip_lapse, cressman_radius, cressman_stations, prism_data_path, 
   prism_data_ext, shading_data_path, shading_data_ext, skyview_data_path, 
   stream_temp, canopy_shading, improv_radiation, gapping, snowslide, sepr, 
-  snowstats, 
+  snowstats, routing_neighbors, 
   /* Area */
   coordinate_system, extreme_north, extreme_west, center_latitude,
   center_longitude, time_zone_meridian, number_of_rows,
@@ -143,7 +136,7 @@ enum KEYS {
   snow_lai_multiplier, min_intercepted_snow, outside_basin,
   temp_lapse_rate, precip_lapse_rate, 
   max_swe, snowslide_parameter1,
-  snowslide_parameter2, gapwind_adj, 
+  snowslide_parameter2, gapwind_adj,
   /* Constants that can vary spatially */
   rain_threshold = 0,
   snow_threshold,
