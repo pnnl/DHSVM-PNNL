@@ -177,7 +177,9 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
   default:
       ReportError(StrEnv[routing_neighbors].KeyName, 51);
   }
-  printf("Using %d neighbors for surface/subsurface routing\n", NDIRS);
+  if (ParallelRank() == 0) {
+    printf("Using %d neighbors for surface/subsurface routing\n", NDIRS);
+  }
 
   /* Determine how the flow gradient should be calculated */
   if (Options->Extent != POINT) {
