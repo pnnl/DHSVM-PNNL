@@ -119,8 +119,6 @@ Albedo Accumulation Lambda = 0.9 	                     # Lambda for accumulation
 Albedo Melting Lambda = 0.6 		                       # Lambda for melting period
 Albedo Accumulation Min = 0.7 		                     # Min albedo value during accumulation period; set to -9999 if min value is not needed.
 Albedo Melting Min = 0.55 		                         # Min albedo value during melting period; set to -9999 if min value is not needed.
-Precipitation Multiplier Map =                         # no correction be made if leave blank, or a constant applied basin-wide
-                                                       # or path to a 2D spatial input in the same format as DEM, soil and veg  
 ################################################################################
 # TERRAIN INFORMATION SECTION
 ################################################################################
