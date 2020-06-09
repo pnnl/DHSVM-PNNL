@@ -1,6 +1,6 @@
 <h1>Distributed Hydrology Soil Vegetation Model (DHSVM) </h1>
 
-This repository serves as the public source code repository of the Distributed Hydrology Soil Vegetation Model (DHSVM). You can find DHSVM documentation, and selected past and ongoing DHSVM-based research & projects on the <a href="http://dhsvmdev.pnl.gov///">DHSVM website </a>.
+This repository serves as the public source code repository of the Distributed Hydrology Soil Vegetation Model (DHSVM). You can find DHSVM documentation, and selected past and ongoing DHSVM-based research & projects on the <a href="https://dhsvm.pnnl.gov/">DHSVM website </a>.
 
 DHSVM (<a href="http://onlinelibrary.wiley.com/doi/10.1029/94WR00436/abstract">Wigmosta et al., 1994</a>) numerically represents with high spatial resolution (typically on the order of 100 m) the effects of local weather, topography, soil type, and vegetation on the hydrology within watersheds. The model is used to study the impacts of climate change, land use change, forest management practices, flooding, glacier dynamics, stream temperature and stream quality.
 
@@ -13,7 +13,7 @@ If you decide to use DHSVM, please acknowledge <a href="http://onlinelibrary.wil
 ### _Release date: February 23, 2018_ ###
 
 This is a major release from DHSVM 3.1.2. It includes several new features, function enhancements and bug fixes.<br />
-The tutorial and sample data to run DHSVM v 3.2 will be made available on the <a href="http://dhsvmdev.pnl.gov//tutorials.stm">DHSVM website </a>.
+The tutorial and sample data to run DHSVM v 3.2 will be made available on the <a href="https://dhsvm.pnnl.gov/tutorials.stm">DHSVM website </a>.
 
 __New Capabilities__
   * Variable radiation transmittance (with solar position and tree characteristics) 
