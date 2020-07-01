@@ -29,7 +29,7 @@ float CanopyResistance(float LAI, float RsMin, float RsMax, float Rpc,
 float Desorption(int Dt, float Moisture, float Porosity, float Ks, 
 			   float Press, float m);
 
-void EvapoTranspiration(int Layer, int impvRad, int Dt, PIXMET *Met,
+void EvapoTranspiration(int Layer, int impvRad, int Dt, float F, PIXMET *Met,
               float NetRad, float Rp, VEGTABLE *VType, SOILTABLE *SType,
               float MoistureFlux, float *Moist, float *Temp, float *Int,
               float *EPot, float *EInt, float **ESoil, float *EAct,
