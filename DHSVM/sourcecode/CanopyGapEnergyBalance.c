@@ -219,7 +219,8 @@ void CalcCanopyGapET(CanopyGapStruct **Gap, int NSoil, VEGTABLE *VType,
     NetRadiation =
       (*Gap)[Opening].NetShort[1] +
       (*Gap)[Opening].LongIn[1] - (*Gap)[Opening].LongOut[1];
-    EvapoTranspiration(1, 1, Dt, LocalMet, NetRadiation,
+      
+    EvapoTranspiration(1, 1, Dt, 1, LocalMet, NetRadiation,
       Rp, VType, SType, (*Gap)[Opening].MoistureFlux, (*Gap)[Opening].Moist,
       LocalSoil->Temp, &((*Gap)[Opening].IntRain[0]),
       (*Gap)[Opening].EPot, (*Gap)[Opening].EInt, (*Gap)[Opening].ESoil,
@@ -369,7 +370,7 @@ void CalcGapSurroudingET(int Dt, CanopyGapStruct **Gap,
       (*Gap)[Forest].LongIn[0] - 2 * LocalVeg->Vf * (*Gap)[Forest].LongOut[0];
     (*Gap)[Forest].NetRadiation[0] = NetRadiation;
 
-    EvapoTranspiration(0, 1, Dt, LocalMet, NetRadiation,
+    EvapoTranspiration(0, 1, Dt, LocalVeg->Fract[0], LocalMet, NetRadiation,
       Rp, VType, SType, (*Gap)[Forest].MoistureFlux, (*Gap)[Forest].Moist, LocalSoil->Temp,
       &((*Gap)[Forest].IntRain[0]), (*Gap)[Forest].EPot, (*Gap)[Forest].EInt, (*Gap)[Forest].ESoil,
       (*Gap)[Forest].EAct, &((*Gap)[Forest].ETot), LocalNetwork->Adjust, UpperRa, LocalVeg);
@@ -381,7 +382,7 @@ void CalcGapSurroudingET(int Dt, CanopyGapStruct **Gap,
         LocalRad->NetShort[1] +
         LocalRad->LongIn[1] - LocalVeg->Fract[1] * LocalRad->LongOut[1];
       LocalRad->NetRadiation[1] = NetRadiation;
-      EvapoTranspiration(1, 1, Dt, LocalMet, NetRadiation,
+      EvapoTranspiration(1, 1, Dt, LocalVeg->Fract[1], LocalMet, NetRadiation,
         Rp, VType, SType, (*Gap)[Forest].MoistureFlux, (*Gap)[Forest].Moist, LocalSoil->Temp,
         &((*Gap)[Forest].IntRain[1]), (*Gap)[Forest].EPot, (*Gap)[Forest].EInt, (*Gap)[Forest].ESoil,
         (*Gap)[Forest].EAct, &((*Gap)[Forest].ETot), LocalNetwork->Adjust, LowerRa, LocalVeg);

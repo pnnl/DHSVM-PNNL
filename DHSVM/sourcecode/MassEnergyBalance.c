@@ -365,7 +365,7 @@ void MassEnergyBalance(OPTIONSTRUCT *Options, int y, int x,
       NetRadiation = LocalRad->NetShort[0] +
       LocalRad->LongIn[0] - 2 * LocalVeg->Fract[0] * LocalRad->LongOut[0];
     LocalRad->NetRadiation[0] = NetRadiation;
-    EvapoTranspiration(0, Options->ImprovRadiation, Dt, LocalMet, NetRadiation,
+    EvapoTranspiration(0, Options->ImprovRadiation, Dt, LocalVeg->Fract[0], LocalMet, NetRadiation,
       Rp, VType, SType, LocalVeg->MoistureFlux, LocalSoil->Moist, LocalSoil->Temp,
       &(LocalPrecip->IntRain[0]), LocalEvap->EPot, LocalEvap->EInt, LocalEvap->ESoil,
       LocalEvap->EAct, &(LocalEvap->ETot), LocalNetwork->Adjust, UpperRa, LocalVeg);
@@ -377,7 +377,7 @@ void MassEnergyBalance(OPTIONSTRUCT *Options, int y, int x,
         LocalRad->NetShort[1] +
         LocalRad->LongIn[1] - LocalVeg->Fract[1] * LocalRad->LongOut[1];
       LocalRad->NetRadiation[1] = NetRadiation;
-      EvapoTranspiration(1, Options->ImprovRadiation, Dt, LocalMet, NetRadiation,
+      EvapoTranspiration(1, Options->ImprovRadiation, Dt, LocalVeg->Fract[1], LocalMet, NetRadiation,
         Rp, VType, SType, LocalVeg->MoistureFlux, LocalSoil->Moist, LocalSoil->Temp,
         &(LocalPrecip->IntRain[1]), LocalEvap->EPot, LocalEvap->EInt, LocalEvap->ESoil,
         LocalEvap->EAct, &(LocalEvap->ETot), LocalNetwork->Adjust, LowerRa, LocalVeg);
@@ -394,7 +394,7 @@ void MassEnergyBalance(OPTIONSTRUCT *Options, int y, int x,
     NetRadiation =
       LocalRad->NetShort[0] +
       LocalRad->LongIn[0] - LocalVeg->Fract[0] * LocalRad->LongOut[0];
-    EvapoTranspiration(0, Options->ImprovRadiation, Dt, LocalMet, NetRadiation,
+    EvapoTranspiration(0, Options->ImprovRadiation, Dt, LocalVeg->Fract[0], LocalMet, NetRadiation,
       Rp, VType, SType, LocalVeg->MoistureFlux, LocalSoil->Moist, LocalSoil->Temp,
       &(LocalPrecip->IntRain[0]), LocalEvap->EPot, LocalEvap->EInt, LocalEvap->ESoil,
       LocalEvap->EAct, &(LocalEvap->ETot), LocalNetwork->Adjust, LowerRa, LocalVeg);
