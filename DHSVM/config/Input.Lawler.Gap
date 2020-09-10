@@ -54,8 +54,8 @@ Temperature lapse rate   = CONSTANT       # CONSTANT or VARIABLE
 Precipitation lapse rate = CONSTANT       # CONSTANT, MAP, or VARIABLE
 Cressman radius      =                    # in model pixels
 Cressman stations    =                    # the maximum stations for interpolation
-Stream Temperature   = TRUE               # TRUE or FALSE
-Riparian Shading       = TRUE             # used for stream tempeature only
+Stream Temperature   = FALSE               # TRUE or FALSE
+Riparian Shading       = FALSE             # used for stream tempeature only
 Variable Light Transmittance = TRUE       # TRUE if light transmittance changes with solar altitude
 Canopy Gapping = TRUE
 Snow Sliding = FALSE                      # this function is not available - needs more tests
@@ -140,7 +140,7 @@ Stream Map File      = ../input/stream.map.dat
 Stream Network File  = ../input/stream.network.dat
 Stream Class File    = ../input/adjust.classfile
 
-# enter the path to riparian parameters if Canopy Gapping = TRUE
+# enter the path to riparian parameters if Riparian Shading = TRUE
 Riparian Veg File    = ../input/rveg.baseline.network
 
 ################################### ROAD NETWORK #########################################################
@@ -244,6 +244,7 @@ Precipitation lapse rate =
 Soil Map File   = ../input/soil.bin
 Soil Conductivity Map File = none  # Unit: mm/s
 Soil Porosity Map File = none 
+Soil Field Capacity File = ../input/soil_fcap.bin    # input in the soil table below is still required as before but will be overwritten in calculations if a spatial map is provided       
 Soil Depth File = ../input/soild.bin
 Number of Soil Types = 1           
 
@@ -273,8 +274,9 @@ Residual Water Content 1 = 0. 0. 0.
 [VEGETATION]
 
 Vegetation Map File = ../input/Veg.bin
+Vegetation FC Map File = ../input/veg_fc.bin
+Vegetation LAI Map File = ../input/veg_lai.bin
 Canopy Gap Map File = ../input/GapDiam.bin    # Gap diameter spatial input
-
 Number of Vegetation Types = 1              # Number of different vegetation types
 
 ############################ Vegetation  1  ########################
@@ -320,10 +322,8 @@ Canopy View Adj Factor   1 = 1.2
 ################################################################################
 [OUTPUT]                                  # Information what to output when
 
-Output Directory = ../output/
-Vegetation FC Map File = none    # ../input/veg_fc.bin
-Vegetation LAI Map File = none   # ../input/veg_lai.bin
-Initial State Directory   = ../input/modelstate/
+Output Directory = ../output/output_extended_gap/
+Initial State Directory   = ../input/modelstate/gap/
 
 ################ PIXEL DUMPS ###################################################
 

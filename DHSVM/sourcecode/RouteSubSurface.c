@@ -211,7 +211,7 @@ void RouteSubSurface(int Dt, MAPSIZE *Map, TOPOPIX **TopoMap,
 			AvailableWater =
 				CalcAvailableWater(VType[VegMap[y][x].Veg - 1].NSoilLayers,
 				 SoilMap[y][x].Depth, VType[VegMap[y][x].Veg - 1].RootDepth,
-				 SoilMap[y][x].Porosity, SType[SoilMap[y][x].Soil - 1].FCap,
+				 SoilMap[y][x].Porosity, SoilMap[y][x].FCap,
 				 SoilMap[y][x].TableDepth, Adjust);
 			OutFlow = (OutFlow > AvailableWater) ? AvailableWater : OutFlow;
 		  }
@@ -241,7 +241,7 @@ void RouteSubSurface(int Dt, MAPSIZE *Map, TOPOPIX **TopoMap,
 				CalcAvailableWater(VType[VegMap[y][x].Veg - 1].NSoilLayers,
 				 BankHeight, VType[VegMap[y][x].Veg - 1].RootDepth,
 				 SoilMap[y][x].Porosity,
-				 SType[SoilMap[y][x].Soil - 1].FCap,
+				 SoilMap[y][x].FCap,
 				 SoilMap[y][x].TableDepth, Adjust);
 			
 			water_out_road = 
@@ -288,7 +288,7 @@ void RouteSubSurface(int Dt, MAPSIZE *Map, TOPOPIX **TopoMap,
 				 CalcAvailableWater(VType[VegMap[y][x].Veg - 1].NSoilLayers,
 				 BankHeight, VType[VegMap[y][x].Veg - 1].RootDepth,
 				 SoilMap[y][x].Porosity,
-				 SType[SoilMap[y][x].Soil - 1].FCap,
+				 SoilMap[y][x].FCap,
 				 SoilMap[y][x].TableDepth, Adjust);
 			
 			OutFlow = (OutFlow > AvailableWater) ? AvailableWater : OutFlow;
