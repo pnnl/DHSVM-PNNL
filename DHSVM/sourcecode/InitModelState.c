@@ -326,8 +326,8 @@ void InitModelState(DATE *Start, int StepsPerDay, MAPSIZE *Map, OPTIONSTRUCT *Op
             }
           }
           if (i == NSoil) {
-            if (SoilMap[y][x].Moist[i] < SType[SoilMap[y][x].Soil - 1].FCap[NSoil - 1]) {
-              SoilMap[y][x].Moist[i] = SType[SoilMap[y][x].Soil - 1].FCap[NSoil - 1];
+            if (SoilMap[y][x].Moist[i] < SoilMap[y][x].FCap[i]) {
+              SoilMap[y][x].Moist[i] = SoilMap[y][x].FCap[i];
             }
           }
           if (i < NSoil) {
@@ -409,7 +409,7 @@ void InitModelState(DATE *Start, int StepsPerDay, MAPSIZE *Map, OPTIONSTRUCT *Op
         if ((SoilMap[y][x].TableDepth =
           WaterTableDepth((Soil.NLayers[SoilMap[y][x].Soil - 1]), SoilMap[y][x].Depth,
             VType[VegMap[y][x].Veg - 1].RootDepth, SoilMap[y][x].Porosity,
-            SType[SoilMap[y][x].Soil - 1].FCap, Network[y][x].Adjust, SoilMap[y][x].Moist)) < 0.0)
+            SoilMap[y][x].FCap, Network[y][x].Adjust, SoilMap[y][x].Moist)) < 0.0)
           /* ReportError((char *) Routine, 35); */ {
             remove -= SoilMap[y][x].TableDepth * Map->DX * Map->DY;
             SoilMap[y][x].TableDepth = 0.0;

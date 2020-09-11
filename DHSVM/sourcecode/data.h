@@ -414,6 +414,7 @@ typedef struct {
   
   float KsLat;      /* Soil Lateral Conductivity */
   float *Porosity;          /* Soil Porosity */
+  float *FCap;      /* soil field capacity */
 } SOILPIX;
 
 typedef struct {

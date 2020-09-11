@@ -32,7 +32,7 @@ Gradient             = TOPOGRAPHY   	    # TOPOGRAPHY or WATERTABLE
 Flow Routing         = NETWORK            # UNIT_HYDROGRAPH or NETWORK (StrEnv[flow_routing])
 Sensible Heat Flux   = FALSE              # TRUE or FALSE
 Overland Routing     = CONVENTIONAL	      # CONVENTIONAL or KINEMATIC (StrEnv[routing])
-Infiltration	       = STATIC		          # Static or Dynamic
+Infiltration	     = STATIC		            # Static or Dynamic
 Interpolation        = INVDIST            # NEAREST or INVDIST or VARCRESS
 MM5                  = FALSE		          # TRUE or FALSE
 QPF                  = FALSE              # TRUE or FALSE
@@ -54,14 +54,13 @@ Temperature lapse rate   = CONSTANT       # CONSTANT or VARIABLE
 Precipitation lapse rate = CONSTANT       # CONSTANT, MAP, or VARIABLE
 Cressman radius      =                    # in model pixels
 Cressman stations    =                    # the maximum stations for interpolation
-Stream Temperature   = FALSE               # TRUE or FALSE
-Riparian Shading       = FALSE             # used for stream tempeature only
+Stream Temperature   = FALSE              # TRUE or FALSE
+Riparian Shading       = FALSE            # used for stream tempeature only
 Variable Light Transmittance = TRUE       # TRUE if light transmittance changes with solar altitude
-Canopy Gapping = TRUE
+Canopy Gapping = FALSE
 Snow Sliding = FALSE                      # this function is not available - needs more tests
 Precipitation Separation = FALSE          # TRUE if snow and rain are separately provided in meterological input data (e.g. WRF)
 Snow Statistics = FALSE                   # TRUE if snow statistics for each water year calculated, needs to specify variable and date in map section
- 
 ##########################################################################################################
 # MODEL AREA SECTION
 ##########################################################################################################
@@ -93,6 +92,7 @@ Model End            =  5/15/2008-00:00   # Model end time (MM/DD/YYYY-HH)
 [CONSTANTS]                               # Model constants
 Ground Roughness     = 0.02               # Roughness of soil surface (m)
 Snow Roughness       = 0.01               # Roughness of snow surface (m)
+                                                                                    
 Snow Water Capacity  = 0.01               # Snow liquid water holding capacity(fraction)
 Reference Height     = 70.0               # Reference height (m)
 Rain LAI Multiplier  = 0.0001             # LAI Multiplier for rain interception
@@ -118,7 +118,7 @@ Albedo Accumulation Lambda = 0.9 	                     # Lambda for accumulation
 Albedo Melting Lambda = 0.6 		                       # Lambda for melting period
 Albedo Accumulation Min = 0.7 		                     # Min albedo value during accumulation period; set to -9999 if min value is not needed.
 Albedo Melting Min = 0.55 		                         # Min albedo value during melting period; set to -9999 if min value is not needed.
-                                                
+
 ##########################################################################################################
 # TERRAIN INFORMATION SECTION
 ##########################################################################################################
@@ -139,9 +139,7 @@ Basin Mask File   = ../input/mask.bin
 Stream Map File      = ../input/stream.map.dat
 Stream Network File  = ../input/stream.network.dat
 Stream Class File    = ../input/adjust.classfile
-
-# enter the path to riparian parameters if Riparian Shading = TRUE
-Riparian Veg File    = ../input/rveg.baseline.network
+Riparian Veg File    = NA
 
 ################################### ROAD NETWORK #########################################################
 
@@ -165,13 +163,13 @@ Unit Hydrograph File =                    # path for unit hydrograph file
 ##########################################################################################################
 
 [METEOROLOGY]     
-# Meteorological station if [OPTION] Gridded Met data = FALSE
+                        # Meteorological station
 Number of Stations = 1                   # Number of meteorological stations
 Station Name     1 = Lawler              # Name for station 1
 North Coordinate 1 = 5188936             # North coordinate of station 1
 East Coordinate  1 = 521180              # East coordinate of station 1
 Elevation        1 = 1000.00000          # Elevation of station 1 in m
-Station File     1 = ../met/subhourly_met
+Station File     1 = ../met/extended_subhourly_met_Lawler_open.txt
 
 # Gridded Met if [OPTION] Gridded Met data = TRUE
 Extreme North Lat =                  
@@ -182,9 +180,8 @@ Number of Grids =         # estimate of total grids need for the basin for memor
                           # allocation (must >= actual grids used)  
 GRID_DECIMAL =            # Number of digits after decimal point in forcing file names
 Met File Path = 
-File Prefix = 
-
-########################## MM5 ##########################
+File Prefix = 															 
+############################################### MM5 ######################################################
 
 # The following block only needs to be filled out if MM5 = TRUE.  In that case
 # This is the ONLY block that needs to be filled out
@@ -244,7 +241,7 @@ Precipitation lapse rate =
 Soil Map File   = ../input/soil.bin
 Soil Conductivity Map File = none  # Unit: mm/s
 Soil Porosity Map File = none 
-Soil Field Capacity File = ../input/soil_fcap.bin    # input in the soil table below is still required as before but will be overwritten in calculations if a spatial map is provided       
+Soil Field Capacity File = ../input/soil_fcap.bin   # input in the soil table below is still required as before but will be overwritten in calculations if a spatial map is provided                                            
 Soil Depth File = ../input/soild.bin
 Number of Soil Types = 1           
 
@@ -277,6 +274,7 @@ Vegetation Map File = ../input/Veg.bin
 Vegetation FC Map File = ../input/veg_fc.bin
 Vegetation LAI Map File = ../input/veg_lai.bin
 Canopy Gap Map File = ../input/GapDiam.bin    # Gap diameter spatial input
+
 Number of Vegetation Types = 1              # Number of different vegetation types
 
 ############################ Vegetation  1  ########################
@@ -284,9 +282,9 @@ Vegetation Description   1 = Broadleaf Evergreen Forest
 Impervious Fraction      1 = 0.0
 Detention Fraction       1 = 0
 Detention Decay          1 = 0
-Overstory Present        1 = TRUE      
+Overstory Present        1 = FALSE      
 Understory Present       1 = FALSE             
-Fractional Coverage      1 = 1.0         
+Fractional Coverage      1 =         
 Hemi Fract Coverage      1 = 
 Clumping Factor          1 =
 Leaf Angle A             1 =
@@ -294,12 +292,15 @@ Leaf Angle B             1 =
 Scattering Parameter     1 =
 Trunk Space              1 = 0.5         
 Aerodynamic Attenuation  1 = 2.5     
-Radiation Attenuation    1 = 0.2               
+Radiation Attenuation    1 = 0.2            # for total radiation including both beam and diffuse   
+
 Diffuse Radiation Attenuation  1 = 0.215   
 Max Snow Int Capacity    1 = 0.03 
 Snow Interception Eff    1 = 0.6              
 Mass Release Drip Ratio  1 = 0.4             
-Height                   1 = 25
+Height                   1 = 
+
+Canopy Gap Diameter      1 = 
 Overstory Monthly LAI    1 = 5.0 5.0 5.0 5.0 8.0 10.0 10.0 8.0 5.0 5.0 5.0 5.0 
 Understory Monthly LAI   1 = 
 Maximum Resistance       1 = 4000  
@@ -313,8 +314,8 @@ Number of Root Zones     1 = 3
 Root Zone Depths         1 = 0.10 0.15 0.2    
 Overstory Root Fraction  1 = 0.20 0.40 0.40      
 Understory Root Fraction 1 =          
-Monthly Light Extinction 1 = 0.065 0.065 0.065 0.065 0.065 0.065 0.065 0.065 0.065 0.065 0.065 0.065
-Canopy View Adj Factor   1 = 1.2
+Monthly Light Extinction 1 =  
+Canopy View Adj Factor   1 = 1.0
 
 ################################################################################
 # MODEL OUTPUT SECTION
@@ -322,8 +323,8 @@ Canopy View Adj Factor   1 = 1.2
 ################################################################################
 [OUTPUT]                                  # Information what to output when
 
-Output Directory = ../output/output_extended_gap/
-Initial State Directory   = ../input/modelstate/gap/
+Output Directory = ../output/output_Opening_Extended/
+Initial State Directory   = ../input/modelstate/opening/
 
 ################ PIXEL DUMPS ###################################################
 
@@ -342,26 +343,11 @@ Number of Model States     =  0           # Number of model states to dump
 
 State Date               1 = 1/1/1970-00
 
+
 ################ MODEL MAPS ####################################################
 
 Number of Map Variables    = 0            # Number of different variables for
                                           # which you want to output maps
-										  
-Map Variable             1 = 412       #  Peak SWE
-Map Layer                1 = 1            
-Number of Maps           1 = 4          
-Map Date 1               1 = 09/30/2008-00   
-
-Map Variable             2 = 414       # Melt Out Date
-Map Layer                2 = 1            
-Number of Maps           2 = 4          
-Map Date 1               2 = 09/30/2008-00  
-  
-
-Map Variable             3 = 413        # Peak SWE Date
-Map Layer                3 = 1            
-Number of Maps           3 = 4          
-Map Date 1               3 = 09/30/2008-00  
 
 ######################################### MODEL IMAGES #################################################################
 
