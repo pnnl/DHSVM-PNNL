@@ -194,7 +194,7 @@ void InitSoilMap(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * Map,
     {"SOILS", "SOIL DEPTH FILE", "", ""},
     {"SOILS", "SOIL CONDUCTIVITY MAP FILE", "", "none"},
     {"SOILS", "SOIL POROSITY MAP FILE", "", "none"},
-    {"SOILS", "SOIL FIELD CAPACITY FILE", "", 'none'},
+    {"SOILS", "SOIL FIELD CAPACITY FILE", "", "none"},
     {NULL, NULL, "", NULL}
   };
 
