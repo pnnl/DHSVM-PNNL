@@ -50,7 +50,7 @@ void EvapoTranspiration(int Layer, int ImpvRad, int Dt, float F, PIXMET *Met,
   //F = LocalVeg->Fract[Layer];
   
   /* removing this line as Net Radiation already accounted for F in radiation calculation */
-  //NetRad /= F;
+  NetRad /= F;
 
   /* Convert the water amounts related to partial canopy cover to a pixel depth
   as if the entire pixel is covered. These depths will be converted back later on. */

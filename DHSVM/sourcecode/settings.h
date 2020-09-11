@@ -175,7 +175,7 @@ enum KEYS {
   monextn, vf_adj, overstory_monlai, understory_monlai, overstory_monalb, understory_monalb, 
   /* terrain information */
   demfile = 0, maskfile, dumptopo, decompose,
-  soiltype_file = 0, soildepth_file, kslat_file, porosity_file,
+  soiltype_file = 0, soildepth_file, kslat_file, porosity_file, fc_file,
   vegtype_file = 0, vegfc_file, veglai_file,
   /* DHSVM channel keys */
   stream_network = 0, stream_map, stream_class, riparian_veg,
