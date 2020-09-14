@@ -25,6 +25,7 @@
 #include "DHSVMerror.h"
 #include "functions.h"
 #include "constants.h"
+#include "varid.h"
 
 /*****************************************************************************
 ExecDump()

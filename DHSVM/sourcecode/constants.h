@@ -58,6 +58,13 @@
 
 /**************** extern constants - see globals.c ****************/
 
+extern int NDIRS;               /* How many neighbors are used in surface/subsurface routing */
+extern int xdirection4[];
+extern int ydirection4[];
+extern int xdirection8[];
+extern int ydirection8[];
+extern int *xdirection, *ydirection;
+
 extern float LAI_SNOW_MULTIPLIER;		/* multiplier to calculate the amount of available
 										snow interception as a function of LAI */
 extern float LAI_WATER_MULTIPLIER;		/* multiplier to determine maximum
