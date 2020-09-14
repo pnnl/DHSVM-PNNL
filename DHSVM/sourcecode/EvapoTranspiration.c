@@ -27,7 +27,7 @@
 /*****************************************************************************
 EvapoTranspiration()
 *****************************************************************************/
-void EvapoTranspiration(int Layer, int ImpvRad, int Dt, PIXMET *Met,
+void EvapoTranspiration(int Layer, int ImpvRad, int Dt, float F, PIXMET *Met,
   float NetRad, float Rp, VEGTABLE *VType, SOILTABLE *SType,
   float MoistureFlux, float *Moist, float *SoilTemp, float *Int,
   float *EPot, float *EInt, float **ESoil, float *EAct, float *ETot,
@@ -38,7 +38,7 @@ void EvapoTranspiration(int Layer, int ImpvRad, int Dt, PIXMET *Met,
   float DryArea;		/* relative dry leaf area  */
   float DryEvapTime;	/* amount of time remaining during a timestep
                         after the interception storage is depleted (sec) */
-  float F;			    /* Fractional coverage by vegetation layer */
+  //float F;			    /* Fractional coverage by vegetation layer */
   float SoilMoisture;	/* Amount of water in each soil layer (m) */
   float WetArea;		/* relative leaf area wetted by interception storage */
   float WetEvapRate;	/* evaporation rate from wetted fraction per unit ground area (m/s) */
@@ -46,8 +46,10 @@ void EvapoTranspiration(int Layer, int ImpvRad, int Dt, PIXMET *Met,
                         in interception storage (sec) */
   int i;			    /* counter */
 
-
-  F = LocalVeg->Fract[Layer];
+  /* make F an input variable */
+  //F = LocalVeg->Fract[Layer];
+  
+  /* removing this line as Net Radiation already accounted for F in radiation calculation */
   NetRad /= F;
 
   /* Convert the water amounts related to partial canopy cover to a pixel depth

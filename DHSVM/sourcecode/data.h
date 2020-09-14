@@ -405,6 +405,7 @@ typedef struct {
   
   float KsLat;      /* Soil Lateral Conductivity */
   float *Porosity;          /* Soil Porosity */
+  float *FCap;      /* soil field capacity */
 } SOILPIX;
 
 typedef struct {
@@ -447,7 +448,7 @@ typedef struct {
   float Slope;					/* Land surface slope */
   float Aspect;					/* Land surface slope direction */
   float FlowGrad;				/* Magnitude of subsurface flow gradient slope * width */
-  unsigned char Dir[NDIRS];		/* Fraction of surface flux moving in each direction*/
+  unsigned char Dir[MAXDIRS];		/* Fraction of surface flux moving in each direction*/
   unsigned int TotalDir;	    /* Sum of Dir array */
   int drains_x;					/* x-loc of cell to which this impervious cell drains */
   int drains_y;					/* y-loc of cell to which this impervious cell drains */
