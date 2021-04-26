@@ -172,7 +172,7 @@ Number of Grids = 2                       # estimate of total grids need for the
 GRID_DECIMAL = 5                          # Number of digits after decimal point in forcing file names
 Met File Path = ../GridForcing/
 File Prefix = data
-
+UTM Zone = 18                             # if the model domain spans multiple UTM zones, grid coordinates from other zones will be mapped to the zone entered here 
 ########################## MM5 ##########################
 # The following block only needs to be filled out if MM5 = TRUE.  In that case
 # This is the ONLY block that needs to be filled out
