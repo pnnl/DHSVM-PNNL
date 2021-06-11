@@ -188,7 +188,8 @@ void Aggregate(MAPSIZE *Map, OPTIONSTRUCT *Options, TOPOPIX **TopoMap,
   Total->Evap.ETot /= NPixels;
   for (i = 0; i < Veg->MaxLayers + 1; i++) {
     /* convert EPot from m/s to m */
-    Total->Evap.EPot[i] /= NPixels*Dt;
+    Total->Evap.EPot[i] /= NPixels;
+    Total->Evap.EPot[i] *= Dt;
     Total->Evap.EAct[i] /= NPixels;
   }
   for (i = 0; i < Veg->MaxLayers; i++)
