@@ -147,6 +147,7 @@ set(DHSVM_SRC
   StoreModelState.c
   SurfaceEnergyBalance.c
   UnsaturatedFlow.c
+  UpdateVegMaps.c
   WaterTableDepth.c
   channel.c
   channel_grid.c

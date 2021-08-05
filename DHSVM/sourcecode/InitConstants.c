@@ -100,6 +100,7 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
     {"OPTIONS", "PRECIPITATION SEPARATION", "", "FALSE" },
     {"OPTIONS", "SNOW STATISTICS", "", "FALSE" },
     {"OPTIONS", "ROUTING NEIGHBORS", "", "4"},
+    {"OPTIONS", "DYNAMIC VEGETATION", "", "FALSE" },
     {"AREA", "COORDINATE SYSTEM", "", ""},
     {"AREA", "EXTREME NORTH", "", ""},
     {"AREA", "EXTREME WEST", "", ""},
@@ -352,6 +353,14 @@ void InitConstants(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
     Options->SnowStats = FALSE;
   else
     ReportError(StrEnv[snowstats].KeyName, 51);
+  
+  /* Determine if uses dynamic vegetation */
+  if (strncmp(StrEnv[dynaveg].VarStr, "TRUE", 4) == 0)
+    Options->DynamicVeg = TRUE;
+  else if (strncmp(StrEnv[dynaveg].VarStr, "FALSE", 5) == 0)
+    Options->DynamicVeg = FALSE;
+  else
+    ReportError(StrEnv[dynaveg].KeyName, 51);
   
   /* Determine if use separate input of rain and snow */
   if (strncmp(StrEnv[sepr].VarStr, "TRUE", 4) == 0)

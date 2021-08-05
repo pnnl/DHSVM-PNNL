@@ -79,7 +79,7 @@ int main(int argc, char **argv)
 	  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},     /* SNOWPIX */ 
     {0, 0.0, NULL, NULL, NULL, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
     0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, NULL, NULL},			                /* SOILPIX */
-    {0, 0, 0.0, 0.0, 0.0, NULL, NULL, NULL, NULL, 0.0},                             /* VEGPIX */
+    {0, 0, 0.0, 0.0, 0.0, NULL, NULL, NULL, NULL, NULL, NULL, NULL},                            /* VEGPIX */
     0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0l, 0.0, 0.0
   };
   CHANNEL ChannelData = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, 
@@ -112,6 +112,7 @@ int main(int argc, char **argv)
   UNITHYDRINFO HydrographInfo;	/* Information about unit hydrograph */
   VEGPIX **VegMap = NULL;
   VEGTABLE *VType = NULL;
+  DYNAVEG DVeg;
   WATERBALANCE Mass =			/* parameter for mass balance calculations */
     { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
 
@@ -154,7 +155,7 @@ int main(int argc, char **argv)
   InitFileIO(Options.FileFormat);
   InitTables(Time.NDaySteps, Input, &Options, &Map, &SType, &Soil, &VType, &Veg); 
 
-  InitTerrainMaps(Input, &Options, &Map, &Soil, &Veg, &TopoMap, SType, &SoilMap, VType, &VegMap);
+  InitTerrainMaps(Input, &Options, &Map, &Soil, &Veg, &TopoMap, SType, &SoilMap, VType, &VegMap, &DVeg);
 
   InitSnowMap(&Map, &SnowMap, &Time);
 
@@ -214,7 +215,7 @@ int main(int argc, char **argv)
 
   InitDump(Input, &Options, &Map, Soil.MaxLayers, Veg.MaxLayers, Time.Dt,
 	   TopoMap, &Dump, &NGraphics, &which_graphics);
-
+    
 #ifndef SNOW_ONLY
   if (Options.HasNetwork == TRUE) {
     InitChannelDump(&Options, &ChannelData, Dump.Path);
@@ -273,6 +274,11 @@ int main(int argc, char **argv)
     if (Options.SnowSlide)
 	    Avalanche(&Map, TopoMap, &Time, &Options, SnowMap);
     
+    if (Options.DynamicVeg){
+      if (IsVegDate(&(Time.Current), &DVeg))        
+        UpdateVegMap(&(Time.Current), &Options, Input, &Map, &Veg, &VegMap, VType, &DVeg);
+    }
+
     if (IsNewWaterYear(&(Time.Current)))
       InitNewWaterYear(&Time, &Options, &Map, TopoMap, SnowMap);
 
