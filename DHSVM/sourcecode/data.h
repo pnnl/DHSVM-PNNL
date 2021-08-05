@@ -251,7 +251,6 @@ typedef struct {
   int SnowSlide;                /* if snow sliding option is true */
   int PrecipSepr;               /* if TRUE use separate input of rain and snow */
   int SnowStats;               /* if TRUE dumps snow statistics for each water year */
-  int DynamicVeg;               /* if TRUE update vegetation maps at user defined dates*/
   char PrismDataPath[BUFSIZE + 1];
   char PrismDataExt[BUFSIZE + 1];
   char ShadingDataPath[BUFSIZE + 1];
@@ -534,16 +533,6 @@ typedef struct {
   float Vf;                       /* spatial - Canopy view factor (0 - 1); Vf = VfAdjust*Fract */   
   CanopyGapStruct *Type;        /* canopy structure */
 } VEGPIX;
-
-typedef struct {
-  int NUpdate; /*number of dates to update vegetation*/
-  DATE *DUpdate;		/* Date(s) at which to update vegetation layer */
-  char DynaVegPath[BUFSIZE + 1];			/* Path to read from */
-  // char FileName[BUFSIZE + 1];	/* File to write dump to */
-  // char FileLabel[BUFSIZE + 1];	/* File label */
-  // int NumberType;		/* Number type of variable */
-  
-} DYNAVEG;
 
 typedef struct {
   char Desc[BUFSIZE + 1];	/* Vegetation type */

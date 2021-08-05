@@ -120,7 +120,7 @@ enum KEYS {
   temp_lapse, precip_lapse, cressman_radius, cressman_stations, prism_data_path, 
   prism_data_ext, shading_data_path, shading_data_ext, skyview_data_path, 
   stream_temp, canopy_shading, improv_radiation, gapping, snowslide, sepr, 
-  snowstats, routing_neighbors, dynaveg,
+  snowstats, routing_neighbors, 
   /* Area */
   coordinate_system, extreme_north, extreme_west, center_latitude,
   center_longitude, time_zone_meridian, number_of_rows,
@@ -173,8 +173,7 @@ enum KEYS {
   /* terrain information */
   demfile = 0, maskfile,
   soiltype_file = 0, soildepth_file, kslat_file, porosity_file,fc_file,
-  vegtype_file = 0, vegfc_file, veglai_file, vegheight_file, 
-  dynaveg_path, dynaveg_num, 
+  vegtype_file = 0, vegfc_file, veglai_file,
   /* DHSVM channel keys */
   stream_network = 0, stream_map, stream_class, riparian_veg,
   road_network, road_map, road_class,

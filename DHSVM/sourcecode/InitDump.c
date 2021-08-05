@@ -106,6 +106,7 @@ void InitDump(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map, int MaxSoilLay
     Dump->NPix = 0;
   else if (!CopyInt(&(Dump->NPix), StrEnv[npixels].VarStr, 1) || Dump->NPix < 0)
     ReportError(StrEnv[npixels].KeyName, 51);
+
   if (IsEmptyStr(StrEnv[nstates].VarStr))
     Dump->NStates = 0;
   else if (!CopyInt(&(Dump->NStates), StrEnv[nstates].VarStr, 1))

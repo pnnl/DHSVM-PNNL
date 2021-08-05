@@ -35,14 +35,14 @@
  *****************************************************************************/
 void InitTerrainMaps(LISTPTR Input, OPTIONSTRUCT *Options, MAPSIZE *Map,
   LAYER *Soil, LAYER *Veg, TOPOPIX ***TopoMap, SOILTABLE *SType, SOILPIX ***SoilMap, 
-  VEGTABLE *VType, VEGPIX ***VegMap, DYNAVEG *DVeg)
+  VEGTABLE *VType, VEGPIX ***VegMap)
 
 {
   printf("\nInitializing terrain maps\n");
 
   InitTopoMap(Input, Options, Map, TopoMap);
   InitSoilMap(Input, Options, Map, Soil, *TopoMap, SoilMap, SType);
-  InitVegMap(Options, Input, Map, VegMap, VType, DVeg);
+  InitVegMap(Options, Input, Map, VegMap, VType);
   if (Options->CanopyGapping)
     InitCanopyGapMap(Options, Input, Map, Soil, Veg, VType, VegMap, SType, SoilMap);
 }
@@ -526,7 +526,7 @@ void InitSoilMap(LISTPTR Input, OPTIONSTRUCT * Options, MAPSIZE * Map,
   InitVegMap()
 *****************************************************************************/
 void InitVegMap(OPTIONSTRUCT * Options, LISTPTR Input, MAPSIZE * Map, VEGPIX *** VegMap,
-                VEGTABLE *VType, DYNAVEG *DVeg)
+                VEGTABLE *VType)
 {
   const char *Routine = "InitVegMap";
   char VarName[BUFSIZE + 1];
@@ -547,9 +547,6 @@ void InitVegMap(OPTIONSTRUCT * Options, LISTPTR Input, MAPSIZE * Map, VEGPIX ***
     {"VEGETATION", "VEGETATION MAP FILE", "", ""},
     {"VEGETATION", "VEGETATION FC MAP FILE", "", "none"},
     {"VEGETATION", "VEGETATION LAI MAP FILE", "", "none"},
-    {"VEGETATION", "VEGETATION HEIGHT MAP FILE", "", "none"},
-    {"VEGETATION", "DYNAMIC VEGETATION MAP PATH", "", "none"},
-    {"VEGETATION", "NUMBER OF DYNAMIC VEGETATION MAPS", "","none"},
     {NULL, NULL, "", NULL}
   };
 
@@ -568,32 +565,6 @@ void InitVegMap(OPTIONSTRUCT * Options, LISTPTR Input, MAPSIZE * Map, VEGPIX ***
     if (IsEmptyStr(StrEnv[i].VarStr))
       ReportError(StrEnv[i].KeyName, 51);
   }
-
-/***********************************************************************************************/
-  /*Allocate memory to DVeg*/
-  // if (!(*DVeg = (DYNAVEG *)calloc(1, sizeof(DYNAVEG))))
-  //    ReportError(Rioutine, 1);
-  printf("line 500 \n");
-  if (Options->DynamicVeg){
-    printf("Warning: Dynamic Vegetation Mode, not compataible with SNOTEL option\n");
-
-    /*Read from Config of dynamic veg path and dates*/
-    if (IsEmptyStr(StrEnv[dynaveg_num].VarStr))  
-      ReportError(StrEnv[dynaveg_num].KeyName, 51);
-    else if (!CopyInt(&(DVeg->NUpdate), StrEnv[dynaveg_num].VarStr, 1))
-      ReportError(StrEnv[dynaveg_num].KeyName, 51);
-
-    //printf("number of dyna vegs %d",&(DVeg->NUpdate));
-
-    if (IsEmptyStr(StrEnv[dynaveg_path].VarStr)) 
-      ReportError(StrEnv[dynaveg_path].KeyName, 51);
-    strcpy(DVeg->DynaVegPath, StrEnv[dynaveg_path].VarStr);
-
-    /*Initiate the information*/
-    InitVegUpdate(Input, DVeg->NUpdate, &(DVeg->DUpdate));
-  }
-
-    /***********************************************************************************************/
   
   /* Read the vegetation type */
   GetVarName(005, 0, VarName);
@@ -864,7 +835,7 @@ void InitCanopyGapMap(OPTIONSTRUCT *Options, LISTPTR Input, MAPSIZE *Map,
   /* Get the canopy gap map filename from the [VEGETATION] section */
   GetInitString("VEGETATION", "CANOPY GAP MAP FILE", "", CanopyMapFileName,
     (unsigned long)BUFSIZE, Input);
-  if (IsEmptyStr(CanopyMapFileName))
+  if (!CanopyMapFileName)
     ReportError("CANOPY GAP MAP FILE", 51);
 
   /* Read the vegetation type */
