@@ -1,0 +1,399 @@
+##########################################################################################################
+# DHSVM INPUT FILE FORMAT
+##########################################################################################################
+# The file is organized in sections [...], which contain key = entry pairs.  
+# The file is free format, in that correct reading of the file is not dependent 
+# on spaces and/or the order of the key-entry pairs within a section.  
+# The keys are not case-sensitive, but the entries are, because filenames on a 
+# UNIX platform are case-sensitive.  
+# Comments are preceded by a '#', and run from the occurrence of '#' till the 
+# end of the line. You can comment out an entire line (like in this 
+# header), or you can place a comment after an entry.  
+# It is important to place the key-entry pair in the correct section, since it 
+# will not be found if it is in another section.  
+# The easiest way to make the input file is to fill out this default template.  
+# Since DHSVM will only use the keys that it requires you do not have to worry 
+# about empty entries for keys that are not needed. For example, if you are 
+# running the model in point mode, you do not have to fill out the routing 
+# section.  If you have already filled it out you can leave it, since DHSVM will 
+# not use the information.  This allows easy switching between point and basin 
+# mode.  
+# For more information about the specific entries see the DHSVM web page
+# the soil parameters are copied from Lan's lowland INPUT File (with extremely 
+# low lateral conductivity $ changed the station from 1 to 2
+################################################################################
+# OPTIONS SECTION 
+################################################################################
+
+[OPTIONS]                                 # Model Options
+Format               = BIN                # BIN, BYTESWAP or NETCDF
+Extent               = BASIN              # POINT or BASIN
+Gradient             = TOPOGRAPHY   	  # TOPOGRAPHY or WATERTABLE
+Flow Routing         = NETWORK            # UNIT_HYDROGRAPH or NETWORK (StrEnv[flow_routing])
+Sensible Heat Flux   = FALSE              # TRUE or FALSE
+Overland Routing     = CONVENTIONAL	  	  # CONVENTIONAL or KINEMATIC
+Interpolation        = INVDIST            # NEAREST or INVDIST or VARCRESS
+Infiltration	     = STATIC		  	  # Static or Dynamic
+MM5                  = FALSE   		  	  # TRUE or FALSE
+QPF                  = FALSE              # TRUE or FALSE
+PRISM                = FALSE              # TRUE or FALSE
+PRISM data path      =			  		  # path for PRISM files
+PRISM data extension =                    # file extension for PRISM files 
+Gridded Met data     = TRUE               # TRUE or FALSE
+Canopy radiation attenuation mode = FIXED # FIXED or VARIABLE
+Shading              = TRUE   	          # TRUE or FALSE
+Shading data path    = ../../TestCase/Chiwawa/input/shadow/Shadow  	  # path for shading files
+Shading data extension = bin              # file extension for shading files 
+Skyview data path    = ../../TestCase/Chiwawa/input/shadow/SkyView.bin	  # skyview file
+Snotel               = FALSE              # TRUE or FALSE
+Outside              = FALSE    	      # TRUE or FALSE
+Rhoverride           = FALSE              # TRUE or FALSE
+Precipitation Source = STATION            # STATION or RADAR
+Wind Source          = STATION            # STATION or MODEL
+Temperature lapse rate   = CONSTANT       # CONSTANT or VARIABLE
+Precipitation lapse rate = CONSTANT       # CONSTANT, MAP, or VARIABLE
+Cressman radius      = 10                 # in model pixels
+Cressman stations    = 4                  # number of stations
+Stream Temperature   = FALSE              # TRUE or FALSE
+Riparian Shading       = FALSE            # used for stream tempeature only
+Variable Light Transmittance  = TRUE          # TRUE OR FALSE
+Canopy Gapping = FALSE
+Snow Sliding = FALSE
+Routing Neighbors = 8
+
+################################################################################
+# MODEL AREA SECTION
+################################################################################
+
+[AREA]                                   # Model area
+Coordinate System    =  UTM              # UTM or USER_DEFINED 
+Extreme North        =  5338622.09046602 # Coordinate for northern edge of grid
+Extreme West         =  651368.575710976 # Coordinate for western edge of grid
+Center Latitude      =  47.998819        # Central parallel of basin 
+Center Longitude     =  -120.788839      # Central meridian of basin 
+Time Zone Meridian   =  -120.0           # Time zone meridian for area 
+Number of Rows       =  425              # Number of rows
+Number of Columns    =  300              # Number of columns
+Grid spacing         =  90               # Grid resolution in m 
+Point North          =                   # North coordinate for point model if Extent = POINT 
+Point East           =                   # East coordinate for point model if Extent = POINT
+
+################################################################################
+# TIME SECTION
+################################################################################
+[TIME]                                   # Model period
+Time Step            = 3                 # Model time step (hours)
+Model Start          = 10/01/1970-00     # Model start time (MM/DD/YYYY-HH)
+Model End            = 10/01/1971-00     # Model end time (MM/DD/YYYY-HH)
+
+################################################################################
+# CONSTANTS SECTION
+################################################################################
+[CONSTANTS]                               # Model constants
+Ground Roughness     = 0.01               # Roughness of soil surface (m)
+Snow Roughness       = 0.03               # Roughness of snow surface (m)
+Rain Threshold       = -0.450848          # Minimum temperature at which rain occurs (C)
+Snow Threshold       = 0.455319           # Maximum temperature at which snow occurs (C)
+Snow Water Capacity  = 0.06               # Snow liquid water holding capacity(fraction)
+Reference Height     = 75.0               # Reference height (m)
+Rain LAI Multiplier  = 0.0001             # LAI Multiplier for rain interception
+Snow LAI Multiplier  = 0.0005             # LAI Mulitplier for snow interception
+Min Intercepted Snow = 0.005              # Intercepted snow that can only be melted (m)
+Outside Basin Value  = 0                  # Value in mask that indicates outside the basin
+Temperature Lapse Rate   = -0.0065        # Temperature lapse rate (C/m)
+Precipitation Lapse Rate = 3e-06          # Precipitation lapse rate (m/m). Use a linear function to
+Precipitation Multiplier = 0.00015        # assuming precipiatio is positively related to elevation    
+Albedo Accumulation Lambda = 0.95         # Lambda for accmulation period
+Albedo Melting Lambda = 0.7               # Lambda for melting period
+Albedo Accumulation Min = 0.4             # Min albedo value during accumulation period
+Albedo Melting Min = 0.3                  # Min albedo value during melting period
+Gap Wind Adj Factor = 1.0                 # Adjustment for wind received by gap (0-1)
+Snowslide Parameter1 = 700                # Empirical parameters used to calculate snow holding depth
+Snowslide Parameter2 = 0.12               # Empirical parameters used to calculate snow holding depth
+
+################################################################################
+# TERRAIN INFORMATION SECTION
+################################################################################
+
+[TERRAIN]                                 # Terrain information
+DEM File    	  = ../../TestCase/Chiwawa/input/dem.bin
+Basin Mask File   = ../../TestCase/Chiwawa/input/mask.bin
+
+################################################################################
+# ROUTING SECTION
+################################################################################
+
+[ROUTING]                                 # Routing information. This section is 
+                                          # only relevant if the Extent = BASIN
+
+################ STREAM NETWORK ################################################
+
+# The following three fields are only used if Flow Routing = NETWORK
+Stream Map File      = ../../TestCase/Chiwawa/input/stream.map.dat
+Stream Network File  = ../../TestCase/Chiwawa/input/stream.network.dat
+Stream Class File    = ../../TestCase/Chiwawa/input/stream.class.dat
+Riparian Veg File    = NA
+
+################ ROAD NETWORK ##################################################
+
+# The following three fields are only used if Flow Routing = NETWORK and there 
+# is a road network
+
+#Road Map File        =                    # path for road map file
+#Road Network File    =                    # path for road network file
+#Road Class File      =                    # path for road network file
+
+#################################### UNIT HYDROGRAPH ###########################
+
+# The following two fields are only used if Flow Routing = UNIT_HYDROGRAPH
+
+Travel Time File     =                    # path for travel time file
+Unit Hydrograph File =                    # path for unit hydrograph file
+
+################################################################################
+# METEOROLOGY SECTION 
+################################################################################
+
+[METEOROLOGY]                             # Meteorological stations
+
+Extreme North Lat = 48.34375                 
+Extreme South Lat = 47.65625
+Extreme East Lon = -120.96875
+Extreme West Lon = -121.03125
+Number of Grids = 167                     # estimate of total grids need for the basin for memory allocation (must >= actual grids used)  
+GRID_DECIMAL = 5                          # Number of digits after decimal point in forcing file names
+Met File Path = ../../TestCase/Chiwawa/LivnehForcing/
+File Prefix = data
+UTM Zone = 10
+
+########################## MM5 ##########################
+# The following block only needs to be filled out if MM5 = TRUE.  In that case
+# This is the ONLY block that needs to be filled out
+
+MM5 Start              =                  # Start of MM5 file (MM/DD/YYYY-HH),
+MM5 Rows               =
+MM5 Cols               =
+MM5 Extreme North      =
+MM5 Extreme West       = 
+MM5 DY                 =
+
+# MM5 met files
+MM5 Temperature File   = 
+MM5 Humidity File      = 
+MM5 Wind Speed File    = 
+MM5 Shortwave File     = 
+MM5 Longwave File      = 
+MM5 Pressure File      = 
+MM5 Precipitation File = 
+MM5 Terrain File       =
+MM5 Temp Lapse File    =
+
+# For each soil layer make a key-entry pair as below (n = 1, ..,
+# Number of Soil Layers)
+
+MM5 Soil Temperature File 0 = 
+MM5 Soil Temperature File 1 = 
+MM5 Soil Temperature File 2 = 
+
+############### RADAR ##########################################################
+# The following block only needs to be filled out if Precipitation Source = 
+# RADAR.  
+
+Radar Start            =
+Radar File             =
+Radar Extreme North    =
+Radar Extreme West     =
+Radar Number of Rows   =
+Radar Number of Columns = 
+Radar Grid Spacing     =
+
+################ Wind ##########################################################
+# The following block only needs to be filled out if Wind Source = MODEL
+
+Number of Wind Maps    =
+Wind File Basename     =
+Wind Map Met Stations  =
+
+################ Precipitation lapse rate ######################################
+# The following block only needs to be filled out if Precipitation lapse rate 
+# = MAP
+
+Precipitation lapse rate =
+
+################################################################################
+# SOILS INFORMATION SECTION
+################################################################################
+[SOILS]                                   # Soil information
+
+Soil Map File	     = ../../TestCase/Chiwawa/input/soil.bin
+Soil Depth File      = ../../TestCase/Chiwawa/input/soild.bin
+Number of Soil Types = 1
+
+################ SOIL 1 #########################################################
+# old number 2 cod
+Soil Description       1 = LOAMY SAND    
+Lateral Conductivity   1 = .0001848     
+Exponential Decrease   1 = 2.0  
+Depth Threshold        1 = 0.5
+Maximum Infiltration   1 = 6.0e-5  
+Capillary Drive        1 = 0.07   
+Surface Albedo         1 = 0.1       
+Number of Soil Layers  1 = 3      
+Porosity               1 = .47 .47 .47
+Pore Size Distribution 1 = .25 .25 .25
+Bubbling Pressure      1 = .09 .09 .09
+Field Capacity         1 = .168 .168 .168
+Wilting Point          1 = .067 .067 .067
+Bulk Density           1 = 1520. 1520. 1520. 
+Vertical Conductivity  1 = 0.000017 0.000017 0.000017 
+Thermal Conductivity   1 = 7.114 6.923 7.0
+Thermal Capacity       1 = 1.4e6 1.4e6 1.4e6
+Residual Water Content 1 = 0. 0. 0.
+Mannings n             1 = 0.013     
+
+################################################################################
+# VEGETATION INFORMATION SECTION
+################################################################################
+[VEGETATION]
+
+Vegetation Map File = ../../TestCase/Chiwawa/input/veg.bin
+Canopy Gap Map File = ../../TestCase/Chiwawa/input/CanopyGap.bin
+
+
+Number of Vegetation Types = 1
+
+############################ Vegetation  1  ########################
+                                         
+Vegetation Description          1  =  Dry1
+Impervious Fraction             1  =  0.0
+Detention Fraction              1  =  0
+Detention Decay                 1  =  0
+Overstory Present               1  =  TRUE
+Understory Present              1  =  TRUE
+Fractional Coverage             1  =  0.15
+Hemi Fract Coverage             1  = 
+Clumping Factor                 1  = 
+Leaf Angle A                    1  = 
+Leaf Angle B                    1  = 
+Scattering Parameter            1  = 
+Trunk Space                     1  =  0.33
+Aerodynamic Attenuation         1  =  2.0
+Radiation Attenuation           1  =  1.50
+Diffuse Radiation Attenuation   1  =  0.2
+Max Snow Int Capacity           1  =  0.02
+Mass Release Drip Ratio         1  =  0.4
+Snow Interception Eff           1  =  0.6
+Height                          1  =  2.5 0.5
+Canopy Gap Diameter             1  =  60
+Overstory Monthly LAI           1  =  5.00 5.00 5.00 5.00 5.00 5.00 5.00 5.00 5.00 5.00 5.00 5.00
+Understory Monthly LAI          1  =  3.00 3.00 3.00 3.00 3.00 3.00 3.00 3.00 3.00 3.00 3.00 3.00
+Maximum Resistance              1  =  5000.0 3000.0
+Minimum Resistance              1  =  666.0 200.0
+Moisture Threshold              1  =  0.3 0.1
+Vapor Pressure Deficit          1  =  4000.0 4000.0
+Rpc                             1  =  10 10
+Overstory Monthly Alb           1  =  0.20 0.20 0.20 0.20 0.20 0.20 0.20 0.20 0.20 0.20 0.20 0.20
+Understory Monthly Alb          1  =  0.20 0.20 0.20 0.20 0.20 0.20 0.20 0.20 0.20 0.20 0.20 0.20
+Number of Root Zones            1  =  3
+Root Zone Depths                1  =  0.060 0.130 0.210
+Overstory Root Fraction         1  =  0.20 0.40 0.40
+Understory Root Fraction        1  =  0.40 0.60 0.00
+Monthly Light Extinction        1  =  0.065 0.065 0.065 0.065 0.065 0.065 0.065 0.065 0.065 0.065 0.065 0.065
+Canopy View Adj Factor          1  = 1.0
+                                 
+                                                                      
+################################################################################
+# MODEL OUTPUT SECTION
+################################################################################
+################################################################################
+[OUTPUT]                   # Information what to output when
+Output Directory = ../../TestCase/Chiwawa/output/
+Initial State Directory    = ../../TestCase/Chiwawa/modelstate/
+
+################ PIXEL DUMPS ###################################################
+
+Number of Output Pixels    = 0
+
+# For each pixel make a key-entry pair as indicated below, varying the 
+# number for the output pixel  (1, .. , Number of Output Pixel)
+
+North Coordinate 1 = 5398586.513
+East Coordinate  1 = 671625.749
+Name             1 = HartsPass
+
+North Coordinate 2 = 5325946.1
+East Coordinate  2 = 660169.6
+Name             2 = Trinity
+
+################ MODEL STATE ###################################################                
+Number of Model States     =  0            # Number of model states to dump
+
+# For each model state make a key-entry pair as indicated below, varying the 
+# number for the model state dump (1, .. , Number of Model States)
+
+
+State Date               1 = 10/01/2005-00 
+State Date               2 = 10/01/1998-00 
+State Date               3 = 10/01/2000-00 
+State Date               4 = 10/01/2001-00 
+State Date               5 = 10/01/2004-00 
+State Date               6 = 10/01/2008-00 
+State Date               7 = 10/01/2012-00 
+################ MODEL MAPS ####################################################
+
+Number of Map Variables    =0             # Number of different variables for
+                                          # which you want to output maps
+
+# For each of the variables make a block like the one that follows, varying
+# the number of the variable (n = 1, .. , Number of Map Variables)
+
+Number of Map Variables    = 0            # Number of different variables for
+                                          # which you want to output maps
+
+# For each of the variables make a block like the one that follows, varying
+# the number of the variable (n = 1, .. , Number of Map Variables)
+
+Map Variable             1 = 404          # ID of the variable to output
+Map Layer                1 = 1            # If the variable exists for a number
+										  # of layers, specify the layers here
+										  # with the top layer = 1
+Number of Maps           1 = 1            # Number of maps you would like to 
+                                          # output for this variable
+Map Date 1               1 =  03/01/1994-00
+
+################ MODEL IMAGES ##################################################
+
+Number of Image Variables  =              # Number of variables for which you 
+                                          # would like to output images
+
+# For each of the variables make a block like the one that follows, varying
+# the number of the variable (n = 1, .. , Number of Image Variables)
+
+Image Variable        1 =                 # ID of the variable to output
+Image Layer           1 =                 # If the variable exists for a number
+					  # of layers, specify the layers here
+					  # with the top layer = 1
+Image Start           1 =                 # First timestep for which to output
+                                          # an image
+Image End             1 =                 # Last timestep for which to output
+                                          # an image
+Image Interval        1 =                 # Time interval between images (hours)
+Image Upper Limit     1 =                 # All values in the output equal to or
+                                          # greater than this limit will be set 
+                                          # to 255
+Image Lower Limit     1 =                 # All values in the output equal to or
+                                          # smaller than this limit will be set 
+                                          # to 0
+################ GRAPHIC IMAGES ##################################################
+
+Number of Graphics      =                 # Number of variables for which you 
+                                          # would like to output images
+Graphics ID           1 =                 # ID of the variable to output
+
+################################################################################
+# END OF INPUT FILE
+################################################################################
+[End]                                     # This is probably not needed, but 
+                                          # just in case (to close the previous
+                                          # section)
+

@@ -1,0 +1,23 @@
+
+
+  ********************************               Depth
+  Runoff Final Mass Balance                        mm
+  ********************************        ------------
+  Total Inflow ...................        479.687
+      Precip/Inflow ..............        521.025
+      SnowVaporFlux ..............        -41.337
+  Total Outflow ..................        410.317
+      ET .........................        242.712
+      ChannelInt .................        167.606
+      RoadInt ....................        0.000
+  Storage Change .................        69.416
+      Initial Storage ............        224.875
+      Final Storage ..............        294.291
+          Final SWQ ..............        0.000
+          Final Soil Moisture ....        294.291
+          Final Surface ..........        0.000
+          Final Road Surface .....        0.000
+
+  Mass added to glacier ..........        0.000
+  ******************************************************
+  Mass Error (mm).................        0.046

@@ -1,0 +1,19 @@
+#! /bin/bash
+
+cwd=$(pwd)
+for dir in WRF_*/
+  do
+    echo $dir
+    cd $dir
+    for file in dhsvm_all_var_input_*
+	  do
+	     echo "....."$file
+	     awk '{if(NR>1) {printf("%s-%s\n", $1,$2)}}' $file > ${file}.junk1
+		 awk -F ":" '{print $1}' ${file}.junk1 | awk -F "-" '{printf("%s/%s/%s-%s\n",$2,$3,$1,$4)}' > ${file}.junk3
+		 awk '{if(NR>1) {printf("%.6f %.6f %.6f %.6f %.6f %.9f\n", $3,$4,$5,$6,$7,$8)}}' $file > ${file}.junk2
+		 paste -d " " ${file}.junk3 ${file}.junk2 > ${file}.2
+		 mv ${file}.2 $file
+		 rm *.junk*
+	  done
+	cd $cwd
+  done
